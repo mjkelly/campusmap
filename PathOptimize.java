@@ -147,7 +147,7 @@ public class PathOptimize
     		// Get the GraphPoint
     		GraphPoint thisGP = (GraphPoint)graphPoints.get(graphIndex);
     		// Handle locations
-    		if(thisGP.locLabel != null && !thisGP.locLabel.equals("<nolink>"))
+    		if(thisGP.locLabel != null)
     		{
 	    		System.err.println("Adding location: " + thisGP.locLabel.cord +
 	    				", " + thisGP.locLabel.name);
@@ -997,7 +997,8 @@ class GraphPoint
 		point = new Point(pp.point);
 		pp.setGraphPoint(this);
 		
-		locLabel = pp.location;
+		if(pp.location != null && !pp.location.equals("<nolink>"))
+			locLabel = pp.location;
 		edges = new Vector();
 	}
 	

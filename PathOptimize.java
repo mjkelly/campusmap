@@ -367,26 +367,37 @@ public class PathOptimize
     		
 			// For all points that are connected to that active point 1 
 			// PathPoint
-AP1:    	for(int activeIndex2 = 0; 
-				activeIndex2 < ap1.numConnectedPoints();
-				activeIndex2++)
-			{
-    			// the second point in the active line segment
-				ap2 = ap1.getConnectedPathPoint(activeIndex2);
-				activeSlope = getSlope(ap1, ap2);
-				
-				// now loop through all the points, again
-				for(int testIndex1 = 0; testIndex1<pathPoints.size(); 
-		    		testIndex1++)
-		    	{
-				    // store the first point in the test line segment
-		    		tp1 = getPathPoint(testIndex1);
+    		
+			// now loop through all the points, again
+			for(int testIndex1 = 0; testIndex1<pathPoints.size(); 
+	    		testIndex1++)
+	    	{
+			    // store the first point in the test line segment
+	    		tp1 = getPathPoint(testIndex1);
+	    		//If the test point and active point are the same
+	    		// Get a new test point.  
+	    		if(tp1.equals(ap1))
+	    			continue;
+    		
+AP1:    		for(int activeIndex2 = 0; 
+					activeIndex2 < ap1.numConnectedPoints();
+					activeIndex2++)
+				{
+	
+					// the second point in the active line segment
+					ap2 = ap1.getConnectedPathPoint(activeIndex2);
+					// if the test point as  the second active point,
+					// skip it.  If the 2nd active point is the same
+					// as the first, skip it.  
+					if(tp1.equals(ap2) || ap1.equals(ap2))
+						continue;
+					
+
+					activeSlope = getSlope(ap1, ap2);
 		    		
-		    		// if this is one of the active points, skip it
-		    		if(tp1.equals(ap1) || tp1.equals(ap2))
-		    			continue;
+
 		    		
-					// For all points that are connected to that active point 1 
+					// For all points that are connected to that test point 1 
 					// PathPoint
 					for(int testIndex2 = 0; 
 						testIndex2 < tp1.numConnectedPoints();
@@ -396,12 +407,15 @@ AP1:    	for(int activeIndex2 = 0;
 						tp2 = tp1.getConnectedPathPoint(testIndex2);
 						
 						// if _this_ point is one of the active points, skip it
-			    		if(tp2.equals(ap1) || tp2.equals(ap2))
+						// if _this_ point is the same as the first test point
+						// skip!
+			    		if(tp2.equals(ap1) || tp2.equals(ap2) 
+			    				|| tp2.equals(tp1))
 			    			continue;
 			    		
 			    		// this is The Rectangle Test
 			    		if(!rectangleTest(ap1, ap2, tp1, tp2))
-			    			break;
+			    			continue;
 			    		
 						System.err.print(
 								"ap1: (" + ap1.point.x + ", " + ap1.point.y + ") ");
@@ -459,7 +473,7 @@ AP1:    	for(int activeIndex2 = 0;
 							// ensure that the potential point is actually on
 							// both lines
 							if(!pointInSegments(ap1, ap2, tp1, tp2, pi))
-								break;
+								continue;
 							
 							// congratulations, you've found an intercept!
 							
@@ -604,7 +618,7 @@ AP1:    	for(int activeIndex2 = 0;
     {
     	if(p2.point.x == p1.point.x)
     	{
-    		throw new RuntimeException("Non real slope");
+    		//throw new RuntimeException("Non real slope");
     	}
     	return(((double)(p2.point.y - p1.point.y))/
     			((double)(p2.point.x - p1.point.x)));

@@ -136,6 +136,8 @@ public class ShowImage extends JFrame{
 		return(JOptionPane.showConfirmDialog(this, message));
     }
     
+
+    
     /**
      * Returns an ImageIcon, or null if the path was invalid.
      * @param path file path to image to load
@@ -166,6 +168,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     private Vector paths; // Vector of paths (super of lines).
     private Vector locations;  // Vector of locations (see class Locations)
     private int pathNumIndex = 0; //Index of where we are  in the paths array.
+    private int pointNumIndex = 0;
     private ShowImage parent;
     
     // Constructor
@@ -221,28 +224,88 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     	lines = new Vector(128);
                     }
                     lines.add(p);
+                
+                    pointNumIndex = lines.size() - 1;
                     // and redraw immediately to see the changes
                     repaint( getVisibleRect() );
+                    
+                    // if the location field was filled, add a location
+                    if(!parent.locationName.getText().equals(""))
+                    {
+                        System.err.println(parent.locationName.getText());
+                        locations.add(new Location(x, y,
+                                parent.locationName.getText()));
+                    }
+                    
+                    parent.statusBar.setText( statusBarText() );
+                    parent.locationName.setText("");
+                    
+                    thisParent.requestFocus();
                 }
+                
+                // Right click.
                 else if(SwingUtilities.isRightMouseButton(e)) {
                     System.err.print("Right mouse click @ (" + x + ", " + y + ")");
+                
+                    // Don't  create a new point in a path.
+                    if( pathNumIndex < lines.size() )
+                    {
+                    	boolean existingLoc = false;
+                    	// find the location that matches this point (if one
+                        // exists), and move it along with the point
+                    	// For all locations...
+                		for(int locIndex = 0; locIndex < locations.size(); locIndex++){
+                			// you have an intersect with a location
+                			if ((((Location)locations.get(locIndex)).cord).equals(
+                					lines.get(pointNumIndex)))
+                			{
+                				existingLoc = true;
+                                if(parent.locationName.getText().equals(""))
+                                {
+                                	locations.remove(locIndex);
+                                }
+                                else
+                                {
+                                	locations.set(locIndex, new Location(x, y,
+                                        parent.locationName.getText()));
+                                	
+                                	parent.statusBar.setText( statusBarText() );
+                                    parent.locationName.setText("");
+                                    
+                                    thisParent.requestFocus();
+                                }
+                			}
+                		}
+                		
+                		// if there wasn't already a location at this point,
+                		// and the user entered a location name, add it.
+                		if(!parent.locationName.getText().equals("")
+                				&& !existingLoc)
+                        {
+                            locations.add(new Location(x, y,
+                                    parent.locationName.getText()));
+                            
+                            parent.statusBar.setText( statusBarText() );
+                            parent.locationName.setText("");
+                            
+                            thisParent.requestFocus();
+                        }
+                		
+                    	// move the point
+                    	((Point)lines.get(pointNumIndex)).setLocation(x,y);
+                    	
+                    	repaint();
+                    }
+                    
+                   
+                
                 }
                 else{
                     System.err.print("Other mouse click @ (" + x + ", " + y + ")");
                 }
                 System.err.println();
 
-                if(!parent.locationName.getText().equals(""))
-                {
-                    System.err.println(parent.locationName.getText());
-                    locations.add(new Location(x, y,
-                            parent.locationName.getText()));
-                }
                 
-                parent.statusBar.setText( statusBarText() );
-                parent.locationName.setText("");
-                
-                thisParent.requestFocus();
                 
             }
         });
@@ -258,29 +321,20 @@ class ScrollablePicture extends JLabel implements Scrollable,
     private void handleKey(KeyEvent k){
         
         int c = k.getKeyCode();
-        if(c == KeyEvent.VK_LEFT){
-            System.err.println("left");
-        }
-        else if(c == KeyEvent.VK_RIGHT){
-            System.err.println("right");
-        }
-        else if(c == KeyEvent.VK_UP){
-            System.err.println("up");
-        }
-        else if(c == KeyEvent.VK_DOWN){
-            System.err.println("down");
-        }
         // F1: Erase last line & point
-        else if(c ==  KeyEvent.VK_F1)
+        if(c ==  KeyEvent.VK_F1)
         {
         	// Only go back if there is a point to 
             if(lines.size() >= 1)
             {
                 lines.remove(lines.size() -1);
+                pointNumIndex--;
                 repaint( getVisibleRect() );
                 repaint();
             }
         }
+
+
         // F2: Go to previous path option
         else if(c == KeyEvent.VK_F2)
         {
@@ -290,6 +344,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 lines = (Vector)paths.get(--pathNumIndex);
                 // Set statusbar
                 parent.statusBar.setText( statusBarText() );
+                // Automatically focus on the last element
+                pointNumIndex = lines.size() - 1;
                 repaint();
             }
         }
@@ -303,22 +359,33 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 lines = (Vector)paths.get(++pathNumIndex);
                 // Set statusBar
                 parent.statusBar.setText( statusBarText() );
+                // Automatically focus on the last element
+                pointNumIndex = lines.size() - 1;
                 repaint();
             }
         }
-        // F12: Create new path
-        else if(c == KeyEvent.VK_F12)
-        {
-        	// The current pathNumIndex is the sizeof the vector before
-        	// The new element is created.
-            pathNumIndex = paths.size();
-            // Create the space for the new path.
-            paths.add( new Vector() );
-            // Set focus
-            lines = (Vector)paths.get(pathNumIndex);
-            // Status bar
-            parent.statusBar.setText( statusBarText() );
-            repaint();
+        // Move backwards along elements in a path
+        else if(c == KeyEvent.VK_F4){
+        	if(pointNumIndex > 0)
+        	{
+	        	// Decrement index
+	            pointNumIndex--;
+	            repaint();
+	            // Show status bar
+	            parent.statusBar.setText( statusBarText() );
+        	}
+        }
+        
+        // Move forwards along elements in a path
+        else if(c == KeyEvent.VK_F5){
+        	if(pointNumIndex < lines.size() - 1)
+        	{
+	        	// Increment
+	        	pointNumIndex++;
+	        	repaint();
+	        	// Show status bar
+	            parent.statusBar.setText( statusBarText() );
+	        }
         }
         // F7: Save data into files
         else if(c ==  KeyEvent.VK_F7)
@@ -398,8 +465,26 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		}
     		else
     			parent.statusBar.setText("Loading of data canceled");
-    		
+        }
 
+        else if(c == KeyEvent.VK_F10)
+        {
+        	manualPlaceDialog();
+        }
+        // F12: Create new path
+        else if(c == KeyEvent.VK_F12)
+        {
+        	// The current pathNumIndex is the sizeof the vector before
+        	// The new element is created.
+            pathNumIndex = paths.size();
+            // Create the space for the new path.
+            paths.add( new Vector() );
+            // Set focus
+            lines = (Vector)paths.get(pathNumIndex);
+            pointNumIndex = 0;
+            // Status bar
+            parent.statusBar.setText( statusBarText() );
+            repaint();
         }
         // Take a wild gusss :)
         else{
@@ -408,6 +493,70 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
     }
 
+    public void manualPlaceDialog ()
+    {
+    	final JDialog dialog = new JDialog(parent, "Manually place", true);
+    	dialog.setLayout( new FlowLayout() );
+    	JButton done = new JButton("Done");
+    	JButton cancel = new JButton("Cancel");
+    	final JTextField xinput = new JTextField(5);
+    	final JTextField yinput = new JTextField(5);
+    	final JLabel message = new JLabel("Enter a coordinate:  ");
+
+
+    	
+    	
+    	dialog.getContentPane().add(message);
+    	dialog.getContentPane().add(xinput);
+    	dialog.getContentPane().add(yinput);
+    	dialog.getContentPane().add(done);
+    	dialog.getContentPane().add(cancel);
+
+    	dialog.pack();
+    	
+    	cancel.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent e){
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    		}
+    		
+    	});
+
+    	done.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent e){
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    			Point newPoint;
+    			try{
+        			newPoint = 
+        				new Point(Integer.parseInt(xinput.getText()), 
+        						Integer.parseInt(yinput.getText()));				
+    			}
+    			catch(NumberFormatException numException){
+    				parent.statusBar.setText("No input entered!");
+    				return;
+    			}
+    			if (pointNumIndex < lines.size() - 1)
+    			{
+    				lines.set(pointNumIndex,newPoint);
+    			}
+    			else
+    			{
+    				lines.add(newPoint);
+    				pointNumIndex = lines.size() - 1;
+    			}
+    			
+    			repaint();
+    		}
+    		
+    		
+    	});
+    	
+    	dialog.setVisible(true);
+    
+    }
+    
+    
     /**
      * Return the status bar text
      * Write: Current path number in focus, number of elements in current
@@ -415,16 +564,45 @@ class ScrollablePicture extends JLabel implements Scrollable,
      *        with the current in focus point.  
      **/
     public String statusBarText (){
-    	return ( "Path Number: " + (pathNumIndex + 1) +
-			",  Number of elements: " + lines.size() + 
-			", Number of paths: " + paths.size() +
-			((locations.size() > 0)
-			        ? (", Locations: " + 
-			        		((Location)locations.get(0)).name)
-			        : "")
-			);
+    	return ( "Path Number: " + (pathNumIndex + 1) + " of " + paths.size()+
+			",  Element: " + (pointNumIndex + 1) + " of " + lines.size() +
+			printCurrentPoint() + printCurrentLocation() );
     }
     
+    /**
+     * Print the name of the location if there is a location that intersects
+     * with the current point.
+     * @return name of location if exist, else null string.
+     */
+    public String printCurrentLocation () {
+    	if( locations.size() > 0 && lines.size() > 0)
+    	{
+    		// For all locations
+    		for(int locIndex = 0; locIndex < locations.size(); locIndex++){
+    			// if intersect
+    			if ((((Location)locations.get(locIndex)).cord).equals(
+    					lines.get(pointNumIndex)))
+    			{
+    	    		return(", Locations: " + 
+			        		((Location)locations.get(locIndex)).name);    				
+    			}
+    		}
+    	}
+    	return("");
+    }
+    /**
+     * Print the (x,y) coordinates of the current point.
+     * @return string as described, else empty string.
+     */
+    public String printCurrentPoint (){
+    	if( lines.size() > 0 )
+    	{
+    		return(",  @ (" + ((Point)lines.get( pointNumIndex )).x + 
+    				", " + ((Point)lines.get( pointNumIndex )).y + ")");
+    	}
+    	else
+    		return("");
+    }
     //Methods required by the MouseMotionListener interface:
     public void mouseMoved(MouseEvent e) { }
 
@@ -483,7 +661,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	final Color LASTPLACED_DOT = Color.BLUE;
     	final Color IN_FOCUS_PATH = Color.GREEN;
     	final Color OUT_OF_FOCUS_PATH = Color.RED;
-    	
+    	final Color LOCATION_COLOR = Color.MAGENTA;
     	
         // first we paint ourselves according to our parent;
         // this should take care of drawing the actual image
@@ -514,33 +692,52 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		    	// and then get the point in the vector & cast it to a Point.
 		        cur = (Point) ((Vector)paths.get(pathsIndex)).get(pointInPath);
 		
-		        // if we have a "previous" dot to connect to, and at least
-		        // ONE of the dots is visible, connect the two with a line
-		        if(prev != null 
-		        		&& (visible.contains(cur) || visible.contains(prev))){
-		            connectTheDots(g, prev, cur);
-		        }
+
 
 		        
 		        // the last dot is the "active" one, so we print it in a
 		        // different color
-		        if(pointInPath == ((Vector)paths.get(pathsIndex)).size()-1)
-		        {
-		        	g.setColor(LASTPLACED_DOT);
-		        }
+		        
+	        	// If the path that we're drawing is the current one in
+	        	if(lines == (Vector)paths.get(pathsIndex))
+	        	{
+	        		if(pointInPath == pointNumIndex)
+	        		{
+	        			g.setColor(LASTPLACED_DOT);
+	        		}
+	        		else
+	        		    g.setColor(IN_FOCUS_PATH);
+	        		
+			        // if we have a "previous" dot to connect to, and at least
+			        // ONE of the dots is visible, connect the two with a line
+			        if(prev != null 
+			        		&& (visible.contains(cur) || visible.contains(prev))){
+			            connectTheDots(g, prev, cur);
+			        }
+	        	}
 		        // Else, it's at's a previously placed dot
-		        else
-		        {
-		        	// If the path that we're drawing is the current one in
-		        	if(lines == (Vector)paths.get(pathsIndex))
-		        		g.setColor(IN_FOCUS_PATH);
-		        	else
-			        	g.setColor(OUT_OF_FOCUS_PATH);
-		        }
+	        	else
+	        	{
+	        		g.setColor(OUT_OF_FOCUS_PATH);
+			        // if we have a "previous" dot to connect to, and at least
+			        // ONE of the dots is visible, connect the two with a line
+			        if(prev != null 
+			        		&& (visible.contains(cur) || visible.contains(prev))){
+			            connectTheDots(g, prev, cur);
+			        }
+			        
+			        if(pointInPath == ((Vector)paths.get(pathsIndex)).size()-1)
+			        {
+			        	g.setColor(LASTPLACED_DOT);
+			        }
+			        	
+	        	}
 
 		        // now draw the actual dot
 		        if(visible.contains(cur))
 		            drawDot(g, cur);
+		        
+
 		        
 		        // Assign the current value as the previous
 		        prev = cur;
@@ -548,6 +745,15 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		    // Previous point is null, because we're going to go into a new
 		    // path
 		    prev = null;
+        }
+        g.setColor(LOCATION_COLOR);
+        for(int locIndex = 0; locIndex < locations.size(); locIndex++)
+        {
+        	int x = ((Location)locations.get(locIndex)).cord.x;
+        	int y = ((Location)locations.get(locIndex)).cord.y;
+        	g.drawString( ((Location)locations.get(locIndex)).name +
+        			" (" + x + ", " + y + ")", x, y
+        	);
         }
     }
 
@@ -585,5 +791,6 @@ class Location implements Serializable
 	{
 		cord = new Point(x,y);  // Create coordinate based on passed in values
 		name = passedName;      // Copy name string (Strings are constants!)
+		System.err.println("New location @ " + cord);
 	}
 }

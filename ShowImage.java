@@ -1,8 +1,7 @@
 // vim: tabstop=4 shiftwidth=4 textwidth=79 expandtab
 /*-----------------------------------------------------------------
  * $Id$
- * ShowImage.java -- Put an image in a scrolling container. Attempt to provide
- * key and click handlers.
+ * Editor for map path data.
  *
  * Uses examples from java.sun.com:
  * <http://java.sun.com/docs/books/tutorial/uiswing/components/scrollpane.html>
@@ -13,8 +12,6 @@
  * This program is released under the terms of the GNU General Public
  * License as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
- * Sat Mar 19 15:10:55 PST 2005
  -----------------------------------------------------------------*/
 
 import javax.swing.*;

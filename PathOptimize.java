@@ -22,6 +22,7 @@ public class PathOptimize
     // that can be read by ShowImage
     private Vector outPaths;
     private Vector outLocations;
+    private Vector outEdges;
 
     /** Driver */
     public static void main(String[] args)
@@ -154,11 +155,20 @@ public class PathOptimize
 	    		outLocations.add( thisGP.locLabel );
     		}
     		
+    		/*
     		for(int i = 0; i < thisGP.edges.size();  i++)
     		{
     			outPaths.add(((Edge)(thisGP.edges.get(i))).path);
     		}
+    		*/
     	}
+    	
+    	/*
+    	for(int i = 0; i < outEdges.size(); i++)
+    	{
+    		outPaths
+    	}
+    	*/
     }
     
     /**
@@ -742,6 +752,10 @@ AP1:    		for(int activeIndex2 = 0;
     	int conIndex;
     	PathPoint prevPP, whereFrom;
     	
+    	// the index, if any, of the Edge pointing from an endpoint to the 
+    	// original point
+    	int edgeIndex;
+    	
     	graphPoints = new Vector();
     	
     	// create a GraphPoint for every "significant" PathPoint
@@ -781,11 +795,6 @@ AP1:    		for(int activeIndex2 = 0;
 				
 				// Assign the endpointer
 				tempEdge.endpt1 = graphPP.getGraphPoint();
-				
-				// take significant pathPoint, get it's corresponding
-				// graph point.  Use that point to add the new edge created
-				// to the graph point's edge vector.  
-				graphPP.getGraphPoint().edges.add(tempEdge);
 
 				// Set the current pathPoint to be  a connection of
 				// the significant pathPoint.  
@@ -819,6 +828,27 @@ AP1:    		for(int activeIndex2 = 0;
 				
 				//System.err.println("Setting end");
 				tempEdge.endpt2 = prevPP.getGraphPoint();
+				
+				// check if the end point of the Edge we just created already
+				// has an Edge pointing back to the original GraphPoint.
+				edgeIndex = prevPP.getGraphPoint().outgoingEdge(
+						graphPP.getGraphPoint());
+				if(edgeIndex != -1)
+				{
+					// if it does, we just attach to the existing edge, and
+					// discard the one we created
+					graphPP.getGraphPoint().edges.add(
+							prevPP.getGraphPoint().getEdge(edgeIndex));
+				}
+				else{
+					// take significant pathPoint, get its corresponding
+					// graph point.  Use that point to add the new edge created
+					// to the graph point's edge vector.  
+					graphPP.getGraphPoint().edges.add(tempEdge);
+					
+					// save the edge's path we added so we can print it later
+					outPaths.add(tempEdge.path);
+				}
 				
     		}
     		
@@ -1007,6 +1037,25 @@ class GraphPoint
 	{
 		return( (Edge)edges.get( index ) );
 	}
+	
+	/**
+	 * This checks if the current GraphPoint has any OUTGOING Edges
+	 * that point to the passed-in point. It does NOT check incoming Edges
+	 * (that is, Edges that were set from other GraphPoints).
+	 * @param gp The passed-in point
+	 * @return true if current point has Edges that point to 'gp', false
+	 * otherwise
+	 */
+	public int outgoingEdge(GraphPoint gp)
+	{
+		for(int i = 0; i < edges.size(); i++)
+		{
+			if(getEdge(i).endpt2 == gp)
+				return(i);
+		}
+		return(-1);
+	}
+	
 	public String getLocationName()
 	{
 		if(locLabel != null)

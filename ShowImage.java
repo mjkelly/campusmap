@@ -521,7 +521,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     public void manualPlaceDialog ()
     {
     	final JDialog dialog = new JDialog(parent, "Manually place", true);
-    	dialog.setLayout( new FlowLayout() );
+    	dialog.getContentPane().setLayout( new FlowLayout() );
     	JButton done = new JButton("Done");
     	JButton cancel = new JButton("Cancel");
     	final JTextField xinput = new JTextField(5);

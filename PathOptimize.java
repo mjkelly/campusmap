@@ -134,6 +134,7 @@ public class PathOptimize
 	                new FileInputStream(pathsInputFile));
 	        // Get Vector
 	        readPaths = (Vector)pathin.readObject();
+	        // close stream
 	        pathin.close();
             pathLoadSuccess = true;
 	    }
@@ -151,6 +152,7 @@ public class PathOptimize
 	                new FileInputStream(locationsInputFile));
 	        // Get Vector
 	        readLocations = (Vector)locin.readObject();
+	        //close stream
 	        locin.close();
             locationLoadSuccess = true;
 	    }
@@ -305,6 +307,7 @@ public class PathOptimize
                     new FileOutputStream(pathOutputFile));
             pathout.writeObject(outPaths);
             pathWriteSuccess = true;
+            // close stream
             pathout.close();
         }
 	    catch(FileNotFoundException e){
@@ -322,6 +325,7 @@ public class PathOptimize
                     new FileOutputStream(locationOutputFile));
             locout.writeObject(outLocations);
             locationWriteSuccess = true;
+            //close stream
             locout.close();
         }
 	    catch(FileNotFoundException e){
@@ -358,6 +362,7 @@ public class PathOptimize
             	((GraphPoint)graphPoints.get(i)).binaryWrite(pointOut);
             }
             
+            //close stream
             pointOut.close();
         }
 	    catch(IOException e){
@@ -378,7 +383,7 @@ public class PathOptimize
             	// if this point has no associated location, nothing is written
             	((GraphPoint)graphPoints.get(i)).binaryWriteLocation(locOut);
             }
-            
+            //close stream
             locOut.close();
         }
 	    catch(IOException e){
@@ -398,7 +403,7 @@ public class PathOptimize
             {
             	((Edge)outEdges.get(i)).binaryWrite(edgeOut);
             }
-            
+            //close stream
             edgeOut.close();
         }
 	    catch(IOException e){
@@ -1362,6 +1367,7 @@ class GraphPoint
 	 */
 	public void binaryWrite(DataOutputStream out)
 	{
+		final int WEIGHT_SCALE = 100;  // scaling of the weight.  
     	// output ID of GraphPoint
 		try{
 			System.err.println("ID: " + ID + "      (" + point.x + ", "
@@ -1388,9 +1394,10 @@ class GraphPoint
 				}
 				
 				// print value of each weight
-	    		out.writeInt( (int)((100)*((Edge)edges.get(i)).weight) );
+	    		out.writeInt( 
+	    				(int)((WEIGHT_SCALE)*((Edge)edges.get(i)).weight) );
 	    		System.err.println("Weight: " + 
-	    				(int)((100)*((Edge)edges.get(i)).weight));
+	    				(int)((WEIGHT_SCALE)*((Edge)edges.get(i)).weight));
 				
 	    		// print ID of each edge
 	    		out.writeInt( ((Edge)edges.get(i)).ID );
@@ -1457,13 +1464,20 @@ class GraphPoint
 	    }
 	    
 	}
-	
+
+	/**
+	 * Checks to see if the location label is null, if it isn't null
+	 * returns the location label's name field with a newline.  
+	 * @return location name if non-null, else null-string.  
+	 */
 	public String getLocationName()
 	{
 		if(locLabel != null)
 			return(locLabel.name + "\n");
 		return("");
 	}
+	
+	
 	public String toString()
 	{
 		String outStr = "GraphPoint @ (" + point.x + ", " + point.y + ")\n";

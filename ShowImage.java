@@ -326,84 +326,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                  */
                 else
                 {
-                	int index; 
-                	System.err.println("Other mouse click");
-                	final JDialog dialog = new JDialog(parent, 
-                			"Point to location", true);
-                	dialog.getContentPane().setLayout( new FlowLayout() );
-                	JButton cancel = new JButton("Cancel");
-                	final JLabel message = new JLabel("Choose a location:  ");
-
-                	// add all the interface elements the dialog box
-                	dialog.getContentPane().add(message);
-                	
-                	// create an array for location names
-                	final String locationNames[]=new String[locations.size()];
-                	
-                	//Put  every location
-                	for(index = 0; index<locations.size(); index++)
-                	{
-                		// stick the location's name in the array
-                		locationNames[index] = 
-                			((Location)locations.get(index)).name;
-                	}
-                	
-                	//Create the JList, passing the array of location names
-                	final JList locBox = new JList(locationNames);
-                	
-                	// Add the list
-                	dialog.getContentPane().add(locBox);
-                	
-                	// add a cancel button
-                	dialog.getContentPane().add(cancel);
-                	
-                	// let's go packing!  You can't have a pack smaller than
-                	// what you're packing.
-                	dialog.pack();
-                	
-                	// Can you hear the cricket's chirping?
-                	locBox.addMouseListener( new MouseAdapter(){
-                		public void mouseClicked(MouseEvent event){
-        					
-                			// Get the point of the selected location
-        					int location = locBox.getSelectedIndex();
-        					Point tempPoint= 
-        						((Location)locations.get(location)).cord;
-        					Point newPoint = new Point(tempPoint);	
-        					
-        	    			// If we're not focused on the end point,
-        	    			// change the current in focus point to the 
-        					//entered point
-        	    			if (pointNumIndex < lines.size() - 1)
-        	    			{
-        	    				lines.set(pointNumIndex,newPoint);
-        	    			}
-        	    			else
-        	    			{
-        	    				// Create the new point.  
-        	    				lines.add(newPoint);
-        	    				pointNumIndex = lines.size() - 1;
-        	    			}
-        	    			// Do the repaint dance!
-        	    			repaint();
-        	    			
-        	    			// Close
-                			dialog.setVisible(false);
-                			dialog.dispose();
-                		}
-                	});
-                	
-                	// If cancel button was hit, 
-                	cancel.addActionListener(new ActionListener(){
-                		public void actionPerformed(ActionEvent innere){
-                			dialog.setVisible(false);
-                			dialog.dispose();
-                			parent.statusBar.setText(
-                					"Location pasting canceled!");
-                		}
-                	});
-                	// Make the dialog box visible (show it).
-                	dialog.setVisible(true);
+                	middleClickGoToLocation();
                 }
                 
                 
@@ -463,71 +386,176 @@ class ScrollablePicture extends JLabel implements Scrollable,
     }
 
     /**
+     * Method: void changeCurSelectedPointCord(int x, int y)
      * Change the coordinates of the currently selected point to the passed
-     * in x-y coordinate.  
-     * XXX: Finish comment
+     * in x-y coordinate.
+     * 3 cases, in call of them we reasign the coordinates of the point
+     * in the paths array to the passed in points and refresh the status
+     * bar<p>
+     * 1: Location exists at previous point, but no new location name was 
+     * entered.  ==> Delete the previous point's location from the locations
+     * vector
+     * <p>
+     * 2: Location exists at previous point, and a new location name was 
+     * entered.  ==> replace the location corresponding with the previous
+     * point with a new location based on the passed in points and the name
+     * in the location name bar.
+     * <p>
+     * 3: No location exists at previous point, and a new location name was
+     * entered. ==> Add a location to the locations vector based on the name
+     * entered and the passed in points.  
+     * 4: No location exists at previous point, and no new location name was 
+     * entered.  ==> Do what we do for everything.  
      * @param x -- The x coordinate to change to.
      * @param y -- The y coordinate to change to.
      */
     public void changeCurSelectedPointCord(int x, int y)
     {
-        // Don't  create a new point in a path.
-        if( pathNumIndex < lines.size() )
-        {
-        	// check if there's an existing point
-        	int locIndex = findLocationAtPoint(
-        	        (Point)lines.get(pointNumIndex));
-        	
-        	// if there is one...
-        	System.err.println("Found location at index: " 
-        		+ locIndex);
-        	if(locIndex >= 0){
-        	    // if the text field is empty, delete the point
-        	    if(parent.locationNameEntry.getText().equals("")){
-        	        locations.remove(locIndex);
-        	    }
-        	    // otherwise, we replace the location at this point
-        	    // with another that has the new x/y location and 
-        	    // the name the user entered
-        	    else{
-        	        locations.set(locIndex, new Location(x, y,
-        	                parent.locationNameEntry.getText()));
-                	
-        	        System.err.println("Moving location...");
-                	parent.statusBar.setText( statusBarText() );
-                    parent.locationNameEntry.setText("");
-                    
-                    //set focus (listeners) back onto the picture
-                    this.requestFocus();
-        	    }
-        	   
-        	}
-        	// if we DIDN'T find a matching point, and the text
-        	// field isn't empty, create a new point
-        	// this looks very similar to the code above, but
-        	// it's not quite the same.
-        	else if(!parent.locationNameEntry.getText().equals("")){
-        	    locations.add(new Location(x, y,
-                        parent.locationNameEntry.getText()));
-                
-                parent.statusBar.setText( statusBarText() );
+        //if the pathNumIndex is greater than it should be, exit from method.
+        if( pathNumIndex >= lines.size() )
+        	return;
+        
+    	// check if there's an existing point
+        // findLocationAtPoint returns an index if found, -1 if not found.
+    	int locIndex = findLocationAtPoint(
+    	        (Point)lines.get(pointNumIndex));
+    	
+    	//When we find a location at the point.  
+    	if(locIndex >= 0){
+    	    // if the text field is empty, delete the location
+    	    if(parent.locationNameEntry.getText().equals("")){
+    	        locations.remove(locIndex);
+    	    }
+    	    // otherwise, we replace the location at this point
+    	    // with another that has the new (x,y) coordinate and 
+    	    // the name the user entered
+    	    else{
+    	        locations.set(locIndex, new Location(x, y,
+    	                parent.locationNameEntry.getText()));
+
                 parent.locationNameEntry.setText("");
                 
                 //set focus (listeners) back onto the picture
                 this.requestFocus();
     	    }
-        	
-        	// move the point
-        	((Point)lines.get(pointNumIndex)).setLocation(x,y);
-        	
-        	repaint();
-        }
+    	   
+    	}
+    	// if we DIDN'T find a matching point, and the text
+    	// field isn't empty, create a new point
+    	// this looks very similar to the code above, but
+    	// it's not quite the same.
+    	else if(!parent.locationNameEntry.getText().equals("")){
+    	    locations.add(new Location(x, y,
+                    parent.locationNameEntry.getText()));
+
+            parent.locationNameEntry.setText("");
+            
+            //set focus (listeners) back onto the picture
+            this.requestFocus();
+	    }
+    	
+    	// move the point
+    	((Point)lines.get(pointNumIndex)).setLocation(x,y);
+    	
+    	// set statusbar text
+        parent.statusBar.setText( statusBarText() );    	
+    	repaint();
 
     }
+    /**
+     * XXX: Comment needed
+     *
+     */
+    public void middleClickGoToLocation()
+    {
+
+    	int index; 
+    	System.err.println("Other mouse click");
+    	final JDialog dialog = new JDialog(parent, 
+    			"Point to location", true);
+    	dialog.getContentPane().setLayout( new FlowLayout() );
+    	JButton cancel = new JButton("Cancel");
+    	final JLabel message = new JLabel("Choose a location:  ");
+
+    	// add all the interface elements the dialog box
+    	dialog.getContentPane().add(message);
+    	
+    	// create an array for location names
+    	final String locationNames[]=new String[locations.size()];
+    	
+    	//Put  every location
+    	for(index = 0; index<locations.size(); index++)
+    	{
+    		// stick the location's name in the array
+    		locationNames[index] = 
+    			((Location)locations.get(index)).name;
+    	}
+    	
+    	//Create the JList, passing the array of location names
+    	final JList locBox = new JList(locationNames);
+    	
+    	// Add the list
+    	dialog.getContentPane().add(locBox);
+    	
+    	// add a cancel button
+    	dialog.getContentPane().add(cancel);
+    	
+    	// let's go packing!  You can't have a pack smaller than
+    	// what you're packing.
+    	dialog.pack();
+    	
+    	// Can you hear the cricket's chirping?
+    	locBox.addMouseListener( new MouseAdapter(){
+    		public void mouseClicked(MouseEvent event){
+				
+    			// Get the point of the selected location
+				int location = locBox.getSelectedIndex();
+				Point tempPoint= 
+					((Location)locations.get(location)).cord;
+				Point newPoint = new Point(tempPoint);	
+				
+    			// If we're not focused on the end point,
+    			// change the current in focus point to the 
+				//entered point
+    			if (pointNumIndex < lines.size() - 1)
+    			{
+    				lines.set(pointNumIndex,newPoint);
+    			}
+    			else
+    			{
+    				// Create the new point.  
+    				lines.add(newPoint);
+    				pointNumIndex = lines.size() - 1;
+    			}
+    			// Do the repaint dance!
+    			repaint();
+    			
+    			// Close
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    		}
+    	});
+    	
+    	// If cancel button was hit, 
+    	cancel.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent innere){
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    			parent.statusBar.setText(
+    					"Location pasting canceled!");
+    		}
+    	});
+    	// Make the dialog box visible (show it).
+    	dialog.setVisible(true);
+    }
     
-    
-    // this actually handles the key events; it's called by the anonymous
-    // KeyAdapter subclass defined in the constructor
+    /**
+     * This method handles the key events.
+     * The method is called by the anonymous KeyAdapter subclassed defined
+     * in the constructor
+     * We have events designated for F1-F10 + F12.  
+     * @param k Key event to determine what key was pressed.  
+     */
     private void handleKey(KeyEvent k){
         
         int c = k.getKeyCode();
@@ -580,6 +608,11 @@ class ScrollablePicture extends JLabel implements Scrollable,
         {
         	manualPlaceDialog();
         }
+        // F11: Refresh statusBar
+        else if(c == KeyEvent.VK_F11)
+        {
+        	statusBarText();
+        }
         // F12: Create new path
         else if(c == KeyEvent.VK_F12)
         {
@@ -587,8 +620,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
         // Take a wild gusss :)
         else{
-            System.err.println("I'm sorry, this key does not" +
-            		" have a defined option");
+        	parent.statusBar.setText("Key does not have an action associated" +
+        			"with it!");
         }
     }
     

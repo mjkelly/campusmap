@@ -34,15 +34,15 @@ Keys:
 	F3: Switch to next path.
 	F4: Switch to next node in current path.
 	F5: Switch to previous node in current path.
-	
+	F6: Center on the currently selected node.  
 	F7: Save point/location data to disk
 	    (rawPathData.dat, rawLocationData.dat).
 	F8: Read point/location data from disk
 	    (rawPathData.dat, rawLocationData.dat).
-	
 	F9: Print locations to file in human-readable format (locations.txt).
 	F10: Manually place a node (prompt for X/Y coordinates).
 	     NOTE: If you currently have the last node in a path selected, this will
 	     place a NEW node. If you have a previous node selected, this will
 	     change the location of that node.
+	     
 	F12: New path.

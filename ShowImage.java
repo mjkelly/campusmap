@@ -515,6 +515,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     new FileOutputStream(pathOutputFile));
             pathout.writeObject(paths);
             pathWriteSuccess = true;
+            pathout.close();
         }
 	    catch(FileNotFoundException e){
 	    	System.err.println(pathNotFound);
@@ -530,6 +531,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     new FileOutputStream(locationOutputFile));
             locout.writeObject(locations);
             locationWriteSuccess = true;
+            locout.close();
         }
 	    catch(FileNotFoundException e){
 	    	System.err.println(locNotFound);

@@ -1,6 +1,7 @@
 # -----------------------------------------------------------------
+# $Id$
 # MapGlobals.pm -- $desc$
-# Copyright 2005 Michael Kelly (jedimike.net)
+# Copyright 2005 David Lindquist and Michael Kelly
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2

@@ -1,6 +1,9 @@
 # -----------------------------------------------------------------
-# Dijkstra.pm -- $desc$
-# Copyright 2005 Michael Kelly (jedimike.net)
+# $Id$
+# ShortestPath.pm -- Functions dealing with the algorithmic
+# operations of finding the shortest path between two vertices
+# in a graph.
+# Copyright 2005 David Lindquist and Michael Kelly
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2

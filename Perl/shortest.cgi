@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 # -----------------------------------------------------------------
-# shortest.cgi -- $desc$
-# Copyright 2005 Michael Kelly (jedimike.net)
+# $Id$
+# shortest.cgi -- A quick CGI script that find the shortest
+# path between the two named locations.
+# Copyright 2005 David Lindquist and Michael Kelly
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2

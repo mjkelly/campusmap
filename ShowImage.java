@@ -108,11 +108,24 @@ public class ShowImage extends JFrame{
             }
         });
         
+        /**
+         * For searching for a particular location
+         */
+        JButton searchLocation = new JButton("search");
+        searchLocation.addActionListener(new ActionListener(){
+        	public void actionPerformed(ActionEvent e){
+        		// Search for the location that is currently entered in
+        		// getText
+        		ipanel.searchAndFocusToLocation(locationName.getText());
+        	}
+        });
+        
         // Add all the objects to the main window's content pane
         pane.add(scroll);
         pane.add(locationName);
         pane.add(statusBar);
         pane.add(clearButton);
+        pane.add(searchLocation);
         
         // Everything that follows is layout/alignment stuff, 
         // with illustrations
@@ -144,6 +157,16 @@ public class ShowImage extends JFrame{
         spring.putConstraint(SpringLayout.NORTH, clearButton, 5, 
                 SpringLayout.SOUTH, scroll);
         
+        // |                  (scroll)
+        // +-------------------------------
+        //                                     ^^^
+        // (locationName) | clearButton | <<< searchLocation
+        
+        spring.putConstraint(SpringLayout.WEST, searchLocation, 5,
+        		SpringLayout.EAST, clearButton);
+        spring.putConstraint(SpringLayout.NORTH, searchLocation, 5,
+        		SpringLayout.SOUTH, scroll);
+        
         // | (locationName) | (clearButton)
         // +--------------------------
         // |                   ^^^
@@ -162,16 +185,6 @@ public class ShowImage extends JFrame{
         spring.putConstraint(SpringLayout.SOUTH, pane, 5, 
                 SpringLayout.SOUTH, statusBar);
 
-    }
-    
-    /**
-     * Shows a confirmation dialog box with the description being
-     * based on the message passed in.  
-     */
-    public int confirmDialog (String message)
-    {
-    	// Call showConfirmDialog on JOptionPane!
-		return(JOptionPane.showConfirmDialog(this, message));
     }
     
     /**
@@ -203,18 +216,30 @@ class ScrollablePicture extends JLabel implements Scrollable,
     private int pathNumIndex = 0; //Index of where we are  in the paths array.
     private int pointNumIndex = 0;
     private ShowImage parent;
+    // The name of the location that was last searched
+    private String lastLocationSearched;
+    // The index "index" number of the path going out from the last
+    // searched node.  
+    private int lastVertex = 0;
     
     /*
      * Input/Output filenames
      */
+    // Raw, unoptimized paths
 	final String rawPathFile = "data/rawPath.dat";
 	final String rawLocFile = "data/rawLocions.dat";
+	
+	// Optimized paths put back into unoptimized format for debugging
 	final String optPathFile = "data/optimizedPath.dat";
 	final String optLocFile = "data/optimizedLocations.dat";
+	
+	// Binary file output
 	final String binaryPoints = "data/binPointData.dat";
 	final String binaryLocations =  "data/binLocationData.dat";
 	final String binaryEdges = "data/binEdgeData.dat";
-    
+	
+	// List of all locations mapped
+    final String locationsTextFile = "Locations.txt";
 	
     // Constructor
     public ScrollablePicture(ImageIcon i, int maxUnitPassed,
@@ -346,12 +371,100 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     }
                     
                 }
+                // If you use any other buttton on your mouse...
+                /**
+                 * Middle click design to open a menu to select a location
+                 * 
+                 */
+                else
+                {
+                	int index; 
+                	System.err.println("Other mouse click");
+                	final JDialog dialog = new JDialog(parent, 
+                			"Point to location", true);
+                	dialog.getContentPane().setLayout( new FlowLayout() );
+                	JButton cancel = new JButton("Cancel");
+                	final JLabel message = new JLabel("Choose a location:  ");
+
+                	// add all the interface elements the dialog box
+                	dialog.getContentPane().add(message);
+                	
+                	// create an array for location names
+                	final String locationNames[]=new String[locations.size()];
+                	
+                	//Put  every location
+                	for(index = 0; index<locations.size(); index++)
+                	{
+                		// stick the location's name in the array
+                		locationNames[index] = 
+                			((Location)locations.get(index)).name;
+                	}
+                	
+                	//Create the JList, passing the array of location names
+                	final JList locBox = new JList(locationNames);
+                	
+                	// Add the list
+                	dialog.getContentPane().add(locBox);
+                	
+                	// add a cancel button
+                	dialog.getContentPane().add(cancel);
+                	
+                	// let's go packing!  You can't have a pack smaller than
+                	// what you're packing.
+                	dialog.pack();
+                	
+                	// Can you hear the cricket's chirping?
+                	locBox.addMouseListener( new MouseAdapter(){
+                		public void mouseClicked(MouseEvent event){
+        					
+                			// Get the point of the selected location
+        					int location = locBox.getSelectedIndex();
+        					Point tempPoint= 
+        						((Location)locations.get(location)).cord;
+        					Point newPoint = new Point(tempPoint);	
+        					
+        	    			// If we're not focused on the end point,
+        	    			// change the current in focus point to the 
+        					//entered point
+        	    			if (pointNumIndex < lines.size() - 1)
+        	    			{
+        	    				lines.set(pointNumIndex,newPoint);
+        	    			}
+        	    			else
+        	    			{
+        	    				// Create the new point.  
+        	    				lines.add(newPoint);
+        	    				pointNumIndex = lines.size() - 1;
+        	    			}
+        	    			// Do the repaint dance!
+        	    			repaint();
+        	    			
+        	    			// Close
+                			dialog.setVisible(false);
+                			dialog.dispose();
+                		}
+                	});
+                	
+                	// If cancel button was hit, 
+                	cancel.addActionListener(new ActionListener(){
+                		public void actionPerformed(ActionEvent innere){
+                			dialog.setVisible(false);
+                			dialog.dispose();
+                			parent.statusBar.setText(
+                					"Location pasting canceled!");
+                		}
+                	});
+                	
+                	dialog.setVisible(true);
+                }
+                
+                
                 
             }
         });
 
     }
-
+    
     // this actually handles the key events; it's called by the anonymous
     // KeyAdapter subclass defined in the constructor
     private void handleKey(KeyEvent k){
@@ -360,25 +473,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
         // F1: Erase current point (and location, if applicable)
         if(c ==  KeyEvent.VK_F1)
         {
-        	// Only go back if there is a point to go to
-            if(lines.size() >= 1)
-            {
-                // if there's a location here, delete it too
-                int locIndex = findLocationAtPoint(
-                        (Point)lines.get(pointNumIndex));
-                if(locIndex >= 0)
-                    locations.remove(locIndex);
-                
-                // remove the current node, decrement pointNumIndex
-                lines.remove(pointNumIndex--);
-                
-                // Do checking of bounds on pointNumIndex
-                setPointNumIndex(false);
-
-
-                parent.statusBar.setText( statusBarText() );
-                repaint();
-            }
+        	// Call a method to handle undoing the connection
+        	undoConnection();
         }
         // F2: Go to previous path option
         else if(c == KeyEvent.VK_F2)
@@ -431,6 +527,21 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	            parent.statusBar.setText( statusBarText() );
 	        }
         }
+        // F6: Center on currently selected point
+        else if(c == KeyEvent.VK_F6)
+        {
+        	if(pointNumIndex <= lines.size() - 1)
+        	{
+	        	Point center = ((Point)lines.get(pointNumIndex));
+	            Rectangle r = new Rectangle(
+	            		center.x - (getVisibleRect().width)/2, center.y - 
+						(getVisibleRect().height)/2, getVisibleRect().width, 
+						getVisibleRect().height);
+	            
+	            scrollRectToVisible(r);
+	        
+        	}
+        }
         // F7: Save data into files
         else if(c ==  KeyEvent.VK_F7)
         {
@@ -447,7 +558,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         	PrintStream outStream;
         	
         	try{
-        		textOutput =  new FileOutputStream("Locations.txt");
+        		textOutput =  new FileOutputStream(locationsTextFile);
         		outStream = new PrintStream( textOutput );
         		
         		outStream.println("Locations:");
@@ -543,6 +654,39 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	        parent.statusBar.setText("Paths and locations written to file");
         }
     }
+    
+    
+    public void undoConnection ()
+    {
+    	// Only go back if there is a point to go to
+        if(lines.size() >= 1)
+        {
+            // Get a pointer to the point that we want to undo
+        	Point undoPoint = (Point)lines.get(pointNumIndex);
+        	
+
+        	// Returns -1 if no index was found.
+        	int locIndex = findLocationAtPoint(undoPoint);
+
+        	
+        	// if there's a location and it has less than two
+        	// connections, delete the location in addition to the point.
+        	// Get the index of a location at the point.
+            if(locIndex >= 0 && numOfPathsConnectedToPoint(undoPoint) < 2)
+                locations.remove(locIndex);
+            
+            // remove the current node, decrement pointNumIndex
+            lines.remove(pointNumIndex--);
+            
+            // Do checking of bounds on pointNumIndex
+            setPointNumIndex(false);
+
+
+            parent.statusBar.setText( statusBarText() );
+            repaint();
+        }
+    }
+    
     
     /**
      * Read data from disk.
@@ -784,25 +928,18 @@ class ScrollablePicture extends JLabel implements Scrollable,
     			dialog.dispose();
     		}	
     	});
-    	
-    	cancel.addActionListener(new ActionListener(){
-    		public void actionPerformed(ActionEvent e)
-    		{
-    			dialog.setVisible(false);
-    			dialog.dispose();
-    			
-    			
-    		}
-		});
 
     	// the "done" button's handler handles most of the actual work:
     	// it gets the data the user entered and moves/adds the point.
     	done.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e){
+    			// Fling the dialog box out of the window.
     			dialog.setVisible(false);
     			dialog.dispose();
-    			Point newPoint;
+    			
+    			Point newPoint;  // The point to be added.  
     			try{
+    				// create the point
         			newPoint = 
         				new Point(Integer.parseInt(xinput.getText()), 
         						Integer.parseInt(yinput.getText()));				
@@ -811,16 +948,20 @@ class ScrollablePicture extends JLabel implements Scrollable,
     				parent.statusBar.setText("No input entered! (Bad format)");
     				return;
     			}
+    			
+    			// If we're not focused on the end point,
+    			// change the current in focus point to the entered point
     			if (pointNumIndex < lines.size() - 1)
     			{
     				lines.set(pointNumIndex,newPoint);
     			}
     			else
     			{
+    				// Create the new point.  
     				lines.add(newPoint);
     				pointNumIndex = lines.size() - 1;
     			}
-    			
+    			// Do the repaint dance!
     			repaint();
     		}
     	});
@@ -878,6 +1019,125 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	}
     	return(-1);
     }
+    
+    public int numOfPathsConnectedToPoint(Point pointToCompare)
+    {
+    	int numPathsConnected = 0;
+    	// step over all paths
+    	for(int i = 0; i < paths.size(); i++)
+    		// step through every point in the path
+    		for(int j = 0; j < ((Vector)paths.get(i)).size(); j++)
+    			// return the path index if a match is found
+    			if(getPointInPath(i,j).equals(pointToCompare))
+    				numPathsConnected++;
+    	return(numPathsConnected);	
+    }
+    
+    
+    public void searchAndFocusToLocation(String locationName)
+    {
+    	int locIndex;
+	
+
+		// we're searching for a path intersecting with the locataion.
+		
+		// Find a location with the name passed in...we will assume
+		// that no more than one exists
+		locIndex = findLocationWithName(locationName);
+		
+		if(locIndex < 0)
+			return;
+
+		Location locFound = (Location)locations.get(locIndex);
+		
+
+		
+		 //If the location passed in is equal to the last 
+		//location passed in
+		System.err.println("comparing: " + locationName + " and " + lastLocationSearched);
+
+		System.err.println("LastVertex (before):  " + lastVertex);
+		if(locationName.equals(lastLocationSearched))
+    	{	
+    		// We have a location (a point), now we need to find a path
+    		// that it's on. 
+    		lastVertex = getNextPathInSearch(++lastVertex, locFound.cord);
+    	}
+    	else
+    		// We have a location (a point), now we need to find a path
+    		// that it's on. 
+    		lastVertex = getNextPathInSearch(0, locFound.cord);
+		
+		System.err.println("LastVertex (after):  " + lastVertex);
+		
+		// If no path was found, return
+		if(lastVertex < 0)
+			return;
+		
+		if(lastVertex > paths.size() - 1)
+		{
+			System.err.println("lastVertex is larger than paths vector!");
+			return;
+		}
+		else if (lastVertex < 0)
+		{
+			System.err.println("lastVertex is less than 0!  \n" +
+					"You messed up BIG time");
+		}
+		pathNumIndex = lastVertex;
+		
+        lines = (Vector)paths.get(pathNumIndex);
+		
+		//Set point number index to the end.  
+		setPointNumIndex(true);
+		
+		//Do the repaint dance!
+		repaint();
+
+		lastLocationSearched = locationName;
+		parent.statusBar.setText("Path #" + (pathNumIndex + 1) +
+				" intersects with location \"" + locationName + "\"");
+        
+    }
+    
+    /**
+     * Searches for a point inside of all the paths
+     * @param startingIndex Which path index to start from.  
+     * @param pointToFind The point that we want to match to
+     * @return The index of the path (index in the paths vector)
+     */
+    public int getNextPathInSearch(int startingIndex, Point pointToFind)
+    {
+    	// step over all remaining paths
+    	for(int i = startingIndex; i < paths.size(); i++)
+    		// step through every point in the path
+    		for(int j = 0; j < ((Vector)paths.get(i)).size(); j++)
+    			// return the path index if a match is found
+    			if(getPointInPath(i,j).equals(pointToFind))
+    				return(i);
+    	
+    	// Return an error & output a message if path couldn't be found.  
+		parent.statusBar.setText("Next Point/Path couldn't be found");
+    	return(-1);
+    	
+    }
+    
+    public Point getPointInPath(int pathIndex, int elementIndex)
+    {
+    	return((Point)((Vector)paths.get(pathIndex)).get(elementIndex));
+    }
+    
+    public int findLocationWithName (String locationName)
+	{
+    	for(int i = 0; i < locations.size(); i++)
+    		if((((Location)locations.get(i)).name.equals(locationName)))
+				return(i);
+		parent.statusBar.setText("Corresponding location could" +
+			" not be found!");
+    	return(-1);
+    		
+	}
+    
     
     /**
      * Print the (x,y) coordinates of the current point.

@@ -23,11 +23,17 @@ my $imagedir = '../..';
 
 my $q = CGI->new();
 
-# input parameters
+# width and height of the viewing window (total image size is in MapGlobals)
+my $width  = 500;
+my $height = 400;
 
-# source and destination
-my $fromTxt = $q->param('from') || 'Nowhere';
-my $toTxt   = $q->param('to') || 'Nowhere';
+# how far (in pixels) to pan when the user clicks "left", "right", "up", or
+# "down"
+my $pan = 100;
+
+# source and destination location names
+my $fromTxt = $q->param('from') || '';
+my $toTxt   = $q->param('to')   || '';
 
 # HTML-safe versions of the from and to text
 my $fromTxtSafe = CGI::escapeHTML($fromTxt);
@@ -40,18 +46,12 @@ my $toTxtURL = CGI::escape($toTxt);
 # x and y display offsets, from the upper left
 my $xoff   = int($q->param('xoff')   || 0);
 my $yoff   = int($q->param('yoff')   || 0);
+my $scale  = $q->param('scale')      || 1;
 
 # click offsets from the map
 # (these are the only two input variables that could be undefined)
 my $mapx = defined($q->param('map.x')) ? int($q->param('map.x')) : undef;
 my $mapy = defined($q->param('map.y')) ? int($q->param('map.y')) : undef;
-
-my $width  = 500;
-my $height = 400;
-
-# now convert $fromTxt and $toTxt to IDs
-my $ERROR = '';
-my ($from, $to) = (0, 0);
 
 # get all the locations off disk
 my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
@@ -64,28 +64,46 @@ foreach (sort keys %$locations){
 		push(@locNames, $locations->{$_}{'Name'});
 	}
 }
-
 # build menus to change the values of the form fields
 # (These menus have no names, so they shouldn't submit any form data)
 my $fromMenu = buildMenu(\@locNames, 'main.from.value');
 my $toMenu = buildMenu(\@locNames, 'main.to.value');
 
-if( !exists($locations->{'name:' . LoadData::nameNormalize($fromTxt)}) ){
-	$ERROR .= "<b>Location &quot;$fromTxtSafe&quot; not found.</b>\n";
+# now convert $fromTxt and $toTxt to IDs
+my $ERROR = '';
+my ($from, $to) = (0, 0);
+
+if( defined($locations->{'name:' . LoadData::nameNormalize($toTxt)}{'ID'}) ){
+	$to = $locations->{'name:' . LoadData::nameNormalize($toTxt)}{'ID'};
+
+	# set the offsets to the coords of the 'to' location
+	if(!$xoff && !$yoff){
+		warn "setting x/y offsets (TO)\n";
+		$xoff = $locations->{$to}{'x'};
+		$yoff = $locations->{$to}{'y'};
+	}
 }
 else{
-	$from = $locations->{'name:' . LoadData::nameNormalize($fromTxt)}{'ID'};
-}
-
-if( !exists($locations->{'name:' . LoadData::nameNormalize($toTxt)}) ){
 	$ERROR .= "<b>Location &quot;$toTxtSafe&quot; not found.</b>\n";
 }
+
+if( defined($locations->{'name:' . LoadData::nameNormalize($fromTxt)}{'ID'}) ){
+	$from = $locations->{'name:' . LoadData::nameNormalize($fromTxt)}{'ID'};
+
+	# this is only here so that, if the 'to' location doesn't exist,
+	# we set the offsets to _something_ reasonable
+	if(!$xoff && !$yoff){
+		warn "setting x/y offsets (FROM)\n";
+		$xoff = $locations->{$from}{'x'};
+		$yoff = $locations->{$from}{'y'};
+	}
+}
 else{
-	$to = $locations->{'name:' . LoadData::nameNormalize($toTxt)}{'ID'};
+	$ERROR .= "<b>Location &quot;$fromTxtSafe&quot; not found.</b>\n";
 }
 
-# adjust the map offsets so they work from the center of the screen
 if( defined($mapx) && defined($mapy) ){
+	# adjust the map offsets so they work from the center of the screen
 	$mapx -= $width/2;
 	$mapy -= $height/2;
 
@@ -94,22 +112,26 @@ if( defined($mapx) && defined($mapy) ){
 	$yoff += $mapy;
 }
 
-# how far (in pixels) to pan when the user clicks "left", "right", "up", or
-# "down"
-my $pan = 100;
 
-print "Content-type: text/html\n\n";
-
-my $curState = state($from, $to, $xoff, $yoff);
+my $curState = state($from, $to, $xoff, $yoff, $scale);
 
 # states for the directions
-my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan, $yoff);
-my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan, $yoff);
-my $up    = state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan);
-my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan);
+my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$scale, $yoff, $scale);
+my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan/$scale, $yoff, $scale);
+my $up    = state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$scale, $scale);
+my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$scale, $scale);
 
-# this is just an absurdly simple template
+# states for zoom in/out
+my $zoomOut  = state($fromTxtURL, $toTxtURL, $xoff, $yoff,
+	($scale/2 >= MIN_SCALE) ? $scale/2 : MIN_SCALE);
+my $zoomIn = state($fromTxtURL, $toTxtURL, $xoff, $yoff,
+	($scale*2 <= MAX_SCALE) ? $scale*2 : MAX_SCALE);
+
+# now put everthing into a simple output template
+# TODO: separate this from the code, maybe?
 print <<_HTML_;
+Content-type: text/html
+
 <head>
 <title>UCSD Map</title>
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
@@ -118,10 +140,11 @@ print <<_HTML_;
 
 $ERROR
 
-
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
 	<td colspan="3" align="center">
+	<a href="$self?$zoomIn">[+]</a> -- 
+	<a href="$self?$zoomOut">[-]</a>
 	<a href="$self?$up"><img src="$imagedir/up.png" width="50" height="50" border="0"></a><br />
 	</td>
 </tr>
@@ -183,8 +206,8 @@ $ERROR
 _HTML_
 
 sub state{
-	my ($from, $to, $x, $y) = (@_);
-	return "from=$from&amp;to=$to&amp;xoff=$x&amp;yoff=$y";
+	my ($from, $to, $x, $y, $scale) = (@_);
+	return "from=$from&amp;to=$to&amp;xoff=$x&amp;yoff=$y&amp;scale=$scale";
 }
 
 sub buildMenu{

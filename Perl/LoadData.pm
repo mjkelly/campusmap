@@ -1,9 +1,8 @@
 # -----------------------------------------------------------------
-# $Id$
 # LoadData.pm -- Load binary data output from PathOptimize.java into
 # into Perl data structures for manipulation.
 #
-# Copyright 2005 David Lindquist and Michael Kelly
+# Copyright 2005 Michael Kelly (jedimike.net)
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2
@@ -175,8 +174,9 @@ sub loadLocations{
 		print STDERR "Name: $locations->{$ID}{'Name'}\n" if DEBUG;
 
 		# now add the location under its name hash
-		$locations->{"name:$name"} = $locations->{$ID};
+		$locations->{'name:' . nameNormalize($name)} = $locations->{$ID};
 
+		print STDERR "Storing under " . nameNormalize($name) . "\n" if DEBUG;
 		print STDERR "---end---\n" if DEBUG;
 	}
 
@@ -315,5 +315,22 @@ sub readJavaString{
 	return unpack("n/a*", $len . $buf);
 }
 
+###################################################################
+# Normalize a Location name string to make subsequent searching easier.
+# Normalization consists of all non-alphanumerics, and lowercasing
+# all letters.
+# Args:
+#	- the name to normalize, as a string
+# Returns:
+#	- the normalized name
+###################################################################
+sub nameNormalize{
+	my $name = shift;
+
+	$name = lc($name);
+	$name =~ s/\W//g;
+
+	return $name;
+}
 
 1;

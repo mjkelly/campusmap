@@ -1,9 +1,8 @@
 #!/usr/bin/perl
+# vim: tabstop=4 shiftwidth=4
 # -----------------------------------------------------------------
-# $Id$
-# PrintImage.pl -- Load binary data written from PathOptimize
-# and write it onto a map image.
-# Copyright 2005 David Lindquist and Michael Kelly
+# PrintImage.pl -- $desc$
+# Copyright 2005 Michael Kelly (jedimike.net)
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2

@@ -1,15 +1,14 @@
 # -----------------------------------------------------------------
-# $Id$
-# ShortestPath.pm -- Functions dealing with the algorithmic
-# operations of finding the shortest path between two vertices
-# in a graph.
-# Copyright 2005 David Lindquist and Michael Kelly
+# ShortestPath.pm -- Routines dealing with the algorithmic process of finding
+# the shortest path to a given point on a graph.
+#
+# Copyright 2005 Michael Kelly (jedimike.net)
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Fri Mar 25 01:46:58 PST 2005
+# Mon Mar 28 19:50:39 PST 2005
 # -----------------------------------------------------------------
 
 package ShortestPath;
@@ -62,14 +61,12 @@ sub find{
 
 			# if $w hasn't been visited yet
 			if( !$w->{'Known'} ){
-				#XXX: print STDERR "Unknown.\n";
 				
 				# if v's distance + the distance between v and w is less
 				# than w's distance
 				if($v->{'Distance'} + $v->{'Connections'}{$connID}{'Weight'} <
 					$w->{'Distance'})
 				{
-					#XXX: print STDERR "Lower distance.\n";
 					# we've found a lower distance, so update w's distance
 					$w->{'Distance'} =
 						$v->{'Distance'}
@@ -86,6 +83,8 @@ sub find{
 }
 
 # given a cache of unknown vertices, find the smallest one
+# TODO: add check for "not-a-through-street" flag on locations, 
+# don't visit them, UNLESS they are the start node.
 sub smallestUnknown{
 	my($minCache) = (@_);
 	my $minDist = INFINITY;
@@ -93,7 +92,6 @@ sub smallestUnknown{
 
 	# loop through every item in the passed-in points arrayref
 	for (my $i = 0; $i < @$minCache; $i++){
-		#XXX: print STDERR "Checking points[$i]: $minCache->[$i]{'Distance'} < $minDist ?\n";
 		# if the item at this index has a smaller distance than the stored
 		# smallest distance, update the smallest distance
 		if($minCache->[$i]{'Distance'} < $minDist){
@@ -103,9 +101,6 @@ sub smallestUnknown{
 	}
 
 	# return the smallest distance
-	#print STDERR "smallestUnknown: returning "
-	#	. (defined($minIndex) ? $minIndex : 'undef')
-	#	. "\n";
 	return $minIndex;
 }
 
@@ -115,14 +110,8 @@ sub createMinCache{
 
 	# copy the values of the given hashref: we know each of these is itself
 	# a hashref, so we can directly access each point
-	#XXX: print "minCache:\n";
 	my $i = 0;
-	#foreach my $key (keys %$points){
-	#	#XXX: print "index $i is point ID $key\n";
-	#	$i++;
-	#}
 
-	#XXX: print STDERR "minCache: " . (values %$points) . "\n";
 	return (values %$points);
 }
 
@@ -144,14 +133,15 @@ sub pathTo{
 # write the path to a given target point, given a hashref of post-Dijkstra
 # points, a hashref of edges, a GD image to draw to, and a color to draw with.
 sub drawTo{
-	my($points, $edges, $target, $im, $color) = (@_);
+	my($points, $edges, $target, $im, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
 
+	# follow 'from' links until we reach the original point
 	while( defined($target->{'From'}{'ID'}) ){
 		MapGraphics::drawEdge(
 			$edges->{$target->{'Connections'}{$target->{'From'}{'ID'}}{'EdgeID'}},
-			$im, 2, $color);
+			$im, 2, $color, $xoff, $yoff, $w, $h, $scale, 1);
+
 		# keep following the trail back to its source
-		#print "$target->{'ID'}\n";
 		$target = $target->{'From'};
 	}
 }

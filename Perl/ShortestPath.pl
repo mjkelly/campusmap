@@ -1,9 +1,8 @@
 #!/usr/bin/perl
 # -----------------------------------------------------------------
-# $Id$
 # ShortestPath.pl -- Find the shortest path between two vertices,
 # using Dijkstra's algorithm.
-# Copyright 2005 David Lindquist and Michael Kelly
+# Copyright 2005 Michael Kelly (jedimike.net)
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2
@@ -61,11 +60,11 @@ print "SHORTEST PATH:\n";
 print ShortestPath::pathTo($points, $points->{$endID}) . "\n";
 
 # print the background of the graph
-MapGraphics::drawAllEdges($edges, $im, 1, $red);
-MapGraphics::drawAllLocations($locations, $im, $red, $red);
+MapGraphics::drawAllEdges($edges, $im, 1, $red, 1);
+MapGraphics::drawAllLocations($locations, $im, $red, $red, 1);
 
 # print the path we took
-ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green);
+ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green, 1);
 
 open(OFH, '>', $MapGlobals::OUT_IMAGE) || die "Cannot open output file for reading: $!\n";
 binmode(OFH);

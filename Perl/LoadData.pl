@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 # -----------------------------------------------------------------
-# $Id$
 # LoadData.pl -- A driver for the LoadData module.
-# Copyright 2005 David Lindquist and Michael Kelly
+# Copyright 2005 Michael Kelly (jedimike.net)
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2
@@ -80,6 +79,7 @@ foreach my $locID ( sort(keys(%$locations)) ){
 	print "\tCoordinates: ($locations->{$locID}{'x'}, $locations->{$locID}{'y'})\n";
 	print "\tPoint ID: $locations->{$locID}{'PointID'}\n";
 	print "\tName: $locations->{$locID}{'Name'}\n";
+	print "\tNormalized Name: " . LoadData::nameNormalize($locations->{$locID}{'Name'}) . "\n";
 }
 
 print "\n\n==== Edges =====\n";

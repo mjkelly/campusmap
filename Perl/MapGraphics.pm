@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 # -----------------------------------------------------------------
-# $Id$
 # MapGraphics.pl -- Functions for manipulating the map image.
-# Copyright 2005 David Lindquist and Michael Kelly
+# Copyright 2005 Michael Kelly (jedimike.net)
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2
@@ -25,37 +24,59 @@ use GD;
 #	- the GD image to print to
 #	- the thickness of the line to print, in pixels
 #	- the GD color object to use
+#	- X offset of the image we're drawing on (relative to original image)
+#	- Y offset of the image we're drawing on (relative to original image)
+#	- the width of the image we're drawing on (relative to original image)
+#	- the height of the image we're drawing on (relative to original image)
+#	- the scale multiplier (output image scale over original image scale)
 # Returns:
 #	- nothing
 ###################################################################
 sub drawEdge{
-	my($edge, $im, $thickness, $color) = (@_);
+	my($edge, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale, $force) = (@_);
 
 	# draw all the Edge lines
 	my($curpt, $prevpt);
+
+	# if the current point is in-bounds
+	my $curInBounds = 0;
+	# if the previous point was in-bounds
+	my $prevInBounds = 0;
 
 	$im->setThickness($thickness);
 
 	# cycle through each point in this Edge
 	foreach $curpt ( @{$edge->{'Path'}} ){
 		if( defined($prevpt) ){
-			#print "($prevpt->{'x'}, $prevpt->{'y'})"
-			#	. "-($curpt->{'x'}, $curpt->{'y'})\n";
+			# check if the current point is in-bounds
+			$curInBounds =
+				($curpt->{'x'} - $xoff >= 0 && $curpt->{'x'} - $xoff <= $w
+				&& $curpt->{'y'} - $yoff >= 0 && $curpt->{'y'} - $yoff <= $h);
 
-			# draw a line between the previous point and the current point
-			$im->line($prevpt->{'x'}, $prevpt->{'y'},
-				$curpt->{'x'}, $curpt->{'y'}, $color);
+			# if either the current or the previous point was in bounds,
+			# we print (this is to allow for lines that go off the screen)
+			if($curInBounds || $prevInBounds || $force){
+				# take the scale into account for each set of points
+				$im->line(
+					($prevpt->{'x'} - $xoff) * $scale,
+					($prevpt->{'y'} - $yoff) * $scale,
+					($curpt->{'x'} - $xoff) * $scale,
+					($curpt->{'y'} - $yoff) * $scale,
+					$color
+				);
+			}
 
 		}
+		$prevInBounds = $curInBounds;
 		$prevpt = $curpt;
 	}
 
 }
 
 sub drawAllEdges{
-	my($edges, $im, $thickness, $color) = (@_);
+	my($edges, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
 	foreach (values %$edges){
-		drawEdge($_, $im, $thickness, $color);
+		drawEdge($_, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale);
 	}
 }
 
@@ -68,26 +89,53 @@ sub drawAllEdges{
 #	- the GD color object to use for the location's name
 #	- the GD color object to use for the dot on the location's
 #	  dot on the map.
+#	- X offset of the image we're drawing on (relative to original image)
+#	- Y offset of the image we're drawing on (relative to original image)
+#	- the width of the image we're drawing on (relative to original image)
+#	- the height of the image we're drawing on (relative to original image)
+#	- the scale multiplier (output image scale over original image scale)
 # Returns:
 #	- nothing
 ###################################################################
 sub drawLocation{
-	my($location, $im, $textColor, $dotColor) = (@_);
+	my($location, $im, $textColor, $dotColor, $xoff, $yoff, $w, $h, $scale) = (@_);
 
-	# print the name of the location, at a slight offset
-	$im->string(gdMediumBoldFont, $location->{'x'} + 5,
-		$location->{'y'} - 6, $location->{'Name'}, $textColor);
-	
-	# ...and a dot!
-	$im->filledRectangle(
-		$location->{'x'} - 2, $location->{'y'} - 2,
-		$location->{'x'} + 2, $location->{'y'} + 2, $dotColor);
+	# make sure we're drawing on the viewable window
+	#if( $location->{'x'} - $xoff >= 0 && $location->{'x'} - $xoff <= $w
+	# && $location->{'y'} - $yoff >= 0 && $location->{'y'} - $yoff <= $h ){
+	 	# all the dot locations are adjusted for the scale before being passed
+		# to the lower-level routines
+
+		# print the name of the location, at a slight offset
+		$im->string(
+			gdMediumBoldFont,
+			($location->{'x'} - $xoff + 5) * $scale,
+			($location->{'y'} - $yoff - 6) * $scale,
+			$location->{'Name'},
+			$textColor
+		);
+		
+		# ...and a dot!
+		$im->filledRectangle(
+			($location->{'x'} - $xoff - 2) * $scale,
+			($location->{'y'} - $yoff - 2) * $scale,
+			($location->{'x'} - $xoff + 2) * $scale,
+			($location->{'y'} - $yoff + 2) * $scale,
+			$dotColor
+		);
+
+	#}
 }
 
 sub drawAllLocations{
-	my($locations, $im, $textColor, $dotColor) = (@_);
-	foreach (values %$locations){
-		drawLocation($_, $im, $textColor, $dotColor);
+	my($locations, $im, $textColor, $dotColor, $xoff, $yoff, $w, $h, $scale) = (@_);
+
+	foreach (keys %$locations){
+		if(!/:/){
+			drawLocation($locations->{$_}, $im, $textColor, $dotColor,
+				$xoff, $yoff, $w, $h, $scale);
+		}
 	}
 }
+
 1;

@@ -34,6 +34,13 @@ public class ShowImage extends JFrame{
     public JTextField locationNameEntry;
     public JLabel statusBar;
     public ScrollablePicture ipanel;
+    
+    //JCheckboxes for locations
+    JCheckBox intersectBox;
+    JCheckBox passBox;
+    JCheckBox displayBox;
+
+    
     // For accessing the locationName text field
 
 
@@ -124,12 +131,19 @@ public class ShowImage extends JFrame{
         	}
         });
         
+        intersectBox = new JCheckBox("Intersect", true);
+        passBox = new JCheckBox("pass through", true);
+        displayBox = new JCheckBox("Display name", true);
+		
         // Add all the objects to the main window's content pane
         pane.add(scroll);
         pane.add(locationNameEntry);
         pane.add(statusBar);
         pane.add(clearButton);
         pane.add(searchLocation);
+        pane.add(intersectBox);
+        pane.add(passBox);
+        pane.add(displayBox);
         
         // Everything that follows is layout/alignment stuff, 
         // with illustrations
@@ -170,6 +184,39 @@ public class ShowImage extends JFrame{
         		SpringLayout.EAST, clearButton);
         spring.putConstraint(SpringLayout.NORTH, searchLocation, 5,
         		SpringLayout.SOUTH, scroll);
+        
+        
+        // |                  (scroll)
+        // +-------------------------------
+        //                                     
+        // ...  searchLocation <<< intersectBox
+        
+        spring.putConstraint(SpringLayout.WEST, intersectBox, 5,
+        		SpringLayout.EAST, searchLocation);
+        spring.putConstraint(SpringLayout.NORTH, intersectBox, 5,
+        		SpringLayout.SOUTH, scroll);
+        
+        // |                  (scroll)
+        // +-------------------------------
+        //                                     
+        // ...  intersectBox <<< passBox
+        
+        spring.putConstraint(SpringLayout.WEST, passBox, 5,
+        		SpringLayout.EAST, intersectBox);
+        spring.putConstraint(SpringLayout.NORTH, passBox, 5,
+        		SpringLayout.SOUTH, scroll);
+        
+        // |                  (scroll)
+        // +-------------------------------
+        //                                     
+        // ...  passBox <<< displayBox
+        
+        spring.putConstraint(SpringLayout.WEST, displayBox, 5,
+        		SpringLayout.EAST, passBox);
+        spring.putConstraint(SpringLayout.NORTH, displayBox, 5,
+        		SpringLayout.SOUTH, scroll);
+        
+        
         
         // | (locationName) | (clearButton)
         // +--------------------------
@@ -322,7 +369,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 // If you use any other buttton on your mouse...
                 /**
                  * Middle click design to open a menu to select a location
-                 * 
+                 * to connect to.  
                  */
                 else
                 {
@@ -371,7 +418,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         {
         	// Constructor call to create new location
             locations.add(new Location(x, y,
-                    parent.locationNameEntry.getText()));
+                    parent.locationNameEntry.getText(), parent));
         }
         
         // update the status bar
@@ -431,7 +478,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	    // the name the user entered
     	    else{
     	        locations.set(locIndex, new Location(x, y,
-    	                parent.locationNameEntry.getText()));
+    	                parent.locationNameEntry.getText(), parent));
 
                 parent.locationNameEntry.setText("");
                 
@@ -446,7 +493,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	// it's not quite the same.
     	else if(!parent.locationNameEntry.getText().equals("")){
     	    locations.add(new Location(x, y,
-                    parent.locationNameEntry.getText()));
+                    parent.locationNameEntry.getText(), parent));
 
             parent.locationNameEntry.setText("");
             
@@ -1209,6 +1256,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 			printCurrentPoint() + printCurrentLocation() );
     }
     
+    
     /**
      * Print the name of the location if there is a location that intersects
      * with the current point.
@@ -1218,13 +1266,36 @@ class ScrollablePicture extends JLabel implements Scrollable,
     public String printCurrentLocation () {
     	// Only print if locations exists and there are points
     	// on the currently selected path.  (Null exception guards)
+    	String stringToReturn = "";
     	if( locations.size() > 0 && lines.size() > 0)
     	{
     		int locIndex=findLocationAtPoint((Point)lines.get(pointNumIndex));
     		// For all locations
 			if (locIndex >= 0)
-	    		return(", Locations: " + getLocation(locIndex).name);    				
-    	}
+			{
+				stringToReturn = ", Locations: ";
+				Location locToPrint = getLocation(locIndex);
+				
+	    		stringToReturn += locToPrint.name;
+	    		
+	    		if(locToPrint.isAllowIntersections())
+	    			stringToReturn += "--> intersect: true, ";
+	    		else
+	    			stringToReturn += "--> intersect: false, ";
+	    		
+	    		if(locToPrint.isCanPassThrough())
+	    			stringToReturn += "pass: true, ";
+	    		else
+	    			stringToReturn += "pass: false, ";
+	    		
+	    		if(locToPrint.isDisplayName())
+	    			stringToReturn += " displayable: true.";
+	    		else
+	    			stringToReturn += " displayable: false.";
+	
+	    		return(stringToReturn);
+			}
+		}
     	return("");
     }
     
@@ -1605,14 +1676,86 @@ class Location implements Serializable
 	public Point cord;   // Coordinate of the point
 	public String name;  // Name of the point
 	
+	// Determines if we can use this point when linking together sets of
+	// paths
+	private boolean canPassThrough;
+	
+	// Determines if we can allow intersections.  
+	private boolean allowIntersections;
+	
+	// Determines if we should display the name of the location
+	private boolean displayName;
+	
 	// For creating binary file IDs
 	static int IDcount = 1;
 	
-	public Location(int x, int y, String passedName)
+	/**
+	 * @return Returns the allowIntersections.
+	 */
+	public boolean isAllowIntersections() {
+		return allowIntersections;
+	}
+	/**
+	 * @param allowIntersections The allowIntersections to set.
+	 */
+	public void setAllowIntersections(boolean allowIntersections) {
+		this.allowIntersections = allowIntersections;
+	}
+	/**
+	 * @return Returns the canpassThrough.
+	 */
+	public boolean isCanPassThrough() {
+		return canPassThrough;
+	}
+	/**
+	 * @param canpassThrough The canpassThrough to set.
+	 */
+	public void setCanPassThrough(boolean canpassThrough) {
+		this.canPassThrough = canpassThrough;
+	}
+	/**
+	 * @return Returns the displayName.
+	 */
+	public boolean isDisplayName() {
+		return displayName;
+	}
+	/**
+	 * @param displayName The displayName to set.
+	 */
+	public void setDisplayName(boolean displayName) {
+		this.displayName = displayName;
+	}
+	/**
+	 * Generic location constructor.  Also assigns the ID# of the location
+	 * @param x x coordinate for the location's Point field
+	 * @param y y coordinate for the location's Point field
+	 * @param passedName The name of the location
+	 */
+	public Location(int x, int y, String passedName, ShowImage parent)
 	{
 		cord = new Point(x,y);  // Create coordinate based on passed in values
 		name = passedName;      // Copy name string (Strings are constants!)
 		ID = IDcount++;  // Increment the ID count & assign ID
+
+		// Determines if we can use this point when linking together sets of
+		// paths
+		if(parent.passBox.isSelected())
+			canPassThrough = true;
+		else
+			canPassThrough = false;
+		
+		// Determines if we can allow intersections.  
+		if(parent.intersectBox.isSelected())
+			allowIntersections = true;
+		else
+			allowIntersections = false;
+
+		// Determines if we should display the name of the location
+		if(parent.displayBox.isSelected())
+			displayName = true;
+		else
+			displayName = false;
+	
 	}
 	
 	/*

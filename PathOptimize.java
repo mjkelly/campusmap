@@ -341,7 +341,7 @@ public class PathOptimize
     	double activeSlope;
     	double testSlope;
     	// Loop through all PathPoints in Paths Vector
-AP1:	for(int activeIndex1 = 0; activeIndex1<pathPoints.size(); 
+    	for(int activeIndex1 = 0; activeIndex1<pathPoints.size(); 
     	activeIndex1++)
     	{
     		
@@ -349,7 +349,7 @@ AP1:	for(int activeIndex1 = 0; activeIndex1<pathPoints.size();
     		
 			// For all points that are connected to that active point 1 
 			// PathPoint
-    		for(int activeIndex2 = 0; 
+AP1:    		for(int activeIndex2 = 0; 
 			activeIndex2 < ap1.numConnectedPoints();
 			activeIndex2++)
 			{
@@ -373,6 +373,9 @@ AP1:	for(int activeIndex1 = 0; activeIndex1<pathPoints.size();
 						
 			    		if(tp2.equals(ap1) || tp2.equals(ap2))
 			    			continue;
+			    		
+			    		//if(!rectangleTest(ap1, ap2, tp1, tp2))
+			    			//break;
 						System.err.print(
 								"ap1: (" + ap1.point.x + ", " + ap1.point.y + ") ");
 						
@@ -425,8 +428,9 @@ AP1:	for(int activeIndex1 = 0; activeIndex1<pathPoints.size();
 							System.err.println(
 									"pi: (" + pi.point.x + ", " + pi.point.y + ") ");
 							
-							// WE ARE HERE
-							
+							// WE ARE HERE'
+							if(!pointInSegments(ap1, ap2, tp1, tp2, pi))
+								break;
 							pathPoints.add(pi);
 							intersectReplace(ap1, ap2, pi);
 							intersectReplace(ap2, ap1, pi);
@@ -451,9 +455,33 @@ AP1:	for(int activeIndex1 = 0; activeIndex1<pathPoints.size();
     	}
     }
     
-    public boolean pointInSegments()
+    public boolean pointInSegments(PathPoint ap1, PathPoint ap2, PathPoint tp1,
+    		PathPoint tp2, PathPoint pi)
     {
-    	
+    	Rectangle rec1 = createRectangle(ap1.point,ap2.point);
+    	if(!rec1.contains(pi.point))
+    		return(false);
+    	Rectangle rec2 = createRectangle(tp1.point, tp2.point);
+    	if(!rec2.contains(pi.point))
+    		return(false);
+    	return(true);
+    }
+    
+    public boolean rectangleTest(PathPoint ap1, PathPoint ap2, PathPoint tp1,
+    		PathPoint tp2)
+    {
+    	Rectangle rec1 = createRectangle(ap1.point,ap2.point);
+    	Rectangle rec2 = createRectangle(tp1.point, tp2.point);
+    	return(rec1.intersects(rec2));
+    }
+    
+    public Rectangle createRectangle(Point p1, Point p2)
+    {
+    	int x = Math.min(p1.x, p2.x);
+    	int y = Math.min(p1.y, p2.y);
+    	int height = Math.abs(p2.y - p1.y);
+    	int width = Math.abs(p2.x - p1.x);
+    	return(new Rectangle( x, y, width, height));
     }
     public void intersectReplace(PathPoint p1, PathPoint p2, PathPoint pi)
     {

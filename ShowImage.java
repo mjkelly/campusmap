@@ -193,10 +193,8 @@ public class ShowImage extends JFrame{
         java.net.URL imgURL = ShowImage.class.getResource(path);
         if (imgURL != null)
             return ( new ImageIcon(imgURL) );
-        else{
-            System.err.println("Couldn't find file: " + path);
-            return (null);
-        }
+        System.err.println("Couldn't find file: " + path);
+        return (null);
     }
 }
 
@@ -558,9 +556,11 @@ class ScrollablePicture extends JLabel implements Scrollable,
      *
      */
     public void readData(){
+    	
     	boolean pathLoadSuccess = false;
     	boolean locationLoadSuccess = false;
-		// Load files
+
+    	// Load files
 		final String pathFileName = "rawPathData.dat";
 		final String locFileName = "rawLocationData.dat";
 		final String pathNotFound = 
@@ -653,6 +653,43 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		
     }
     
+    public void selectRead()
+    {
+    	final JDialog dialog = new JDialog(parent, 
+    			"Loading data options", true);
+    	dialog.getContentPane().setLayout( new FlowLayout() );
+    	JButton readRaw = new JButton("Load Raw Data");
+    	JButton readOptimized = new JButton("Load optimized data output");
+    	JButton cancel = new JButton("Cancel");
+    	
+    	// add all the interface elements the dialog box
+    	dialog.getContentPane().add(cancel);
+    	dialog.getContentPane().add(readOptimized);
+    	dialog.getContentPane().add(readRaw);
+    	
+    	// Fit subcomponents
+    	dialog.pack();
+
+    	cancel.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent e){
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    		}
+    	});
+    	
+    	readRaw.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent e){
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    			readData();
+    		}
+    	});
+
+    	
+    	
+    
+    
+    }
     
     /**
      * Display a dialog that allows the user to manually place (if the 
@@ -683,9 +720,18 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		public void actionPerformed(ActionEvent e){
     			dialog.setVisible(false);
     			dialog.dispose();
-    		}
-    		
+    		}	
     	});
+    	
+    	cancel.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent e)
+    		{
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    			
+    			
+    		}
+		});
 
     	// the "done" button's handler handles most of the actual work:
     	// it gets the data the user entered and moves/adds the point.
@@ -783,8 +829,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		return(",  @ (" + ((Point)lines.get( pointNumIndex )).x + 
     				", " + ((Point)lines.get( pointNumIndex )).y + ")");
     	}
-    	else
-    		return("");
+    	return("");
     }
     //Methods required by the MouseMotionListener interface:
     public void mouseMoved(MouseEvent e) { }
@@ -799,9 +844,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
         if (missingPicture) {
             return ( new Dimension(320, 480) );
         } 
-        else {
-            return ( super.getPreferredSize() );
-        }
+        // Otherwise, return
+        return ( super.getPreferredSize() );
     }
 
     public Dimension getPreferredScrollableViewportSize() {
@@ -963,6 +1007,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
  * Location class.  Simply an object contatining a point (Point cord) and 
  * a description of the point (String name)
  **/
+
 class Location implements Serializable
 {
 	int ID;

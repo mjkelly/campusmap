@@ -45,7 +45,14 @@ public class ShowImage extends JFrame{
         ShowImage s = new ShowImage(args[0]);
         s.pack();
         s.setVisible(true);
-        s.ipanel.readData();
+        
+        // See if user wants  to read/load data from file.
+        if(s.confirmDialog("Load/read?") == JOptionPane.YES_OPTION)
+        	// Read data
+        	s.ipanel.readData();
+        else
+        	// Set status  bar if  'cancel' or 'no' is pressed
+           s.statusBar.setText("Reading of data canceled");
     }
 
     /**

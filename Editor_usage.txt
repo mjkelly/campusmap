@@ -47,5 +47,5 @@ Keys:
 	     NOTE: If you currently have the last node in a path selected, this will
 	     place a NEW node. If you have a previous node selected, this will
 	     change the location of that node.
-
+	F11: Refresh the status bar.
 	F12: New path.

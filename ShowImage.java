@@ -227,7 +227,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
      */
     // Raw, unoptimized paths
 	final String rawPathFile = "data/rawPath.dat";
-	final String rawLocFile = "data/rawLocions.dat";
+	final String rawLocFile = "data/rawLocations.dat";
 	
 	// Optimized paths put back into unoptimized format for debugging
 	final String optPathFile = "data/optimizedPath.dat";

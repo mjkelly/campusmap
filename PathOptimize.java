@@ -38,6 +38,7 @@ public class PathOptimize
     	pathOp.convertPointsToPathPoints();
     	pathOp.condensePoints();
     	pathOp.intersections();
+    	pathOp.condensePoints();
     	pathOp.convertPathPointsToGraphPoints();
     	pathOp.convertGraphPointsToPoints();
     	pathOp.writePoints();
@@ -468,6 +469,8 @@ public class PathOptimize
     	
     	boolean intersect = false;  // For vertical test
     	
+    	int ovIndex;
+    	
     	// Loop through all PathPoints in Paths Vector
     	for(int activeIndex1 = 0; activeIndex1<pathPoints.size(); 
     	activeIndex1++)
@@ -626,12 +629,31 @@ AP1:    		for(int activeIndex2 = 0;
 							
 							// congratulations, you've found an intercept!
 							
-							// add the new point to the main points Vector
-							pathPoints.add(pi);
+							if ((ovIndex = checkForPathPointOverlap(pi)) != -1)
+							{
+								pi = (PathPoint)pathPoints.get(ovIndex);
+								// and integrate the new point with its neighbors
+								if(!pi.equals(ap1) && !pi.equals(ap2))
+									twoWayIntersectReplace(ap1, ap2, pi);
+
+								System.err.println("pi, 1: " + pi);
+								
+								if(!pi.equals(tp1) && !pi.equals(tp2))
+									twoWayIntersectReplace(tp1, tp2, pi);
+								
+								System.err.println("pi, 2: " + pi);
+
+							}
+							else
+							{
+								// add the new point to the main points Vector
+								pathPoints.add(pi);
+								twoWayIntersectReplace(ap1, ap2, pi);
+								twoWayIntersectReplace(tp1, tp2, pi);
+							}
+
+
 							
-							// and integrate the new point with its neighbors
-							twoWayIntersectReplace(ap1, ap2, pi);
-							twoWayIntersectReplace(tp1, tp2, pi);
 							
 							System.err.println("pi, after: " + pi);
 							
@@ -651,6 +673,24 @@ AP1:    		for(int activeIndex2 = 0;
 
 			}
     	}
+    }
+    
+    public int checkForPathPointOverlap(PathPoint pi)
+    {
+		// Loop through all path points again to look for intersections
+		for(int overlapIndex = 0; overlapIndex < pathPoints.size();
+			overlapIndex++)
+		{
+			// If the active PathPoint intersects with a PathPoint, 
+			// then that PathPoint is an overlap PathPoint
+			if(pi.point.equals(
+					getPointAtPathPointsIndex(overlapIndex)))
+			{
+				System.err.println("Identical PathPoint found for intersections");
+				return(overlapIndex);
+			}
+		}
+		return(-1);
     }
 
     public boolean checkRange(double val1, double val2, double testVal)
@@ -901,7 +941,7 @@ AP1:    		for(int activeIndex2 = 0;
 				// check if the end point of the Edge we just created already
 				// has an Edge pointing back to the original GraphPoint.
 				edgeIndex = prevPP.getGraphPoint().outgoingEdge(
-						graphPP.getGraphPoint());
+						graphPP.getGraphPoint(), tempEdge);
 				if(edgeIndex != -1)
 				{
 					// if it does, we just attach to the existing edge, and
@@ -911,8 +951,10 @@ AP1:    		for(int activeIndex2 = 0;
 					
 					// this decrements the Edge class' static ID count
 					tempEdge.discard();
+					System.err.println("  --Discarding edge--");
 				}
 				else{
+					System.err.println("  --Added edge--");
 					// take significant pathPoint, get its corresponding
 					// graph point.  Use that point to add the new edge created
 					// to the graph point's edge vector.  
@@ -1123,13 +1165,64 @@ class GraphPoint
 	 * @return true if current point has Edges that point to 'gp', false
 	 * otherwise
 	 */
-	public int outgoingEdge(GraphPoint gp)
+	public int outgoingEdge(GraphPoint gp, Edge incoming)
 	{
+		// an edge that may match the incoming edge
+		// (one of the calling GraphPoint's edges)
+		Edge outEdge;
+		boolean forward = true;
+		boolean reverse = true;
 		for(int i = 0; i < edges.size(); i++)
 		{
-			if(getEdge(i).endpt2 == gp)
+			// Reset the boolean values
+			forward = true;
+			reverse = true;
+			System.err.println("If condition: " + getEdge(i).endpt2.point +
+					" == " + gp.point);
+			if(getEdge(i).endpt2 == gp){
+				outEdge = (Edge)getEdge(i);
+			
+				System.err.println("Size condition: " + outEdge.path.size()
+						+ " == " + incoming.path.size());
+				if( outEdge.path.size() != incoming.path.size() )
+					continue;
+				
+				// we know the sizes are the same now, so we don't have to
+				// worry about overruning indices
+				// Go through reverse order
+				for(int ptIndex = 0; ptIndex < outEdge.path.size();
+					ptIndex++)
+				{
+					System.err.println("Comparing: " + 
+							outEdge.path.get(outEdge.path.size() - ptIndex -1 ) 
+							+ " and "
+							+ incoming.path.get(ptIndex));
+					if(!outEdge.path.get(
+							outEdge.path.size() - ptIndex -1 ).equals(
+							incoming.path.get(ptIndex)))
+						reverse = false;
+
+				}
+
+				// Go through forward order
+				for(int ptIndex = 0; ptIndex < outEdge.path.size();
+					ptIndex++)
+				{
+					if(!outEdge.path.get(ptIndex).equals(
+							incoming.path.get(ptIndex)))
+						forward = false;
+
+				}
+			}
+			// If one of the ways that you compared
+			// the two edges turned to be true
+			// Then you want to discard.  So return the index
+			if(forward || reverse)
 				return(i);
 		}
+		// If no edges were  found to be equal to the passed in edge
+		// Then we did not find a match, so we do not want to discard
+		// In other words, we want to add
 		return(-1);
 	}
 	
@@ -1143,7 +1236,8 @@ class GraphPoint
 	{
     	// output ID of GraphPoint
 		try{
-			System.err.println("ID: " + ID);
+			System.err.println("ID: " + ID + "      (" + point.x + ", "
+					+ point.y + ")");
 			out.writeInt(ID);
 	    	// output number of connections/weights/edges
 			System.err.println("Connections/weights/edges: " + edges.size());
@@ -1152,6 +1246,7 @@ class GraphPoint
 			// for each Edge connected to this GraphPoint
 			for(int i = 0; i < edges.size(); i++)
 			{
+	    		System.err.println("--Start connection--");
 	    		// print ID of each connection
 				if(((Edge)edges.get(i)).endpt1 == this){
 					System.err.println("Connection ID: " +
@@ -1171,6 +1266,7 @@ class GraphPoint
 	    		// print ID of each edge
 	    		out.writeDouble( ((Edge)edges.get(i)).ID );
 	    		System.err.println("Edge ID: " + ((Edge)edges.get(i)).ID);
+	    		
 			}
     		
 			// write the ID of the associated location, if there is one;

@@ -11,10 +11,16 @@ To make a new location:
 
 To delete a location:
 	Select the node associated with that location, right-click to move the node.
+	Or, to delete the node as well, just select the node and hit F1.
 
 To rename a location:
 	Select the node associated with that location, type in new location name,
 	right click to move the node.
+
+To create a bridge, tunnel, or other intersecting path that should NOT create
+a node at the intersection:
+	Nodes on either side of at least one intersecting path should both have
+	the special location name "<nolink>".
 
 Keys:
 	Left-click: Add a new node to the end of the current path (and select the
@@ -23,7 +29,7 @@ Keys:
 	             that point, it will be deleted (if the text field is empty), or
 	             renamed (if the text field is filled before the click).
 	
-	F1: Remove active node
+	F1: Remove active node/location.
 	F2: Switch to previous path.
 	F3: Switch to next path.
 	F4: Switch to next node in current path.

@@ -62,11 +62,9 @@ public class ShowImage extends JFrame{
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
+        // use a SpringLayout
         SpringLayout spring = new SpringLayout();
-
-        // Create flow Layout fow placing stuff
         pane.setLayout( spring );
-        
         
         // img: private ImageIcon
         img = createImageIcon(filename);
@@ -75,38 +73,59 @@ public class ShowImage extends JFrame{
         // Pass in ImageIcon, and maxUnitIncrement (10).
         ScrollablePicture ipanel = new ScrollablePicture(img, 10, this);
 
-        // Create scroll, passing in the scrollable picture
+        // Create the main window: a scroll pane with the new image panel
         JScrollPane scroll = new JScrollPane(ipanel);
         scroll.setPreferredSize(new Dimension(600, 500));
         scroll.setWheelScrollingEnabled(false);
-
+        
+        // create the other objects in the main window
+        locationName = new JTextField("", LOCATION_FIELD_WIDTH);
+        // this text is overridden in the ScrollablePicture constructor
+        statusBar = new JLabel("Status Text");
+        
+        // Add all the objects to the main window's content pane
         pane.add(scroll);
         pane.add(locationName);
         pane.add(statusBar);
         
-        // Add image with scroll
+        // Everything that follows is layout/alignment stuff, with illustrations
+        
+        //  (main window)
+        // +----------
+        // |     ^^^
+        // | <<< scroll
         spring.putConstraint(SpringLayout.WEST, scroll, 0, 
-        		SpringLayout.WEST, pane);
+                SpringLayout.WEST, pane);
         spring.putConstraint(SpringLayout.NORTH, scroll, 0, 
-        		SpringLayout.NORTH, pane);
-        // Add locationName to the pannel
+                SpringLayout.NORTH, pane);
+        
+        // | (scroll)
+        // +-------------
+        // |     ^^^
+        // | <<< locationName
         spring.putConstraint(SpringLayout.WEST, locationName, 0, 
-        		SpringLayout.WEST, pane);
+                SpringLayout.WEST, pane);
         spring.putConstraint(SpringLayout.NORTH, locationName, 0, 
-        		SpringLayout.SOUTH, scroll);
+                SpringLayout.SOUTH, scroll);
         
-        //Add statusbar
+        // | (locationName)
+        // +-------------
+        // |     ^^^
+        // | <<< statusBar
         spring.putConstraint(SpringLayout.WEST, statusBar, 0, 
-        		SpringLayout.WEST, pane);
+                SpringLayout.WEST, pane);
         spring.putConstraint(SpringLayout.NORTH, statusBar, 0, 
-        		SpringLayout.SOUTH, locationName);
+                SpringLayout.SOUTH, locationName);
         
-        // Wrap pane
+        //           scroll | <<<
+        // statusBar        |
+        // -----------------+
+        // ^^^
         spring.putConstraint(SpringLayout.EAST, pane, 0, 
-        		SpringLayout.EAST, scroll);
+                SpringLayout.EAST, scroll);
         spring.putConstraint(SpringLayout.SOUTH, pane, 0, 
-        		SpringLayout.SOUTH, statusBar);
-        locationName.setText("");
+                SpringLayout.SOUTH, statusBar);
+
     }
 
 

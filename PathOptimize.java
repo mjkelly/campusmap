@@ -33,7 +33,7 @@ public class PathOptimize
     	pathOp.condensePoints();
     	pathOp.intersections();
     	pathOp.convertPathPointsToGraphPoints();
-    	pathOp.convertPathPointsToPoints();
+    	pathOp.convertGraphPointsToPoints();
     	pathOp.writePoints();
     }
     
@@ -140,7 +140,29 @@ public class PathOptimize
     	}
     }
     
+    public void convertGraphPointsToPoints()
+    {
+    	for(int graphIndex = 0; graphIndex < graphPoints.size(); graphIndex++)
+    	{
+    		// Get the GraphPoint
+    		GraphPoint thisGP = (GraphPoint)graphPoints.get(graphIndex);
+    		// Handle locations
+    		if(thisGP.locLabel != null)
+    		{
+	    		System.err.println("Adding location: " + thisGP.locLabel.cord +
+	    				", " + thisGP.locLabel.name);
+	    		outLocations.add( thisGP.locLabel );
+    		}
+    		
+    		for(int i = 0; i < thisGP.edges.size();  i++)
+    		{
+    			outPaths.add(((Edge)(thisGP.edges.get(i))).path);
+    		}
+    	}
+    }
+    
     /**
+     * OBSOLETE
      * Convert a set of PathPoints to a (highly unoptimized) set of paths
      * that can be read by ShowImage.
      *
@@ -214,7 +236,9 @@ public class PathOptimize
 	    	System.err.println(pathNotFound);
 	    }
 	    catch(IOException e){
-	    	System.err.println("Error in writing \"" + pathFileName + "\"!");
+	    	
+	    	System.err.println("Error in writing \"" + pathFileName + "\"!\n"
+	    			+ e + ": " + e.getMessage());
 	    }
 	    
         try{
@@ -363,6 +387,8 @@ public class PathOptimize
     	double activeSlope;
     	double testSlope;
     	
+    	boolean intersect = false;  // For verticle test
+    	
     	// Loop through all PathPoints in Paths Vector
     	for(int activeIndex1 = 0; activeIndex1<pathPoints.size(); 
     	activeIndex1++)
@@ -467,7 +493,36 @@ AP1:    		for(int activeIndex2 = 0;
 						
 						// if the two Y intersect coordinates are the same,
 						// it's a real intersection
-						if(Math.abs(intersectYActive-intersectYTest) < 0.00001)
+						
+						// If Verticle line!
+						if(Double.isInfinite(activeSlope) && 
+								Double.isInfinite(testSlope))
+							continue;
+						intersect = false;
+						if(Double.isInfinite(activeSlope) && 
+								!Double.isInfinite(testSlope))
+						{
+							intersectYTest = ((testSlope)
+									*(ap1.point.x-tp1.point.x) + tp1.point.y);
+							intersect = 
+								checkRange(ap1.point.y, 
+										ap2.point.y, intersectYTest);
+							intersectX = ap1.point.x;
+						}
+						if(Double.isInfinite(testSlope) && 
+								!Double.isInfinite(activeSlope))
+						{
+							intersectYActive = ((activeSlope)
+							        * (tp1.point.x - ap1.point.x) + ap1.point.y);
+							intersect = 
+								checkRange(tp1.point.y, 
+										tp2.point.y, intersectYActive);
+							intersectX = tp1.point.x;
+						}
+						System.err.println("iA: " + intersectYActive + "\n" +
+								"iT: " + intersectYTest);
+						if((Math.abs(intersectYActive-intersectYTest) < 0.00001)
+								|| intersect)
 						{
 							System.err.println("Points are equal!");
 							System.err.println("(" + intersectX + ", " 
@@ -518,7 +573,19 @@ AP1:    		for(int activeIndex2 = 0;
 			}
     	}
     }
-    
+
+    public boolean checkRange(double val1, double val2, double testVal)
+    {
+    	System.err.println("CHECKRANGE:");
+    	double min = Math.min(val1, val2);
+    	double max = Math.max(val1, val2);
+    	System.err.println("Min: " + min + " Max: " + max + "test: " + testVal);
+    	if(testVal < min)
+    		return(false);
+    	if(testVal > max)
+    		return(false);
+    	return(true);
+    }
     /**
      * Test if a given point is in the rectangle defined by two lines.
      * (If it is, it's _possible_ that the line is the intersect point of
@@ -671,13 +738,14 @@ AP1:    		for(int activeIndex2 = 0;
     	PathPoint curPP;
     	PathPoint graphPP;
     	Edge tempEdge;
-    	
+    	int ppIndex;
+    	int conIndex;
     	PathPoint prevPP, whereFrom;
     	
     	graphPoints = new Vector();
     	
     	// create a GraphPoint for every "significant" PathPoint
-    	for(int ppIndex = 0; ppIndex < pathPoints.size(); ppIndex++)
+    	for(ppIndex = 0; ppIndex < pathPoints.size(); ppIndex++)
     	{
     		if(getPathPoint(ppIndex).isGraphPoint())
     		{
@@ -685,41 +753,71 @@ AP1:    		for(int activeIndex2 = 0;
     			// and the new GraphPoint
     			gp = new GraphPoint(getPathPoint(ppIndex));
     			graphPoints.add(gp);
+    			//System.err.println("Making " + gp.locLabel.name + " a GraphPoint.");
     		}
     	}
     	
-    	for(int ppIndex = 0; ppIndex < pathPoints.size(); ppIndex++)
+    	// for all pathPoints
+    	for(ppIndex = 0; ppIndex < pathPoints.size(); ppIndex++)
     	{
+    		// For all significant PathPoints
     		if(!getPathPoint(ppIndex).isGraphPoint())
     			continue;
     		
+    		// This gets a significant PathPoint
     		graphPP = getPathPoint(ppIndex);
     		
-    		for(int conIndex = 0; conIndex < graphPP.numConnectedPoints();
+    		System.err.println("Signficant PathPoint " + graphPP.toString());
+    		
+    		// For all connections of significant PathPoints
+    		for(conIndex = 0; conIndex < graphPP.numConnectedPoints();
     			conIndex++)
     		{
+    			// Create new edge
 				tempEdge = new Edge();
+				
+				// add Significant PathPoint to edge's path.
 				tempEdge.path.add(graphPP.point);
+				
+				// Assign the endpointer
 				tempEdge.endpt1 = graphPP.getGraphPoint();
+				
+				// take significant pathPoint, get it's corresponding
+				// graph point.  Use that point to add the new edge created
+				// to the graph point's edge vector.  
 				graphPP.getGraphPoint().edges.add(tempEdge);
 
-    			curPP = getPathPoint(conIndex);
-    			tempEdge.path.add(curPP.point);
-				tempEdge.weight += graphPP.getWeight(curPP);
+				// Set the current pathPoint to be  a connection of
+				// the significant pathPoint.  
+    			curPP = graphPP.getConnectedPathPoint(conIndex);
     			
+    			// add the connection of the significant pathPoint (a PathPoint)
+    			// to the path Vector.  
+    			tempEdge.path.add(curPP.point);
+    			System.err.println("Adding point: " + curPP);
+
+    			// Increment weight
+    			tempEdge.weight += graphPP.getWeight(curPP);
+    			
+    			// Temporary holder for previous point
 				whereFrom = graphPP;
+				
+				// Make what is the current point also the previous point
 				prevPP = curPP;
 				
+				// Loop while we can do a pointTraversal.  
 				while( (curPP = curPP.pointTraversal(whereFrom)) != null )
 				{
-					tempEdge.path.add(curPP);
+					tempEdge.path.add(curPP.point);
+	    			System.err.println("Adding point: " + curPP);
+	    			
 					tempEdge.weight += prevPP.getWeight(curPP);
 					
 					whereFrom = prevPP;
 					prevPP = curPP;
 				}
 				
-				//System.errr.println("Setting end");
+				//System.err.println("Setting end");
 				tempEdge.endpt2 = prevPP.getGraphPoint();
 				
     		}
@@ -727,7 +825,7 @@ AP1:    		for(int activeIndex2 = 0;
     	}
     	for(int graphPI = 0; graphPI < graphPoints.size(); graphPI++)
     	{
-    		 System.out.println(((GraphPoint)graphPoints.get(graphPI)).toString());
+    		 System.err.println(((GraphPoint)graphPoints.get(graphPI)).toString());
     	}
     }
     
@@ -918,7 +1016,8 @@ class GraphPoint
 	{
 		String outStr = "GraphPoint @ (" + point.x + ", " + point.y + ")\n";
 		outStr += getLocationName();
-		outStr +=  edges.toString();
+		for(int i = 0; i < edges.size(); i++)
+			outStr +=  ((Edge)edges.get(i)).printString();
 		return(outStr);	
 	}
 }
@@ -937,13 +1036,14 @@ class Edge
 		endpt1 = endpt2 = null;
 	}
 	
-	public String toString()
+	public String printString()
 	{
 		String outStr = "End Point 1: " + endpt1.point + "\nEnd Point 2: " +
 		endpt2.point + "\n";
+		
 		for(int i = 0; i < path.size(); i++)
 		{
-			outStr += "   -->" + getPointInPath(i).toString() + "\n";
+			outStr += "   -->" + this.getPointInPath(i).toString() + "\n";
 		}
 		outStr += "Total weight: " + weight + "\n";
 		

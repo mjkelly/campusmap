@@ -12,6 +12,8 @@ Convert a PDF to a PNG:
 
 IMPLEMENTATION:
 
-Possible bugs:
-	* How will pathfinding algorithm work with circular paths? Infinite loop?
+In the future:
+	* Locations that can't be passed through
+	(modify Dijkstra's algo; see ShortestPath.pm:smallesttUnknwon).
 
+	* Non-displayable locations.

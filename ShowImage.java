@@ -498,26 +498,50 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * Write data to disk.
      */
     public void writeData(){
+        boolean pathWriteSuccess = false;
+    	boolean locationWriteSuccess = false;
+		// Load files
+		final String pathFileName = "rawPathData.dat";
+		final String locFileName = "rawLocationData.dat";
+		final String pathNotFound = 
+			"File \"" + pathFileName + "\" not found!     ";
+		final String locNotFound = "File \"" + locFileName + "\" not found!";
     	// Define output files for paths and locations.
-        File pathOutputFile = new File("rawPathData.dat");
-        File locationOutputFile = new File("rawLocationData.dat");
-        
+        File pathOutputFile = new File(pathFileName);
+        File locationOutputFile = new File(locFileName);
         try{
         	// Write out the paths vector
             ObjectOutputStream pathout = new ObjectOutputStream(
                     new FileOutputStream(pathOutputFile));
             pathout.writeObject(paths);
-            
+            pathWriteSuccess = true;
+        }
+	    catch(FileNotFoundException e){
+	    	System.err.println(pathNotFound);
+	    	parent.statusBar.setText(pathNotFound);
+	    }
+	    catch(IOException e){
+	    	System.err.println("Error in writing \"" + pathFileName + "\"!");
+	    }
+	    
+        try{
             // Write out the locations vector
             ObjectOutputStream locout = new ObjectOutputStream(
                     new FileOutputStream(locationOutputFile));
             locout.writeObject(locations);
+            locationWriteSuccess = true;
         }
-        catch(IOException e){
-            System.err.println("Output stream create failed!");
+	    catch(FileNotFoundException e){
+	    	System.err.println(locNotFound);
+	    	parent.statusBar.setText(parent.statusBar.getText() + locNotFound);
+	    }
+	    catch(IOException e){
+	    	System.err.println("Error in writing \"" + locFileName + "\"!");
+	    }
+	    if(locationWriteSuccess && pathWriteSuccess){
+	        // Set status
+	        parent.statusBar.setText("Paths and locations written to file");
         }
-        // Set status
-        parent.statusBar.setText("Paths/locations written to file");
     }
     
     /**
@@ -525,22 +549,53 @@ class ScrollablePicture extends JLabel implements Scrollable,
      *
      */
     public void readData(){
+    	boolean pathLoadSuccess = false;
+    	boolean locationLoadSuccess = false;
 		// Load files
-		
+		final String pathFileName = "rawPathData.dat";
+		final String locFileName = "rawLocationData.dat";
+		final String pathNotFound = 
+			"File \"" + pathFileName + "\" not found!     ";
+		final String locNotFound = "File \"" + locFileName + "\" not found!";
 		// Define input files for paths and locations.
-	    File pathsInputFile = new File("rawPathData.dat");
-	    File locationsInputFile = new File("rawLocationData.dat");
+	    File pathsInputFile = new File(pathFileName);
+	    File locationsInputFile = new File(locFileName);
+	    
+	    // Get the paths vector
 	    try{
-	    	// Get the paths vector
+	    	// Open stream
 	        ObjectInputStream pathin = new ObjectInputStream(
 	                new FileInputStream(pathsInputFile));
+	        // Get Vector
 	        paths = (Vector)pathin.readObject();
-	        
-	        // Get the locations vector
+	        pathLoadSuccess = true;
+	    }
+	    catch(FileNotFoundException e){
+	    	System.err.println(pathNotFound);
+	    	parent.statusBar.setText(pathNotFound);
+	    }
+	    catch(Exception e){
+	    	System.err.println("Error in opening \"" + pathFileName + "\"!");
+	    }
+	    
+	    // Get the locations vector
+	    try{
+	        // Open stream
 	        ObjectInputStream locin = new ObjectInputStream(
 	                new FileInputStream(locationsInputFile));
+	        // Get Vector
 	        locations = (Vector)locin.readObject();
-	        
+	        locationLoadSuccess = true;
+	    }
+	    catch(FileNotFoundException e){
+	    	System.err.println(locNotFound);
+	    	parent.statusBar.setText(parent.statusBar.getText() + locNotFound);
+	    }
+	    catch(Exception e){
+	    	System.err.println("Error in opening \"" + locFileName + "\"!");
+	    }
+	    if( locationLoadSuccess && pathLoadSuccess ){
+		    
 	        // Set status bar
 	        parent.statusBar.setText("Input read from file");
 	
@@ -557,12 +612,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	        
 	        // Do the repaint dance...woooo!
 	        repaint();
-	    }
-	    // Catch ANY exceptions from the above try block
-	    catch(Exception e){
-	    	System.err.println("Error in reading path or " +
-	    			"location file");
-	    }
+        }
 	}
 
 
@@ -593,6 +643,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	}
     		
     }
+    
+    
     /**
      * Display a dialog that allows the user to manually place (if the 
      * last node is selected), or move (if a previous node is selected) a node.

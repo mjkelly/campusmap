@@ -250,62 +250,57 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     // Don't  create a new point in a path.
                     if( pathNumIndex < lines.size() )
                     {
-                    	boolean existingLoc = false;
-                    	// find the location that matches this point (if one
-                        // exists), and move it along with the point
-                    	// For all locations...
-                		for(int locIndex = 0; locIndex < locations.size(); locIndex++){
-                			// you have an intersect with a location
-                			if ((((Location)locations.get(locIndex)).cord).equals(
-                					lines.get(pointNumIndex)))
-                			{
-                				existingLoc = true;
-                                if(parent.locationName.getText().equals(""))
-                                {
-                                	locations.remove(locIndex);
-                                }
-                                else
-                                {
-                                	locations.set(locIndex, new Location(x, y,
-                                        parent.locationName.getText()));
-                                	
-                                	parent.statusBar.setText( statusBarText() );
-                                    parent.locationName.setText("");
-                                    
-                                    thisParent.requestFocus();
-                                }
-                			}
-                		}
-                		
-                		// if there wasn't already a location at this point,
-                		// and the user entered a location name, add it.
-                		if(!parent.locationName.getText().equals("")
-                				&& !existingLoc)
-                        {
-                            locations.add(new Location(x, y,
+                    	// check if there's an existing point
+                    	int locIndex = findLocationAtPoint(
+                    	        (Point)lines.get(pointNumIndex));
+                    	
+                    	// if there is one...
+                    	System.err.println("Found location at index: " + locIndex);
+                    	if(locIndex >= 0){
+                    	    // if the text field is empty, delete the point
+                    	    if(parent.locationName.getText().equals("")){
+                    	        locations.remove(locIndex);
+                    	    }
+                    	    // otherwise, we replace the location at this point
+                    	    // with another that has the new x/y location and 
+                    	    // the name the user entered
+                    	    else{
+	                	        locations.set(locIndex, new Location(x, y,
+	                	                parent.locationName.getText()));
+                            	
+	                	        System.err.println("Moving location...");
+                            	parent.statusBar.setText( statusBarText() );
+                                parent.locationName.setText("");
+                                
+                                thisParent.requestFocus();
+                    	    }
+                    	   
+                    	}
+                    	// if we DIDN'T find a matching point, and the text
+                    	// field isn't empty, create a new point
+                    	// this looks very similar to the code above, but
+                    	// it's not quite the same.
+                    	else if(!parent.locationName.getText().equals("")){
+                    	    locations.add(new Location(x, y,
                                     parent.locationName.getText()));
                             
                             parent.statusBar.setText( statusBarText() );
                             parent.locationName.setText("");
                             
                             thisParent.requestFocus();
-                        }
-                		
+                	    }
+                    	
                     	// move the point
                     	((Point)lines.get(pointNumIndex)).setLocation(x,y);
                     	
                     	repaint();
                     }
                     
-                   
-                
                 }
                 else{
                     System.err.print("Other mouse click @ (" + x + ", " + y + ")");
                 }
                 System.err.println();
-
-                
                 
             }
         });
@@ -321,20 +316,31 @@ class ScrollablePicture extends JLabel implements Scrollable,
     private void handleKey(KeyEvent k){
         
         int c = k.getKeyCode();
-        // F1: Erase last line & point
+        // F1: Erase current point (and location, if applicable)
         if(c ==  KeyEvent.VK_F1)
         {
-        	// Only go back if there is a point to 
+        	// Only go back if there is a point to go to
             if(lines.size() >= 1)
             {
-                lines.remove(lines.size() -1);
-                pointNumIndex--;
-                repaint( getVisibleRect() );
+                // if there's a location here, delete it too
+                int locIndex = findLocationAtPoint(
+                        (Point)lines.get(pointNumIndex));
+                if(locIndex >= 0)
+                    locations.remove(locIndex);
+                
+                // remove the current node, decrement pointNumIndex
+                lines.remove(pointNumIndex--);
+                
+                // make sure pointNumIndex is in-bounds
+                if(pointNumIndex < 0)
+                    pointNumIndex = 0;
+                if(pointNumIndex >= lines.size())
+                    pointNumIndex = lines.size() - 1;
+
+                parent.statusBar.setText( statusBarText() );
                 repaint();
             }
         }
-
-
         // F2: Go to previous path option
         else if(c == KeyEvent.VK_F2)
         {
@@ -364,7 +370,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 repaint();
             }
         }
-        // Move backwards along elements in a path
+        // F4: Move backwards along elements in a path
         else if(c == KeyEvent.VK_F4){
         	if(pointNumIndex > 0)
         	{
@@ -375,8 +381,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	            parent.statusBar.setText( statusBarText() );
         	}
         }
-        
-        // Move forwards along elements in a path
+        // F5: Move forwards along elements in a path
         else if(c == KeyEvent.VK_F5){
         	if(pointNumIndex < lines.size() - 1)
         	{
@@ -415,9 +420,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         	else
     			parent.statusBar.setText("Writing of data canceled");
         }
-        /*
-         * F8: load/read from files.  
-         */
+        // F8: load/read from files.
         else if(c ==  KeyEvent.VK_F8)
         {
 
@@ -478,6 +481,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
         		
         		outStream.println("Locations:");
         		
+        		// loop through each location and print its name and
+        		// (x,y) coordinates
         		for(int locIndex = 0; locIndex < locations.size(); locIndex++)
         		{
         			outStream.println("Location " + (locIndex + 1) + " of " +
@@ -518,6 +523,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
     }
 
+    /**
+     * Display a dialog that allows the user to manually place (if the last node
+     * is selected), or move (if a previous node is selected) a node.
+     */
     public void manualPlaceDialog ()
     {
     	final JDialog dialog = new JDialog(parent, "Manually place", true);
@@ -528,9 +537,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	final JTextField yinput = new JTextField(5);
     	final JLabel message = new JLabel("Enter a coordinate:  ");
 
-
-    	
-    	
+    	// add all the interface elements the dialog box
     	dialog.getContentPane().add(message);
     	dialog.getContentPane().add(xinput);
     	dialog.getContentPane().add(yinput);
@@ -539,6 +546,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
 
     	dialog.pack();
     	
+    	// add a handler for the cancel button, which hides and
+    	// disposes the dialog
     	cancel.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e){
     			dialog.setVisible(false);
@@ -547,6 +556,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		
     	});
 
+    	// the "done" button's handler handles most of the actual work:
+    	// it gets the data the user entered and moves/adds the point.
     	done.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e){
     			dialog.setVisible(false);
@@ -558,7 +569,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         						Integer.parseInt(yinput.getText()));				
     			}
     			catch(NumberFormatException numException){
-    				parent.statusBar.setText("No input entered!");
+    				parent.statusBar.setText("No input entered! (Bad format)");
     				return;
     			}
     			if (pointNumIndex < lines.size() - 1)
@@ -573,12 +584,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
     			
     			repaint();
     		}
-    		
-    		
     	});
     	
     	dialog.setVisible(true);
-    
     }
     
     
@@ -610,6 +618,11 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	return("");
     }
     
+    /**
+     * Find the index of any location that exists at a given point.
+     * @param pointToCompare Point to search at
+     * @return the index of the matching location, or -1 if none is found.
+     */
     public int findLocationAtPoint(Point pointToCompare){
     	for(int locIndex = 0; locIndex < locations.size(); locIndex++){
 			if ((getLocation(locIndex).cord).equals(pointToCompare))
@@ -619,6 +632,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	}
     	return(-1);
     }
+    
     /**
      * Print the (x,y) coordinates of the current point.
      * @return string as described, else empty string.
@@ -717,15 +731,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		    {
 		    	// This is a bit messy...
 		    	// Get the current point by first getting the apppropriate
-		    	// path from paths Vector, caste to a Vector (as it should be)
+		    	// path from paths Vector, cast to a Vector (as it should be)
 		    	// and then get the point in the vector & cast it to a Point.
 		        cur = (Point) ((Vector)paths.get(pathsIndex)).get(pointInPath);
-		
-
-
 		        
-		        // the last dot is the "active" one, so we print it in a
-		        // different color
 		        
 	        	// If the path that we're drawing is the current one in
 	        	if(lines == (Vector)paths.get(pathsIndex))
@@ -766,8 +775,6 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		        if(visible.contains(cur))
 		            drawDot(g, cur);
 		        
-
-		        
 		        // Assign the current value as the previous
 		        prev = cur;
 		    }
@@ -776,12 +783,15 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		    prev = null;
         }
         g.setColor(LOCATION_COLOR);
+        
+        // Draw the names of all the locations
         for(int locIndex = 0; locIndex < locations.size(); locIndex++)
         {
         	int x = getLocation(locIndex).cord.x;
         	int y = getLocation(locIndex).cord.y;
         	g.drawString( getLocation(locIndex).toString(), x, y);
         }
+        
     }
 
 

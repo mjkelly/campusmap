@@ -266,7 +266,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     }
                     lines.add(p);
                 
-                    pointNumIndex = lines.size() - 1;
+                    setPointNumIndex(true);
+                    
                     // and redraw immediately to see the changes
                     repaint( getVisibleRect() );
                     
@@ -363,11 +364,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 // remove the current node, decrement pointNumIndex
                 lines.remove(pointNumIndex--);
                 
-                // make sure pointNumIndex is in-bounds
-                if(pointNumIndex < 0)
-                    pointNumIndex = 0;
-                if(pointNumIndex >= lines.size())
-                    pointNumIndex = lines.size() - 1;
+                // Do checking of bounds on pointNumIndex
+                setPointNumIndex(false);
+
 
                 parent.statusBar.setText( statusBarText() );
                 repaint();
@@ -380,10 +379,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
             if(pathNumIndex >= 1){
             	// Set focus
                 lines = (Vector)paths.get(--pathNumIndex);
+                // Automatically focus on the last element
+                setPointNumIndex(true);
                 // Set statusbar
                 parent.statusBar.setText( statusBarText() );
-                // Automatically focus on the last element
-                pointNumIndex = lines.size() - 1;
                 repaint();
             }
         }
@@ -395,10 +394,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
             {
             	// Advance
                 lines = (Vector)paths.get(++pathNumIndex);
+                // Automatically focus on the last element
+                setPointNumIndex(true);
                 // Set statusBar
                 parent.statusBar.setText( statusBarText() );
-                // Automatically focus on the last element
-                pointNumIndex = lines.size() - 1;
                 repaint();
             }
         }
@@ -564,6 +563,34 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	    }
 	}
 
+
+    /**
+     * Set the pointNumber index
+     * 
+     * For a true value passed in, set the pointNumIndex to the last element
+     * in the vector of elements.  
+     * 
+     * For a false value passed in, check the bounds of pointNumIndex.
+     */
+    public void setPointNumIndex (boolean setAtEndPoint)
+    {
+    	if(setAtEndPoint == true){
+    		//If empty, set to 0
+	    	if(lines.size() == 0)
+	    		pointNumIndex = 0;
+	        //Otherwise set to -1
+	    	else
+	    		pointNumIndex = lines.size() - 1;
+    	}
+    	else{
+            // make sure pointNumIndex is in-bounds
+            if(pointNumIndex < 0)
+                pointNumIndex = 0;
+            if(pointNumIndex >= lines.size())
+                pointNumIndex = lines.size() - 1;
+    	}
+    		
+    }
     /**
      * Display a dialog that allows the user to manually place (if the last node
      * is selected), or move (if a previous node is selected) a node.
@@ -679,7 +706,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * @return string as described, else empty string.
      */
     public String printCurrentPoint (){
-    	if( lines.size() > 0 )
+    	// Print out point only if the size is greater than 0 &
+    	// The pointNumIndex is at least zero
+    	if( lines.size() > 0 && pointNumIndex >= 0)
     	{
     		return(",  @ (" + ((Point)lines.get( pointNumIndex )).x + 
     				", " + ((Point)lines.get( pointNumIndex )).y + ")");

@@ -46,13 +46,9 @@ public class ShowImage extends JFrame{
         s.pack();
         s.setVisible(true);
         
-        // See if user wants  to read/load data from file.
-        if(s.confirmDialog("Load/read?") == JOptionPane.YES_OPTION)
-        	// Read data
-        	s.ipanel.readData();
-        else
-        	// Set status  bar if  'cancel' or 'no' is pressed
-           s.statusBar.setText("Reading of data canceled");
+        // Prompt for a reading option
+        s.ipanel.selectRead();
+        
     }
 
     /**
@@ -73,14 +69,7 @@ public class ShowImage extends JFrame{
         addWindowListener(new WindowAdapter(){
            public void windowClosing(WindowEvent e){
                // show a dialog asking the user to confirm
-               int userSays = confirmDialog("Write data?");
-               
-               // if the user says yes, save, then continue...
-               if(userSays == JOptionPane.YES_OPTION)
-                   ipanel.writeData();
-               // if the user cancels, leave immediately
-               else if(userSays == JOptionPane.CANCEL_OPTION)
-                   return;
+               ipanel.selectWrite();
                
                // if we're here, the user said yes (and data has already
                // been saved), or they said no (and we didn't cancel)
@@ -215,6 +204,18 @@ class ScrollablePicture extends JLabel implements Scrollable,
     private int pointNumIndex = 0;
     private ShowImage parent;
     
+    /*
+     * Input/Output filenames
+     */
+	final String rawPathFile = "data/rawPath.dat";
+	final String rawLocFile = "data/rawLocions.dat";
+	final String optPathFile = "data/optimizedPath.dat";
+	final String optLocFile = "data/optimizedLocations.dat";
+	final String binaryPoints = "data/binPointData.dat";
+	final String binaryLocations =  "data/binLocationData.dat";
+	final String binaryEdges = "data/binEdgeData.dat";
+    
+	
     // Constructor
     public ScrollablePicture(ImageIcon i, int maxUnitPassed,
                                           ShowImage newParent) {
@@ -433,18 +434,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
         // F7: Save data into files
         else if(c ==  KeyEvent.VK_F7)
         {
-            if(parent.confirmDialog("Write data?") == JOptionPane.YES_OPTION)
-                writeData();
-            else
-    			parent.statusBar.setText("Writing of data canceled");
+            selectWrite();
         }
         // F8: load/read from files.
         else if(c ==  KeyEvent.VK_F8)
         {
-            if(parent.confirmDialog("Load/read?") == JOptionPane.YES_OPTION)
-            	readData();
-            else
-        		parent.statusBar.setText("Reading of data canceled");
+        	selectRead();
         }
         // F9: Print locations to file
         else if(c == KeyEvent.VK_F9){
@@ -502,12 +497,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
     /**
      * Write data to disk.
      */
-    public void writeData(){
+    public void writeData(String pathFileName, String locFileName){
         boolean pathWriteSuccess = false;
     	boolean locationWriteSuccess = false;
 		// Load files
-		final String pathFileName = "rawPathData.dat";
-		final String locFileName = "rawLocationData.dat";
 		final String pathNotFound = 
 			"File \"" + pathFileName + "\" not found!     ";
 		final String locNotFound = "File \"" + locFileName + "\" not found!";
@@ -555,14 +548,13 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * Read data from disk.
      *
      */
-    public void readData(){
+    public void readData(String pathFileName, String locFileName){
     	
     	boolean pathLoadSuccess = false;
     	boolean locationLoadSuccess = false;
 
     	// Load files
-		final String pathFileName = "rawPathData.dat";
-		final String locFileName = "rawLocationData.dat";
+
 		final String pathNotFound = 
 			"File \"" + pathFileName + "\" not found!     ";
 		final String locNotFound = "File \"" + locFileName + "\" not found!";
@@ -653,6 +645,67 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		
     }
     
+    public void selectWrite()
+    {
+    	final JDialog dialog = new JDialog(parent,
+    			"Writing data options", true);
+    	dialog.getContentPane().setLayout( new FlowLayout() );
+    	JButton writeRaw = new JButton("Save raw data to disk");
+    	JButton createOpt = new JButton("Write optimization files");
+    	JButton cancel = new JButton("Cancel");
+    	
+    	dialog.getContentPane().add(cancel);
+    	dialog.getContentPane().add(createOpt);
+    	dialog.getContentPane().add(writeRaw);
+    	
+    	dialog.pack();
+    	
+    	/**
+    	 * If cancel button is pressed, close dialog box and
+    	 * display notification in the status bar. 
+    	 */
+    	cancel.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent e){
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    			parent.statusBar.setText("File writing canceled!");
+    		}
+    	});
+    	
+    	/**
+    	 * If the create optimized data button is clicked,
+    	 * Close dialog box, 
+    	 */
+    	createOpt.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent e){
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    			
+    	    	//PathOptimize pathOp = new PathOptimize();
+    	    	PathOptimize.run(rawPathFile, rawLocFile, 
+    	    			optPathFile, optLocFile,
+						binaryPoints, binaryLocations, binaryEdges
+				);
+    		}
+    	});
+    	
+    	writeRaw.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent e){
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    			writeData(rawPathFile, rawLocFile);
+    		}
+    	});
+    	
+    	dialog.setVisible(true);
+    	
+    	
+    }
+    
+    /**
+     * Pops up a dialog box that asks what type of datafile the user wants
+     * to load.  
+     */
     public void selectRead()
     {
     	final JDialog dialog = new JDialog(parent, 
@@ -674,6 +727,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		public void actionPerformed(ActionEvent e){
     			dialog.setVisible(false);
     			dialog.dispose();
+    			parent.statusBar.setText("Reading of data canceled!");
     		}
     	});
     	
@@ -681,11 +735,19 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		public void actionPerformed(ActionEvent e){
     			dialog.setVisible(false);
     			dialog.dispose();
-    			readData();
+    			readData(rawPathFile, rawLocFile);
+    		}
+    	});
+    	
+    	readOptimized.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent e){
+    			dialog.setVisible(false);
+    			dialog.dispose();
+    			readData(optPathFile, optLocFile);
     		}
     	});
 
-    	
+    	dialog.setVisible(true);
     	
     
     

@@ -719,7 +719,8 @@ AP1:    		for(int activeIndex2 = 0;
 					prevPP = curPP;
 				}
 				
-				tempEdge.endpt1 = prevPP.getGraphPoint();
+				//System.errr.println("Setting end");
+				tempEdge.endpt2 = prevPP.getGraphPoint();
 				
     		}
     		
@@ -938,8 +939,8 @@ class Edge
 	
 	public String toString()
 	{
-		String outStr = "End Point 1: " + endpt1 + "\nEnd Point 2: " +
-		endpt2 + "\n";
+		String outStr = "End Point 1: " + endpt1.point + "\nEnd Point 2: " +
+		endpt2.point + "\n";
 		for(int i = 0; i < path.size(); i++)
 		{
 			outStr += "   -->" + getPointInPath(i).toString() + "\n";

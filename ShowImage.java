@@ -958,15 +958,20 @@ class ScrollablePicture extends JLabel implements Scrollable,
  **/
 class Location implements Serializable
 {
+	int ID;
 	public Point cord;   // Coordinate of the point
 	public String name;  // Name of the point
+	
+	static int IDcount = 1;
 	
 	public Location(int x, int y, String passedName)
 	{
 		cord = new Point(x,y);  // Create coordinate based on passed in values
 		name = passedName;      // Copy name string (Strings are constants!)
+		ID = IDcount++;
 		System.err.println("New location @ " + cord);
 	}
+	
 	public String toString()
 	{
 		return(name + " @ (" + cord.x + ", " + cord.y + ")");

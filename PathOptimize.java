@@ -583,7 +583,7 @@ AP1:    		for(int activeIndex2 = 0;
 					
 					// test if this line (ap1-ap2) represents a bridge, tunnel,
 					// etc.
-					if(ap1.noLink(ap2))
+					if(!ap1.allowLink(ap2))
 						continue;
 					
 					activeSlope = getSlope(ap1, ap2);
@@ -609,7 +609,7 @@ AP1:    		for(int activeIndex2 = 0;
 			    		
 			    		// test if this line (tp1-tp2) represents a bridge, tunnel,
 						// etc.
-						if(tp1.noLink(tp2))
+						if(!tp1.allowLink(tp2))
 							continue;
 						
 			    		// this is The Rectangle Test
@@ -1174,13 +1174,13 @@ class PathPoint
 	 * @param other The PathPoint to use to simulate the line.
 	 * @return True if no intersection should be drawn.  False otherwise.
 	 */
-	public boolean noLink(PathPoint other)
+	public boolean allowLink(PathPoint other)
 	{
 		// non null guards go first to avoid exceptions.
 		return (location != null
 				&&	other.location != null
-				&&	location.name.equals("<nolink>")
-				&&	other.location.name.equals("<nolink>")
+				&&	location.isAllowIntersections()
+				&&	other.location.isAllowIntersections()
 				);
 	}
 	

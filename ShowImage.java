@@ -27,8 +27,9 @@ public class ShowImage extends JFrame{
     private final int LOCATION_FIELD_WIDTH = 30;
     
     private ImageIcon img;
-    public JTextField locationName = new JTextField(LOCATION_FIELD_WIDTH);
-    public JLabel statusBar = new JLabel("Status Text");
+    public JTextField locationName;
+    public JLabel statusBar;
+    public ScrollablePicture ipanel;
     // For accessing the locationName text field
 
 
@@ -44,6 +45,7 @@ public class ShowImage extends JFrame{
         ShowImage s = new ShowImage(args[0]);
         s.pack();
         s.setVisible(true);
+        s.ipanel.readData();
     }
 
     /**
@@ -59,7 +61,26 @@ public class ShowImage extends JFrame{
 
         Container pane = this.getContentPane();
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // don't immediately exit on close, but rather call this handler
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter(){
+           public void windowClosing(WindowEvent e){
+               // show a dialog asking the user to confirm
+               int userSays = confirmDialog("Write data?");
+               
+               // if the user says yes, save, then continue...
+               if(userSays == JOptionPane.YES_OPTION)
+                   ipanel.writeData();
+               // if the user cancels, leave immediately
+               else if(userSays == JOptionPane.CANCEL_OPTION)
+                   return;
+               
+               // if we're here, the user said yes (and data has already
+               // been saved), or they said no (and we didn't cancel)
+               setVisible(false);
+               dispose();
+           }
+        });
         
         // use a SpringLayout
         SpringLayout spring = new SpringLayout();
@@ -68,19 +89,19 @@ public class ShowImage extends JFrame{
         // img: private ImageIcon
         img = createImageIcon(filename);
 
+        // create the other objects in the main window
+        locationName = new JTextField("", LOCATION_FIELD_WIDTH);
+        // this text is overridden in the ScrollablePicture constructor
+        statusBar = new JLabel("Status Text");
+        
         // See class listing below
         // Pass in ImageIcon, and maxUnitIncrement (10).
-        ScrollablePicture ipanel = new ScrollablePicture(img, 10, this);
+        ipanel = new ScrollablePicture(img, 10, this);
 
         // Create the main window: a scroll pane with the new image panel
         JScrollPane scroll = new JScrollPane(ipanel);
         scroll.setPreferredSize(new Dimension(600, 500));
         scroll.setWheelScrollingEnabled(false);
-        
-        // create the other objects in the main window
-        locationName = new JTextField("", LOCATION_FIELD_WIDTH);
-        // this text is overridden in the ScrollablePicture constructor
-        statusBar = new JLabel("Status Text");
         
         // Add all the objects to the main window's content pane
         pane.add(scroll);
@@ -126,6 +147,7 @@ public class ShowImage extends JFrame{
                 SpringLayout.SOUTH, statusBar);
 
     }
+    
     /**
      * Shows a confirmation dialog box with the description being
      * based on the message passed in.  
@@ -135,8 +157,6 @@ public class ShowImage extends JFrame{
     	// Call showConfirmDialog on JOptionPane!
 		return(JOptionPane.showConfirmDialog(this, message));
     }
-    
-
     
     /**
      * Returns an ImageIcon, or null if the path was invalid.
@@ -395,81 +415,19 @@ class ScrollablePicture extends JLabel implements Scrollable,
         // F7: Save data into files
         else if(c ==  KeyEvent.VK_F7)
         {
-        	if( parent.confirmDialog("Write data?") == JOptionPane.YES_OPTION){
-	        	// Define output files for paths and locations.
-	            File pathOutputFile = new File("rawPathData.dat");
-	            File locationOutputFile = new File("rawLocationData.dat");
-	            
-	            try{
-	            	// Write out the paths vector
-	                ObjectOutputStream pathout = new ObjectOutputStream(
-	                        new FileOutputStream(pathOutputFile));
-	                pathout.writeObject(paths);
-	                
-	                // Write out the locations vector
-	                ObjectOutputStream locout = new ObjectOutputStream(
-	                        new FileOutputStream(locationOutputFile));
-	                locout.writeObject(locations);
-	            }
-	            catch(IOException e){
-	                System.err.println("Output stream create failed!");
-	            }
-	            // Set status
-	            parent.statusBar.setText("Paths/locations written to file");
-        	}
-        	else
+            if(parent.confirmDialog("Write data?") == JOptionPane.YES_OPTION)
+                writeData();
+            else
     			parent.statusBar.setText("Writing of data canceled");
         }
         // F8: load/read from files.
         else if(c ==  KeyEvent.VK_F8)
         {
-
-        	// Output dialog box to see if user really wants to read
-    		if( parent.confirmDialog("Load/read?") == JOptionPane.YES_OPTION){
-    			
-    			// Load files
-    			
-            	// Define input files for paths and locations.
-                File pathsInputFile = new File("rawPathData.dat");
-                File locationsInputFile = new File("rawLocationData.dat");
-                try{
-                	// Get the paths vector
-                    ObjectInputStream pathin = new ObjectInputStream(
-                            new FileInputStream(pathsInputFile));
-                    paths = (Vector)pathin.readObject();
-                    
-                    // Get the locations vector
-                    ObjectInputStream locin = new ObjectInputStream(
-                            new FileInputStream(locationsInputFile));
-                    locations = (Vector)locin.readObject();
-                    
-                    // Set status bar
-                    parent.statusBar.setText("Input read from file");
-
-                    // Set the active path (also termed path in "focus")...
-                    
-                    // If the current pathNumIndex (path focus) is greater 
-                    // than the size of the paths array that was just read in...
-                    // Then attach focus to the last path in the paths array.
-                    if(pathNumIndex > paths.size() - 1)
-                        pathNumIndex = paths.size();
-                    
-                    //Set lines
-                    lines = (Vector)paths.get(pathNumIndex);
-                    
-                    // Do the repaint dance...woooo!
-                    repaint();
-                }
-                // Catch ANY exceptions from the above try block
-                catch(Exception e){
-                	System.err.println("Error in reading path or " +
-                			"location file");
-                }
-    		}
-    		else
-    			parent.statusBar.setText("Loading of data canceled");
+            if(parent.confirmDialog("Load/read?") == JOptionPane.YES_OPTION)
+            	readData();
+            else
+        		parent.statusBar.setText("Reading of data canceled");
         }
-
         // F9: Print locations to file
         else if(c == KeyEvent.VK_F9){
         	FileOutputStream textOutput;
@@ -522,6 +480,77 @@ class ScrollablePicture extends JLabel implements Scrollable,
             		" have a defined option");
         }
     }
+    
+    /**
+     * Write data to disk.
+     */
+    public void writeData(){
+    	// Define output files for paths and locations.
+        File pathOutputFile = new File("rawPathData.dat");
+        File locationOutputFile = new File("rawLocationData.dat");
+        
+        try{
+        	// Write out the paths vector
+            ObjectOutputStream pathout = new ObjectOutputStream(
+                    new FileOutputStream(pathOutputFile));
+            pathout.writeObject(paths);
+            
+            // Write out the locations vector
+            ObjectOutputStream locout = new ObjectOutputStream(
+                    new FileOutputStream(locationOutputFile));
+            locout.writeObject(locations);
+        }
+        catch(IOException e){
+            System.err.println("Output stream create failed!");
+        }
+        // Set status
+        parent.statusBar.setText("Paths/locations written to file");
+    }
+    
+    /**
+     * Read data from disk.
+     *
+     */
+    public void readData(){
+		// Load files
+		
+		// Define input files for paths and locations.
+	    File pathsInputFile = new File("rawPathData.dat");
+	    File locationsInputFile = new File("rawLocationData.dat");
+	    try{
+	    	// Get the paths vector
+	        ObjectInputStream pathin = new ObjectInputStream(
+	                new FileInputStream(pathsInputFile));
+	        paths = (Vector)pathin.readObject();
+	        
+	        // Get the locations vector
+	        ObjectInputStream locin = new ObjectInputStream(
+	                new FileInputStream(locationsInputFile));
+	        locations = (Vector)locin.readObject();
+	        
+	        // Set status bar
+	        parent.statusBar.setText("Input read from file");
+	
+	        // Set the active path (also termed path in "focus")...
+	        
+	        // If the current pathNumIndex (path focus) is greater 
+	        // than the size of the paths array that was just read in...
+	        // Then attach focus to the last path in the paths array.
+	        if(pathNumIndex > paths.size() - 1)
+	            pathNumIndex = paths.size();
+	        
+	        //Set lines
+	        lines = (Vector)paths.get(pathNumIndex);
+	        
+	        // Do the repaint dance...woooo!
+	        repaint();
+	    }
+	    // Catch ANY exceptions from the above try block
+	    catch(Exception e){
+	    	System.err.println("Error in reading path or " +
+	    			"location file");
+	    }
+	}
 
     /**
      * Display a dialog that allows the user to manually place (if the last node

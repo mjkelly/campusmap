@@ -31,8 +31,19 @@ public class ShowImage extends JFrame{
     private final int LOCATION_FIELD_WIDTH = 30;
     
     private ImageIcon img;
+    /**
+     * Text field to enter in the name of a location
+     */
     public JTextField locationNameEntry;
+    /**
+     * For writing status text descriptions on current point and 
+     * error/success messages.
+     */
     public JLabel statusBar;
+    /**
+     * Our scrollable picture, the class contains the methods
+     * that we will operate on.  
+     */
     public ScrollablePicture ipanel;
     
     //JCheckboxes for locations
@@ -43,8 +54,11 @@ public class ShowImage extends JFrame{
     
     // For accessing the locationName text field
 
-
-    /* Driver */
+    /**
+     * Driver
+     * @param args The passed in command line arguments
+     *             Should containe the file name to check
+     */
     public static void main(String[] args) {
         // If no arguments were supplied, output error message
         if(args.length == 0){
@@ -241,6 +255,7 @@ public class ShowImage extends JFrame{
     /**
      * Returns an ImageIcon, or null if the path was invalid.
      * @param path file path to image to load
+     * @return returns an Image Icon
      * */
     protected static ImageIcon createImageIcon(String path){
         java.net.URL imgURL = ShowImage.class.getResource(path);
@@ -309,7 +324,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	// List of all locations mapped
     final String locationsTextFile = "Locations.txt";
 	
-    // Constructor
+    /**
+     * 
+     * @param i The image to display
+     * @param maxUnitPassed 
+     * @param newParent
+     */
     public ScrollablePicture(ImageIcon i, int maxUnitPassed,
                                           ShowImage newParent) {
         super(i);
@@ -375,8 +395,6 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 {
                 	middleClickGoToLocation();
                 }
-                
-                
                 
             }
         });
@@ -510,19 +528,19 @@ class ScrollablePicture extends JLabel implements Scrollable,
 
     }
     /**
-     * XXX: Comment needed
-     *
+     * This method sets up a dialog box with a list of locations
+     * on the map.  The user can click on one of the items in the list
+     * and then a point is drawn to that location.  
      */
     public void middleClickGoToLocation()
     {
 
     	int index; 
-    	System.err.println("Other mouse click");
     	final JDialog dialog = new JDialog(parent, 
-    			"Point to location", true);
+    			"Place Point at location", true);
     	dialog.getContentPane().setLayout( new FlowLayout() );
     	JButton cancel = new JButton("Cancel");
-    	final JLabel message = new JLabel("Choose a location:  ");
+    	final JLabel message = new JLabel("Choose a location:");
 
     	// add all the interface elements the dialog box
     	dialog.getContentPane().add(message);
@@ -818,6 +836,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
         repaint();
     }
     
+    /**
+     * Centers the visible window to the currently selected (in focus) point.
+     */
     public void centerOnSelectedPoint()
     {
     	// Only center if pointNumIndex in range
@@ -842,6 +863,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
     }
     /**
      * Write data to disk.
+     * @param pathFileName The passed in name for the raw path data file.  
+     * @param locFileName The passed in name for the raw location data file.
      */
     public void writeData(String pathFileName, String locFileName){
         boolean pathWriteSuccess = false;
@@ -928,7 +951,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
     
     /**
      * Read data from disk.
-     *
+     * @param pathFileName The passed in name for the raw path data file.  
+     * @param locFileName The passed in name for the raw location data file.
      */
     public void readData(String pathFileName, String locFileName){
     	
@@ -1011,6 +1035,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * If false is pass in, the function will ensure that the
      * point is either at the first element or the last element in the 
      * currently selected path.
+     * @param setAtEndPoint Determination of job to do.  
      *
      */
     public void setPointNumIndex (boolean setAtEndPoint)
@@ -1242,6 +1267,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * Write: Current path number in focus, number of elements in current
      *        path, number of paths, and any location string associated
      *        with the current in focus point.  
+     * @return The statusbar string to display
      **/
     public String statusBarText (){
     	int elementNumber = pointNumIndex + 1;
@@ -1487,14 +1513,26 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	return("");
     }
     //Methods required by the MouseMotionListener interface:
+    /**
+     * Required method of the MouseMotionListener interface.
+     * @param e It's a mouse event!  Pass the cheese!
+     */
     public void mouseMoved(MouseEvent e) { }
 
+    /**
+     * Required method of the MouseMotionListener interface.
+     * Refocuses the window.
+     * @param e It's a mouse event!  Pass the cheese!
+     */
     public void mouseDragged(MouseEvent e) {
         //The user is dragging us, so scroll!
         Rectangle r = new Rectangle(e.getX(), e.getY(), 1, 1);
         scrollRectToVisible(r);
     }
 
+    /**
+     * @return The prefered dimension to display
+     */
     public Dimension getPreferredSize() {
         if (missingPicture) {
             return ( new Dimension(320, 480) );
@@ -1503,31 +1541,55 @@ class ScrollablePicture extends JLabel implements Scrollable,
         return ( super.getPreferredSize() );
     }
 
+    /**
+     * @return The prefered dimension to display
+     */
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
 
+    /**
+     * @param visibleRect Ignored
+     * @param orientation Ignored
+     * @param direction Ignored
+     * @return the maximum unit increment
+     */
     public int getScrollableUnitIncrement(Rectangle visibleRect,
                                           int orientation,
                                           int direction) {
         return maxUnitIncrement;
     }
 
+    /**
+     * @param visibleRect Ignored
+     * @param orientation Ignored
+     * @param direction Ignored
+     * @return the maximum unit increment
+     */
     public int getScrollableBlockIncrement(Rectangle visibleRect,
                                            int orientation,
                                            int direction) {
         return maxUnitIncrement;
     }
 
+    /**
+     * @return false always
+     */
     public boolean getScrollableTracksViewportWidth() {
         return false;
     }
 
+    /**
+     * @return false always
+     */
     public boolean getScrollableTracksViewportHeight() {
         return false;
     }
 
-    // Set the maxUnitIncrement using passed in value.  
+    /**
+     * Set the maxUnitIncrement using passed in value.
+     * @param pixels the passed in value.
+     */  
     public void setMaxUnitIncrement(int pixels) {
         maxUnitIncrement = pixels;
     }
@@ -1537,6 +1599,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * Draws all of the paths in memory according to the 
      * paths field (Vector).  Color codes the paths according to
      * their current focus.  
+     * @param g The graphics component
      **/
     public void paintComponent(Graphics g){
     	// Constants for colors dependant on dot/line status
@@ -1648,6 +1711,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * Draw a dot on the specified Graphics object at the specified Point
      * Fills a rectangle around the point, paints according to the Graphic
      * component.
+     * @param g The graphics component (will specify color)
+     * @param p The point to draw the dot at.  
      **/
     public void drawDot(Graphics g, Point p){
             g.fillRect( (int)p.getX()-2, (int)p.getY()-2, 5, 5 );
@@ -1657,6 +1722,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * Connect the two passed in points. 
      * This is really just a call to drawLine()
      * Paints according to the passed in Graphics object.  
+     * @param g The graphics component (will specify color)
+     * @param start Line endpoint
+     * @param end Line endpoint
      **/
     public void connectTheDots(Graphics g, Point start, Point end){
         g.drawLine( (int)start.getX(), (int)start.getY(),
@@ -1671,10 +1739,18 @@ class ScrollablePicture extends JLabel implements Scrollable,
 
 class Location implements Serializable
 {
-	// Binary file ID
-	int ID;
-	public Point cord;   // Coordinate of the point
-	public String name;  // Name of the point
+	/**
+	 * ID number of the location object, used for binary file output
+	 */
+	public int ID;
+	/**
+	 * (x,y) coordinate of the location
+	 */
+	public Point cord;
+	/**
+	 * The name associated with the location
+	 */
+	public String name;
 	
 	// Determines if we can use this point when linking together sets of
 	// paths
@@ -1730,6 +1806,7 @@ class Location implements Serializable
 	 * @param x x coordinate for the location's Point field
 	 * @param y y coordinate for the location's Point field
 	 * @param passedName The name of the location
+	 * @param parent Allows for access to checkboxes.  
 	 */
 	public Location(int x, int y, String passedName, ShowImage parent)
 	{
@@ -1758,9 +1835,11 @@ class Location implements Serializable
 	
 	}
 	
-	/*
-	 *  (non-Javadoc)
-	 * @see java.lang.Object#toString()
+	/**
+	 * Overloaded toString method for outputing the name and coordinates of
+	 * a location.  Used in painting the coordinates to the screen
+	 * and in outputing the list of locations to a text file
+	 * @return Name and coordinates in a nice format.  
 	 */
 	public String toString()
 	{

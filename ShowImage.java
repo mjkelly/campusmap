@@ -118,7 +118,8 @@ public class ShowImage extends JFrame{
         pane.add(statusBar);
         pane.add(clearButton);
         
-        // Everything that follows is layout/alignment stuff, with illustrations
+        // Everything that follows is layout/alignment stuff, 
+        // with illustrations
         
         //  (main window)
         // +----------
@@ -296,7 +297,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     	        (Point)lines.get(pointNumIndex));
                     	
                     	// if there is one...
-                    	System.err.println("Found location at index: " + locIndex);
+                    	System.err.println("Found location at index: " 
+                    		+ locIndex);
                     	if(locIndex >= 0){
                     	    // if the text field is empty, delete the point
                     	    if(parent.locationName.getText().equals("")){
@@ -578,7 +580,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		//If empty, set to 0
 	    	if(lines.size() == 0)
 	    		pointNumIndex = 0;
-	        //Otherwise set to -1
+	        //Otherwise set to it's size.  
 	    	else
 	    		pointNumIndex = lines.size() - 1;
     	}
@@ -592,8 +594,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		
     }
     /**
-     * Display a dialog that allows the user to manually place (if the last node
-     * is selected), or move (if a previous node is selected) a node.
+     * Display a dialog that allows the user to manually place (if the 
+     * last node is selected), or move (if a previous node is selected) a node.
      */
     public void manualPlaceDialog ()
     {
@@ -665,8 +667,15 @@ class ScrollablePicture extends JLabel implements Scrollable,
      *        with the current in focus point.  
      **/
     public String statusBarText (){
+    	int elementNumber = pointNumIndex + 1;
+    	// Check bounds on the elementNumber
+        if(elementNumber < 0)
+            elementNumber = 0;
+        if(elementNumber >= lines.size())
+            elementNumber = lines.size();
+    	
     	return ( "Path Number: " + (pathNumIndex + 1) + " of " + paths.size()+
-			",  Element: " + (pointNumIndex + 1) + " of " + lines.size() +
+			",  Element: " + (elementNumber) + " of " + lines.size() +
 			printCurrentPoint() + printCurrentLocation() );
     }
     
@@ -708,7 +717,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     public String printCurrentPoint (){
     	// Print out point only if the size is greater than 0 &
     	// The pointNumIndex is at least zero
-    	if( lines.size() > 0 && pointNumIndex >= 0)
+    	if( lines.size() > 0)
     	{
     		return(",  @ (" + ((Point)lines.get( pointNumIndex )).x + 
     				", " + ((Point)lines.get( pointNumIndex )).y + ")");
@@ -818,8 +827,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	        		
 			        // if we have a "previous" dot to connect to, and at least
 			        // ONE of the dots is visible, connect the two with a line
-			        if(prev != null 
-			        		&& (visible.contains(cur) || visible.contains(prev))){
+			        if(prev != null && 
+			        		(visible.contains(cur) || visible.contains(prev))){
 			            connectTheDots(g, prev, cur);
 			        }
 	        	}
@@ -829,8 +838,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	        		g.setColor(OUT_OF_FOCUS_PATH);
 			        // if we have a "previous" dot to connect to, and at least
 			        // ONE of the dots is visible, connect the two with a line
-			        if(prev != null 
-			        		&& (visible.contains(cur) || visible.contains(prev))){
+			        if(prev != null && 
+			        		(visible.contains(cur) || visible.contains(prev))){
 			            connectTheDots(g, prev, cur);
 			        }
 			        

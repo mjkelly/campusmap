@@ -28,6 +28,9 @@ Keys:
 	Right-click: Reposition the currently selected node. If a location exists at
 	             that point, it will be deleted (if the text field is empty), or
 	             renamed (if the text field is filled before the click).
+	Other-click: Opens up a dialog box to select a location to connect to.
+				 On clicking of a location name from the list, a new point is created
+				 at that location.  
 	
 	F1: Remove active node/location.
 	F2: Switch to previous path.
@@ -44,5 +47,5 @@ Keys:
 	     NOTE: If you currently have the last node in a path selected, this will
 	     place a NEW node. If you have a previous node selected, this will
 	     change the location of that node.
-	     
+
 	F12: New path.

@@ -996,9 +996,10 @@ class GraphPoint
 	{
 		point = new Point(pp.point);
 		pp.setGraphPoint(this);
-		
-		if(pp.location != null && !pp.location.equals("<nolink>"))
+	
+		if(pp.location != null && !pp.location.name.equals("<nolink>"))			
 			locLabel = pp.location;
+
 		edges = new Vector();
 	}
 	

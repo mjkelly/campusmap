@@ -16,6 +16,8 @@ public class PathOptimize
 
     private Vector pathPoints;
     
+    private Vector graphPoints;
+    
     // These fields are for the vectors to be written out in a format
     // that can be read by ShowImage
     private Vector outPaths;
@@ -30,6 +32,7 @@ public class PathOptimize
     	pathOp.convertPointsToPathPoints();
     	pathOp.condensePoints();
     	pathOp.intersections();
+    	pathOp.convertPathPointsToGraphPoints();
     	pathOp.convertPathPointsToPoints();
     	pathOp.writePoints();
     }
@@ -345,8 +348,6 @@ public class PathOptimize
     /**
      * Find all intersections of connections from PathPoints, and add new,
      * connected PathPoints at these spots.
-     * TODO: Deal with vertical lines!
-     * (Right now getSlope throws an exception).
      */
     public void intersections ()
     {
@@ -530,17 +531,7 @@ AP1:    		for(int activeIndex2 = 0;
      * @param pi the point to test
      * @return true if pi is in the common area of the rectangles defined by 
      * the lines ap1-ap2 and tp1-tp2, false otherwise.
-     */
-    
-    public boolean inRange(int minVal, int maxVal, int testVal)
-    {
-    	if(testVal < minVal)
-    		return (false);
-    	if(testVal > maxVal)
-    		return (false);
-    	return(true);
-    }
-    
+     */    
     public boolean pointInSegments(PathPoint ap1, PathPoint ap2, PathPoint tp1,
     		PathPoint tp2, PathPoint pi)
     {
@@ -647,6 +638,8 @@ AP1:    		for(int activeIndex2 = 0;
     	return(((double)(p2.point.y - p1.point.y))/
     			((double)(p2.point.x - p1.point.x)));
     }
+
+    
     
     /**
      * Return the Point contained in the PathPoint at the given index in
@@ -668,6 +661,75 @@ AP1:    		for(int activeIndex2 = 0;
     {
     	return((PathPoint)pathPoints.get( index ) );
     }
+    
+    
+    
+    
+    public void convertPathPointsToGraphPoints()
+    {
+    	GraphPoint gp;
+    	PathPoint curPP;
+    	PathPoint graphPP;
+    	Edge tempEdge;
+    	
+    	PathPoint prevPP, whereFrom;
+    	
+    	// create a GraphPoint for every "significant" PathPoint
+    	for(int ppIndex = 0; ppIndex < pathPoints.size(); ppIndex++)
+    	{
+    		if(getPathPoint(ppIndex).isGraphPoint())
+    		{
+    			// the constructor does the linking between the PathPoint
+    			// and the new GraphPoint
+    			gp = new GraphPoint(getPathPoint(ppIndex));
+    		}
+    	}
+    	
+    	for(int ppIndex = 0; ppIndex < pathPoints.size(); ppIndex++)
+    	{
+    		if(!getPathPoint(ppIndex).isGraphPoint())
+    			continue;
+    		
+    		graphPP = getPathPoint(ppIndex);
+    		
+    		for(int conIndex = 0; conIndex < graphPP.numConnectedPoints();
+    			conIndex++)
+    		{
+				tempEdge = new Edge();
+				tempEdge.path.add(graphPP.point);
+				tempEdge.endpt1 = graphPP.getGraphPoint();
+				graphPP.getGraphPoint().edges.add(tempEdge);
+
+    			curPP = getPathPoint(conIndex);
+    			tempEdge.path.add(curPP.point);
+				tempEdge.weight += graphPP.getWeight(curPP);
+    			
+				whereFrom = graphPP;
+				prevPP = curPP;
+				
+				while( (curPP = curPP.pointTraversal(whereFrom)) != null )
+				{
+					tempEdge.path.add(curPP);
+					tempEdge.weight += prevPP.getWeight(curPP);
+					
+					whereFrom = prevPP;
+					prevPP = curPP;
+				}
+				
+				tempEdge.endpt1 = prevPP.getGraphPoint();
+				
+    		}
+    		
+    	}
+    	for(int graphPI = 0; graphPI < graphPoints.size(); graphPI++)
+    	{
+    		 System.out.println(((GraphPoint)graphPoints.get(graphPI)).toString());
+    	}
+    }
+    
+    
+    
+    
 }
 
 /**
@@ -683,7 +745,21 @@ class PathPoint
 	// Any location associated with the point
 	Location location;
 	
+	private GraphPoint graphPoint = null;
 
+	/**
+	 * @return Returns the graphPoint.
+	 */
+	public GraphPoint getGraphPoint() {
+		return graphPoint;
+	}
+	/**
+	 * @param graphPoint The graphPoint to set.
+	 */
+	public void setGraphPoint(GraphPoint graphPoint) {
+		this.graphPoint = graphPoint;
+	}
+	
 	/**
 	 * Tests to see if two points have the same location.
 	 * @param p
@@ -763,6 +839,32 @@ class PathPoint
 				);
 	}
 	
+	public boolean isGraphPoint()
+	{
+		if(numConnectedPoints() > 2 || numConnectedPoints() == 1)
+			return(true);
+		if(location != null && !location.name.equals("<nolink>"))
+			return(true);
+		return(false);
+	}
+	
+	public PathPoint pointTraversal(PathPoint prevPoint)
+	{
+		if(isGraphPoint())
+		{
+			return(null);
+		}
+		if(prevPoint == getConnectedPathPoint(0))
+			return(getConnectedPathPoint(1));
+		else
+			return(getConnectedPathPoint(0));
+	}
+	
+	public double getWeight(PathPoint p)
+	{
+		return(point.distance(p.point));
+	}
+	
 	/**
 	 * Print this PathPoint's x/y coordinates, the name of its associated
 	 * Location (if applicable), and the coordinates of any connections it has.
@@ -779,4 +881,79 @@ class PathPoint
 		
 		return outStr;
 	}
+}
+
+
+class GraphPoint
+{
+	Point point;
+	Vector edges;
+	Location locLabel;
+	
+	public GraphPoint(PathPoint pp)
+	{
+		point = new Point(pp.point);
+		pp.setGraphPoint(this);
+		
+		locLabel = pp.location;
+		edges = new Vector();
+	}
+	
+	public Edge getEdge(int index)
+	{
+		return( (Edge)edges.get( index ) );
+	}
+	public String getLocationName()
+	{
+		if(locLabel != null)
+			return(locLabel.name + "\n");
+		else
+			return("");
+	}
+	public String toString()
+	{
+		String outStr = "GraphPoint @ (" + point.x + ", " + point.y + ")\n";
+		outStr += getLocationName();
+		outStr +=  edges.toString();
+		return(outStr);	
+	}
+}
+
+class Edge
+{
+	GraphPoint endpt1;
+	GraphPoint endpt2;
+	
+	Vector path;  // Vector Points
+	double weight = 0;
+	
+	public Edge()
+	{
+		path = new Vector();
+		endpt1 = endpt2 = null;
+	}
+	
+	public String toString()
+	{
+		String outStr = "End Point 1: " + endpt1 + "\nEnd Point 2: " +
+		endpt2 + "\n";
+		for(int i = 0; i < path.size(); i++)
+		{
+			outStr += "   -->" + getPointInPath(i).toString() + "\n";
+		}
+		outStr += "Total weight: " + weight + "\n";
+		
+		return(outStr);
+	}
+	
+	public Point getPointInPath(int i)
+	{
+		return((Point)path.get(i));
+	}
+	
+	public double getWeight()
+	{
+		return(weight);
+	}
+	
 }

@@ -20,7 +20,11 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 
-
+/**
+ * Class ShowImage
+ * This class displays an image.  The rest is trivial.  
+ *
+ */
 public class ShowImage extends JFrame{
     
     // CONSTANTS
@@ -479,68 +483,26 @@ class ScrollablePicture extends JLabel implements Scrollable,
         // F2: Go to previous path option
         else if(c == KeyEvent.VK_F2)
         {
-        	// Only go back if a paths exists
-            if(pathNumIndex >= 1){
-            	// Set focus
-                lines = (Vector)paths.get(--pathNumIndex);
-                // Automatically focus on the last element
-                setPointNumIndex(true);
-                // Set statusbar
-                parent.statusBar.setText( statusBarText() );
-                repaint();
-            }
+        	// Call method to go to previous path
+        	goToPreviousPath();
         }
         // F3: Go to the next path (if exists)
         else if(c == KeyEvent.VK_F3)
         {
-        	// Only advance to the next path if it exists
-            if(pathNumIndex < paths.size() - 1)
-            {
-            	// Advance
-                lines = (Vector)paths.get(++pathNumIndex);
-                // Automatically focus on the last element
-                setPointNumIndex(true);
-                // Set statusBar
-                parent.statusBar.setText( statusBarText() );
-                repaint();
-            }
+        	goToNextPath();
         }
         // F4: Move backwards along elements in a path
         else if(c == KeyEvent.VK_F4){
-        	if(pointNumIndex > 0)
-        	{
-	        	// Decrement index
-	            pointNumIndex--;
-	            repaint();
-	            // Show status bar
-	            parent.statusBar.setText( statusBarText() );
-        	}
+        	goToPreviousElement();
         }
         // F5: Move forwards along elements in a path
         else if(c == KeyEvent.VK_F5){
-        	if(pointNumIndex < lines.size() - 1)
-        	{
-	        	// Increment
-	        	pointNumIndex++;
-	        	repaint();
-	        	// Show status bar
-	            parent.statusBar.setText( statusBarText() );
-	        }
+        	goToNextElement();
         }
         // F6: Center on currently selected point
         else if(c == KeyEvent.VK_F6)
         {
-        	if(pointNumIndex <= lines.size() - 1)
-        	{
-	        	Point center = ((Point)lines.get(pointNumIndex));
-	            Rectangle r = new Rectangle(
-	            		center.x - (getVisibleRect().width)/2, center.y - 
-						(getVisibleRect().height)/2, getVisibleRect().width, 
-						getVisibleRect().height);
-	            
-	            scrollRectToVisible(r);
-	        
-        	}
+        	centerOnSelectedPoint();
         }
         // F7: Save data into files
         else if(c ==  KeyEvent.VK_F7)
@@ -554,29 +516,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
         // F9: Print locations to file
         else if(c == KeyEvent.VK_F9){
-        	FileOutputStream textOutput;
-        	PrintStream outStream;
-        	
-        	try{
-        		textOutput =  new FileOutputStream(locationsTextFile);
-        		outStream = new PrintStream( textOutput );
-        		
-        		outStream.println("Locations:");
-        		
-        		// loop through each location and print its name and
-        		// (x,y) coordinates
-        		for(int locIndex = 0; locIndex < locations.size(); locIndex++)
-        		{
-        			outStream.println("Location " + (locIndex + 1) + " of " +
-        					locations.size() + ": " + 
-        					getLocation(locIndex).toString());
-        		}
-        		parent.statusBar.setText("Locations listing created");
-        		outStream.close();
-        	}
-        	catch(Exception e){
-        		System.err.println("Error writing to file!");
-			}
+        	printLocationsToFile();
         }
         // F10: Manually place dialog
         else if(c == KeyEvent.VK_F10)
@@ -586,17 +526,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         // F12: Create new path
         else if(c == KeyEvent.VK_F12)
         {
-        	// The current pathNumIndex is the sizeof the vector before
-        	// The new element is created.
-            pathNumIndex = paths.size();
-            // Create the space for the new path.
-            paths.add( new Vector() );
-            // Set focus
-            lines = (Vector)paths.get(pathNumIndex);
-            pointNumIndex = 0;
-            // Status bar
-            parent.statusBar.setText( statusBarText() );
-            repaint();
+        	createNewPath();
         }
         // Take a wild gusss :)
         else{
@@ -605,6 +535,174 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
     }
     
+    /**
+     * Go back to the previous path in the paths vector. 
+     * <br>
+     * Ensure that this operation does not create an array out of bounds error.  
+     * <br>
+     * Assign the active element to be the last element in the path
+     * <br>
+     * Refresh the status bar
+     */
+    public void goToPreviousPath()
+    {
+    	// Only go back if a paths exists
+        if(pathNumIndex >= 1){
+        	// Set focus
+            lines = (Vector)paths.get(--pathNumIndex);
+            // Automatically focus on the last element
+            setPointNumIndex(true);
+            // Set statusbar
+            parent.statusBar.setText( statusBarText() );
+            repaint();
+        }
+    }
+    
+    /**
+     * Go back to the next path in the paths vector. 
+     * <br>
+     * Ensure that this operation does not create an array out of bounds error.  
+     * <br>
+     * Assign the active element to be the last element in the path
+     * <br>
+     * Refresh the status bar
+     */
+    public void goToNextPath()
+    {
+    	// Only advance to the next path if it exists
+        if(pathNumIndex < paths.size() - 1)
+        {
+        	// Advance
+            lines = (Vector)paths.get(++pathNumIndex);
+            // Automatically focus on the last element
+            setPointNumIndex(true);
+            // Set statusBar
+            parent.statusBar.setText( statusBarText() );
+            repaint();
+        }
+    }
+    
+    
+    
+    /**
+     * Go back to the previous element in the current path
+     * <br>
+     * Ensure that this operation does not create an array out of bounds error.  
+     * <br>
+     * Refresh the status bar
+     */
+    public void goToPreviousElement()
+    {
+    	//Ensure that we can go backwards
+    	if(pointNumIndex > 0)
+    	{
+        	// Decrement index
+            pointNumIndex--;
+            repaint();
+            // Show status bar
+            parent.statusBar.setText( statusBarText() );
+    	}
+    }
+
+    /**
+     * Go back to the next element in the current path
+     * <br>
+     * Ensure that this operation does not create an array out of bounds error.  
+     * <br>
+     * Refresh the status bar
+     */
+    public void goToNextElement()
+    {
+    	// only if pointNumIndex < max possible size
+    	if(pointNumIndex < lines.size() - 1)
+    	{
+        	// Increment
+        	pointNumIndex++;
+        	repaint();
+        	// Show status bar
+            parent.statusBar.setText( statusBarText() );
+        }
+    }
+
+    /**
+     * Prints out the listing of all locations on the map to a text file
+     * 
+     */
+    public void printLocationsToFile()
+    {
+    	final String locTextHeader = "Locations:";
+    	final String locStatusBar = "Locations listing created";
+    	FileOutputStream textOutput;
+    	PrintStream outStream;
+    	
+    	try{
+    		textOutput =  new FileOutputStream(locationsTextFile);
+    		outStream = new PrintStream( textOutput );
+    		
+    		outStream.println(locTextHeader);
+    		
+    		// loop through each location and print its name and
+    		// (x,y) coordinates
+    		for(int locIndex = 0; locIndex < locations.size(); locIndex++)
+    		{
+    			outStream.println("Location " + (locIndex + 1) + " of " +
+    					locations.size() + ": " + 
+    					getLocation(locIndex).toString());
+    		}
+    		//Set the status bar for success
+    		parent.statusBar.setText(locStatusBar);
+    		//close the file stream
+    		outStream.close();
+    	}
+    	catch(Exception e){
+    		System.err.println("Error writing to file" + locationsTextFile);
+		}
+    }
+    
+    /**
+     * Creates a new path and adds it to the paths array.  
+     *
+     */
+    public void createNewPath()
+    {
+    	// The current pathNumIndex is the sizeof the vector before
+    	// The new element is created.
+        pathNumIndex = paths.size();
+        // Create the space for the new path.
+        paths.add( new Vector() );
+        // Set focus
+        lines = (Vector)paths.get(pathNumIndex);
+
+        //Start at the 0th point.  
+        pointNumIndex = 0;
+        // Status bar
+        parent.statusBar.setText( statusBarText() );
+        // dance, dance, dance!
+        repaint();
+    }
+    
+    public void centerOnSelectedPoint()
+    {
+    	// Only center if pointNumIndex in range
+    	if(pointNumIndex <= lines.size() - 1)
+    	{
+    		//Get a pointer to the Point that we want to center too
+        	Point center = ((Point)lines.get(pointNumIndex));
+        	/*
+        	 * Calculate the rectangle we want to center to
+        	 * Use the getVisibleRect() function to get the size of the
+        	 * current window and use them as an offset to get the
+        	 * window to scroll to.  
+        	 */
+            Rectangle r = new Rectangle(
+            		center.x - (getVisibleRect().width)/2, center.y - 
+					(getVisibleRect().height)/2, getVisibleRect().width, 
+					getVisibleRect().height);
+            
+            // Scroll to the newly created rectangle
+            scrollRectToVisible(r);
+    	}
+    }
     /**
      * Write data to disk.
      */
@@ -717,6 +815,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	        // Get Vector
 	        paths = (Vector)pathin.readObject();
 	        pathLoadSuccess = true;
+	        //close stream
+	        pathin.close();
 	    }
 	    catch(FileNotFoundException e){
 	    	System.err.println(pathNotFound);
@@ -734,6 +834,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	        // Get Vector
 	        locations = (Vector)locin.readObject();
 	        locationLoadSuccess = true;
+	        //close stream
+	        locin.close();
 	    }
 	    catch(FileNotFoundException e){
 	    	System.err.println(locNotFound);
@@ -871,7 +973,6 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	final String readRawButton  = "Load Raw Data";
     	final String readOptButton  = "Load optimized data output";
     	final String cancelButton   = "Cancel";
-
 
     	// Create new JDialog
     	final JDialog dialog = new JDialog(parent, dialogBoxTitle, true);
@@ -1209,12 +1310,14 @@ class ScrollablePicture extends JLabel implements Scrollable,
     
     
     /**
-     * Print the (x,y) coordinates of the current point.
+     * Print the (x,y) coordinates of the current point.<br>
+     * Prints out non-null string only if the size of the current
+     * in focus path is greater than zero. 
      * @return string as described, else empty string.
      */
     public String printCurrentPoint (){
     	// Print out point only if the size is greater than 0 &
-    	// The pointNumIndex is at least zero
+    	// The pointNumIndex is greater than zero.  
     	if( lines.size() > 0)
     	{
     		return(",  @ (" + ((Point)lines.get( pointNumIndex )).x + 

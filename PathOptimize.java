@@ -32,13 +32,42 @@ public class PathOptimize
     	PathOptimize pathOp = new PathOptimize();
     	
         // we abort immediately if we can't load our input files
+    	//   
+    	
+    	/*
+    	 * This reads in the Vector of vector of points and Vector of 
+    	 * locations.  These go into the field readPoints and readLocation.
+    	 */
     	if(! pathOp.readPoints() )
             return;
+    	
         
+    	/*
+    	 * Convert the incoming paths of points that we read in
+    	 * They come in as Vectors of a Vectors of Points
+    	 * That is, it's a Vector where each element of the vector
+    	 * contains a Vector which contains points
+    	 * Takes the points from readLocations and readPoints.  
+    	 */
     	pathOp.convertPointsToPathPoints();
-    	pathOp.condensePoints();
+    	/*
+    	 * Data is now all stored in the pathPoints vector
+    	 */
+    	
+    	
+    	//Collapse all duplications of PathPoints.  
+    	pathOp.condensePathPoints();
+    	
+    	/* 
+    	 * Create new pathPoints at intersections and redirect "links" of 
+    	 * the points that caused the intersections to the intersection
+    	 * point
+    	 */
     	pathOp.intersections();
-    	pathOp.condensePoints();
+    	
+    	/*
+    	 * 
+    	 */
     	pathOp.convertPathPointsToGraphPoints();
     	pathOp.convertGraphPointsToPoints();
     	pathOp.writePoints();
@@ -113,38 +142,57 @@ public class PathOptimize
     
     
     /**
-	 * Convert a set of points and locations (from a ShowImage data file) to
+	 * Convert the points and locations (from a ShowImage data file) to
 	 * PathPoints.
+	 * Step through all paths, and for each path, create PathPoints as you
+	 * go along, all of them linked together.  
 	 */
     public void convertPointsToPathPoints()
     {
-    	Point inPoint;
-    	Location atlocation;
-    	PathPoint thisPP;
-    	PathPoint prevPP;
+    	
+    	Point inPoint;  // This is the current point in the "path"
+    					// that we are working with
+    	
+    	Location atlocation;  // The location at the "current point"
+    	
+    	PathPoint currentPP;  // The current Path Point we are at
+    	PathPoint prevPP;  // The previous Path Point we were at
+    	
+    	//For each vector of points in the vector of "paths"
+    	// Each path is a set of points
     	for(int pathIndex = 0; pathIndex < readPaths.size(); pathIndex++)
     	{
+    		// We have no previous point initially, so set it to null.
     		prevPP = null;
+    		
+    		// For every point in the "path"
     		for(int elementIndex = 0;
-    		elementIndex < ( (Vector)readPaths.get(pathIndex) ).size(); 
+    		elementIndex < ( (Vector)( readPaths.get(pathIndex) )).size(); 
     		elementIndex++)
     		{
-    			// get the (x,y) location of the new PathPoint
+    			// Return the current point that we are at
     			inPoint = pointInReadPaths(pathIndex, elementIndex);
     			
-    			// check if there's a location associated with this point
+    			// Return the location at the point (method only returns a
+    			// location if it exists).  So, if no location exists,
+    			// atLocation is null.
     			atlocation = locationAtPoint(inPoint);
     			
-    			// create the PathPoint itself
-    			thisPP = new PathPoint(inPoint, new Vector(2), atlocation);
-    			pathPoints.add(thisPP);
+    			// initialize the current PathPoint
+    			// this is a constructor call.
+    			currentPP = new PathPoint(inPoint, new Vector(2), atlocation);
+    			// Add the newPathPoint to the vector of Path Points
+    			pathPoints.add(currentPP);
     			
+    			// As long as there is a previous point, 
+    			// cross nit the two together.  
     			if(prevPP != null){
-    				thisPP.addConnectedPoint(prevPP);
-    				prevPP.addConnectedPoint(thisPP);
+    				currentPP.addConnectedPoint(prevPP);
+    				prevPP.addConnectedPoint(currentPP);
     			}
-    			
-    			prevPP = thisPP;
+    			// The current current will become previous when the current
+    			// current is no longer current.  :)
+    			prevPP = currentPP;
     		}
 
     	}
@@ -368,33 +416,34 @@ public class PathOptimize
     }
     
     /**
-     * Return the point at a given path index in a given path (specified by an
-     * index).  
+     * Return a Point in a "path" in the vector of "paths".
+     * The "path" to choose from the Vector of paths is specified by pathIndex.
+     * The point in the "path" to grap is specified by elementIndex.
+     * 
      * @param pathIndex The index determining the path to choose.
      * @param elementIndex The index determining the element in the path.
-     * @return point at a given path index in a given path (specified by an
-     * index).  
+     * @return point at a given path index in a given path.  
      */
     public Point pointInReadPaths(int pathIndex, int elementIndex)
     {
-    	if(elementIndex <= ((Vector)readPaths.get(pathIndex)).size() - 1)
-    	{
-        	return((Point)((Vector)readPaths.get(pathIndex)).get(elementIndex));    	
-    	}
-    	else
-    		return(null);
-
+    	return((Point)((Vector)readPaths.get(pathIndex)).get(elementIndex));    	
     }
     
     /**
      * Condense all overlapping PathPoints into single PathPoints with
      * appropriate links.
      */
-    public void condensePoints ()
+    public void condensePathPoints ()
     {
-    	PathPoint overlap;
-    	PathPoint overlapConnection;
+		// active PathPoint (the one who we will use to check for overlaps)
     	PathPoint active;
+    	
+		// Set overlap PathPoint (the one that is a candidate for removal)
+    	PathPoint overlap;
+    	
+    	//a PathPoint that is connected to the overlap PathPoint
+    	PathPoint overlapConnection;
+    	
     	// Loop through all PathPoints in Paths Vector
     	for(int activeIndex = 0; activeIndex<pathPoints.size(); activeIndex++){
     		// Set active PathPoint (the one to check for overlaps)
@@ -418,6 +467,8 @@ public class PathOptimize
     				// removed
     				overlap = getPathPoint(overlapIndex);
     				// For all points that are connected to that overlap 
+    				// PathPoint
+    				// ... link the connected pathPoints to the active 
     				// PathPoint
     				for(int conPointIndex = 0; 
     						conPointIndex < overlap.numConnectedPoints();
@@ -924,7 +975,7 @@ AP1:    		for(int activeIndex2 = 0;
 				prevPP = curPP;
 				
 				// Loop while we can do a pointTraversal.  
-				while( (curPP = curPP.pointTraversal(whereFrom)) != null )
+				while( (curPP = curPP.pathPointTraversal(whereFrom)) != null )
 				{
 					tempEdge.path.add(curPP.point);
 	    			System.err.println("Adding point: " + curPP);
@@ -940,8 +991,9 @@ AP1:    		for(int activeIndex2 = 0;
 				
 				// check if the end point of the Edge we just created already
 				// has an Edge pointing back to the original GraphPoint.
-				edgeIndex = prevPP.getGraphPoint().outgoingEdge(
+				edgeIndex = (prevPP.getGraphPoint()).outgoingEdge(
 						graphPP.getGraphPoint(), tempEdge);
+				System.err.println("Edge Index = " + edgeIndex);
 				if(edgeIndex != -1)
 				{
 					// if it does, we just attach to the existing edge, and
@@ -955,10 +1007,12 @@ AP1:    		for(int activeIndex2 = 0;
 				}
 				else{
 					System.err.println("  --Added edge--");
+					System.err.println("tempEdge's ID:" + tempEdge.ID);
+					System.err.println(" To graph: " + graphPP.getGraphPoint().ID);
 					// take significant pathPoint, get its corresponding
 					// graph point.  Use that point to add the new edge created
 					// to the graph point's edge vector.  
-					graphPP.getGraphPoint().edges.add(tempEdge);
+					( graphPP.getGraphPoint() ).edges.add(tempEdge);
 					
 					// save the edge's path we added so we can print it later
 					outPaths.add(tempEdge.path);
@@ -987,7 +1041,9 @@ class PathPoint
 {
 	// Point where the PathPoint is located at
 	Point point;
-	// Points that are connected to the PathPoint
+
+	// This field is a vector of Points that are
+	// connected to the PathPoint's point.
 	Vector connectedPoints;
 	// Any location associated with the point
 	Location location;
@@ -1019,12 +1075,20 @@ class PathPoint
 	
 	
 	/**
-	 * Generic constructor
-	 * @param inpoint
-	 * @param inConnectPoints
-	 * @param inLoc
+	 * Simple constructor for making path points.
+	 * Simply initilize the 3 main fields of pathPoints.  graphPoint is
+	 * initilized to null since we don't even know about graphPoints yet.
+	 * (If you're following through the program, don't think about 
+	 * graphPoints yet). 
+	 * @param inpoint What to initilize the Point field point to.  
+	 * @param inConnectPoints What to initilize the Vector field 
+	 * connetedPoints to.  This field is a vector of Points that are
+	 * connected to the PathPoint's point.
+	 * @param inLoc The location to initilize the PathPoint to
+	 * The location is the location associated with PathPoint's point.
 	 */
 	public PathPoint(Point inPoint, Vector inConnectPoints, Location inLoc){
+		// Simply initilize the fields to the ones passed in.  
 		point = inPoint;
 		connectedPoints = inConnectPoints;
 		location =  inLoc;
@@ -1075,38 +1139,74 @@ class PathPoint
 	public PathPoint getConnectedPathPoint(int index){
 		return((PathPoint)connectedPoints.get(index));
 	}
-	
+
+	/**
+	 * Checks to see if a line (represented by the calling PathPoint
+	 * and the passed in PathPoint) represents a PathPoint we don't want
+	 * to have a intersection on.  
+	 * Returns true only if both use the tag '&lt;nolink&gt;'
+	 * 
+	 * @param other The PathPoint to use to simulate the line.
+	 * @return True if no intersection should be drawn.  False otherwise.
+	 */
 	public boolean noLink(PathPoint other)
 	{
-		return (
-					location != null
+		// non null guards go first to avoid exceptions.
+		return (location != null
 				&&	other.location != null
 				&&	location.name.equals("<nolink>")
 				&&	other.location.name.equals("<nolink>")
 				);
 	}
 	
+	/**
+	 * Checks to see if the point is a GraphPoint (also talked about as a
+	 * significant point).  
+	 * So, if the graphPoint has no connected points, it won't become
+	 * a graphPoint.  Since by definition it's not connected to a graphPoint,
+	 * and we're creating the graph based on GraphPoints, the non-connected
+	 * point will disappear from the graph!
+	 * @return True if the point has more than 2 connected points or
+	 * if it has only one connected point. Also returns true if the point
+	 * has a location label.   
+	 */
 	public boolean isGraphPoint()
 	{
 		if(numConnectedPoints() > 2 || numConnectedPoints() == 1)
 			return(true);
+		// Null guard to prevent exceptions
 		if(location != null && !location.name.equals("<nolink>"))
 			return(true);
 		return(false);
 	}
 	
-	public PathPoint pointTraversal(PathPoint prevPoint)
+	/**
+	 * This method is used by convertPathPointsToGraphPoints.  
+	 * It is used to let us traverse through PathPoints until a GraphPoint 
+	 * is found.  The function will return null is the point is a GraphPoint.
+	 * This also checks to ensure that the this PathPoint only has two
+	 * connections.  We then return the connection to the thisPoint that
+	 * is not the previous PathPoint.  
+	 * 
+	 * @param prevPoint The point that we were previously at in the traversal.
+	 * @return The next pathPoint in the traversal.  
+	 */
+	public PathPoint pathPointTraversal(PathPoint prevPoint)
 	{
 		if(isGraphPoint())
-		{
 			return(null);
-		}
+		
 		if(prevPoint == getConnectedPathPoint(0))
 			return(getConnectedPathPoint(1));
 		else
 			return(getConnectedPathPoint(0));
 	}
 	
+	/**
+	 * 
+	 * @param p
+	 * @return
+	 */
 	public double getWeight(PathPoint p)
 	{
 		return(point.distance(p.point));
@@ -1213,12 +1313,12 @@ class GraphPoint
 						forward = false;
 
 				}
+				// If one of the ways that you compared
+				// the two edges turned to be true
+				// Then you want to discard.  So return the index
+				if(forward || reverse)
+					return(i);
 			}
-			// If one of the ways that you compared
-			// the two edges turned to be true
-			// Then you want to discard.  So return the index
-			if(forward || reverse)
-				return(i);
 		}
 		// If no edges were  found to be equal to the passed in edge
 		// Then we did not find a match, so we do not want to discard
@@ -1260,8 +1360,9 @@ class GraphPoint
 				}
 				
 				// print value of each weight
-	    		out.writeDouble( ((Edge)edges.get(i)).weight );
-	    		System.err.println("Weight: " + ((Edge)edges.get(i)).weight);
+	    		out.writeInt( (int)((100)*((Edge)edges.get(i)).weight) );
+	    		System.err.println("Weight: " + 
+	    				(int)((100)*((Edge)edges.get(i)).weight));
 				
 	    		// print ID of each edge
 	    		out.writeInt( ((Edge)edges.get(i)).ID );
@@ -1342,7 +1443,7 @@ class GraphPoint
 		outStr += getLocationName();
 		for(int i = 0; i < edges.size(); i++)
 			outStr +=  ((Edge)edges.get(i)).printString();
-		return(outStr);	
+		return(outStr);
 	}
 }
 

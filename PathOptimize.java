@@ -29,6 +29,31 @@ public class PathOptimize
     /** Driver */
     public static void main(String[] args)
     {
+    	
+    	final String rawPathFile = "data/rawPath.dat";
+    	final String rawLocFile = "data/rawLocions.dat";
+    	final String optPathFile = "data/optimizedPath.dat";
+    	final String optLocFile = "data/optimizedLocations.dat";
+    	final String binaryPoints = "data/binPointData.dat";
+    	final String binaryLocations =  "data/binLocationData.dat";
+    	final String binaryEdges = "data/binEdgeData.dat";
+    	run(rawPathFile, rawLocFile, optPathFile, optLocFile,
+    			binaryPoints, binaryLocations, binaryEdges
+    	);
+    }
+    
+    /**
+     * Runs the optimization program.  
+     * @param inPathFile Incomming path file
+     * @param inLocFile Incoming locations file
+     * @param outPathFile Outgoing path file
+     * @param outLocFile Outgoing locations file
+     * @return boolean is success.  
+     */
+    public static boolean run(String inPathFile, String inLocFile,
+    		String outPathFile, String outLocFile, 
+			String binaryPoints, String binaryLocations, String binaryEdges)
+    {
     	PathOptimize pathOp = new PathOptimize();
     	
         // we abort immediately if we can't load our input files
@@ -38,8 +63,8 @@ public class PathOptimize
     	 * This reads in the Vector of vector of points and Vector of 
     	 * locations.  These go into the field readPoints and readLocation.
     	 */
-    	if(! pathOp.readPoints() )
-            return;
+    	if(! pathOp.readPoints(inPathFile, inLocFile) )
+            return(false);
     	
         
     	/*
@@ -70,8 +95,9 @@ public class PathOptimize
     	 */
     	pathOp.convertPathPointsToGraphPoints();
     	pathOp.convertGraphPointsToPoints();
-    	pathOp.writePoints();
-    	pathOp.binaryWrite();
+    	pathOp.writePoints(outPathFile, outLocFile);
+    	pathOp.binaryWrite(binaryPoints, binaryLocations, binaryEdges);
+    	return(true);
     }
     
     /**
@@ -79,23 +105,21 @@ public class PathOptimize
      */
     public PathOptimize()
     {
-    	outLocations = new Vector(128);
-    	outPaths = new Vector(128);
-    	pathPoints = new Vector(128);
-    	readLocations = new Vector(128);
-    	readPaths = new Vector(128);
+    	outLocations = new Vector();
+    	outPaths = new Vector();
+    	pathPoints = new Vector();
+    	readLocations = new Vector();
+    	readPaths = new Vector();
     }
     
     /**
      * Method readData,  loads the paths and locations fields from 
      * files.  
      */
-    public boolean readPoints(){
+    public boolean readPoints(String pathFileName, String locFileName){
         boolean pathLoadSuccess = false;
         boolean locationLoadSuccess = false;
 		// Load files
-		final String pathFileName = "rawPathDataS.dat";
-		final String locFileName = "rawLocationDataS.dat";
 		final String pathNotFound = 
 			"File \"" + pathFileName + "\" not found!     ";
 		final String locNotFound = "File \"" + locFileName + "\" not found!";
@@ -265,12 +289,10 @@ public class PathOptimize
     /**
      * Write ShowImage-style data to disk.
      */
-    public void writePoints(){
+    public void writePoints(String pathFileName, String locFileName){
         boolean pathWriteSuccess = false;
     	boolean locationWriteSuccess = false;
 		// Load files
-		final String pathFileName = "rawPathData.dat";
-		final String locFileName = "rawLocationData.dat";
 		final String pathNotFound = 
 			"File \"" + pathFileName + "\" not found!     ";
 		final String locNotFound = "File \"" + locFileName + "\" not found!";
@@ -317,10 +339,8 @@ public class PathOptimize
      * Write data to disk in binary format, suitable for reading from
      * the web-based frontend.
      */
-    public void binaryWrite(){
-		final String pointFileName = "binPointData.dat";
-		final String locFileName = "binLocationData.dat";
-		final String edgeFileName = "binEdgeData.dat";
+    public void binaryWrite(String pointFileName, String locFileName,
+    		String edgeFileName){
 		
 		File pointOutputFile = new File(pointFileName);
         File locOutputFile = new File(locFileName);
@@ -1198,8 +1218,7 @@ class PathPoint
 		
 		if(prevPoint == getConnectedPathPoint(0))
 			return(getConnectedPathPoint(1));
-		else
-			return(getConnectedPathPoint(0));
+		return(getConnectedPathPoint(0));
 	}
 	
 	/**
@@ -1443,8 +1462,7 @@ class GraphPoint
 	{
 		if(locLabel != null)
 			return(locLabel.name + "\n");
-		else
-			return("");
+		return("");
 	}
 	public String toString()
 	{

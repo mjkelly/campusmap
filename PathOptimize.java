@@ -674,6 +674,8 @@ AP1:    		for(int activeIndex2 = 0;
     	
     	PathPoint prevPP, whereFrom;
     	
+    	graphPoints = new Vector();
+    	
     	// create a GraphPoint for every "significant" PathPoint
     	for(int ppIndex = 0; ppIndex < pathPoints.size(); ppIndex++)
     	{
@@ -682,6 +684,7 @@ AP1:    		for(int activeIndex2 = 0;
     			// the constructor does the linking between the PathPoint
     			// and the new GraphPoint
     			gp = new GraphPoint(getPathPoint(ppIndex));
+    			graphPoints.add(gp);
     		}
     	}
     	

@@ -26,9 +26,9 @@ public class ShowImage extends JFrame{
     // CONSTANTS
     private final int LOCATION_FIELD_WIDTH = 30;
     
-    private ImageIcon img;
-    public JTextField locationName = new JTextField(LOCATION_FIELD_WIDTH);
-    public JLabel statusBar = new JLabel("Status Text");
+    public JScrollPane scroll;
+    public JTextField locationName;
+    public JLabel statusBar;
     // For accessing the locationName text field
 
 
@@ -65,22 +65,20 @@ public class ShowImage extends JFrame{
         SpringLayout spring = new SpringLayout();
         pane.setLayout( spring );
         
-        // img: private ImageIcon
-        img = createImageIcon(filename);
+        ImageIcon img = createImageIcon(filename);
 
-        // See class listing below
-        // Pass in ImageIcon, and maxUnitIncrement (10).
+        // create the other objects in the main window
+        locationName = new JTextField("", LOCATION_FIELD_WIDTH);
+        // this text is set in the ScrollablePicture constructor
+        statusBar = new JLabel();
+        // Pass in ImageIcon, maxUnitIncrement (10), and the parent window
+        // (this).
         ScrollablePicture ipanel = new ScrollablePicture(img, 10, this);
 
         // Create the main window: a scroll pane with the new image panel
-        JScrollPane scroll = new JScrollPane(ipanel);
+        scroll = new JScrollPane(ipanel);
         scroll.setPreferredSize(new Dimension(600, 500));
         scroll.setWheelScrollingEnabled(false);
-        
-        // create the other objects in the main window
-        locationName = new JTextField("", LOCATION_FIELD_WIDTH);
-        // this text is overridden in the ScrollablePicture constructor
-        statusBar = new JLabel("Status Text");
         
         // Add all the objects to the main window's content pane
         pane.add(scroll);
@@ -189,6 +187,11 @@ class ScrollablePicture extends JLabel implements Scrollable,
         paths.add( new Vector() );
         lines = (Vector)paths.get(pathNumIndex);
         parent.statusBar.setText( statusBarText() );
+        
+        // save a reference to "this" so we can access it inside the
+        // anonymous class
+        final ScrollablePicture superThis = this;
+        
         /* add the mouse-click handler */
         addMouseListener(new MouseAdapter(){
         	
@@ -223,11 +226,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 if(!parent.locationName.getText().equals(""))
                 {
                     System.err.println(parent.locationName.getText());
+                    superThis.requestFocus();
                     locations.add(new Location(x, y, parent.locationName.getText()));
                 }
 
                 parent.locationName.setText("");
-                
+                parent.statusBar.setText( statusBarText() );
                 
             }
         });
@@ -267,7 +271,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
             {
             	// Remove the last element
                 lines.remove(lines.size() -1);
-                repaint( getVisibleRect() );
+                parent.statusBar.setText( statusBarText() );
                 repaint();
             }
         }

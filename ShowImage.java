@@ -655,7 +655,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
     }
     
-    
+    /**
+     * 
+     *
+     */
     public void undoConnection ()
     {
     	// Only go back if there is a point to go to
@@ -762,12 +765,14 @@ class ScrollablePicture extends JLabel implements Scrollable,
 
 
     /**
-     * Set the pointNumber index
+     * Set the pointNumber index.  <p>
      * 
-     * For a true value passed in, set the pointNumIndex to the last element
-     * in the vector of elements.  
-     * 
-     * For a false value passed in, check the bounds of pointNumIndex.
+     * If true is passed in, the function will set the pointNumIndex
+     * to the last element in the currently selected path.  <br>
+     * If false is pass in, the function will ensure that the
+     * point is either at the first element or the last element in the 
+     * currently selected path.
+     *
      */
     public void setPointNumIndex (boolean setAtEndPoint)
     {
@@ -789,6 +794,11 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		
     }
     
+    /**
+     * Opens up a dialog box for the user to select how to save the data
+     * the data that has been entered.  
+     *
+     */
     public void selectWrite()
     {
     	final JDialog dialog = new JDialog(parent,
@@ -818,7 +828,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	
     	/**
     	 * If the create optimized data button is clicked,
-    	 * Close dialog box, 
+    	 * Make a call to PathOptimize to have it run an optimized on
+    	 * the raw in the current raw data files.  Outputs binary files also.
     	 */
     	createOpt.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e){
@@ -833,6 +844,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		}
     	});
     	
+    	/**
+    	 * If the write raw data button is clicked,
+    	 * Write out the raw data.  
+    	 */
     	writeRaw.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e){
     			dialog.setVisible(false);
@@ -841,25 +856,35 @@ class ScrollablePicture extends JLabel implements Scrollable,
     		}
     	});
     	
+    	// Show dialog box.  
     	dialog.setVisible(true);
-    	
-    	
     }
     
     /**
      * Pops up a dialog box that asks what type of datafile the user wants
-     * to load.  
+     * to load.  Takes the input and calls the functions to load the proper
+     * data files.  (Raw data or optimized data).  
      */
     public void selectRead()
     {
-    	final JDialog dialog = new JDialog(parent, 
-    			"Loading data options", true);
-    	dialog.getContentPane().setLayout( new FlowLayout() );
-    	JButton readRaw = new JButton("Load Raw Data");
-    	JButton readOptimized = new JButton("Load optimized data output");
-    	JButton cancel = new JButton("Cancel");
+    	final String dialogBoxTitle = "Loading data options";
+    	final String readRawButton  = "Load Raw Data";
+    	final String readOptButton  = "Load optimized data output";
+    	final String cancelButton   = "Cancel";
+
+
+    	// Create new JDialog
+    	final JDialog dialog = new JDialog(parent, dialogBoxTitle, true);
     	
-    	// add all the interface elements the dialog box
+    	// Let's make it easy and just use FlowLayout.
+    	dialog.getContentPane().setLayout( new FlowLayout() );
+    	
+    	// Create the JButtons, the reading options.
+    	JButton readRaw = new JButton(readRawButton);
+    	JButton readOptimized = new JButton(readOptButton);
+    	JButton cancel = new JButton(cancelButton);
+    	
+    	// add all the interface elements to the dialog box
     	dialog.getContentPane().add(cancel);
     	dialog.getContentPane().add(readOptimized);
     	dialog.getContentPane().add(readRaw);
@@ -867,39 +892,43 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	// Fit subcomponents
     	dialog.pack();
 
+    	// What to do if cancel is pressed
     	cancel.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e){
+    	    	final String canceledMessage = "Reading of data canceled!";
     			dialog.setVisible(false);
     			dialog.dispose();
-    			parent.statusBar.setText("Reading of data canceled!");
+    			parent.statusBar.setText(canceledMessage);
     		}
     	});
     	
+    	// What to do if the read raw button is pressed
     	readRaw.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e){
     			dialog.setVisible(false);
     			dialog.dispose();
+    			// Read data from the raw data files.  
     			readData(rawPathFile, rawLocFile);
     		}
     	});
     	
+    	// What to do if the read optimized button is pressed
     	readOptimized.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e){
     			dialog.setVisible(false);
     			dialog.dispose();
+    			// Read data from the optimized files.  
     			readData(optPathFile, optLocFile);
     		}
     	});
 
+    	// place dialog box
     	dialog.setVisible(true);
-    	
-    
-    
     }
     
     /**
-     * Display a dialog that allows the user to manually place (if the 
-     * last node is selected), or move (if a previous node is selected) a node.
+     * Display a dialog that allows the user to place a point (node) at a
+     * specified & entered x/y coordinate.  
      */
     public void manualPlaceDialog ()
     {
@@ -992,9 +1021,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
     /**
      * Print the name of the location if there is a location that intersects
      * with the current point.
+     * This method is used to by setStatusBar.  
      * @return name of location if exist, else null string.
      */
     public String printCurrentLocation () {
+    	// Only print if locations exists and there are points
+    	// on the currently selected path.  (Null exception guards)
     	if( locations.size() > 0 && lines.size() > 0)
     	{
     		int locIndex=findLocationAtPoint((Point)lines.get(pointNumIndex));
@@ -1020,6 +1052,15 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	return(-1);
     }
     
+    /**
+     * Returns the number of paths connect to a given point.
+     * <br>This method is used to determine if the location connected
+     * to a point should be deleted when a undo command is executed.
+     * <br>Note: Yes, it's really inefficient, but it's the best we
+     * can do with the limited structure of class ShowImage.  
+     * @param pointToCompare The point to check for connected paths.  
+     * @return The number of paths connected to the point.  
+     */
     public int numOfPathsConnectedToPoint(Point pointToCompare)
     {
     	int numPathsConnected = 0;
@@ -1033,42 +1074,47 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	return(numPathsConnected);	
     }
     
-    
+    /**
+     * Searches for a location and changes current focus to a path
+     * that intersects with the location.  <br>
+     * If there is multiple paths intersecting a location, 
+     * calling this method again will cycle through the paths.  
+     * @param locationName The location name to search for.  
+     */
     public void searchAndFocusToLocation(String locationName)
     {
-    	int locIndex;
-	
+    	// Message to display on successful completion
+    	String success = "Path #" + (pathNumIndex + 1) +
+			" intersects with location \"" + locationName + "\"";
+    	int locIndex;	// The index of the location inside of the
+    					// locations array.  
 
 		// we're searching for a path intersecting with the locataion.
 		
 		// Find a location with the name passed in...we will assume
-		// that no more than one exists
+		// that no more than one location with the same name exists
 		locIndex = findLocationWithName(locationName);
-		
+
+		// Return if location could not be found.  
 		if(locIndex < 0)
 			return;
 
+		// Get the actual location object associated with the name.  
 		Location locFound = (Location)locations.get(locIndex);
-		
 
 		
 		 //If the location passed in is equal to the last 
-		//location passed in
-		System.err.println("comparing: " + locationName + " and " + lastLocationSearched);
-
-		System.err.println("LastVertex (before):  " + lastVertex);
+		//location passed in...
 		if(locationName.equals(lastLocationSearched))
     	{	
-    		// We have a location (a point), now we need to find a path
-    		// that it's on. 
+    		// We have a location (a point), we need to find the next path
+			// (after the last one), so pass that information in.  
     		lastVertex = getNextPathInSearch(++lastVertex, locFound.cord);
     	}
     	else
     		// We have a location (a point), now we need to find a path
     		// that it's on. 
     		lastVertex = getNextPathInSearch(0, locFound.cord);
-		
-		System.err.println("LastVertex (after):  " + lastVertex);
 		
 		// If no path was found, return
 		if(lastVertex < 0)
@@ -1084,20 +1130,26 @@ class ScrollablePicture extends JLabel implements Scrollable,
 			System.err.println("lastVertex is less than 0!  \n" +
 					"You messed up BIG time");
 		}
+		
+		//If we didn't return, then lastVertex is the index of that
+		// path we should focus to.  
 		pathNumIndex = lastVertex;
 		
+		// Set current path
         lines = (Vector)paths.get(pathNumIndex);
 		
+        
 		//Set point number index to the end.  
 		setPointNumIndex(true);
 		
 		//Do the repaint dance!
 		repaint();
 
+		//Hold the location searched for the next time the function is called
 		lastLocationSearched = locationName;
-		parent.statusBar.setText("Path #" + (pathNumIndex + 1) +
-				" intersects with location \"" + locationName + "\"");
-        
+		
+		// Set the status bar to the successful completion message
+		parent.statusBar.setText(success);
     }
     
     /**
@@ -1108,6 +1160,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
      */
     public int getNextPathInSearch(int startingIndex, Point pointToFind)
     {
+    	final String allListed = 
+    		"All intersecting paths have been previously listed";
+
     	// step over all remaining paths
     	for(int i = startingIndex; i < paths.size(); i++)
     		// step through every point in the path
@@ -1117,25 +1172,39 @@ class ScrollablePicture extends JLabel implements Scrollable,
     				return(i);
     	
     	// Return an error & output a message if path couldn't be found.  
-		parent.statusBar.setText("Next Point/Path couldn't be found");
+		parent.statusBar.setText(allListed);
     	return(-1);
     	
     }
     
+    /**
+     * Return in the point in a path specified by the two indexes.  
+     * @param pathIndex That path to choose
+     * @param elementIndex The element in the path to choose
+     * @return A choosen point in a choosen path.  
+     */
     public Point getPointInPath(int pathIndex, int elementIndex)
     {
+    	// cast away!
     	return((Point)((Vector)paths.get(pathIndex)).get(elementIndex));
     }
     
+    
+    /**
+     * Scans through locations array looking for a location that has
+     * the passed in location name.  
+     * @param locationName The name to compare with the locations.  
+     * @return The index in the locations array where the location
+     * with the matching name was found.  
+     */
     public int findLocationWithName (String locationName)
 	{
     	for(int i = 0; i < locations.size(); i++)
-    		if((((Location)locations.get(i)).name.equals(locationName)))
+    		if(((Location)locations.get(i)).name.equals(locationName))
 				return(i);
 		parent.statusBar.setText("Corresponding location could" +
 			" not be found!");
-    	return(-1);
-    		
+    	return(-1);		
 	}
     
     
@@ -1301,6 +1370,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
     }
 
 
+    /**
+     * Method created to eliminate the ugly casting.  Returns a location
+     * at the passed in locations field index.  
+     * @param locIndex The index to choose
+     * @return The location @ that index.  
+     */
     public Location getLocation(int locIndex){
     	return((Location)locations.get(locIndex));
     }
@@ -1332,20 +1407,26 @@ class ScrollablePicture extends JLabel implements Scrollable,
 
 class Location implements Serializable
 {
+	// Binary file ID
 	int ID;
 	public Point cord;   // Coordinate of the point
 	public String name;  // Name of the point
 	
+	// For creating binary file IDs
 	static int IDcount = 1;
 	
 	public Location(int x, int y, String passedName)
 	{
 		cord = new Point(x,y);  // Create coordinate based on passed in values
 		name = passedName;      // Copy name string (Strings are constants!)
-		ID = IDcount++;
+		ID = IDcount++;  // Increment the ID count & assign ID
 		System.err.println("New location @ " + cord);
 	}
 	
+	/*
+	 *  (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString()
 	{
 		return(name + " @ (" + cord.x + ", " + cord.y + ")");

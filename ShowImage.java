@@ -243,6 +243,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
     private void handleKey(KeyEvent k){
         
         int c = k.getKeyCode();
+        
+        // Misc leftoovers from testing...
         if(c == KeyEvent.VK_LEFT){
             System.err.println("left");
         }
@@ -255,31 +257,41 @@ class ScrollablePicture extends JLabel implements Scrollable,
         else if(c == KeyEvent.VK_DOWN){
             System.err.println("down");
         }
-        // Undo option
+        
+        
+        // F1: Erase last line & point
         else if(c ==  KeyEvent.VK_F1)
         {
+        	// Only erase if there is a point to erase
             if(lines.size() >= 1)
             {
+            	// Remove the last element
                 lines.remove(lines.size() -1);
                 repaint( getVisibleRect() );
-                repaint();
-            }
-        }
-        // Advance path
-        else if(c == KeyEvent.VK_F3)
-        {
-            if(pathNumIndex < paths.size() - 1)
-            {
-                lines = (Vector)paths.get(++pathNumIndex);
-                parent.statusBar.setText( statusBarText() );
                 repaint();
             }
         }
         // F2: Go to previous path option
         else if(c == KeyEvent.VK_F2)
         {
+        	// Only go back if a paths exists
             if(pathNumIndex >= 1){
+            	// Set focus
                 lines = (Vector)paths.get(--pathNumIndex);
+                // Set statusbar
+                parent.statusBar.setText( statusBarText() );
+                repaint();
+            }
+        }
+        // F3: Go to the next path (if exists)
+        else if(c == KeyEvent.VK_F3)
+        {
+        	// Only advance to the next path if it exists
+            if(pathNumIndex < paths.size() - 1)
+            {
+            	// Advance
+                lines = (Vector)paths.get(++pathNumIndex);
+                // Set statusBar
                 parent.statusBar.setText( statusBarText() );
                 repaint();
             }
@@ -371,12 +383,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
     }
 
-    /*
+    /**
      * Return the status bar text
      * Write: Current path number in focus, number of elements in current
      *        path, number of paths, and any location string associated
      *        with the current in focus point.  
-     */
+     **/
     public String statusBarText (){
     	return ( "Path Number: " + (pathNumIndex + 1) +
 			",  Number of elements: " + lines.size() + 
@@ -435,12 +447,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
         maxUnitIncrement = pixels;
     }
 
-    /*
+    /**
      * Override the paintComponent method so we can draw lines
      * Draws all of the paths in memory according to the 
      * paths field (Vector).  Color codes the paths according to
      * their current focus.  
-     */
+     **/
     public void paintComponent(Graphics g){
     	// Constants for colors dependant on dot/line status
     	final Color LASTPLACED_DOT = Color.BLUE;
@@ -515,30 +527,30 @@ class ScrollablePicture extends JLabel implements Scrollable,
     }
 
     
-    /*
+    /**
      * Draw a dot on the specified Graphics object at the specified Point
      * Fills a rectangle around the point, paints according to the Graphic
      * component.
-     */
+     **/
     public void drawDot(Graphics g, Point p){
             g.fillRect( (int)p.getX()-2, (int)p.getY()-2, 5, 5 );
     }
 
-    /*
+    /**
      * Connect the two passed in points. 
      * This is really just a call to drawLine()
      * Paints according to the passed in Graphics object.  
-     */
+     **/
     public void connectTheDots(Graphics g, Point start, Point end){
         g.drawLine( (int)start.getX(), (int)start.getY(),
                     (int)end.getX(), (int)end.getY() );
     }
 }
 
-/*
+/**
  * Location class.  Simply an object contatining a point (Point cord) and 
  * a description of the point (String name)
- */
+ **/
 class Location implements Serializable
 {
 	public Point cord;   // Coordinate of the point

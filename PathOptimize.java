@@ -357,8 +357,8 @@ public class PathOptimize
     	
     	// The intersect coordinates
     	double intersectX;
-    	long intersectYTest;
-    	long intersectYActive;
+    	double intersectYTest;
+    	double intersectYActive;
     	double activeSlope;
     	double testSlope;
     	
@@ -396,7 +396,11 @@ AP1:    		for(int activeIndex2 = 0;
 					if(tp1.equals(ap2) || ap1.equals(ap2))
 						continue;
 					
-
+					// test if this line (ap1-ap2) represents a bridge, tunnel,
+					// etc.
+					if(ap1.noLink(ap2))
+						continue;
+					
 					activeSlope = getSlope(ap1, ap2);
 		    		
 
@@ -416,7 +420,13 @@ AP1:    		for(int activeIndex2 = 0;
 			    		if(tp2.equals(ap1) || tp2.equals(ap2) 
 			    				|| tp2.equals(tp1))
 			    			continue;
+						
 			    		
+			    		// test if this line (tp1-tp2) represents a bridge, tunnel,
+						// etc.
+						if(tp1.noLink(tp2))
+							continue;
+						
 			    		// this is The Rectangle Test
 			    		if(!rectangleTest(ap1, ap2, tp1, tp2))
 			    			continue;
@@ -449,14 +459,14 @@ AP1:    		for(int activeIndex2 = 0;
 							   (activeSlope - testSlope));
 						
 						// calculate the two possible Y intersect coordinates
-						intersectYTest = (long)((testSlope)
+						intersectYTest = ((testSlope)
 						        * (intersectX - tp1.point.x) + tp1.point.y);
-						intersectYActive = (long)((activeSlope)
+						intersectYActive = ((activeSlope)
 						        * (intersectX - ap1.point.x) + ap1.point.y);
 						
 						// if the two Y intersect coordinates are the same,
 						// it's a real intersection
-						if(intersectYActive == intersectYTest)
+						if(Math.abs(intersectYActive-intersectYTest) < 0.00001)
 						{
 							System.err.println("Points are equal!");
 							System.err.println("(" + intersectX + ", " 
@@ -521,6 +531,16 @@ AP1:    		for(int activeIndex2 = 0;
      * @return true if pi is in the common area of the rectangles defined by 
      * the lines ap1-ap2 and tp1-tp2, false otherwise.
      */
+    
+    public boolean inRange(int minVal, int maxVal, int testVal)
+    {
+    	if(testVal < minVal)
+    		return (false);
+    	if(testVal > maxVal)
+    		return (false);
+    	return(true);
+    }
+    
     public boolean pointInSegments(PathPoint ap1, PathPoint ap2, PathPoint tp1,
     		PathPoint tp2, PathPoint pi)
     {
@@ -570,7 +590,7 @@ AP1:    		for(int activeIndex2 = 0;
     	int y = Math.min(p1.y, p2.y);
     	int height = Math.abs(p2.y - p1.y);
     	int width = Math.abs(p2.x - p1.x);
-    	return(new Rectangle( x, y, width, height));
+    	return(new Rectangle( x, y, width + 1, height + 1));
     }
 
     /**
@@ -731,6 +751,16 @@ class PathPoint
 	 */
 	public PathPoint getConnectedPathPoint(int index){
 		return((PathPoint)connectedPoints.get(index));
+	}
+	
+	public boolean noLink(PathPoint other)
+	{
+		return (
+					location != null
+				&&	other.location != null
+				&&	location.name.equals("<nolink>")
+				&&	other.location.name.equals("<nolink>")
+				);
 	}
 	
 	/**

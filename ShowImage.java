@@ -33,9 +33,7 @@ public class ShowImage extends JFrame{
     // For accessing the locationName text field
 
 
-    
-    
-    /* Driver */
+    /** Driver */
     public static void main(String[] args) {
         // If no arguments were supplied, output error message
         if(args.length == 0){
@@ -49,6 +47,10 @@ public class ShowImage extends JFrame{
         s.setVisible(true);
     }
 
+    /**
+     * Create a new window holding the specified image.
+     * @param filename filename of image to open
+     */
     public ShowImage(String filename){
 
         super(filename);  // JFrame
@@ -65,7 +67,6 @@ public class ShowImage extends JFrame{
         // Create flow Layout fow placing stuff
         pane.setLayout( spring );
         
-        // Create JTextField for location.  
         
         // img: private ImageIcon
         img = createImageIcon(filename);
@@ -109,7 +110,10 @@ public class ShowImage extends JFrame{
     }
 
 
-    /** Returns an ImageIcon, or null if the path was invalid. */
+    /**
+     * Returns an ImageIcon, or null if the path was invalid.
+     * @param path file path to image to load
+     * */
     protected static ImageIcon createImageIcon(String path){
         java.net.URL imgURL = ShowImage.class.getResource(path);
         if (imgURL != null)
@@ -122,7 +126,11 @@ public class ShowImage extends JFrame{
 }
 
 
-/* from java.sun.com; modified to get KeyEvents */
+/**
+ * A picture suitable to placing in a JScrollPane, and handles mouse and key
+ * events to allow modification of a set of path points. Points and connecting
+ * lines are drawn over the image.
+ */
 class ScrollablePicture extends JLabel implements Scrollable, 
                                                   MouseMotionListener, 
                                                   KeyListener{
@@ -170,9 +178,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 int x = e.getX();
                 int y = e.getY();
 
-                /*
-                 * XXX: this is where we'd do some kind of vector-adding thing 
-                 */
+                
                 if(SwingUtilities.isLeftMouseButton(e)) {
                     System.err.print("Left mouse click @ (" + x + ", " + y + ")");
                     // store the click location in a Point object
@@ -234,12 +240,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
         // Undo option
         else if(c ==  KeyEvent.VK_F1)
         {
-        	if(lines.size() >= 1)
-        	{
-        		lines.remove(lines.size() -1);
+            if(lines.size() >= 1)
+            {
+                lines.remove(lines.size() -1);
                 repaint( getVisibleRect() );
-            	repaint();
-        	}
+                repaint();
+            }
         }
         // Advance path
         else if(c == KeyEvent.VK_F3)
@@ -254,65 +260,65 @@ class ScrollablePicture extends JLabel implements Scrollable,
         //      Previous path option
         else if(c == KeyEvent.VK_F2)
         {
-        	if(pathNumIndex >= 1){
-	            lines = (Vector)paths.get(--pathNumIndex);
-	            parent.statusBar.setText( statusBarText() );
-	            repaint();
-        	}
+            if(pathNumIndex >= 1){
+                lines = (Vector)paths.get(--pathNumIndex);
+                parent.statusBar.setText( statusBarText() );
+                repaint();
+            }
         }
         // New path option
         else if(c == KeyEvent.VK_F12)
         {
-        	pathNumIndex = paths.size();
+            pathNumIndex = paths.size();
             paths.add( new Vector() );
             lines = (Vector)paths.get(pathNumIndex);
             parent.statusBar.setText( statusBarText() );
             repaint();
         }
+        // Save file
         else if(c ==  KeyEvent.VK_F7)
         {
-        	File pathOutputFile = new File("rawPathData.dat");
-        	File locationOutputFile = new File("rawLocationData.dat");
-
-        	try{
-        		ObjectOutputStream pathout = new ObjectOutputStream(
-               		                          new FileOutputStream(pathOutputFile));
-            	pathout.writeObject(paths);
-            	
-        		ObjectOutputStream locout = new ObjectOutputStream(
-	                          new FileOutputStream(locationOutputFile));
-        		locout.writeObject(locations);
-        	}
-        	catch(IOException e){
-        		System.err.println("Output stream create failed!");
-        	}
-        	parent.statusBar.setText("Paths/locations written to file");
+            File pathOutputFile = new File("rawPathData.dat");
+            File locationOutputFile = new File("rawLocationData.dat");
+            
+            try{
+                ObjectOutputStream pathout = new ObjectOutputStream(
+                        new FileOutputStream(pathOutputFile));
+                pathout.writeObject(paths);
+                
+                ObjectOutputStream locout = new ObjectOutputStream(
+                        new FileOutputStream(locationOutputFile));
+                locout.writeObject(locations);
+            }
+            catch(IOException e){
+                System.err.println("Output stream create failed!");
+            }
+            parent.statusBar.setText("Paths/locations written to file");
         }
+        // Load file
         else if(c ==  KeyEvent.VK_F8)
         {
-        	File pathInputFile = new File("rawPathData.dat");
-        	File locationInputFile = new File("rawLocationData.dat");
-        	try{
-        		ObjectInputStream pathin = new ObjectInputStream(
-        				                       new FileInputStream(pathInputFile));
-        		paths = (Vector)pathin.readObject();
-        		
-        		ObjectInputStream locin = new ObjectInputStream(
-	                       new FileInputStream(locationInputFile));
-        		locations = (Vector)locin.readObject();
-        		
-        		parent.statusBar.setText("Input read from file");
-        		
-        		
-				
-        		
-        		// Active path
-        		if(pathNumIndex > paths.size() - 1)
-        			pathNumIndex = paths.size();
-        		lines = (Vector)paths.get(pathNumIndex);
-        		repaint();
-        	}
-        	catch(Exception e){}
+            File pathInputFile = new File("rawPathData.dat");
+            File locationInputFile = new File("rawLocationData.dat");
+            try{
+                ObjectInputStream pathin = new ObjectInputStream(
+                        new FileInputStream(pathInputFile));
+                paths = (Vector)pathin.readObject();
+                
+                ObjectInputStream locin = new ObjectInputStream(
+                        new FileInputStream(locationInputFile));
+                locations = (Vector)locin.readObject();
+                
+                parent.statusBar.setText("Input read from file");
+
+                
+                // Active path
+                if(pathNumIndex > paths.size() - 1)
+                    pathNumIndex = paths.size();
+                lines = (Vector)paths.get(pathNumIndex);
+                repaint();
+            }
+            catch(Exception e){}
         }
         else{
             System.err.println("other key");
@@ -321,11 +327,14 @@ class ScrollablePicture extends JLabel implements Scrollable,
 
     public String statusBarText (){
     	return ( "Path Number: " + (pathNumIndex + 1) +
-		",  Number of elements: " + lines.size() + 
-		", Number of paths: " + paths.size() +
-		((locations.size() > 0) ? (", Locations: " + ((Location)locations.get(0)).name) : "")
-		);
+			",  Number of elements: " + lines.size() + 
+			", Number of paths: " + paths.size() +
+			((locations.size() > 0)
+			        ? (", Locations: " + ((Location)locations.get(0)).name)
+			        : "")
+			);
     }
+    
     //Methods required by the MouseMotionListener interface:
     public void mouseMoved(MouseEvent e) { }
 

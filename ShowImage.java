@@ -482,7 +482,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 }
 
 /*
- *
+ * This is the location class!
  */
 class Location implements Serializable
 {

@@ -169,7 +169,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
     private ShowImage parent;
     
     // Constructor
-    public ScrollablePicture(ImageIcon i, int maxUnitPassed, ShowImage newParent) {
+    public ScrollablePicture(ImageIcon i, int maxUnitPassed,
+                                          ShowImage newParent) {
         super(i);
         
         parent = newParent;
@@ -197,6 +198,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
         paths.add( new Vector() );
         lines = (Vector)paths.get(pathNumIndex);
         parent.statusBar.setText( statusBarText() );
+        
+        // save the curent 'this' for the inner class
+        final ScrollablePicture thisParent = this;
+        
         /* add the mouse-click handler */
         addMouseListener(new MouseAdapter(){
         	
@@ -218,7 +223,6 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     lines.add(p);
                     // and redraw immediately to see the changes
                     repaint( getVisibleRect() );
-                    parent.statusBar.setText( statusBarText() );
                 }
                 else if(SwingUtilities.isRightMouseButton(e)) {
                     System.err.print("Right mouse click @ (" + x + ", " + y + ")");
@@ -231,11 +235,14 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 if(!parent.locationName.getText().equals(""))
                 {
                     System.err.println(parent.locationName.getText());
-                    locations.add(new Location(x, y, parent.locationName.getText()));
+                    locations.add(new Location(x, y,
+                            parent.locationName.getText()));
                 }
-
+                
+                parent.statusBar.setText( statusBarText() );
                 parent.locationName.setText("");
                 
+                thisParent.requestFocus();
                 
             }
         });

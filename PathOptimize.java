@@ -30,7 +30,9 @@ public class PathOptimize
     	pathOp.writePoints();
     }
     
-    
+    /**
+     * Generic constructor. It just initializes all the member fields.
+     */
     public PathOptimize()
     {
     	outLocations = new Vector(128);
@@ -126,24 +128,6 @@ public class PathOptimize
     			}
     			
     			prevPP = thisPP;
-    			/*
-    			// Set the inPoint
-    			inPoint = pointInReadPaths(pathIndex, elementIndex);
-
-    			// Set the next
-    			next = pointInReadPaths(pathIndex, elementIndex + 1);
-    			
-    			// Get an intersecting location
-    			atlocation = locationAtPoint(inPoint);
-    			
-    			//Constructor call
-    			pathPoints.add(new PathPoint(inPoint, prev, next, atlocation));
-    			
-    			System.err.println("Added PathPoint: " + );
-    			
-    			// Set previous for next iteration
-    			prev = inPoint;
-    			*/
     		}
 
     	}
@@ -156,16 +140,22 @@ public class PathOptimize
      */
     public void convertPathPointsToPoints()
     {
+        // loop through all PathPoints
     	for(int pathIndex = 0; pathIndex < pathPoints.size(); pathIndex++)
     	{
     		PathPoint thisPoint = (PathPoint)pathPoints.get(pathIndex);
     		
+    		// if this PathPoint is associated with a location, add it to
+    		// the outgoing Locations vector
     		if(thisPoint.location != null)
     		{
 	    		System.err.println("Adding location: " + thisPoint.location.cord +
 	    				", " + thisPoint.location.name);
 	    		outLocations.add( thisPoint.location );
     		}
+    		
+    		// if this PathPoint has no connections, just add it as a single
+    		// one-point path, and move on.
     		if(thisPoint.numConnectedPoints() == 0)
     		{
     			Vector thisPath = new Vector(2);
@@ -173,6 +163,8 @@ public class PathOptimize
     			outPaths.add(thisPath);
     			continue;
     		}
+    		
+    		// otherwise, loop through each of this PathPoint's connections
     		for(int conPoint = 0; conPoint < thisPoint.numConnectedPoints();
     				conPoint++)
     		{
@@ -237,6 +229,13 @@ public class PathOptimize
         }
     }
 	
+    /**
+     * Return a Location (from readLocations) that corresponds with the given
+     * Point (from readPaths).
+     * @param pointToCompare Point to compare for locations
+     * @return the Location associated with pointToCompare, or null if none
+     * is found.
+     */
     public Location locationAtPoint(Point pointToCompare)
     {
     	for(int locIndex = 0; locIndex < readLocations.size(); locIndex++){
@@ -247,9 +246,16 @@ public class PathOptimize
     	}
     	return(null);
     }
+    
+    /**
+     * Get the location at the given index in the readLocations Vector.
+     * @param locIndex Index of Location to return
+     * @return the Location at locIndex
+     */
     public Location getReadLocation(int locIndex){
     	return((Location)readLocations.get(locIndex));
     }
+    
     /**
      * Return the point at a given path index in a given path (specified by an
      * index).  
@@ -269,6 +275,10 @@ public class PathOptimize
 
     }
     
+    /**
+     * Condense all overlapping PathPoints into single PathPoints with
+     * appropriate links.
+     */
     public void condensePoints ()
     {
     	PathPoint overlap;
@@ -328,54 +338,71 @@ public class PathOptimize
     	}
     }
     
+    /**
+     * Find all intersections of connections from PathPoints, and add new,
+     * connected PathPoints at these spots.
+     * TODO: Deal with vertical lines!
+     * (Right now getSlope throws an exception).
+     */
     public void intersections ()
     {
     	PathPoint ap1;  // Active point 1
     	PathPoint ap2;  // Active point 2
     	PathPoint tp1;  // Test point 1
     	PathPoint tp2;  // Test point 2
+    	
     	// The intersect coordinates
     	double intersectX;
     	long intersectYTest;
     	long intersectYActive;
     	double activeSlope;
     	double testSlope;
+    	
     	// Loop through all PathPoints in Paths Vector
     	for(int activeIndex1 = 0; activeIndex1<pathPoints.size(); 
     	activeIndex1++)
     	{
-    		
+    		// store the first point in our active line segment
     		ap1 = getPathPoint(activeIndex1);
     		
 			// For all points that are connected to that active point 1 
 			// PathPoint
-AP1:    		for(int activeIndex2 = 0; 
-			activeIndex2 < ap1.numConnectedPoints();
-			activeIndex2++)
+AP1:    	for(int activeIndex2 = 0; 
+				activeIndex2 < ap1.numConnectedPoints();
+				activeIndex2++)
 			{
+    			// the second point in the active line segment
 				ap2 = ap1.getConnectedPathPoint(activeIndex2);
 				activeSlope = getSlope(ap1, ap2);
 				
+				// now loop through all the points, again
 				for(int testIndex1 = 0; testIndex1<pathPoints.size(); 
-		    	testIndex1++)
+		    		testIndex1++)
 		    	{
+				    // store the first point in the test line segment
 		    		tp1 = getPathPoint(testIndex1);
 		    		
+		    		// if this is one of the active points, skip it
 		    		if(tp1.equals(ap1) || tp1.equals(ap2))
 		    			continue;
+		    		
 					// For all points that are connected to that active point 1 
 					// PathPoint
 					for(int testIndex2 = 0; 
-					testIndex2 < tp1.numConnectedPoints();
-					testIndex2++)
+						testIndex2 < tp1.numConnectedPoints();
+						testIndex2++)
 					{
+					    // store the second point in the test line segment
 						tp2 = tp1.getConnectedPathPoint(testIndex2);
 						
+						// if _this_ point is one of the active points, skip it
 			    		if(tp2.equals(ap1) || tp2.equals(ap2))
 			    			continue;
 			    		
-			    		//if(!rectangleTest(ap1, ap2, tp1, tp2))
-			    			//break;
+			    		// this is The Rectangle Test
+			    		if(!rectangleTest(ap1, ap2, tp1, tp2))
+			    			break;
+			    		
 						System.err.print(
 								"ap1: (" + ap1.point.x + ", " + ap1.point.y + ") ");
 						
@@ -391,51 +418,57 @@ AP1:    		for(int activeIndex2 = 0;
 						System.err.println("Active slope: " + activeSlope);
 			    		
 						testSlope = getSlope(tp1, tp2);
-						
 
 						System.err.println("Test slope: " + testSlope);
 						
 						if(testSlope == activeSlope)
 							continue;
-						
-						
-						
+
+						// calculate the possible X intersect coordinate
 						intersectX =
 							((  (activeSlope*(ap1.point.x) - ap1.point.y)
 								- (testSlope*(tp1.point.x) - tp1.point.y))/
 							   (activeSlope - testSlope));
 						
+						// calculate the two possible Y intersect coordinates
+						intersectYTest = (long)((testSlope)
+						        * (intersectX - tp1.point.x) + tp1.point.y);
+						intersectYActive = (long)((activeSlope)
+						        * (intersectX - ap1.point.x) + ap1.point.y);
 						
-						intersectYTest = (long)((testSlope)*(intersectX - tp1.point.x)
-										+ tp1.point.y);
-						intersectYActive = (long)((activeSlope)*(intersectX - ap1.point.x)
-										+ ap1.point.y);
-						
-
+						// if the two Y intersect coordinates are the same,
+						// it's a real intersection
 						if(intersectYActive == intersectYTest)
 						{
 							System.err.println("Points are equal!");
 							System.err.println("(" + intersectX + ", " 
 									+ intersectYTest + ")");
 							
-
-							
+							// (this is actually supposed to be "P-sub-i", not
+                            // the Greek letter Pi.)
+							// create a PathPoint in the location of the
+							// potential intercept point
 							PathPoint pi = new PathPoint(
-											new Point( (int)intersectX,
-											(int)intersectYTest),new Vector(2)
-											,null );
+							        new Point( (int)intersectX,
+							                (int)intersectYTest),
+							        new Vector(2), null );
 							
 							System.err.println(
 									"pi: (" + pi.point.x + ", " + pi.point.y + ") ");
 							
-							// WE ARE HERE'
+							// ensure that the potential point is actually on
+							// both lines
 							if(!pointInSegments(ap1, ap2, tp1, tp2, pi))
 								break;
+							
+							// congratulations, you've found an intercept!
+							
+							// add the new point to the main points Vector
 							pathPoints.add(pi);
-							intersectReplace(ap1, ap2, pi);
-							intersectReplace(ap2, ap1, pi);
-							intersectReplace(tp1, tp2, pi);
-							intersectReplace(tp2, tp1, pi);
+							
+							// and integrate the new point with its neighbors
+							twoWayIntersectReplace(ap1, ap2, pi);
+							twoWayIntersectReplace(tp1, tp2, pi);
 							
 							System.err.println("pi, after: " + pi);
 							
@@ -444,29 +477,60 @@ AP1:    		for(int activeIndex2 = 0;
 							System.err.println("tp1, after: " + tp1);
 							System.err.println("tp2, after: " + tp2);
 							
+							// since we've found an intercept, abort this
+							// entire test line, and move on to the next 
+							// 'active point 2'
 							continue AP1;
 						}
 						
 					}
 		    	}
-				
-				
+
 			}
     	}
     }
     
+    /**
+     * Test if a given point is in the rectangle defined by two lines.
+     * (If it is, it's _possible_ that the line is the intersect point of
+     * the two lines. This function is used as one of the screening tests for
+     * that.)
+     * @param ap1 first point in first test line
+     * @param ap2 second point in first test line
+     * @param tp1 first point in the second test line
+     * @param tp2 second point in the second test line
+     * @param pi the point to test
+     * @return true if pi is in the common area of the rectangles defined by 
+     * the lines ap1-ap2 and tp1-tp2, false otherwise.
+     */
     public boolean pointInSegments(PathPoint ap1, PathPoint ap2, PathPoint tp1,
     		PathPoint tp2, PathPoint pi)
     {
     	Rectangle rec1 = createRectangle(ap1.point,ap2.point);
+    	// if the point isn't in the first rectangle, it can't be in both
     	if(!rec1.contains(pi.point))
     		return(false);
+    	
     	Rectangle rec2 = createRectangle(tp1.point, tp2.point);
+    	// if the point isn't in the second rectangle, it can't be in both
     	if(!rec2.contains(pi.point))
     		return(false);
+    	
+    	// by this point, we've tested both rectangles
     	return(true);
     }
     
+    /**
+     * Test if the rectangles defined by the line segments ap1-ap2 and
+     * tp1-tp2 intersect. If they don't, the two lines cannot possibly
+     * intersect (but just because the rectangles intersect doesn't mean
+     * the lines do).
+     * @param ap1 first point in first test line
+     * @param ap2 second point in first test line
+     * @param tp1 first point in the second test line
+     * @param tp2 second point in the second test line
+     * @return
+     */
     public boolean rectangleTest(PathPoint ap1, PathPoint ap2, PathPoint tp1,
     		PathPoint tp2)
     {
@@ -475,6 +539,13 @@ AP1:    		for(int activeIndex2 = 0;
     	return(rec1.intersects(rec2));
     }
     
+    /**
+     * Create a Rectangle object defined by the two given points. Order
+     * does not matter.
+     * @param p1 A point defining one corner of the Rectangle
+     * @param p2 A point defining the other corner of the Rectangle
+     * @return A rectangle with corners at the given points.
+     */
     public Rectangle createRectangle(Point p1, Point p2)
     {
     	int x = Math.min(p1.x, p2.x);
@@ -483,7 +554,37 @@ AP1:    		for(int activeIndex2 = 0;
     	int width = Math.abs(p2.x - p1.x);
     	return(new Rectangle( x, y, width, height));
     }
-    public void intersectReplace(PathPoint p1, PathPoint p2, PathPoint pi)
+
+    /**
+     * Call intersectReplace on both combinations of p1 and p2, to effect a 
+     * full integration of pi into the line segment connecting p1 and p2.
+     * 
+     * @see intersectReplace
+     * 
+     * @param p1 One end of a line segment
+     * @param p2 The other end of a line segment
+     * @param pi A point on the line between p1 and p2
+     */
+    public void twoWayIntersectReplace(PathPoint p1, PathPoint p2,
+            PathPoint pi)
+    {
+        intersectReplace(p1, p2, pi);
+        intersectReplace(p2, p1, pi);
+    }
+    
+    /**
+     * Integrate one point (pi) into the line segment between two other points
+     * (p1 and p2). This only connects the paths going between pi and p1. To
+     * full integrate a node, this function must be called twice, swapping p1
+     * and p2 on the second call.
+     * 
+     * @see twoWayIntersectReplace
+     *
+     * @param p1 One end of a line segment
+     * @param p2 The other end of a line segment
+     * @param pi A point on the line between p1 and p2
+     */
+    private void intersectReplace(PathPoint p1, PathPoint p2, PathPoint pi)
     {
     	//remove p2 from p1
     	p1.removeConnectedPoint(p2);
@@ -493,6 +594,12 @@ AP1:    		for(int activeIndex2 = 0;
     	pi.addConnectedPoint(p1);
     }
     
+    /**
+     * Get the slope between two points.
+     * @param p1 The first point
+     * @param p2 The second point
+     * @return the slope between p1 and p2, as a double
+     */
     public static double getSlope(PathPoint p1, PathPoint p2)
     {
     	if(p2.point.x == p1.point.x)
@@ -503,16 +610,32 @@ AP1:    		for(int activeIndex2 = 0;
     			((double)(p2.point.x - p1.point.x)));
     }
     
+    /**
+     * Return the Point contained in the PathPoint at the given index in
+     * the pathPoints vector.
+     * @param index the index to check
+     * @return the Point in the PathPoint at the index
+     */
     public Point getPointAtPathPointsIndex(int index)
     {
     	return( ( (PathPoint)pathPoints.get( index ) ).point );
     }
+    
+    /**
+     * Return the PathPoint at the given index in the pathPoints vector.
+     * @param index the index to check
+     * @return the PathPoint at the index
+     */
     public PathPoint getPathPoint(int index)
     {
     	return((PathPoint)pathPoints.get( index ) );
     }
 }
 
+/**
+ * A Point that contains a list of the PathPoints it is connected to, as well 
+ * as an optional pointer to an associated Location.
+ */
 class PathPoint
 {
 	// Point where the PathPoint is located at
@@ -546,12 +669,22 @@ class PathPoint
 		location =  inLoc;
 	}
 	
+	/**
+	 * Add the given point to this point's connectedPoints vector.
+	 * @param p Point to add
+	 */
 	public void addConnectedPoint(PathPoint p)
 	{
 		if(p != null)
 			connectedPoints.add(p);
 	}
 	
+	/**
+	 * Remove the given point from this point's connectedPoints vector.
+	 * @param p Point to remove
+	 * @return true if the point was was found and could be removed, false
+	 * otherwise.
+	 */
 	public boolean removeConnectedPoint(PathPoint p)
 	{
 		return connectedPoints.remove(p);
@@ -565,7 +698,7 @@ class PathPoint
 		return(connectedPoints.size());
 	}
 	/**
-	 * Get the point at given index in Vector of connect points
+	 * Get the point at given index in Vector of connected points
 	 * @param index Index to get point from
 	 * @return point at given index
 	 */
@@ -573,10 +706,19 @@ class PathPoint
 		return((Point)getConnectedPathPoint(index).point);
 	}
 	
+	/**
+	 * Get the PathPoint at given index in Vector of connected points.
+	 * @param index Index to get PathPoint from
+	 * @return point at given index
+	 */
 	public PathPoint getConnectedPathPoint(int index){
 		return((PathPoint)connectedPoints.get(index));
 	}
 	
+	/**
+	 * Print this PathPoint's x/y coordinates, the name of its associated
+	 * Location (if applicable), and the coordinates of any connections it has.
+	 */
 	public String toString(){
 		String outStr = "(" + point.x + ", " + point.y + ") ";
 		if(location != null)

@@ -1233,11 +1233,13 @@ class PathPoint
 
 class GraphPoint
 {
+	// Binary file identifier
 	int ID;
 	Point point;
 	Vector edges;
 	Location locLabel;
 	
+	// Binary file identifier
 	static int IDcount = 1;
 	
 	public GraphPoint(PathPoint pp)
@@ -1249,9 +1251,16 @@ class GraphPoint
 			locLabel = pp.location;
 
 		edges = new Vector();
+		// Set the ID and increment the static variable for the next ID
 		ID = IDcount++;
 	}
 	
+	/**
+	 * Returns an edge at the specified index of the GraphPoint.  
+	 * Basically avoids the ugly casing.  
+	 * @param index The specified index
+	 * @return The Edge at the the specified index.  
+	 */
 	public Edge getEdge(int index)
 	{
 		return( (Edge)edges.get( index ) );
@@ -1349,12 +1358,12 @@ class GraphPoint
 	    		System.err.println("--Start connection--");
 	    		// print ID of each connection
 				if(((Edge)edges.get(i)).endpt1 == this){
-					System.err.println("Connection ID: " +
+					System.err.println("Connection ID (endpt2): " +
 							((Edge)edges.get(i)).endpt2.ID);
 					out.writeInt( ((Edge)edges.get(i)).endpt2.ID );
 				}
 				else{
-					System.err.println("Connection ID: " +
+					System.err.println("Connection ID (endpt1): " +
 							((Edge)edges.get(i)).endpt1.ID);
 					out.writeInt( ((Edge)edges.get(i)).endpt1.ID );
 				}
@@ -1442,20 +1451,26 @@ class GraphPoint
 		String outStr = "GraphPoint @ (" + point.x + ", " + point.y + ")\n";
 		outStr += getLocationName();
 		for(int i = 0; i < edges.size(); i++)
-			outStr +=  ((Edge)edges.get(i)).printString();
+			outStr +=  ((Edge)edges.get(i)).toString();
 		return(outStr);
 	}
 }
 
 class Edge
 {
+	// Binary file identifier
 	int ID;
+	
+	// The endpoints of the edge.  
+	// Both of these graphs contain a pointer to this Edge.
+	// (But there is only one copy of the edge)
 	GraphPoint endpt1;
 	GraphPoint endpt2;
 	
 	Vector path;  // Vector Points
 	double weight = 0;
 	
+	// Binary file identifier
 	static int IDcount = 1;
 	
 	public Edge()
@@ -1463,14 +1478,25 @@ class Edge
 		path = new Vector();
 		endpt1 = endpt2 = null;
 		
+		// Set the ID and increment the static variable for the next ID
 		ID = IDcount++;
 	}
 	
+	/**
+	 * If we discard an edge, the decrement the ID count.
+	 * This occurs because we created an edge, but did not add the edge
+	 * to any graphPoints.  So, the Edge is thrown away and we want to throw
+	 * away it's ID number.  
+	 */
 	public void discard(){
 		IDcount--;
 	}
 	
-	public String printString()
+	/**
+	 * toString method for Edges.  
+	 * This method is used for debugging.  
+	 */
+	public String toString()
 	{
 		String outStr = "End Point 1: " + endpt1.point + "\nEnd Point 2: " +
 		endpt2.point + "\n";
@@ -1484,11 +1510,20 @@ class Edge
 		return(outStr);
 	}
 	
+	/**
+	 * This method gets a Point in the path element of edge.  
+	 * @param i The index in the path to get the element from.  
+	 * @return Point in the Path element of 
+	 */
 	public Point getPointInPath(int i)
 	{
 		return((Point)path.get(i));
 	}
 	
+	/**
+	 * Get's the weight (the simple distance sum) of the edge.
+	 * @return weight (a double).
+	 */
 	public double getWeight()
 	{
 		return(weight);

@@ -1264,7 +1264,7 @@ class GraphPoint
 	    		System.err.println("Weight: " + ((Edge)edges.get(i)).weight);
 				
 	    		// print ID of each edge
-	    		out.writeDouble( ((Edge)edges.get(i)).ID );
+	    		out.writeInt( ((Edge)edges.get(i)).ID );
 	    		System.err.println("Edge ID: " + ((Edge)edges.get(i)).ID);
 	    		
 			}

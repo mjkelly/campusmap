@@ -22,7 +22,7 @@ public class PathOptimize
     // that can be read by ShowImage
     private Vector outPaths;
     private Vector outLocations;
-    private Vector outEdges;
+    private Vector outEdges = new Vector();
 
     /** Driver */
     public static void main(String[] args)
@@ -36,6 +36,7 @@ public class PathOptimize
     	pathOp.convertPathPointsToGraphPoints();
     	pathOp.convertGraphPointsToPoints();
     	pathOp.writePoints();
+    	pathOp.binaryWrite();
     }
     
     /**
@@ -154,21 +155,7 @@ public class PathOptimize
 	    				", " + thisGP.locLabel.name);
 	    		outLocations.add( thisGP.locLabel );
     		}
-    		
-    		/*
-    		for(int i = 0; i < thisGP.edges.size();  i++)
-    		{
-    			outPaths.add(((Edge)(thisGP.edges.get(i))).path);
-    		}
-    		*/
     	}
-    	
-    	/*
-    	for(int i = 0; i < outEdges.size(); i++)
-    	{
-    		outPaths
-    	}
-    	*/
     }
     
     /**
@@ -268,6 +255,96 @@ public class PathOptimize
 	    if(locationWriteSuccess && pathWriteSuccess){
 	        // Set status
         }
+    }
+    
+    /**
+     * Write data to disk in binary format, suitable for reading from
+     * the web-based frontend.
+     */
+    public void binaryWrite(){
+		final String pointFileName = "binPointData.dat";
+		final String locFileName = "binLocationData.dat";
+		final String edgeFileName = "binEdgeData.dat";
+		
+		File pointOutputFile = new File(pointFileName);
+        File locOutputFile = new File(locFileName);
+        File edgeOutputFile = new File(edgeFileName);
+        
+        // output point data
+        try{
+            DataOutputStream pointOut= new DataOutputStream(
+                    new FileOutputStream(pointOutputFile));
+            
+            System.err.println("===== GraphPoints =====");
+            // for each GraphPoint
+            for(int i = 0; i < graphPoints.size(); i++)
+            {
+            	((GraphPoint)graphPoints.get(i)).binaryWrite(pointOut);
+            }
+            	// output ID of GraphPoint
+            	// output number of connections/weights/edges
+            		// print ID of each connection
+            		// print value of each weight
+            		// print ID of each edge
+            
+            pointOut.close();
+        }
+	    catch(IOException e){
+	    	System.err.println("Error in writing \"" + pointFileName + "\"!\n"
+	    			+ e + ": " + e.getMessage());
+	    	return;
+	    }
+	    
+	    // output location data
+        try{
+            DataOutputStream locOut= new DataOutputStream(
+                    new FileOutputStream(locOutputFile));
+            
+            System.err.println("===== Locations =====");
+            // for each Location
+            for(int i = 0; i < graphPoints.size(); i++)
+            {
+            	// if this point has no associated location, nothing is written
+            	((GraphPoint)graphPoints.get(i)).binaryWriteLocation(locOut);
+            }
+	            // output ID of Location
+	            // output (x,y) coordinates of Location
+	            // output ID of associated GraphPoint
+	            // output length of display name
+	            	// output display name
+            
+            locOut.close();
+        }
+	    catch(IOException e){
+	    	System.err.println("Error in writing \"" + locFileName + "\"!\n"
+	    			+ e + ": " + e.getMessage());
+	    	return;
+	    }
+	    
+	    // output edge data
+        try{
+            DataOutputStream edgeOut= new DataOutputStream(
+                    new FileOutputStream(edgeOutputFile));
+            
+            System.err.println("===== Edges =====");
+            // for each Edge
+            for(int i = 0; i < outEdges.size(); i++)
+            {
+            	((Edge)outEdges.get(i)).binaryWrite(edgeOut);
+            }
+            	// print ID of edge
+            	// print ID of starting GraphPoint
+            	// print ID of ending GraphPoint
+            	// print number of points
+            		// print ordered pairs
+            
+            edgeOut.close();
+        }
+	    catch(IOException e){
+	    	System.err.println("Error in writing \"" + edgeFileName + "\"!\n"
+	    			+ e + ": " + e.getMessage());
+	    	return;
+	    }
     }
 	
     /**
@@ -839,6 +916,9 @@ AP1:    		for(int activeIndex2 = 0;
 					// discard the one we created
 					graphPP.getGraphPoint().edges.add(
 							prevPP.getGraphPoint().getEdge(edgeIndex));
+					
+					// this decrements the Edge class' static ID count
+					tempEdge.discard();
 				}
 				else{
 					// take significant pathPoint, get its corresponding
@@ -848,6 +928,7 @@ AP1:    		for(int activeIndex2 = 0;
 					
 					// save the edge's path we added so we can print it later
 					outPaths.add(tempEdge.path);
+					outEdges.add(tempEdge);
 				}
 				
     		}
@@ -1018,9 +1099,12 @@ class PathPoint
 
 class GraphPoint
 {
+	int ID;
 	Point point;
 	Vector edges;
 	Location locLabel;
+	
+	static int IDcount = 1;
 	
 	public GraphPoint(PathPoint pp)
 	{
@@ -1031,6 +1115,7 @@ class GraphPoint
 			locLabel = pp.location;
 
 		edges = new Vector();
+		ID = IDcount++;
 	}
 	
 	public Edge getEdge(int index)
@@ -1056,6 +1141,96 @@ class GraphPoint
 		return(-1);
 	}
 	
+	public void binaryWrite(DataOutputStream out)
+	{
+    	// output ID of GraphPoint
+		try{
+			System.err.println("ID: " + ID);
+			out.writeInt(ID);
+	    	// output number of connections/weights/edges
+			System.err.println("Size: " + edges.size());
+			out.writeInt(edges.size());
+			
+			// for each Edge connected to this GraphPoint
+			for(int i = 0; i < edges.size(); i++)
+			{
+	    		// print ID of each connection
+				if(((Edge)edges.get(i)).endpt1 == this){
+					System.err.println("Connection ID: " +
+							((Edge)edges.get(i)).endpt2.ID);
+					out.writeInt( ((Edge)edges.get(i)).endpt2.ID );
+				}
+				else{
+					System.err.println("Connection ID: " +
+							((Edge)edges.get(i)).endpt1.ID);
+					out.writeInt( ((Edge)edges.get(i)).endpt1.ID );
+				}
+				
+				// print value of each weight
+	    		out.writeDouble( ((Edge)edges.get(i)).weight );
+	    		System.err.println("Weight: " + ((Edge)edges.get(i)).weight);
+				
+	    		// print ID of each edge
+	    		out.writeDouble( ((Edge)edges.get(i)).ID );
+	    		System.err.println("Edge ID: " + ((Edge)edges.get(i)).ID);
+			}
+    		
+			// write the ID of the associated location, if there is one;
+			// if there isn't, use 0 (all IDs are > 0)
+			if(locLabel != null){
+				System.err.println("Location ID: " + locLabel.ID);
+				out.writeInt(locLabel.ID);
+			}
+			else
+			{
+				System.err.println("Location ID: 0");
+				out.writeInt(0);		
+			}
+		}
+		catch(IOException e)
+		{
+			System.err.println("Error in GraphPoint.binaryWrite!");
+		}
+	}
+	
+	/**
+	 * Write data about this GraphPoint's associated Location,
+	 * if it has one. If this.locLabel == null, then nothing is
+	 * written to the output stream.
+	 * @param out Output stream
+	 */
+	public void binaryWriteLocation(DataOutputStream out)
+	{
+		// don't do anything if we don't have a label
+		if(locLabel == null)
+			return;
+	
+		try{
+			// output ID of Location
+			System.err.println("Location ID: " + locLabel.ID);
+			out.writeInt(locLabel.ID);
+	        // output (x,y) coordinates of Location
+			System.err.println("Location coords: (" + locLabel.cord.x +
+					", " + locLabel.cord.y + ")");
+			out.writeInt(locLabel.cord.x);
+			out.writeInt(locLabel.cord.y);
+	        // output ID of associated GraphPoint
+			System.err.println("Associated GraphPoint: " + ID);
+			out.writeInt(ID);
+	        // output length of display name
+			System.err.println("Display name length: "
+					+ locLabel.name.length());
+			out.writeInt(locLabel.name.length());
+			// output display name
+			System.err.println("Display name: " + locLabel.name);
+			out.writeChars(locLabel.name);
+		}
+	    catch(IOException e){
+	    	System.err.println("Error in GraphPoint.binaryWriteLocation!");
+	    }
+	    
+	}
+	
 	public String getLocationName()
 	{
 		if(locLabel != null)
@@ -1075,16 +1250,25 @@ class GraphPoint
 
 class Edge
 {
+	int ID;
 	GraphPoint endpt1;
 	GraphPoint endpt2;
 	
 	Vector path;  // Vector Points
 	double weight = 0;
 	
+	static int IDcount = 1;
+	
 	public Edge()
 	{
 		path = new Vector();
 		endpt1 = endpt2 = null;
+		
+		ID = IDcount++;
+	}
+	
+	public void discard(){
+		IDcount--;
 	}
 	
 	public String printString()
@@ -1111,4 +1295,38 @@ class Edge
 		return(weight);
 	}
 	
+	public void binaryWrite(DataOutputStream out)
+	{
+		try{
+			//print ID of edge
+			System.err.println("Edge ID: " + ID);
+			out.writeInt(ID);
+
+	    	// print ID of starting GraphPoint
+			System.err.println("Start GraphPoint ID: " + endpt1.ID);
+			out.writeInt(endpt1.ID);
+			
+	    	// print ID of ending GraphPoint
+			System.err.println("End GraphPoint ID: " + endpt2.ID);
+			out.writeInt(endpt2.ID);
+			
+	    	// print number of points
+			System.err.println("Number of points: " + path.size());
+			out.writeInt(path.size());
+
+			// print ordered pairs
+			for(int i = 0; i < path.size(); i++)
+			{
+				System.err.println("Coordinate: (" + ((Point)path.get(i)).x
+						+ ", " + ((Point)path.get(i)).y + ")");
+				out.writeInt(((Point)path.get(i)).x);
+				out.writeInt(((Point)path.get(i)).y);
+			}
+			
+		}
+		catch(IOException e)
+		{
+			System.err.println("Error in Edge.binaryWrite!");
+		}
+	}
 }

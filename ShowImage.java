@@ -31,7 +31,7 @@ public class ShowImage extends JFrame{
     private final int LOCATION_FIELD_WIDTH = 30;
     
     private ImageIcon img;
-    public JTextField locationName;
+    public JTextField locationNameEntry;
     public JLabel statusBar;
     public ScrollablePicture ipanel;
     // For accessing the locationName text field
@@ -90,7 +90,7 @@ public class ShowImage extends JFrame{
         img = createImageIcon(filename);
 
         // create the other objects in the main window
-        locationName = new JTextField("", LOCATION_FIELD_WIDTH);
+        locationNameEntry = new JTextField("", LOCATION_FIELD_WIDTH);
         // this text is overridden in the ScrollablePicture constructor
         statusBar = new JLabel("Status Text");
         
@@ -107,7 +107,7 @@ public class ShowImage extends JFrame{
         JButton clearButton = new JButton("Clear");
         clearButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                locationName.setText("");
+                locationNameEntry.setText("");
                 ipanel.requestFocus();
             }
         });
@@ -120,13 +120,13 @@ public class ShowImage extends JFrame{
         	public void actionPerformed(ActionEvent e){
         		// Search for the location that is currently entered in
         		// getText
-        		ipanel.searchAndFocusToLocation(locationName.getText());
+        		ipanel.searchAndFocusToLocation(locationNameEntry.getText());
         	}
         });
         
         // Add all the objects to the main window's content pane
         pane.add(scroll);
-        pane.add(locationName);
+        pane.add(locationNameEntry);
         pane.add(statusBar);
         pane.add(clearButton);
         pane.add(searchLocation);
@@ -147,9 +147,9 @@ public class ShowImage extends JFrame{
         // +-------------
         // |     ^^^
         // | <<< locationName
-        spring.putConstraint(SpringLayout.WEST, locationName, 5, 
+        spring.putConstraint(SpringLayout.WEST, locationNameEntry, 5, 
                 SpringLayout.WEST, pane);
-        spring.putConstraint(SpringLayout.NORTH, locationName, 5, 
+        spring.putConstraint(SpringLayout.NORTH, locationNameEntry, 5, 
                 SpringLayout.SOUTH, scroll);
         
         // |                 (scroll)
@@ -157,7 +157,7 @@ public class ShowImage extends JFrame{
         //                |      ^^^
         // (locationName) | <<< clearButton
         spring.putConstraint(SpringLayout.WEST, clearButton, 5, 
-                SpringLayout.EAST, locationName);
+                SpringLayout.EAST, locationNameEntry);
         spring.putConstraint(SpringLayout.NORTH, clearButton, 5, 
                 SpringLayout.SOUTH, scroll);
         
@@ -214,17 +214,34 @@ class ScrollablePicture extends JLabel implements Scrollable,
                                                   MouseMotionListener{
     private int maxUnitIncrement = 5;
     private boolean missingPicture = false;
-    private Vector lines; // keep track of lines we've drawn
-    private Vector paths; // Vector of paths (super of lines).
-    private Vector locations;  // Vector of locations (see class Locations)
-    private int pathNumIndex = 0; //Index of where we are  in the paths array.
+    
+    // The current path that we're focusing on
+    private Vector lines;
+    
+    // Vector of paths -- a vector where each element is a
+    // vector of points (vector of points == path)
+    private Vector paths;
+    
+    //  Vector of locations (a location is basically point with a name)
+    private Vector locations;
+
+    //Index of where we are  in the paths array (paths vector).
+    private int pathNumIndex = 0;
+    
+    //Index of where we are in the current path (lines vector)
     private int pointNumIndex = 0;
+    
+    // This should be a pointer to ShowImage to allow us to modify
+    // fields such as the statusBar.
     private ShowImage parent;
+    
     // The name of the location that was last searched
     private String lastLocationSearched;
-    // The index "index" number of the path going out from the last
-    // searched node.  
+    
+    // The index in the paths vector of the last used path out of
+    // a searched locations.  
     private int lastVertex = 0;
+
     
     /*
      * Input/Output filenames
@@ -290,89 +307,16 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 int x = e.getX();
                 int y = e.getY();
 
-                
+                // Left click ==> create new point in the current path
                 if(SwingUtilities.isLeftMouseButton(e)) {
-                    // store the click location in a Point object
-                    Point p = new Point(x, y);
-
-                    // add this point to the list...
-                    if(lines == null)
-                    {
-                    	lines = new Vector(128);
-                    }
-                    lines.add(p);
-                
-                    setPointNumIndex(true);
-                    
-                    // and redraw immediately to see the changes
-                    repaint( getVisibleRect() );
-                    
-                    // if the location field was filled, add a location
-                    if(!parent.locationName.getText().equals(""))
-                    {
-                        System.err.println(parent.locationName.getText());
-                        locations.add(new Location(x, y,
-                                parent.locationName.getText()));
-                    }
-                    
-                    parent.statusBar.setText( statusBarText() );
-                    parent.locationName.setText("");
-                    
-                    thisParent.requestFocus();
+                	createNewPointInCurPath(x, y);
                 }
                 
                 // Right click.
                 else if(SwingUtilities.isRightMouseButton(e)) {
-
-                    // Don't  create a new point in a path.
-                    if( pathNumIndex < lines.size() )
-                    {
-                    	// check if there's an existing point
-                    	int locIndex = findLocationAtPoint(
-                    	        (Point)lines.get(pointNumIndex));
-                    	
-                    	// if there is one...
-                    	System.err.println("Found location at index: " 
-                    		+ locIndex);
-                    	if(locIndex >= 0){
-                    	    // if the text field is empty, delete the point
-                    	    if(parent.locationName.getText().equals("")){
-                    	        locations.remove(locIndex);
-                    	    }
-                    	    // otherwise, we replace the location at this point
-                    	    // with another that has the new x/y location and 
-                    	    // the name the user entered
-                    	    else{
-	                	        locations.set(locIndex, new Location(x, y,
-	                	                parent.locationName.getText()));
-                            	
-	                	        System.err.println("Moving location...");
-                            	parent.statusBar.setText( statusBarText() );
-                                parent.locationName.setText("");
-                                
-                                thisParent.requestFocus();
-                    	    }
-                    	   
-                    	}
-                    	// if we DIDN'T find a matching point, and the text
-                    	// field isn't empty, create a new point
-                    	// this looks very similar to the code above, but
-                    	// it's not quite the same.
-                    	else if(!parent.locationName.getText().equals("")){
-                    	    locations.add(new Location(x, y,
-                                    parent.locationName.getText()));
-                            
-                            parent.statusBar.setText( statusBarText() );
-                            parent.locationName.setText("");
-                            
-                            thisParent.requestFocus();
-                	    }
-                    	
-                    	// move the point
-                    	((Point)lines.get(pointNumIndex)).setLocation(x,y);
-                    	
-                    	repaint();
-                    }
+                	// Change the coordinates of the currently selected
+                	// point
+                	changeCurSelectedPointCord(x, y);
                     
                 }
                 // If you use any other buttton on your mouse...
@@ -458,7 +402,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 					"Location pasting canceled!");
                 		}
                 	});
-                	
+                	// Make the dialog box visible (show it).
                 	dialog.setVisible(true);
                 }
                 
@@ -468,6 +412,119 @@ class ScrollablePicture extends JLabel implements Scrollable,
         });
 
     }
+
+    
+    /**
+     * This method creates a new point in the currently selected path
+     * at the passed in (x,y) pair.  
+     * @param x -- x coordinate to create point at. 
+     * @param y -- y coordinate to create point at.
+     */
+    public void createNewPointInCurPath(int x, int y)
+    {
+        // store the click coordinates in a new Point object
+        Point pointToAdd = new Point(x, y);
+
+        // If the new point is going to be the first element in the current 
+        // path, allocate a vector for the path before adding 
+        // the Point to the path.  
+        if(lines == null)
+        {
+        	// Allocate new vector
+        	lines = new Vector();
+        }
+        
+        //add the point to the current path
+        lines.add(pointToAdd);
+    
+        // Set the element focus to the last element (the one just created)
+        setPointNumIndex(true);
+        
+        // and redraw immediately to see the changes
+        repaint( getVisibleRect() );
+        
+        // if the location field was filled, add a location
+        if( !parent.locationNameEntry.getText().equals("") )
+        {
+        	// Constructor call to create new location
+            locations.add(new Location(x, y,
+                    parent.locationNameEntry.getText()));
+        }
+        
+        // update the status bar
+        parent.statusBar.setText( statusBarText() );
+        
+        // clear the location name entry field
+        parent.locationNameEntry.setText("");
+        
+        //set focus (listeners) back onto the picture
+        this.requestFocus();
+
+    }
+
+    /**
+     * Change the coordinates of the currently selected point to the passed
+     * in x-y coordinate.  
+     * XXX: Finish comment
+     * @param x -- The x coordinate to change to.
+     * @param y -- The y coordinate to change to.
+     */
+    public void changeCurSelectedPointCord(int x, int y)
+    {
+        // Don't  create a new point in a path.
+        if( pathNumIndex < lines.size() )
+        {
+        	// check if there's an existing point
+        	int locIndex = findLocationAtPoint(
+        	        (Point)lines.get(pointNumIndex));
+        	
+        	// if there is one...
+        	System.err.println("Found location at index: " 
+        		+ locIndex);
+        	if(locIndex >= 0){
+        	    // if the text field is empty, delete the point
+        	    if(parent.locationNameEntry.getText().equals("")){
+        	        locations.remove(locIndex);
+        	    }
+        	    // otherwise, we replace the location at this point
+        	    // with another that has the new x/y location and 
+        	    // the name the user entered
+        	    else{
+        	        locations.set(locIndex, new Location(x, y,
+        	                parent.locationNameEntry.getText()));
+                	
+        	        System.err.println("Moving location...");
+                	parent.statusBar.setText( statusBarText() );
+                    parent.locationNameEntry.setText("");
+                    
+                    //set focus (listeners) back onto the picture
+                    this.requestFocus();
+        	    }
+        	   
+        	}
+        	// if we DIDN'T find a matching point, and the text
+        	// field isn't empty, create a new point
+        	// this looks very similar to the code above, but
+        	// it's not quite the same.
+        	else if(!parent.locationNameEntry.getText().equals("")){
+        	    locations.add(new Location(x, y,
+                        parent.locationNameEntry.getText()));
+                
+                parent.statusBar.setText( statusBarText() );
+                parent.locationNameEntry.setText("");
+                
+                //set focus (listeners) back onto the picture
+                this.requestFocus();
+    	    }
+        	
+        	// move the point
+        	((Point)lines.get(pointNumIndex)).setLocation(x,y);
+        	
+        	repaint();
+        }
+
+    }
+    
     
     // this actually handles the key events; it's called by the anonymous
     // KeyAdapter subclass defined in the constructor
@@ -1523,7 +1580,6 @@ class Location implements Serializable
 		cord = new Point(x,y);  // Create coordinate based on passed in values
 		name = passedName;      // Copy name string (Strings are constants!)
 		ID = IDcount++;  // Increment the ID count & assign ID
-		System.err.println("New location @ " + cord);
 	}
 	
 	/*

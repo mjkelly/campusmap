@@ -26,14 +26,13 @@ public class ShowImage extends JFrame{
     // CONSTANTS
     private final int LOCATION_FIELD_WIDTH = 30;
     
-    
     private ImageIcon img;
     public JTextField locationName = new JTextField(LOCATION_FIELD_WIDTH);
     public JLabel statusBar = new JLabel("Status Text");
     // For accessing the locationName text field
 
 
-    /** Driver */
+    /* Driver */
     public static void main(String[] args) {
         // If no arguments were supplied, output error message
         if(args.length == 0){
@@ -276,7 +275,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 repaint();
             }
         }
-        //      Previous path option
+        // F2: Go to previous path option
         else if(c == KeyEvent.VK_F2)
         {
             if(pathNumIndex >= 1){
@@ -285,26 +284,34 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 repaint();
             }
         }
-        // New path option
+        // F12: Create new path
         else if(c == KeyEvent.VK_F12)
         {
+        	// The current pathNumIndex is the sizeof the vector before
+        	// The new element is created.
             pathNumIndex = paths.size();
+            // Create the space for the new path.
             paths.add( new Vector() );
+            // Set focus
             lines = (Vector)paths.get(pathNumIndex);
+            // Status bar
             parent.statusBar.setText( statusBarText() );
             repaint();
         }
-        // Save file
+        // F7: Save data into files
         else if(c ==  KeyEvent.VK_F7)
         {
+        	// Define output files for paths and locations.
             File pathOutputFile = new File("rawPathData.dat");
             File locationOutputFile = new File("rawLocationData.dat");
             
             try{
+            	// Write out the paths vector
                 ObjectOutputStream pathout = new ObjectOutputStream(
                         new FileOutputStream(pathOutputFile));
                 pathout.writeObject(paths);
                 
+                // Write out the locations vector
                 ObjectOutputStream locout = new ObjectOutputStream(
                         new FileOutputStream(locationOutputFile));
                 locout.writeObject(locations);
@@ -312,44 +319,71 @@ class ScrollablePicture extends JLabel implements Scrollable,
             catch(IOException e){
                 System.err.println("Output stream create failed!");
             }
+            // Set status
             parent.statusBar.setText("Paths/locations written to file");
         }
-        // Load file
+        /*
+         * F8: load/read from files.  
+         */
         else if(c ==  KeyEvent.VK_F8)
         {
-            File pathInputFile = new File("rawPathData.dat");
-            File locationInputFile = new File("rawLocationData.dat");
+        	// Define input files for paths and locations.
+            File pathsInputFile = new File("rawPathData.dat");
+            File locationsInputFile = new File("rawLocationData.dat");
             try{
+            	// Get the paths vector
                 ObjectInputStream pathin = new ObjectInputStream(
-                        new FileInputStream(pathInputFile));
+                        new FileInputStream(pathsInputFile));
                 paths = (Vector)pathin.readObject();
                 
+                // Get the locations vector
                 ObjectInputStream locin = new ObjectInputStream(
-                        new FileInputStream(locationInputFile));
+                        new FileInputStream(locationsInputFile));
                 locations = (Vector)locin.readObject();
                 
+                // Set status bar
                 parent.statusBar.setText("Input read from file");
 
+                // Set the active path (also termed path in "focus")...
                 
-                // Active path
+                // If the current pathNumIndex (path focus) is greater 
+                // than the size of the paths array that was just read in...
+                // Then attach focus to the last path in the paths array.
                 if(pathNumIndex > paths.size() - 1)
                     pathNumIndex = paths.size();
+                
+                //Set lines
                 lines = (Vector)paths.get(pathNumIndex);
+                
+                // Do the repaint dance...woooo!
                 repaint();
             }
-            catch(Exception e){}
+            // Catch ANY exceptions from the above try block
+            catch(Exception e){
+            	System.err.println("Error in reading path or" +
+            			"location file");
+            }
         }
+        // Take a wild gusss :)
         else{
-            System.err.println("other key");
+            System.err.println("I'm sorry, this key does not have a" +
+            		"have a defined option");
         }
     }
 
+    /*
+     * Return the status bar text
+     * Write: Current path number in focus, number of elements in current
+     *        path, number of paths, and any location string associated
+     *        with the current in focus point.  
+     */
     public String statusBarText (){
     	return ( "Path Number: " + (pathNumIndex + 1) +
 			",  Number of elements: " + lines.size() + 
 			", Number of paths: " + paths.size() +
 			((locations.size() > 0)
-			        ? (", Locations: " + ((Location)locations.get(0)).name)
+			        ? (", Locations: " + 
+			        		((Location)locations.get(pathNumIndex)).name)
 			        : "")
 			);
     }
@@ -402,97 +436,98 @@ class ScrollablePicture extends JLabel implements Scrollable,
     }
 
     /*
-     * Function name: paintComponent()
-     * Function prototype:
-     *         public void paintComponent(Graphics g)
-     * Description: override the paintComponent method so we can draw lines
-     *              
-     * Parameters: Graphics g
-     * Side Effects: None.  
-     * Error Conditions: None.
-     * Return Value: None.  Void function.  
+     * Override the paintComponent method so we can draw lines
+     * Draws all of the paths in memory according to the 
+     * paths field (Vector).  Color codes the paths according to
+     * their current focus.  
      */
     public void paintComponent(Graphics g){
+    	// Constants for colors dependant on dot/line status
+    	final Color LASTPLACED_DOT = Color.BLUE;
+    	final Color IN_FOCUS_PATH = Color.GREEN;
+    	final Color OUT_OF_FOCUS_PATH = Color.RED;
+    	
+    	
         // first we paint ourselves according to our parent;
         // this should take care of drawing the actual image
         super.paintComponent(g);
 
+        // Get the visible rectangle to decide if we can point the point
         Rectangle visible = getVisibleRect();
-        g.setColor(Color.RED);
         
-        Point cur = null, prev = null;
+        // Set the default color to red (OUT_OF_FOCUS)
+        g.setColor(OUT_OF_FOCUS_PATH);
+        
+        // Declare a current and previous point.  
+        Point cur = null;
+		Point prev = null;
         // draw all the dots that are VISIBLE
-        for(int i = 0; i<paths.size(); i++)
-        {
-		    for(int j = 0; j < ( (Vector)paths.get(i) ).size(); j++){
-
-		        
-		        cur = (Point) ((Vector)paths.get(i)).get(j);
 		
-		        // if we have a "previous" dot to connect to, and at least ONE of
-		        // the dots is visible, connect the two with a line
-		        if(prev != null
-		        && (visible.contains(cur) || visible.contains(prev)))
+		// For every path in the paths array...
+        for(int pathsIndex = 0; pathsIndex<paths.size(); pathsIndex++)
+        {
+        	// For every point along a path...
+		    for(int pointInPath = 0; 
+		        pointInPath < ( (Vector)paths.get( pathsIndex) ).size(); 
+		        pointInPath++)
+		    {
+		    	// This is a bit messy...
+		    	// Get the current point by first getting the apppropriate
+		    	// path from paths Vector, caste to a Vector (as it should be)
+		    	// and then get the point in the vector & cast it to a Point.
+		        cur = (Point) ((Vector)paths.get(pathsIndex)).get(pointInPath);
+		
+		        // if we have a "previous" dot to connect to, and at least
+		        // ONE of the dots is visible, connect the two with a line
+		        if(prev != null 
+		        		&& (visible.contains(cur) || visible.contains(prev))){
 		            connectTheDots(g, prev, cur);
-		        
-		        // the last dot is the "active" one, so we print it in a different
-		        // color
-		        if(j == ((Vector)paths.get(i)).size()-1)
-		        {
-			        	g.setColor(Color.BLUE);
-		        }   
-		        else
-		        {
-		        	if(lines == (Vector)paths.get(i))
-		        		g.setColor(Color.GREEN);
-		        	else
-			        	g.setColor(Color.RED);
 		        }
 
-		
+		        
+		        // the last dot is the "active" one, so we print it in a
+		        // different color
+		        if(pointInPath == ((Vector)paths.get(pathsIndex)).size()-1)
+		        {
+		        	g.setColor(LASTPLACED_DOT);
+		        }
+		        // Else, it's at's a previously placed dot
+		        else
+		        {
+		        	// If the path that we're drawing is the current one in
+		        	if(lines == (Vector)paths.get(pathsIndex))
+		        		g.setColor(IN_FOCUS_PATH);
+		        	else
+			        	g.setColor(OUT_OF_FOCUS_PATH);
+		        }
+
 		        // now draw the actual dot
 		        if(visible.contains(cur))
 		            drawDot(g, cur);
 		        
+		        // Assign the current value as the previous
 		        prev = cur;
 		    }
+		    // Previous point is null, because we're going to go into a new
+		    // path
 		    prev = null;
         }
     }
 
     
     /*
-     * Function name: drawDot()
-     * Function prototype:
-     *     public void drawDot(Graphics g, Point p)
-     * Description: draw a dot on the specified Graphics object at the specified Point
-     * Parameters: Graphics g
-     *             Point p
-     * Side Effects: Draws a rectangle centered at the point p.
-     *               Prints out error stream the point drawn.  
-     * Error Conditions: None.
-     * Return Value: None.  Void function.  
+     * Draw a dot on the specified Graphics object at the specified Point
+     * Fills a rectangle around the point, paints according to the Graphic
+     * component.
      */
     public void drawDot(Graphics g, Point p){
             g.fillRect( (int)p.getX()-2, (int)p.getY()-2, 5, 5 );
-            //System.err.println("drawing @ ("
-            //    + (int)p.getX() + ", " + (int)p.getY() + ")");
     }
 
     /*
-     * Function name: connectTheDots()
-     * Function prototype:
-     *    public void connectTheDots(Graphics g, Point start, Point end)
-     * Description: connect two points. this is really just a call to drawLine(), 
-     *              but it's so ugly with all the method calls and casts, it's 
-     *              worth it to have a little wrapper...
-     * Parameters: Graphics g
-     *             Point start (Starting point)
-     *             Point end   (ending point)
-     * Side Effects: Calls drawLine on the passed in graphics object.
-     *               This draws a line between the start and the end point.
-     * Error Conditions: None.
-     * Return Value: None.  Void function.  
+     * Connect the two passed in points. 
+     * This is really just a call to drawLine()
+     * Paints according to the passed in Graphics object.  
      */
     public void connectTheDots(Graphics g, Point start, Point end){
         g.drawLine( (int)start.getX(), (int)start.getY(),
@@ -501,15 +536,17 @@ class ScrollablePicture extends JLabel implements Scrollable,
 }
 
 /*
- * This is the location class!
+ * Location class.  Simply an object contatining a point (Point cord) and 
+ * a description of the point (String name)
  */
 class Location implements Serializable
 {
-	public Point cord;
-	public String name;
+	public Point cord;   // Coordinate of the point
+	public String name;  // Name of the point
+	
 	public Location(int x, int y, String passedName)
 	{
-		cord = new Point(x,y);
-		name = passedName;
+		cord = new Point(x,y);  // Create coordinate based on passed in values
+		name = passedName;      // Copy name string (Strings are constants!)
 	}
 }

@@ -467,6 +467,31 @@ class ScrollablePicture extends JLabel implements Scrollable,
     			parent.statusBar.setText("Loading of data canceled");
         }
 
+        // F9: Print locations to file
+        else if(c == KeyEvent.VK_F9){
+        	FileOutputStream textOutput;
+        	PrintStream outStream;
+        	
+        	try{
+        		textOutput =  new FileOutputStream("Locations.txt");
+        		outStream = new PrintStream( textOutput );
+        		
+        		outStream.println("Locations:");
+        		
+        		for(int locIndex = 0; locIndex < locations.size(); locIndex++)
+        		{
+        			outStream.println("Location " + (locIndex + 1) + " of " +
+        					locations.size() + ": " + 
+        					getLocation(locIndex).toString());
+        		}
+        		parent.statusBar.setText("Locations listing created");
+        		outStream.close();
+        	}
+        	catch(Exception e){
+        		System.err.println("Error writing to file!");
+			}
+        }
+        // F10: Manually place dialog
         else if(c == KeyEvent.VK_F10)
         {
         	manualPlaceDialog();
@@ -488,8 +513,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
         // Take a wild gusss :)
         else{
-            System.err.println("I'm sorry, this key does not have a" +
-            		"have a defined option");
+            System.err.println("I'm sorry, this key does not" +
+            		" have a defined option");
         }
     }
 
@@ -577,18 +602,22 @@ class ScrollablePicture extends JLabel implements Scrollable,
     public String printCurrentLocation () {
     	if( locations.size() > 0 && lines.size() > 0)
     	{
+    		int locIndex=findLocationAtPoint((Point)lines.get(pointNumIndex));
     		// For all locations
-    		for(int locIndex = 0; locIndex < locations.size(); locIndex++){
-    			// if intersect
-    			if ((((Location)locations.get(locIndex)).cord).equals(
-    					lines.get(pointNumIndex)))
-    			{
-    	    		return(", Locations: " + 
-			        		((Location)locations.get(locIndex)).name);    				
-    			}
-    		}
+			if (locIndex >= 0)
+	    		return(", Locations: " + getLocation(locIndex).name);    				
     	}
     	return("");
+    }
+    
+    public int findLocationAtPoint(Point pointToCompare){
+    	for(int locIndex = 0; locIndex < locations.size(); locIndex++){
+			if ((getLocation(locIndex).cord).equals(pointToCompare))
+			{
+				return(locIndex);
+			}
+    	}
+    	return(-1);
     }
     /**
      * Print the (x,y) coordinates of the current point.
@@ -749,14 +778,16 @@ class ScrollablePicture extends JLabel implements Scrollable,
         g.setColor(LOCATION_COLOR);
         for(int locIndex = 0; locIndex < locations.size(); locIndex++)
         {
-        	int x = ((Location)locations.get(locIndex)).cord.x;
-        	int y = ((Location)locations.get(locIndex)).cord.y;
-        	g.drawString( ((Location)locations.get(locIndex)).name +
-        			" (" + x + ", " + y + ")", x, y
-        	);
+        	int x = getLocation(locIndex).cord.x;
+        	int y = getLocation(locIndex).cord.y;
+        	g.drawString( getLocation(locIndex).toString(), x, y);
         }
     }
 
+
+    public Location getLocation(int locIndex){
+    	return((Location)locations.get(locIndex));
+    }
     
     /**
      * Draw a dot on the specified Graphics object at the specified Point
@@ -792,5 +823,9 @@ class Location implements Serializable
 		cord = new Point(x,y);  // Create coordinate based on passed in values
 		name = passedName;      // Copy name string (Strings are constants!)
 		System.err.println("New location @ " + cord);
+	}
+	public String toString()
+	{
+		return(name + " @ (" + cord.x + ", " + cord.y + ")");
 	}
 }

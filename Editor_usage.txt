@@ -1,0 +1,42 @@
+$Id$
+
+How to use the editor:
+
+The active node is in blue. If there is a line connecting the active node to the
+previous node, that line is blue as well.
+
+To make a new location:
+	Enter location name in the text field, then left-click to place a node.
+	A node and a location will be created at that point.
+
+To delete a location:
+	Select the node associated with that location, right-click to move the node.
+
+To rename a location:
+	Select the node associated with that location, type in new location name,
+	right click to move the node.
+
+Keys:
+	Left-click: Add a new node to the end of the current path (and select the
+	            new node).
+	Right-click: Reposition the currently selected node. If a location exists at
+	             that point, it will be deleted (if the text field is empty), or
+	             renamed (if the text field is filled before the click).
+	
+	F1: Remove active node
+	F2: Switch to previous path.
+	F3: Switch to next path.
+	F4: Switch to next node in current path.
+	F5: Switch to previous node in current path.
+	
+	F7: Save point/location data to disk
+	    (rawPathData.dat, rawLocationData.dat).
+	F8: Read point/location data from disk
+	    (rawPathData.dat, rawLocationData.dat).
+	
+	F9: Print locations to file in human-readable format (locations.txt).
+	F10: Manually place a node (prompt for X/Y coordinates).
+	     NOTE: If you currently have the last node in a path selected, this will
+	     place a NEW node. If you have a previous node selected, this will
+	     change the location of that node.
+	F12: New path.

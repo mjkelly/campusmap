@@ -103,10 +103,20 @@ public class ShowImage extends JFrame{
         scroll.setPreferredSize(new Dimension(600, 500));
         scroll.setWheelScrollingEnabled(false);
         
+        // a button to clear the text field and remove its focus
+        JButton clearButton = new JButton("Clear");
+        clearButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                locationName.setText("");
+                ipanel.requestFocus();
+            }
+        });
+        
         // Add all the objects to the main window's content pane
         pane.add(scroll);
         pane.add(locationName);
         pane.add(statusBar);
+        pane.add(clearButton);
         
         // Everything that follows is layout/alignment stuff, with illustrations
         
@@ -123,19 +133,28 @@ public class ShowImage extends JFrame{
         // +-------------
         // |     ^^^
         // | <<< locationName
-        spring.putConstraint(SpringLayout.WEST, locationName, 0, 
+        spring.putConstraint(SpringLayout.WEST, locationName, 5, 
                 SpringLayout.WEST, pane);
-        spring.putConstraint(SpringLayout.NORTH, locationName, 0, 
+        spring.putConstraint(SpringLayout.NORTH, locationName, 5, 
                 SpringLayout.SOUTH, scroll);
         
-        // | (locationName)
-        // +-------------
-        // |     ^^^
+        // |                 (scroll)
+        // +---------------------
+        //                |      ^^^
+        // (locationName) | <<< clearButton
+        spring.putConstraint(SpringLayout.WEST, clearButton, 5, 
+                SpringLayout.EAST, locationName);
+        spring.putConstraint(SpringLayout.NORTH, clearButton, 5, 
+                SpringLayout.SOUTH, scroll);
+        
+        // | (locationName) | (clearButton)
+        // +--------------------------
+        // |                   ^^^
         // | <<< statusBar
-        spring.putConstraint(SpringLayout.WEST, statusBar, 0, 
+        spring.putConstraint(SpringLayout.WEST, statusBar, 5, 
                 SpringLayout.WEST, pane);
-        spring.putConstraint(SpringLayout.NORTH, statusBar, 0, 
-                SpringLayout.SOUTH, locationName);
+        spring.putConstraint(SpringLayout.NORTH, statusBar, 5, 
+                SpringLayout.SOUTH, clearButton);
         
         //           scroll | <<<
         // statusBar        |
@@ -143,7 +162,7 @@ public class ShowImage extends JFrame{
         // ^^^
         spring.putConstraint(SpringLayout.EAST, pane, 0, 
                 SpringLayout.EAST, scroll);
-        spring.putConstraint(SpringLayout.SOUTH, pane, 0, 
+        spring.putConstraint(SpringLayout.SOUTH, pane, 5, 
                 SpringLayout.SOUTH, statusBar);
 
     }
@@ -180,8 +199,7 @@ public class ShowImage extends JFrame{
  * lines are drawn over the image.
  */
 class ScrollablePicture extends JLabel implements Scrollable, 
-                                                  MouseMotionListener, 
-                                                  KeyListener{
+                                                  MouseMotionListener{
     private int maxUnitIncrement = 5;
     private boolean missingPicture = false;
     private Vector lines; // keep track of lines we've drawn
@@ -210,8 +228,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
         setAutoscrolls(true);         // enable synthetic drag events
         addMouseMotionListener(this); // handle mouse drags
 
-        // we'll listen for our own key events
-        addKeyListener(this);
+        // define a short anonymous inner class to feed our own
+        // method (handleKey) the key events
+        addKeyListener(new KeyAdapter(){
+            public void keyPressed(KeyEvent e){ handleKey(e); }
+        });
+        
         // ...but also need to make sure we can receive (key?) focus
         setFocusable(true);
         
@@ -234,7 +256,6 @@ class ScrollablePicture extends JLabel implements Scrollable,
 
                 
                 if(SwingUtilities.isLeftMouseButton(e)) {
-                    System.err.print("Left mouse click @ (" + x + ", " + y + ")");
                     // store the click location in a Point object
                     Point p = new Point(x, y);
 
@@ -265,8 +286,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 
                 // Right click.
                 else if(SwingUtilities.isRightMouseButton(e)) {
-                    System.err.print("Right mouse click @ (" + x + ", " + y + ")");
-                
+
                     // Don't  create a new point in a path.
                     if( pathNumIndex < lines.size() )
                     {
@@ -317,22 +337,14 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     }
                     
                 }
-                else{
-                    System.err.print("Other mouse click @ (" + x + ", " + y + ")");
-                }
-                System.err.println();
                 
             }
         });
 
     }
 
-    // for KeyListener
-    public void keyPressed(KeyEvent e){ handleKey(e); }
-    public void keyReleased(KeyEvent e){ }
-    public void keyTyped(KeyEvent e){ handleKey(e); }
-
-    // this actually handles the key events
+    // this actually handles the key events; it's called by the anonymous
+    // KeyAdapter subclass defined in the constructor
     private void handleKey(KeyEvent k){
         
         int c = k.getKeyCode();

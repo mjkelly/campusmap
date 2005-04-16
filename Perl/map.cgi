@@ -105,6 +105,24 @@ if($fromTxt eq '' && $toTxt eq ''){
 }
 # otherwise, attempt to look up both locations
 else{
+	# the ordering of these two if-blocks is significant!
+	# switching them results in the view centering on the START location.
+
+	if( exists($locations->{$toTxtLookup}) ){
+		$to = $locations->{$toTxtLookup}{'ID'};
+
+		# set the offsets to the coords of the 'to' location
+		if(!$xoff && !$yoff){
+			$xoff = $locations->{$to}{'x'};
+			$yoff = $locations->{$to}{'y'};
+		}
+	}
+	else{
+		$ERROR .= "<b>Destination location &quot;$toTxtSafe&quot; not found.</b>\n"
+			if($toTxt ne '');
+		$dst_found = FALSE;
+	}
+
 	if( exists($locations->{$fromTxtLookup}) ){
 		$from = $locations->{$fromTxtLookup}{'ID'};
 
@@ -121,20 +139,6 @@ else{
 		$src_found = FALSE;
 	}
 
-	if( exists($locations->{$toTxtLookup}) ){
-		$to = $locations->{$toTxtLookup}{'ID'};
-
-		# set the offsets to the coords of the 'to' location
-		if(!$xoff && !$yoff){
-			$xoff = $locations->{$to}{'x'};
-			$yoff = $locations->{$to}{'y'};
-		}
-	}
-	else{
-		$ERROR .= "<b>Destination location &quot;$toTxtSafe&quot; not found.</b>\n"
-			if($toTxt ne '');
-		$dst_found = FALSE;
-	}
 }
 
 # if we still don't have offsets, use the default ones

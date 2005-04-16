@@ -42,6 +42,7 @@ my $tmpfile = new File::Temp(
 		UNLINK => 0,
 	);
 my $fname = $tmpfile->filename;
+chmod(644, $fname);
 
 # load all the data we'll need
 my $points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
@@ -248,8 +249,10 @@ $ERROR
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
 	<td colspan="3" align="center">
-	<a href="$self?$zoomIn">[+]</a> -- 
-	<a href="$self?$zoomOut">[-]</a>
+
+	<b><a href="$self?$zoomIn">[+]</a> -- 
+	<a href="$self?$zoomOut">[-]</a></b><br />
+
 	<a href="$self?$up"><img src="$STATIC_IMG_DIR/up.png" width="50" height="50" border="0"></a><br />
 	</td>
 </tr>

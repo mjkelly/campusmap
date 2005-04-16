@@ -31,7 +31,7 @@ public class PathOptimize
     {
     	
     	final String rawPathFile = "data/rawPath.dat";
-    	final String rawLocFile = "data/rawLocions.dat";
+    	final String rawLocFile = "data/rawLocations.dat";
     	final String optPathFile = "data/optimizedPath.dat";
     	final String optLocFile = "data/optimizedLocations.dat";
     	final String binaryPoints = "data/binPointData.dat";
@@ -585,7 +585,7 @@ AP1:    		for(int activeIndex2 = 0;
 					// etc.
 					if(!ap1.allowLink(ap2))
 						continue;
-					
+                    
 					activeSlope = getSlope(ap1, ap2);
 		    		
 
@@ -749,6 +749,8 @@ AP1:    		for(int activeIndex2 = 0;
 
 			}
     	}
+        
+        System.err.println("End intersections().");
     }
     
     public int checkForPathPointOverlap(PathPoint pi)
@@ -1176,12 +1178,15 @@ class PathPoint
 	 */
 	public boolean allowLink(PathPoint other)
 	{
-		// non null guards go first to avoid exceptions.
-		return (location != null
-				&&	other.location != null
-				&&	location.isAllowIntersections()
-				&&	other.location.isAllowIntersections()
-				);
+        // PathPoints that don't have locations can't suppress linking
+        // (this also guards against null-pointer exceptions below)
+        if(location == null || other.location == null)
+            return true;
+        
+        return (location.isAllowIntersections()
+                &&  other.location.isAllowIntersections()
+                );
+
 	}
 	
 	/**

@@ -57,7 +57,7 @@ if( $from == $to ){
 	#$xoff += $locations->{$to}{'x'};
 	#$yoff += $locations->{$to}{'y'};
 
-	warn "destination offsets ($locations->{$to}{'x'}, $locations->{$to}{'y'})\n";
+	#XXX:warn "destination offsets ($locations->{$to}{'x'}, $locations->{$to}{'y'})\n";
 }
 # if either location doesn't exist, don't draw
 elsif( !exists($locations->{$from}) || !exists($locations->{$to}) ){
@@ -72,10 +72,10 @@ else{
 	#$xoff += $locations->{$to}{'x'};
 	#$yoff += $locations->{$to}{'y'};
 
-	warn "destination offsets ($locations->{$to}{'x'}, $locations->{$to}{'y'})\n";
+	#XXX:warn "destination offsets ($locations->{$to}{'x'}, $locations->{$to}{'y'})\n";
 }
 
-warn "raw offsets: ($xoff, $yoff)\n";
+#XXX:warn "raw offsets: ($xoff, $yoff)\n";
 
 # adjust xoff/yoff so they point to the upper-left-hand corner, which is what
 # the low-level MapGraphics functions use:
@@ -83,7 +83,7 @@ warn "raw offsets: ($xoff, $yoff)\n";
 $xoff -= $width/2;
 $yoff -= $height/2;
 
-warn "adjusted offsets: ($xoff, $yoff)\n";
+#XXX:warn "adjusted offsets: ($xoff, $yoff)\n";
 
 # make sure the offsets don't go out of range
 $xoff = between(0, $MapGlobals::IMAGE_X - $width, $xoff);
@@ -114,6 +114,7 @@ print STDOUT $im->png();
 
 # given A, B, and C, returns the value that is as close to C as possible while
 # still being in [A, B].
+# XXX: proper desc. and function header
 sub between{
 	my($min, $max, $val) = (@_);
 	if($val < $min){

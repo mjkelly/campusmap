@@ -36,12 +36,13 @@ sub drawEdge{
 	my($edge, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale, $force) = (@_);
 
 	# draw all the Edge lines
-	my($curpt, $prevpt);
+	my $curpt;
+	my $prevpt;
 
 	# if the current point is in-bounds
-	my $curInBounds = 0;
+	#my $curInBounds = 0;
 	# if the previous point was in-bounds
-	my $prevInBounds = 0;
+	#my $prevInBounds = 0;
 
 	$im->setThickness($thickness);
 
@@ -49,30 +50,31 @@ sub drawEdge{
 	foreach $curpt ( @{$edge->{'Path'}} ){
 		if( defined($prevpt) ){
 			# check if the current point is in-bounds
-			$curInBounds =
-				($curpt->{'x'} - $xoff >= 0 && $curpt->{'x'} - $xoff <= $w
-				&& $curpt->{'y'} - $yoff >= 0 && $curpt->{'y'} - $yoff <= $h);
+			#$curInBounds =
+			#	($curpt->{'x'} - $xoff >= 0 && $curpt->{'x'} - $xoff <= $w
+			#	&& $curpt->{'y'} - $yoff >= 0 && $curpt->{'y'} - $yoff <= $h);
 
 			# if either the current or the previous point was in bounds,
 			# we print (this is to allow for lines that go off the screen)
-			if($curInBounds || $prevInBounds || $force){
+			#if($curInBounds || $prevInBounds || $force){
 				# take the scale into account for each set of points
 				$im->line(
-					($prevpt->{'x'} - $xoff) * $scale,
-					($prevpt->{'y'} - $yoff) * $scale,
-					($curpt->{'x'} - $xoff) * $scale,
-					($curpt->{'y'} - $yoff) * $scale,
+					$prevpt->{'x'}*$scale - $xoff,
+					$prevpt->{'y'}*$scale - $yoff,
+					$curpt->{'x'}*$scale - $xoff,
+					$curpt->{'y'}*$scale - $yoff,
 					$color
 				);
-			}
+			#}
 
 		}
-		$prevInBounds = $curInBounds;
+		#$prevInBounds = $curInBounds;
 		$prevpt = $curpt;
 	}
 
 }
 
+# XXX: proper desc. and function header
 sub drawAllEdges{
 	my($edges, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
 	foreach (values %$edges){
@@ -109,24 +111,25 @@ sub drawLocation{
 		# print the name of the location, at a slight offset
 		$im->string(
 			gdMediumBoldFont,
-			($location->{'x'} - $xoff + 5) * $scale,
-			($location->{'y'} - $yoff - 6) * $scale,
+			$location->{'x'}*$scale - $xoff + 5,
+			$location->{'y'}*$scale - $yoff - 6,
 			$location->{'Name'},
 			$textColor
 		);
 		
 		# ...and a dot!
 		$im->filledRectangle(
-			($location->{'x'} - $xoff - 2) * $scale,
-			($location->{'y'} - $yoff - 2) * $scale,
-			($location->{'x'} - $xoff + 2) * $scale,
-			($location->{'y'} - $yoff + 2) * $scale,
+			$location->{'x'}*$scale - $xoff - 2,
+			$location->{'y'}*$scale - $yoff - 2,
+			$location->{'x'}*$scale - $xoff + 2,
+			$location->{'y'}*$scale - $yoff + 2,
 			$dotColor
 		);
 
 	#}
 }
 
+# XXX: proper desc. and function header
 sub drawAllLocations{
 	my($locations, $im, $textColor, $dotColor, $xoff, $yoff, $w, $h, $scale) = (@_);
 

@@ -333,4 +333,19 @@ sub nameNormalize{
 	return $name;
 }
 
+###################################################################
+# Return the "lookup name" of a location, given a plaintext location name. This
+# "lookup name" constists of the string "name:" followed by the normalized
+# location name, and can be put into a locations hashref to get a location object
+# by plaintext name.
+# Args:
+#	- the string whose "lookup name" is needed
+# Returns:
+#	- the "lookup name" of the given string
+###################################################################
+sub nameLookup{
+	my $name = shift;
+	return 'name:' . nameNormalize($name);
+}
+
 1;

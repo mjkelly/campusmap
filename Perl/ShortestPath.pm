@@ -22,6 +22,7 @@ use MapGraphics;
 use GD;
 
 # create a hash of minimum distances with Dijkstra's algorithm
+# XXX: proper desc. and function header
 sub find{
 	my($startID, $points) = (@_);
 
@@ -85,6 +86,7 @@ sub find{
 # given a cache of unknown vertices, find the smallest one
 # TODO: add check for "not-a-through-street" flag on locations, 
 # don't visit them, UNLESS they are the start node.
+# XXX: proper desc. and function header
 sub smallestUnknown{
 	my($minCache) = (@_);
 	my $minDist = INFINITY;
@@ -105,6 +107,7 @@ sub smallestUnknown{
 }
 
 # create an initial hash of minimum distances
+# XXX: proper desc. and function header
 sub createMinCache{
 	my($points) = (@_);
 
@@ -117,6 +120,7 @@ sub createMinCache{
 
 # given a data structure populated by shortestPath(), find the shortest
 # path to a given point ID.
+# XXX: proper desc. and function header
 sub pathTo{
 	my $points = shift;
 	my $target = shift;
@@ -132,6 +136,7 @@ sub pathTo{
 
 # write the path to a given target point, given a hashref of post-Dijkstra
 # points, a hashref of edges, a GD image to draw to, and a color to draw with.
+# XXX: proper desc. and function header
 sub drawTo{
 	my($points, $edges, $target, $im, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
 

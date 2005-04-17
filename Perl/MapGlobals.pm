@@ -27,7 +27,7 @@ use constant{
 	TRUE		=> 1,
 	FALSE		=> 0,
 	MAX_SCALE	=> 1,
-	MIN_SCALE	=> 0.25,
+	MIN_SCALE	=> 0.125,
 };
 
 # some names for the various base images.

@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 # -----------------------------------------------------------------
-# newmap.cgi -- The user interface for the UCSDMap.
+# map.cgi -- The user interface for the UCSDMap.
 # Copyright 2005 Michael Kelly (jedimike.net)
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Sat Apr 16 00:23:35 PDT 2005
+# Sat Apr 16 20:20:07 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -68,7 +68,7 @@ my $toTxtLookup = LoadData::nameLookup($toTxt);
 # x and y display offsets, from the upper left
 my $xoff   = int($q->param('xoff')   || 0);
 my $yoff   = int($q->param('yoff')   || 0);
-my $scale  = $q->param('scale')      || 1;
+my $scale  =     $q->param('scale')  || 1;
 
 # click offsets from the map
 # (these are the only two input variables that could be undefined)
@@ -86,6 +86,9 @@ foreach (sort keys %$locations){
 		push(@locNames, $locations->{$_}{'Name'});
 	}
 }
+
+# add a 'None' location to the beginning of the list
+unshift(@locNames, 'None');
 # build menus to change the values of the form fields
 # (These menus have no names, so they shouldn't submit any form data)
 my $fromMenu = buildMenu(\@locNames, 'main.from.value', $fromTxt);
@@ -217,7 +220,6 @@ my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($scale),
 my $red = $im->colorAllocate(255, 0, 0);
 my $green = $im->colorAllocate(0, 255, 0);
 
-
 #MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $scale);
 MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
 				$width, $height, $scale);
@@ -231,6 +233,7 @@ if($path){
 
 binmode($tmpfile);
 print $tmpfile $im->png();
+close($tmpfile);
 
 
 # now put everthing into a simple output template
@@ -330,15 +333,22 @@ sub state{
 # XXX: proper desc. and function header
 sub buildMenu{
 	my ($values, $target, $cur) = (@_);
-	my $evalue;
+	my($evalue, $dsplvalue);
 
 	my $retStr = qq|<select>\n|;
 	my $selected;
 	foreach my $value (@$values){
 		$selected = ($value eq $cur) ? 'selected="selected"' : '';
-		$evalue = CGI::escapeHTML($value);
+		# escape HTML; the 'None' location is a null string
+		if($value eq 'None'){
+			$evalue = '';
+			$dsplvalue = '(None)';
+		}
+		else{
+			$evalue = $dsplvalue = CGI::escapeHTML($value);
+		}
 		$retStr .= qq|<option value="$evalue" $selected onClick="$target = '$evalue'">| .
-		           qq|$evalue</option>\n|;
+		           qq|$dsplvalue</option>\n|;
 	}
 	$retStr .= "</select>\n";
 	return $retStr;

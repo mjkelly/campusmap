@@ -42,7 +42,7 @@ my $tmpfile = new File::Temp(
 		UNLINK => 0,
 	);
 my $fname = $tmpfile->filename;
-chmod(644, $fname);
+chmod(0644, $fname);
 
 # load all the data we'll need
 my $points	= LoadData::loadPoints($MapGlobals::POINT_FILE);

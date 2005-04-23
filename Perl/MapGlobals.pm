@@ -8,27 +8,33 @@
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Sat Apr 16 00:44:44 PDT 2005
+# Fri Apr 22 22:06:33 PDT 2005
 # -----------------------------------------------------------------
 
 package MapGlobals;
-
-require Exporter;
-@ISA = qw(Exporter);
-@EXPORT_OK = qw(reaper getGd2Filename);
-@EXPORT = qw(
-	INFINITY TRUE FALSE MAX_SCALE MIN_SCALE
-	$DYNAMIC_IMG_DIR $STATIC_IMG_DIR
-);
 
 # a few constants to make things more readable
 use constant{
 	INFINITY	=> ~0,
 	TRUE		=> 1,
 	FALSE		=> 0,
-	MAX_SCALE	=> 1,
-	MIN_SCALE	=> 0.125,
+#	MAX_SCALE	=> 1,
+#	MIN_SCALE	=> 0.125,
 };
+
+require Exporter;
+@ISA = qw(Exporter);
+@EXPORT_OK = qw(reaper getGd2Filename @SCALES);
+@EXPORT = qw(
+	INFINITY TRUE FALSE
+	$DYNAMIC_IMG_DIR $STATIC_IMG_DIR
+);
+
+# a list of scaling attributes
+# we use indexes in the application, then map them to the acual multiplier
+# values internally. Remember, these MUST be multiplier values, because the low-level
+# drawing routines use them to scale path/location draws.
+our @SCALES = (1, 0.5, 0.25, 0.125);
 
 # some names for the various base images.
 # TODO: clean this up! (remember old scripts that rely on the old names)

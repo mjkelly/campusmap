@@ -7,14 +7,15 @@
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Sat Apr 16 20:20:07 PDT 2005
+# Fri Apr 22 22:06:39 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
 use warnings;
 
 use CGI;
-use MapGlobals;
+use MapGlobals
+	qw(@SCALES INFINITY TRUE FALSE $DYNAMIC_IMG_DIR $STATIC_IMG_DIR);
 use LoadData;
 use MapGraphics;
 use ShortestPath;
@@ -23,7 +24,7 @@ use File::Temp ();
 my $q = CGI::new();
 
 # the name of this script, for form actions, etc
-my $self = 'map.cgi';
+our $self = 'map.cgi';
 
 # width and height of the viewing window (total image size is in MapGlobals)
 my $width  = 500;
@@ -68,7 +69,7 @@ my $toTxtLookup = LoadData::nameLookup($toTxt);
 # x and y display offsets, from the upper left
 my $xoff   = int($q->param('xoff')   || 0);
 my $yoff   = int($q->param('yoff')   || 0);
-my $scale  =     $q->param('scale')  || 1;
+my $scale  =     $q->param('scale')  || 0;
 
 # click offsets from the map
 # (these are the only two input variables that could be undefined)
@@ -162,28 +163,31 @@ if( defined($mapx) && defined($mapy) ){
 	$mapy -= $height/2;
 
 	# now adjust our absolute x/y offsets to take into account the last click location
-	$xoff += $mapx/$scale;
-	$yoff += $mapy/$scale;
+	$xoff += $mapx/$SCALES[$scale];
+	$yoff += $mapy/$SCALES[$scale];
 }
-
-# make sure the x/y offsets are in range, and correct them if they aren't
-$xoff = between(($width/$scale)/2, $MapGlobals::IMAGE_X - ($width/$scale)/2, $xoff);
-$yoff = between(($height/$scale)/2, $MapGlobals::IMAGE_Y - ($height/$scale)/2, $yoff);
 
 my $curState = state($from, $to, $xoff, $yoff, $scale);
 
+my $zoomWidget = zoomWidget($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale);
+
+# make sure the x/y offsets are in range, and correct them if they aren't
+# (but only AFTER we remember them for the links dependent on the current, unadjusted state)
+$xoff = between(($width/$SCALES[$scale])/2, $MapGlobals::IMAGE_X - ($width/$SCALES[$scale])/2, $xoff);
+$yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SCALES[$scale])/2, $yoff);
+
 # states for the directions
-my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$scale, $yoff, $scale);
-my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan/$scale, $yoff, $scale);
-my $up    = state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$scale, $scale);
-my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$scale, $scale);
+my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale);
+my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale);
+my $up    = state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$SCALES[$scale], $scale);
+my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $scale);
 
-# states for zoom in/out
-my $zoomOut  = state($fromTxtURL, $toTxtURL, $xoff, $yoff,
-	($scale/2 >= MIN_SCALE) ? $scale/2 : MIN_SCALE);
-my $zoomIn = state($fromTxtURL, $toTxtURL, $xoff, $yoff,
-	($scale*2 <= MAX_SCALE) ? $scale*2 : MAX_SCALE);
-
+# the diagonal buttons actually cheat: the total movement is about 141 pixels,
+# because we move 100 up AND 100 left, for instance. I don't think anyone cares.
+my $upLeft    = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale);
+my $upRight   = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale);
+my $downLeft  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale);
+my $downRight = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale);
 
 # now do the actual pathfinding (maybe)...
 
@@ -206,29 +210,29 @@ else{
 # the low-level MapGraphics functions use. additionally, take scale into
 # account at the right time, so it doesn't offset scaled views.
 
-my $rawxoff = $xoff*$scale - $width/2;
-my $rawyoff = $yoff*$scale - $height/2;
+my $rawxoff = $xoff*$SCALES[$scale] - $width/2;
+my $rawyoff = $yoff*$SCALES[$scale] - $height/2;
 
 # make sure the offsets don't go out of range
 $rawxoff = between(0, $MapGlobals::IMAGE_X - $width, $rawxoff);
 $rawyoff = between(0, $MapGlobals::IMAGE_Y - $height, $rawyoff);
 
-my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($scale),
+my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
 	$rawxoff, $rawyoff, $width, $height)
 	|| die "Could not load image $MapGlobals::BASE_GD2_IMAGE\n";
 
 my $red = $im->colorAllocate(255, 0, 0);
 my $green = $im->colorAllocate(0, 255, 0);
 
-#MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $scale);
+#MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
-				$width, $height, $scale);
+				$width, $height, $SCALES[$scale]);
 
 # do the shortest path stuff
 if($path){
 	ShortestPath::find($startID, $points);
 	ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green,
-		$rawxoff, $rawyoff, $width, $height, $scale);
+		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 }
 
 binmode($tmpfile);
@@ -251,12 +255,15 @@ $ERROR
 
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
-	<td colspan="3" align="center">
-
-	<b><a href="$self?$zoomIn">[+]</a> -- 
-	<a href="$self?$zoomOut">[-]</a></b><br />
-
-	<a href="$self?$up"><img src="$STATIC_IMG_DIR/up.png" width="50" height="50" border="0"></a><br />
+	<td align="center">
+		<a href="$self?$upLeft"><img src="$STATIC_IMG_DIR/up-left.png" width="50" height="50" border="0"></a><br />
+	</td>
+	<td align="center">
+		$zoomWidget
+		<a href="$self?$up"><img src="$STATIC_IMG_DIR/up.png" width="50" height="50" border="0"></a><br />
+	</td>
+	<td align="center">
+		<a href="$self?$upRight"><img src="$STATIC_IMG_DIR/up-right.png" width="50" height="50" border="0"></a><br />
 	</td>
 </tr>
 
@@ -285,8 +292,14 @@ $ERROR
 </tr>
 
 <tr>
-	<td colspan="3" align="center">
+	<td align="center">
+		<a href="$self?$downLeft"><img src="$STATIC_IMG_DIR/down-left.png" width="50" height="50" border="0"></a>
+	</td>
+	<td align="center">
 		<a href="$self?$down"><img src="$STATIC_IMG_DIR/down.png" width="50" height="50" border="0"></a>
+	</td>
+	<td align="center">
+		<a href="$self?$downRight"><img src="$STATIC_IMG_DIR/down-right.png" width="50" height="50" border="0"></a>
 	</td>
 </tr>
 
@@ -369,3 +382,31 @@ sub between{
 }
 
 # EOF
+
+# print a widget that shows the current zoom level, and allows an easy way to change it
+# Arguments:
+#	Identical to state().
+sub zoomWidget{
+	my ($from, $to, $x, $y, $scale) = (@_);
+
+	# generate "+" and "-" buttons
+	my $zoomOut = $self . '?' . state($from, $to, $x, $y,
+		($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES);
+	my $zoomIn  = $self . '?' . state($from, $to, $x, $y,
+		($scale > 0) ? $scale - 1 : 0);
+
+	my $ret = qq|<table border="1"><tr><td><a href="$zoomOut">[-]</a></td>|;
+	my ($curState, $style);
+	# print out all the zoom levels
+	# we iterate in reverse because zooms are stored in order of decreasing
+	# zoom internally (why? that's actually a good question. Not sure if
+	# there's a reason. It may change.)
+	for my $i (reverse(0..$#MapGlobals::SCALES)){
+		$curState = $self . '?' . state($from, $to, $x, $y, $i);
+		$style = ($i == $scale) ? 'background: #CCFF00' : '';
+		$ret .= qq|<td style="$style"><a href="$curState">| . ($MapGlobals::SCALES[$i]*100) . qq|%</a></td>|;
+	}
+	$ret .= qq|<td><a href="$zoomIn">[+]</a></td></tr></table>|;
+
+	return $ret;
+}

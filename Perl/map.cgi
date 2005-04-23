@@ -273,6 +273,8 @@ $ERROR
 	</td>
 
 	<td valign="center">
+		<table border="1"><tr><td>
+
 		<form method="get" action="$self" target="_self">
 
 		<input type="hidden" name="xoff" value="$xoff" />
@@ -284,6 +286,8 @@ $ERROR
 		<input type="image" name="map" width="$width" height="$height" border="0"
 			src="$fname" />
 		</form>
+
+		</td></tr></table>
 	</td>
 
 	<td valign="center">

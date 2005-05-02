@@ -169,6 +169,22 @@ if(!$xoff && !$yoff){
 # the source and destination locations
 my $path = ($src_found && $dst_found);
 
+# build the status message
+my $STATUS = 'No path selected.';
+if($fromTxt ne '' || $toTxt ne ''){
+	if($path && $fromTxt ne $toTxt){
+		$STATUS = "Path from $fromTxtSafe to $toTxtSafe.";
+	}
+	else{
+		if($src_found){
+			$STATUS = "Zoomed to $fromTxtSafe.";
+		}
+		elsif($dst_found){
+			$STATUS = "Zoomed to $toTxtSafe.";
+		}
+	}
+}
+
 # integrate the image click offsets (if the image was clicked to recenter)
 if( defined($mapx) && defined($mapy) ){
 	# adjust the map offsets so they work from the center of the screen
@@ -259,6 +275,9 @@ binmode($tmpfile);
 print $tmpfile $im->png();
 close($tmpfile);
 
+# the tag gets updated whenever this file is commited
+my $version = '$Id$';
+
 # now put everthing into a simple output template
 # TODO: separate this from the code, maybe?
 print <<_HTML_;
@@ -272,6 +291,9 @@ Content-type: text/html
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
 </head>
 <body bgcolor="#ffffff">
+
+<!-- status messages inserted here -->
+$STATUS
 
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
@@ -332,8 +354,8 @@ Content-type: text/html
 			<br />
 			Window Size: $width x $height
 			<table border="0"><tr>
-				<td><small>[<a href="$self?$bigger">Bigger</a>]</small></td>
 				<td><small>[<a href="$self?$smaller">Smaller</a>]</small></td>
+				<td><small>[<a href="$self?$bigger">Bigger</a>]</small></td>
 			</tr></table>
 
 			<form method="get" action="$self" target="_self" name="main">
@@ -388,7 +410,7 @@ Content-type: text/html
 
 </table>
 
-<p><a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Problems?</a></p>
+<p>$version -- <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Problems?</a></p>
 
 </body>
 </html>

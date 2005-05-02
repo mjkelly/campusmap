@@ -61,10 +61,6 @@ my $toTxt   = $q->param('to')   || '';
 my $fromTxtSafe = CGI::escapeHTML($fromTxt);
 my $toTxtSafe = CGI::escapeHTML($toTxt);
 
-# URL-safe versions of the from and to text
-my $fromTxtURL = CGI::escape($fromTxt);
-my $toTxtURL = CGI::escape($toTxt);
-
 # normalized versions of the from and to text
 my $fromTxtLookup = LoadData::nameLookup($fromTxt);
 my $toTxtLookup = LoadData::nameLookup($toTxt);
@@ -87,22 +83,6 @@ my $mapy = defined($q->param('map.y')) ? int($q->param('map.y')) : undef;
 
 # clear out any old images
 MapGlobals::reaper($MapGlobals::DYNAMIC_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
-
-# build a list of printable location names
-my @locNames = ();
-foreach (sort keys %$locations){
-	# add each unique name
-	if( substr($_, 0, 5) eq 'name:' ){
-		push(@locNames, $locations->{$_}{'Name'});
-	}
-}
-
-# add a 'None' location to the beginning of the list
-unshift(@locNames, 'None');
-# build menus to change the values of the form fields
-# (These menus have no names, so they shouldn't submit any form data)
-my $fromMenu = buildMenu(\@locNames, 'main.from.value', $fromTxt);
-my $toMenu = buildMenu(\@locNames, 'main.to.value', $toTxt);
 
 # whether source and destination locations were found
 my ($src_found, $dst_found) = (TRUE, TRUE);
@@ -131,11 +111,29 @@ else{
 			$yoff = $locations->{$to}{'y'};
 		}
 	}
+	elsif($toTxt ne ''){
+		# fall back to fuzzy matching here
+		my $id = LoadData::findName($toTxt, $locations);
+		if($id != -1){
+			# since we found a real location, we've got to reset all the text
+			# associated with the location
+			$to = $id;
+			$toTxt = $locations->{$id}{'Name'};
+			$toTxtSafe = CGI::escapeHTML($toTxt);
+			$toTxtLookup = LoadData::nameLookup($toTxt);
+			if(!$xoff && !$yoff){
+				$xoff = $locations->{$to}{'x'};
+				$yoff = $locations->{$to}{'y'};
+			}
+		}
+		else{
+			# I've done all I can. He's dead, Jim.
+			$ERROR .= "<b>Destination location &quot;$toTxtSafe&quot; not found.</b>\n"
+				if($toTxt ne '');
+			$dst_found = FALSE;
+		}
+	}
 	else{
-		# TODO: eventually fall back to fuzzy matching here.
-
-		$ERROR .= "<b>Destination location &quot;$toTxtSafe&quot; not found.</b>\n"
-			if($toTxt ne '');
 		$dst_found = FALSE;
 	}
 
@@ -149,15 +147,53 @@ else{
 			$yoff = $locations->{$from}{'y'};
 		}
 	}
+	elsif($fromTxt ne ''){
+		# fall back to fuzzy matching here
+		my $id = LoadData::findName($fromTxt, $locations);
+		if($id != -1){
+			# since we found a real location, we've got to reset all the text
+			# associated with the location
+			$from = $id;
+			$fromTxt = $locations->{$id}{'Name'};
+			$fromTxtSafe = CGI::escapeHTML($fromTxt);
+			$fromTxtLookup = LoadData::nameLookup($fromTxt);
+			if(!$xoff && !$yoff){
+				$xoff = $locations->{$from}{'x'};
+				$yoff = $locations->{$from}{'y'};
+			}
+		}
+		else{
+			$ERROR .= "<b>Start location &quot;$fromTxtSafe&quot; not found.</b>\n"
+				if($fromTxt ne '');
+			$src_found = FALSE;
+		}
+	}
 	else{
-		# TODO: eventually fall back to fuzzy matching here.
-
-		$ERROR .= "<b>Start location &quot;$fromTxtSafe&quot; not found.</b>\n"
-			if($fromTxt ne '');
 		$src_found = FALSE;
 	}
 
 }
+
+# URL-safe versions of the from and to text
+my $fromTxtURL = CGI::escape($fromTxt);
+my $toTxtURL = CGI::escape($toTxt);
+
+# build a list of printable location names
+my @locNames = ();
+foreach (sort keys %$locations){
+	# add each unique name
+	if( substr($_, 0, 5) eq 'name:' ){
+		push(@locNames, $locations->{$_}{'Name'});
+	}
+}
+
+# add a 'None' location to the beginning of the list
+unshift(@locNames, 'None');
+# build menus to change the values of the form fields
+# (These menus have no names, so they shouldn't submit any form data)
+my $fromMenu = buildMenu(\@locNames, 'main.from.value', $fromTxt);
+my $toMenu = buildMenu(\@locNames, 'main.to.value', $toTxt);
+
 
 # if we still don't have offsets, use the default ones
 if(!$xoff && !$yoff){
@@ -260,8 +296,6 @@ my $green = $im->colorAllocate(0, 255, 0);
 
 # uncomment this to draw ALL paths. useful for debugging.
 #MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
-MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
-				$width, $height, $SCALES[$scale]);
 
 # do the shortest path stuff
 if($path){
@@ -269,6 +303,9 @@ if($path){
 	ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green,
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 }
+
+MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
+				$width, $height, $SCALES[$scale]);
 
 # print the data out to a temporary file
 binmode($tmpfile);
@@ -410,7 +447,8 @@ $STATUS
 
 </table>
 
-<p>$version -- <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Problems?</a></p>
+<p><a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Problems?</a></p>
+<p><small><pre>$version</pre></small></p>
 
 </body>
 </html>

@@ -348,4 +348,55 @@ sub nameLookup{
 	return 'name:' . nameNormalize($name);
 }
 
+###################################################################
+# Given user input, return the ID of the location that best matches, or -1 if
+# there's nothing reasonable.
+#
+# Args:
+#	- a search string
+#	- a hashref of locations to search
+# Returns:
+#	- the ID of the best-matching location, or -1 if there is none
+###################################################################
+sub findName{
+	my ($name, $locations) = @_;
+
+	# we're not going anywhere without a normalized name
+	$name = nameNormalize($name);
+
+	my $match;
+	my $loc;
+	# loop through all the locations, checking for possible matches
+	foreach (keys %$locations){
+		if( substr($_, 0, 5) eq 'name:' ){
+			$loc = substr($_, 5);
+			# check of the location is a superset of the search string
+			if( $loc =~ /$name/ ){
+				# either this is the first match, or this is SHORTER
+				# than the existing one
+				if(! defined($match) || length($match) > length($loc) ){
+					$match = $loc;
+				}
+			}
+			# check if the search string is a superset of the location
+			# (this is less desirable)
+			elsif( $name =~ /$loc/ ){
+				# either this is the first match, or this is LONGER
+				# than the existing one
+				if(! defined($match) || length($match) < length($loc) ){
+					$match = $loc;
+				}
+			}
+		}
+	}
+
+	# get the ID of the match, if one was found
+	my $id = -1;
+	if(defined($match)){
+		$id = $locations->{nameLookup($match)}{'ID'};
+	}
+
+	return $id;
+}
+
 1;

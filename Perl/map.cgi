@@ -7,7 +7,7 @@
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Fri Apr 22 22:06:39 PDT 2005
+# Sun May  1 17:37:51 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -23,12 +23,15 @@ use File::Temp ();
 
 my $q = CGI::new();
 
+# window sizes
+my @sizes = (
+	[400, 300],
+	[500, 375],
+	[640, 480],
+);
+
 # the name of this script, for form actions, etc
 our $self = 'map.cgi';
-
-# width and height of the viewing window (total image size is in MapGlobals)
-my $width  = 500;
-my $height = 400;
 
 # how far (in pixels) to pan when the user clicks "left", "right", "up", or
 # "down"
@@ -70,6 +73,12 @@ my $toTxtLookup = LoadData::nameLookup($toTxt);
 my $xoff   = int($q->param('xoff')   || 0);
 my $yoff   = int($q->param('yoff')   || 0);
 my $scale  =     $q->param('scale')  || 0;
+#my $size   = int(defined($q->param('size'))   || 1);
+my $size   = int($q->param('size'));
+
+# width and height of the viewing window (total image size is in MapGlobals)
+my $width  = $sizes[$size][0];
+my $height = $sizes[$size][1];
 
 # click offsets from the map
 # (these are the only two input variables that could be undefined)
@@ -123,6 +132,8 @@ else{
 		}
 	}
 	else{
+		# TODO: eventually fall back to fuzzy matching here.
+
 		$ERROR .= "<b>Destination location &quot;$toTxtSafe&quot; not found.</b>\n"
 			if($toTxt ne '');
 		$dst_found = FALSE;
@@ -139,6 +150,8 @@ else{
 		}
 	}
 	else{
+		# TODO: eventually fall back to fuzzy matching here.
+
 		$ERROR .= "<b>Start location &quot;$fromTxtSafe&quot; not found.</b>\n"
 			if($fromTxt ne '');
 		$src_found = FALSE;
@@ -167,9 +180,8 @@ if( defined($mapx) && defined($mapy) ){
 	$yoff += $mapy/$SCALES[$scale];
 }
 
-my $curState = state($from, $to, $xoff, $yoff, $scale);
-
-my $zoomWidget = zoomWidget($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale);
+# get the HTML for the widget that controls map zoom levels (scale)
+my $zoomWidget = zoomWidget($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size);
 
 # make sure the x/y offsets are in range, and correct them if they aren't
 # (but only AFTER we remember them for the links dependent on the current, unadjusted state)
@@ -177,19 +189,26 @@ $xoff = between(($width/$SCALES[$scale])/2, $MapGlobals::IMAGE_X - ($width/$SCAL
 $yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SCALES[$scale])/2, $yoff);
 
 # states for the directions
-my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale);
-my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale);
-my $up    = state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$SCALES[$scale], $scale);
-my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $scale);
+my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale, $size);
+my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale, $size);
+my $up    = state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$SCALES[$scale], $scale, $size);
+my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $scale, $size);
 
 # the diagonal buttons actually cheat: the total movement is about 141 pixels,
 # because we move 100 up AND 100 left, for instance. I don't think anyone cares.
-my $upLeft    = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale);
-my $upRight   = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale);
-my $downLeft  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale);
-my $downRight = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale);
+# XXX: unused at the moment -- they're generated, but commented-out in the HTML ;)
+my $upLeft    = state($fromTxtURL, $toTxtURL,
+	$xoff - $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size);
+my $upRight   = state($fromTxtURL, $toTxtURL,
+	$xoff + $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size);
+my $downLeft  = state($fromTxtURL, $toTxtURL,
+	$xoff - $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size);
+my $downRight = state($fromTxtURL, $toTxtURL,
+	$xoff + $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size);
 
-# now do the actual pathfinding (maybe)...
+# buttons to make the window bigger/smaller 
+my $bigger = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size);
+my $smaller = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size);
 
 # these store the _path_ IDs of the starting and ending point, which we
 # need to actually find the shortest path
@@ -209,7 +228,6 @@ else{
 # adjust xoff/yoff so they point to the upper-left-hand corner, which is what
 # the low-level MapGraphics functions use. additionally, take scale into
 # account at the right time, so it doesn't offset scaled views.
-
 my $rawxoff = $xoff*$SCALES[$scale] - $width/2;
 my $rawyoff = $yoff*$SCALES[$scale] - $height/2;
 
@@ -224,6 +242,7 @@ my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
 my $red = $im->colorAllocate(255, 0, 0);
 my $green = $im->colorAllocate(0, 255, 0);
 
+# uncomment this to draw ALL paths. useful for debugging.
 #MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
 				$width, $height, $SCALES[$scale]);
@@ -235,103 +254,141 @@ if($path){
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 }
 
+# print the data out to a temporary file
 binmode($tmpfile);
 print $tmpfile $im->png();
 close($tmpfile);
-
 
 # now put everthing into a simple output template
 # TODO: separate this from the code, maybe?
 print <<_HTML_;
 Content-type: text/html
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <title>UCSD Map</title>
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
 </head>
-<body>
-
-$ERROR
+<body bgcolor="#ffffff">
 
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
+	<!-- top row of buttons: up-left, up, up-right -->
 	<td align="center">
+		<!--
 		<a href="$self?$upLeft"><img src="$STATIC_IMG_DIR/up-left.png" width="50" height="50" border="0"></a><br />
+		-->
 	</td>
 	<td align="center">
-		$zoomWidget
-		<a href="$self?$up"><img src="$STATIC_IMG_DIR/up.png" width="50" height="50" border="0"></a><br />
+		<a href="$self?$up"><img src="$STATIC_IMG_DIR/up.png" width="128" height="20" border="0"></a><br />
 	</td>
 	<td align="center">
+		<!--
 		<a href="$self?$upRight"><img src="$STATIC_IMG_DIR/up-right.png" width="50" height="50" border="0"></a><br />
+		-->
 	</td>
 </tr>
 
 <tr>
+	<!-- left button -->
 	<td valign="center">
-		<a href="$self?$left"><img src="$STATIC_IMG_DIR/left.png" width="50" height="50" border="0"></a>
+		<a href="$self?$left"><img src="$STATIC_IMG_DIR/left.png" width="20" height="128" border="0"></a>
 	</td>
 
+	<!-- the map itself -->
 	<td valign="center">
+
 		<table border="1"><tr><td>
+			<form method="get" action="$self" target="_self">
 
-		<form method="get" action="$self" target="_self">
+			<!-- for preserving state when the user clicks the map -->
+			<input type="hidden" name="xoff" value="$xoff" />
+			<input type="hidden" name="yoff" value="$yoff" />
+			<input type="hidden" name="scale" value="$scale" />
+			<input type="hidden" name="size" value="$size" />
 
-		<input type="hidden" name="xoff" value="$xoff" />
-		<input type="hidden" name="yoff" value="$yoff" />
-		<input type="hidden" name="scale" value="$scale" />
+			<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
+			<input id="to" type="hidden" name="to" value="$toTxtSafe" />
 
-		<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
-		<input id="to" type="hidden" name="to" value="$toTxtSafe" />
-		<input type="image" name="map" width="$width" height="$height" border="0"
-			src="$fname" />
-		</form>
-
+			<!-- the image itself is really a form input, to allow center-on-click -->
+			<input type="image" name="map" width="$width" height="$height" border="0"
+				src="$fname" />
+			</form>
 		</td></tr></table>
+
 	</td>
 
+	<!-- right button -->
 	<td valign="center">
-		<a href="$self?$right"><img src="$STATIC_IMG_DIR/right.png" width="50" height="50" border="0"></a>
+		<a href="$self?$right"><img src="$STATIC_IMG_DIR/right.png" width="20" height="128" border="0"></a>
+	</td>
+
+	<td rowspan="3" align="center" valign="top">
+		<!-- begin control panel -->
+		<table border="1" bgcolor="#cccccc" cellpadding="2"><tr><td>
+			$zoomWidget
+			<br />
+			Window Size: $width x $height
+			<table border="0"><tr>
+				<td><small>[<a href="$self?$bigger">Bigger</a>]</small></td>
+				<td><small>[<a href="$self?$smaller">Smaller</a>]</small></td>
+			</tr></table>
+
+			<form method="get" action="$self" target="_self" name="main">
+			<!-- remember zoom level and window size when searching --> 
+			<input type="hidden" name="scale" value="$scale" />
+			<input type="hidden" name="size" value="$size" />
+			<table border="0" cellpadding="2" cellspacing="2">
+				<tr>
+					<td><label for="from">From:</label></td>
+					<td>
+						<input id="from" type="text" name="from" value="$fromTxtSafe" />
+						$fromMenu
+					</td>
+				</tr>
+				<tr>
+					<td><label for="to">To:</label></td>
+					<td>
+						<input id="to" type="text" name="to" value="$toTxtSafe" />
+						$toMenu
+					</td>
+				</tr>
+				<tr>
+					<td><input type="submit" name="submit" value="Submit" /></td>
+				</tr>
+			</table>
+
+			</form>
+		</td></tr></table>
+		<!-- end control panel -->
+
+		<p>$ERROR</p>
+
 	</td>
 </tr>
 
+<!-- bottom row of buttons: down-left, down, down-right -->
 <tr>
 	<td align="center">
+		<!--
 		<a href="$self?$downLeft"><img src="$STATIC_IMG_DIR/down-left.png" width="50" height="50" border="0"></a>
+		-->
 	</td>
 	<td align="center">
-		<a href="$self?$down"><img src="$STATIC_IMG_DIR/down.png" width="50" height="50" border="0"></a>
+		<a href="$self?$down"><img src="$STATIC_IMG_DIR/down.png" width="128" height="20" border="0"></a>
 	</td>
 	<td align="center">
+		<!--
 		<a href="$self?$downRight"><img src="$STATIC_IMG_DIR/down-right.png" width="50" height="50" border="0"></a>
+		-->
 	</td>
 </tr>
 
 </table>
 
-<form method="get" action="$self" target="_self" name="main">
-<input type="hidden" name="scale" value="$scale" />
-<table border="0" cellpadding="2" cellspacing="2">
-	<tr>
-		<td><label for="from">From:</label></td>
-		<td>
-			<input id="from" type="text" name="from" value="$fromTxtSafe" />
-			$fromMenu
-		</td>
-	</tr>
-	<tr>
-		<td><label for="to">To:</label></td>
-		<td>
-			<input id="to" type="text" name="to" value="$toTxtSafe" />
-			$toMenu
-		</td>
-	</tr>
-	<tr>
-		<td><input type="submit" name="submit" value="Submit" /></td>
-	</tr>
-</table>
-
-</form>
+<p><a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Problems?</a></p>
 
 </body>
 </html>
@@ -339,15 +396,41 @@ _HTML_
 
 
 
-# XXX: proper desc. and function header
+###################################################################
+# Given information about the current map state, return a query string that
+# will preserve the given state.
+# Args:
+#	- source location, as text
+#	- destination location, as text
+#	- x-offset
+#	- y-offset
+#	- map scale
+#	- viewing window size
+# Returns:
+#	- query string
+###################################################################
 sub state{
-	my ($from, $to, $x, $y, $scale) = (@_);
-	return "from=$from&amp;to=$to&amp;xoff=$x&amp;yoff=$y&amp;scale=$scale";
+	my ($from, $to, $x, $y, $scale, $size) = (@_);
+	return "from=$from&amp;to=$to&amp;xoff=$x&amp;yoff=$y&amp;scale=$scale&amp;size=$size";
 }
 
-# create a menu from an array of values, which modifies the given form object,
-# through the basic, cross-browser DOM.
-# XXX: proper desc. and function header
+###################################################################
+# Create a menu from an array of values, which, when selected, modifies the
+# given form object. Uses what I think is the basic, cross-browser DOM. Should
+# work (almost) everywhere.
+# Confirmed to WORK in:
+#	Mozilla, Firefox, Opera, Galeon
+# Confirmed NOT TO WORK in:
+#	lynx, links ;)
+#
+# Args:
+#	- hashref of values to build menu from
+#	- DOM name of target object to change (i.e., formname.inputname.value).
+#	  Leave blank to skip this.
+#	- the currently-selected value (value, not index)
+# Returns:
+#	- a <select> HTML element
+###################################################################
 sub buildMenu{
 	my ($values, $target, $cur) = (@_);
 	my($evalue, $dsplvalue);
@@ -355,7 +438,7 @@ sub buildMenu{
 	my $retStr = qq|<select>\n|;
 	my $selected;
 	foreach my $value (@$values){
-		$selected = ($value eq $cur) ? 'selected="selected"' : '';
+		$selected = ($value eq $cur) ? ' selected="selected"' : '';
 		# escape HTML; the 'None' location is a null string
 		if($value eq 'None'){
 			$evalue = '';
@@ -364,16 +447,27 @@ sub buildMenu{
 		else{
 			$evalue = $dsplvalue = CGI::escapeHTML($value);
 		}
-		$retStr .= qq|<option value="$evalue" $selected onClick="$target = '$evalue'">| .
+		my $js = '';
+		if($target ne ''){
+			$js = qq| onClick="$target = '$evalue'"|;
+		}
+		$retStr .= qq|<option value="$evalue"$selected$js>| .
 		           qq|$dsplvalue</option>\n|;
 	}
 	$retStr .= "</select>\n";
 	return $retStr;
 }
 
-# given A, B, and C, returns the value that is as close to C as possible while
-# still being in [A, B].
-# XXX: proper desc. and function header
+###################################################################
+# Given numbers A, B, and C, returns the value that is as close to C as
+# possible while still being in [A, B].
+# Args:
+#	- minimum value (A)
+#	- maximum value (B)
+#	- target value (C)
+# Returns:
+#	- Value in [A, B] that's closest to the target value.
+###################################################################
 sub between{
 	my($min, $max, $val) = (@_);
 	if($val < $min){
@@ -385,32 +479,40 @@ sub between{
 	return $val;
 }
 
-# EOF
-
-# print a widget that shows the current zoom level, and allows an easy way to change it
-# Arguments:
+###################################################################
+# Return HTML for widget that shows the current zoom level, and allows an easy
+# way to change it. (Does NOT print.)
+# Args:
 #	Identical to state().
+# Returns:
+#	- the HTML for the widget
+###################################################################
 sub zoomWidget{
-	my ($from, $to, $x, $y, $scale) = (@_);
+	my ($from, $to, $x, $y, $scale, $size) = (@_);
 
 	# generate "+" and "-" buttons
 	my $zoomOut = $self . '?' . state($from, $to, $x, $y,
-		($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES);
+		($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size);
 	my $zoomIn  = $self . '?' . state($from, $to, $x, $y,
-		($scale > 0) ? $scale - 1 : 0);
+		($scale > 0) ? $scale - 1 : 0, $size);
 
-	my $ret = qq|<table border="1"><tr><td><a href="$zoomOut">[-]</a></td>|;
+	my $ret = qq|Zoom: <a href="$zoomOut">[-]</a> <a href="$zoomIn">[+]</a>|;
+	#my $ret .= qq|<table border="0"><tr><td><a href="$zoomOut">[-]</a></td>|;
+	$ret .= qq|<table border="0"><tr>|;
+
 	my ($curState, $style);
 	# print out all the zoom levels
 	# we iterate in reverse because zooms are stored in order of decreasing
 	# zoom internally (why? that's actually a good question. Not sure if
 	# there's a reason. It may change.)
 	for my $i (reverse(0..$#MapGlobals::SCALES)){
-		$curState = $self . '?' . state($from, $to, $x, $y, $i);
+		$curState = $self . '?' . state($from, $to, $x, $y, $i, $size);
 		$style = ($i == $scale) ? 'background: #CCFF00' : '';
-		$ret .= qq|<td style="$style"><a href="$curState">| . ($MapGlobals::SCALES[$i]*100) . qq|%</a></td>|;
+		$ret .= qq|<td style="$style"><small>[<a href="$curState">| . ($MapGlobals::SCALES[$i]*100) . qq|%</a>]</small></td>|;
 	}
-	$ret .= qq|<td><a href="$zoomIn">[+]</a></td></tr></table>|;
+
+	#$ret .= qq|<td><a href="$zoomIn">[+]</a></td></tr></table>|;
+	$ret .= qq|</tr></table>|;
 
 	return $ret;
 }

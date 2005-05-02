@@ -60,7 +60,7 @@ our $EDGE_FILE		= 'binEdgeData.dat';
 # where static images (such as the button graphics) are stored
 our $STATIC_IMG_DIR	= '../../ucsdmap';
 # where dynamically-generated images (map views) are stored
-our $DYNAMIC_IMG_DIR	= $STATIC_IMG_DIR . '/dynamic';
+our $DYNAMIC_IMG_DIR	= '../../ucsdmap/dynamic';
 # the suffix of all dynamically-generated images; used for matching for
 # deletion
 our $DYNAMIC_IMG_SUFFIX	= '.png';
@@ -73,7 +73,12 @@ sub getGd2Filename{
 	return $_BASE_GD2_IMAGE . '-' . $scale . '.gd2';
 }
 
-# remove old files from $DYNAMIC_IMG_DIR.
+###################################################################
+# Remove old dynamic files from $DYNAMIC_IMG_DIR.
+# Args:
+#	- maximum allowed age of files, in seconds
+#	- the suffix of files to be killed
+###################################################################
 sub reaper{
 	my($max_age, $kill_suffix) = (@_);
 	my $now = time();

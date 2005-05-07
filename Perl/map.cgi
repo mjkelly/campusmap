@@ -300,8 +300,10 @@ my $green = $im->colorAllocate(0, 255, 0);
 # do the shortest path stuff
 if($path){
 	ShortestPath::find($startID, $points);
-	ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green,
+	my $dist = ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green,
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
+	$dist /= $MapGlobals::PIXELS_PER_METER;
+	$STATUS .= sprintf(" Distance is %.0f m.", $dist);
 }
 
 MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,

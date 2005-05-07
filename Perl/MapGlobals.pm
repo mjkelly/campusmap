@@ -52,6 +52,9 @@ our $IMAGE_Y = 6600;
 our $DEFAULT_XOFF = 2184;
 our $DEFAULT_YOFF = 3264;
 
+# how many pixels (on the largest base map) equal one meter
+our $PIXELS_PER_METER = 10;
+
 # locations of the binary files that contain the graph of paths
 our $POINT_FILE		= 'binPointData.dat';
 our $LOCATION_FILE	= 'binLocationData.dat';

@@ -136,19 +136,29 @@ sub pathTo{
 
 # write the path to a given target point, given a hashref of post-Dijkstra
 # points, a hashref of edges, a GD image to draw to, and a color to draw with.
+# returns pixel distance between the two points
 # XXX: proper desc. and function header
 sub drawTo{
 	my($points, $edges, $target, $im, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
 
+	my $dist = 0;
+
 	# follow 'from' links until we reach the original point
+	my $conn;
 	while( defined($target->{'From'}{'ID'}) ){
+
+		$conn = $target->{'Connections'}{$target->{'From'}{'ID'}};
+		$dist += $conn->{'Weight'};
+
 		MapGraphics::drawEdge(
-			$edges->{$target->{'Connections'}{$target->{'From'}{'ID'}}{'EdgeID'}},
-			$im, 2, $color, $xoff, $yoff, $w, $h, $scale, 1);
+			$edges->{$conn->{'EdgeID'}}, $im, 2, $color,
+			$xoff, $yoff, $w, $h, $scale, 1);
 
 		# keep following the trail back to its source
 		$target = $target->{'From'};
 	}
+
+	return $dist;
 }
 
 1;

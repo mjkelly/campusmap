@@ -997,6 +997,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	        locationLoadSuccess = true;
 	        //close stream
 	        locin.close();
+            
 	    }
 	    catch(FileNotFoundException e){
 	    	System.err.println(locNotFound);
@@ -1005,8 +1006,28 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	    catch(Exception e){
 	    	System.err.println("Error in opening \"" + locFileName + "\"!");
 	    }
+
 	    if( locationLoadSuccess && pathLoadSuccess ){
-		    
+
+            // set the starting point for the IDS of any new locations that
+            // are created.
+            Location.IDcount += locations.size();
+            
+            // now we do a little housekeeping: check for collisions between
+            // location IDs
+            for(int i = 0; i < locations.size(); i++){
+                for(int j = 0; j < locations.size(); j++){
+                    if(i == j) continue;
+                    // if the IDs of two of the locations are the same...
+                    if(getLocation(i).ID == getLocation(j).ID){
+                        // reassign one of them
+                        getLocation(i).ID = Location.IDcount++;
+                        System.err.println("Location ID collision! (Bad input data.)"
+                                + " Reassigning to " + getLocation(i).ID);
+                    }
+                }
+            }
+            
 	        // Set status bar
 	        parent.statusBar.setText("Input read from file");
 	
@@ -1812,7 +1833,7 @@ class Location implements Serializable
 	{
 		cord = new Point(x,y);  // Create coordinate based on passed in values
 		name = passedName;      // Copy name string (Strings are constants!)
-		ID = IDcount++;  // Increment the ID count & assign ID
+        ID = IDcount++;         // Get the current ID and increment
 
 		// Determines if we can use this point when linking together sets of
 		// paths
@@ -1834,7 +1855,7 @@ class Location implements Serializable
 			displayName = false;
 	
 	}
-	
+    
 	/**
 	 * Overloaded toString method for outputing the name and coordinates of
 	 * a location.  Used in painting the coordinates to the screen

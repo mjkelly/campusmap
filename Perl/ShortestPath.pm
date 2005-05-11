@@ -2,7 +2,7 @@
 # ShortestPath.pm -- Routines dealing with the algorithmic process of finding
 # the shortest path to a given point on a graph.
 #
-# Copyright 2005 Michael Kelly (jedimike.net)
+# Copyright 2005 Michael Kelly and David Lindquist
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2

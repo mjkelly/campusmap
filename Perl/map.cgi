@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 # -----------------------------------------------------------------
 # map.cgi -- The user interface for the UCSDMap.
-# Copyright 2005 Michael Kelly (jedimike.net)
+# Copyright 2005 Michael Kelly and David Lindquist
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Sun May  1 17:37:51 PDT 2005
+# Tue May 10 21:55:19 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -70,7 +70,6 @@ my $xoff   = int($q->param('xoff')   || 0);
 my $yoff   = int($q->param('yoff')   || 0);
 my $scale  =     $q->param('scale')  || 0;
 my $size   = int(defined($q->param('size')) ? $q->param('size') : 1);
-#my $size   = int($q->param('size'));
 
 # width and height of the viewing window (total image size is in MapGlobals)
 my $width  = $sizes[$size][0];

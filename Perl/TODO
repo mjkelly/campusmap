@@ -1,9 +1,5 @@
 Interface TODO:
-	* Diagonal pan buttons.
 	* Thumbnail image.
-	* Feedback on zoom level (like maps.ucsd.edu).
-
-	* (Multiple viewport sizes?)
 
 	* Misc. display cleanups: frame around map image, proper zoom buttons,
 	  etc.

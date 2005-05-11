@@ -53,7 +53,11 @@ our $DEFAULT_XOFF = 2184;
 our $DEFAULT_YOFF = 3264;
 
 # how many pixels (on the largest base map) equal one meter
-our $PIXELS_PER_METER = 10;
+# From tests, we've determined that 288696.00 px is approximately 0.72 mi.
+# that gives us ~400967 px per mile.
+our $PIXELS_PER_UNIT = 400967;
+# an abbreviation of the unit we're using (m for meters, mi for miles, etc)
+our $UNITS = "mi";
 
 # locations of the binary files that contain the graph of paths
 our $POINT_FILE		= 'binPointData.dat';
@@ -62,8 +66,10 @@ our $EDGE_FILE		= 'binEdgeData.dat';
 
 # where static images (such as the button graphics) are stored
 our $STATIC_IMG_DIR	= '../../ucsdmap';
+##our $STATIC_IMG_DIR	= '../images';
 # where dynamically-generated images (map views) are stored
 our $DYNAMIC_IMG_DIR	= '../../ucsdmap/dynamic';
+##our $DYNAMIC_IMG_DIR	= '../images/dynamic';
 # the suffix of all dynamically-generated images; used for matching for
 # deletion
 our $DYNAMIC_IMG_SUFFIX	= '.png';

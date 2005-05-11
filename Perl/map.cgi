@@ -69,8 +69,8 @@ my $toTxtLookup = LoadData::nameLookup($toTxt);
 my $xoff   = int($q->param('xoff')   || 0);
 my $yoff   = int($q->param('yoff')   || 0);
 my $scale  =     $q->param('scale')  || 0;
-#my $size   = int(defined($q->param('size'))   || 1);
-my $size   = int($q->param('size'));
+my $size   = int(defined($q->param('size')) ? $q->param('size') : 1);
+#my $size   = int($q->param('size'));
 
 # width and height of the viewing window (total image size is in MapGlobals)
 my $width  = $sizes[$size][0];
@@ -302,8 +302,8 @@ if($path){
 	ShortestPath::find($startID, $points);
 	my $dist = ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green,
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
-	$dist /= $MapGlobals::PIXELS_PER_METER;
-	$STATUS .= sprintf(" Distance is %.0f m.", $dist);
+	$dist /= $MapGlobals::PIXELS_PER_UNIT;
+	$STATUS .= sprintf(" Distance is %.2f %s.", $dist, $MapGlobals::UNITS);
 }
 
 MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
@@ -330,9 +330,6 @@ Content-type: text/html
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
 </head>
 <body bgcolor="#ffffff">
-
-<!-- status messages inserted here -->
-$STATUS
 
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
@@ -388,7 +385,8 @@ $STATUS
 
 	<td rowspan="3" align="center" valign="top">
 		<!-- begin control panel -->
-		<table border="1" bgcolor="#cccccc" cellpadding="2"><tr><td>
+		<table border="1" bgcolor="#cccccc" cellpadding="2">
+		<tr><td>
 			$zoomWidget
 			<br />
 			Window Size: $width x $height
@@ -422,7 +420,12 @@ $STATUS
 			</table>
 
 			</form>
-		</td></tr></table>
+		</td></tr>
+		<tr><td>
+			<!-- status messages inserted here -->
+			$STATUS
+		</td></tr>
+		</table>
 		<!-- end control panel -->
 
 		<p>$ERROR</p>

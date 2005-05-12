@@ -261,35 +261,11 @@ my $ratio_y = $MapGlobals::THUMB_Y / $MapGlobals::IMAGE_Y;
 my $yellow = $thumb->colorAllocate(0, 230, 230);
 
 # top line
-$thumb->line(
+$thumb->rectangle(
 	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
 	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
-	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
-	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
-	$yellow
-);
-# bottom line
-$thumb->line(
-	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
-	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
-	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
-	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
-	$yellow
-);
-# left line
-$thumb->line(
-	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
-	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
-	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
-	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
-	$yellow
-);
-# right line
-$thumb->line(
-	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
-	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
-	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
-	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X - 1,
+	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y - 1,
 	$yellow
 );
 
@@ -405,53 +381,18 @@ Content-type: text/html
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
 	<!-- top row of buttons: up-left, up, up-right -->
-	<td align="center">
+	<td valign="bottom" align="center">
 		<!--
 		<a href="$self?$upLeft"><img src="$STATIC_IMG_DIR/up-left.png" width="50" height="50" border="0"></a><br />
 		-->
 	</td>
-	<td align="center">
+	<td valign="bottom" align="center">
 		<a href="$self?$up"><img src="$STATIC_IMG_DIR/up.png" width="128" height="20" border="0"></a><br />
 	</td>
-	<td align="center">
+	<td valign="bottom" align="center">
 		<!--
 		<a href="$self?$upRight"><img src="$STATIC_IMG_DIR/up-right.png" width="50" height="50" border="0"></a><br />
 		-->
-	</td>
-</tr>
-
-<tr>
-	<!-- left button -->
-	<td valign="center">
-		<a href="$self?$left"><img src="$STATIC_IMG_DIR/left.png" width="20" height="128" border="0"></a>
-	</td>
-
-	<!-- the map itself -->
-	<td valign="center">
-
-		<table border="1"><tr><td>
-			<form method="get" action="$self" target="_self">
-
-			<!-- for preserving state when the user clicks the map -->
-			<input type="hidden" name="xoff" value="$xoff" />
-			<input type="hidden" name="yoff" value="$yoff" />
-			<input type="hidden" name="scale" value="$scale" />
-			<input type="hidden" name="size" value="$size" />
-
-			<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
-			<input id="to" type="hidden" name="to" value="$toTxtSafe" />
-
-			<!-- the image itself is really a form input, to allow center-on-click -->
-			<input type="image" name="map" width="$width" height="$height" border="0"
-				src="$fname" />
-			</form>
-		</td></tr></table>
-
-	</td>
-
-	<!-- right button -->
-	<td valign="center">
-		<a href="$self?$right"><img src="$STATIC_IMG_DIR/right.png" width="20" height="128" border="0"></a>
 	</td>
 
 	<td rowspan="3" align="center" valign="top">
@@ -520,23 +461,58 @@ Content-type: text/html
 	</td>
 </tr>
 
+<tr>
+	<!-- left button -->
+	<td valign="center" align="right">
+		<a href="$self?$left"><img src="$STATIC_IMG_DIR/left.png" width="20" height="128" border="0"></a>
+	</td>
+
+	<!-- the map itself -->
+	<td valign="center">
+
+		<table border="1"><tr><td>
+			<form method="get" action="$self" target="_self">
+
+			<!-- for preserving state when the user clicks the map -->
+			<input type="hidden" name="xoff" value="$xoff" />
+			<input type="hidden" name="yoff" value="$yoff" />
+			<input type="hidden" name="scale" value="$scale" />
+			<input type="hidden" name="size" value="$size" />
+
+			<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
+			<input id="to" type="hidden" name="to" value="$toTxtSafe" />
+
+			<!-- the image itself is really a form input, to allow center-on-click -->
+			<input type="image" name="map" width="$width" height="$height" border="0"
+				src="$fname" />
+			</form>
+		</td></tr></table>
+
+	</td>
+
+	<!-- right button -->
+	<td valign="center" align="left">
+		<a href="$self?$right"><img src="$STATIC_IMG_DIR/right.png" width="20" height="128" border="0"></a>
+	</td>
+
+</tr>
+
 <!-- bottom row of buttons: down-left, down, down-right -->
 <tr>
-	<td align="center">
+	<td valign="top" align="center">
 		<!--
 		<a href="$self?$downLeft"><img src="$STATIC_IMG_DIR/down-left.png" width="50" height="50" border="0"></a>
 		-->
 	</td>
-	<td align="center">
+	<td valign="top" align="center">
 		<a href="$self?$down"><img src="$STATIC_IMG_DIR/down.png" width="128" height="20" border="0"></a>
 	</td>
-	<td align="center">
+	<td valign="top" align="center">
 		<!--
 		<a href="$self?$downRight"><img src="$STATIC_IMG_DIR/down-right.png" width="50" height="50" border="0"></a>
 		-->
 	</td>
 </tr>
-
 </table>
 
 <p>&copy; 2005

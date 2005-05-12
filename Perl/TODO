@@ -1,9 +1,4 @@
 Interface TODO:
-	* Thumbnail image.
-
-	* Misc. display cleanups: frame around map image, proper zoom buttons,
-	  etc.
-
 	* Eventually, better map base images!
-
 	* (If needed: optimizations on image generation, pathfinding (caching).)
+	* Make it not be ugly.

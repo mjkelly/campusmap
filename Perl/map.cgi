@@ -295,15 +295,15 @@ my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $
 
 # the diagonal buttons actually cheat: the total movement is about 141 pixels,
 # because we move 100 up AND 100 left, for instance. I don't think anyone cares.
-# XXX: unused at the moment -- they're generated, but commented-out in the HTML ;)
-my $upLeft    = state($fromTxtURL, $toTxtURL,
-	$xoff - $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size);
-my $upRight   = state($fromTxtURL, $toTxtURL,
-	$xoff + $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size);
-my $downLeft  = state($fromTxtURL, $toTxtURL,
-	$xoff - $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size);
-my $downRight = state($fromTxtURL, $toTxtURL,
-	$xoff + $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size);
+# XXX: unused at the moment -- not sure how to fit them into the display cleanly
+#my $upLeft    = state($fromTxtURL, $toTxtURL,
+#	$xoff - $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size);
+#my $upRight   = state($fromTxtURL, $toTxtURL,
+#	$xoff + $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size);
+#my $downLeft  = state($fromTxtURL, $toTxtURL,
+#	$xoff - $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size);
+#my $downRight = state($fromTxtURL, $toTxtURL,
+#	$xoff + $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size);
 
 # buttons to make the window bigger/smaller 
 my $bigger = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size);
@@ -378,24 +378,11 @@ Content-type: text/html
 </head>
 <body bgcolor="#ffffff">
 
-<table border="0" cellpadding="0" cellspacing="0">
-<tr>
-	<!-- top row of buttons: up-left, up, up-right -->
-	<td valign="bottom" align="center">
-		<!--
-		<a href="$self?$upLeft"><img src="$STATIC_IMG_DIR/up-left.png" width="50" height="50" border="0"></a><br />
-		-->
-	</td>
-	<td valign="bottom" align="center">
-		<a href="$self?$up"><img src="$STATIC_IMG_DIR/up.png" width="128" height="20" border="0"></a><br />
-	</td>
-	<td valign="bottom" align="center">
-		<!--
-		<a href="$self?$upRight"><img src="$STATIC_IMG_DIR/up-right.png" width="50" height="50" border="0"></a><br />
-		-->
-	</td>
+<!-- main layout table: one row, two columns -->
+<table border="0" cellpadding="0" cellspacing="0"><tr>
 
-	<td rowspan="3" align="center" valign="top">
+	<!-- the left column, containing most of the controls -->
+	<td align="center" valign="top" width="30%">
 		<!-- begin control panel -->
 		<table border="1" bgcolor="#cccccc" cellpadding="2">
 		<tr><td>
@@ -454,66 +441,64 @@ Content-type: text/html
 			$STATUS
 		</td></tr>
 		</table>
-		<!-- end control panel -->
 
 		<p>$ERROR</p>
-
-	</td>
-</tr>
-
-<tr>
-	<!-- left button -->
-	<td valign="center" align="right">
-		<a href="$self?$left"><img src="$STATIC_IMG_DIR/left.png" width="20" height="128" border="0"></a>
+		<!-- end control panel -->
 	</td>
 
-	<!-- the map itself -->
-	<td valign="center">
+	<!-- the right column, containing the display -->
+	<td align="center" valign="center">
 
-		<table border="1"><tr><td>
-			<form method="get" action="$self" target="_self">
+		<!-- table to lay out the map image and the panning buttons -->
+		<table border="0" cellpadding="0" cellspacing="0">
 
-			<!-- for preserving state when the user clicks the map -->
-			<input type="hidden" name="xoff" value="$xoff" />
-			<input type="hidden" name="yoff" value="$yoff" />
-			<input type="hidden" name="scale" value="$scale" />
-			<input type="hidden" name="size" value="$size" />
+		<tr>
+			<td colspan="3" align="center" valign="bottom">
+				<!-- up button -->
+				<a href="$self?$up"><img src="$STATIC_IMG_DIR/up.png" width="128" height="20" border="0"></a><br />
+			</td>
+		</tr>
+		<tr>
+			<td align="right" valign="center">
+				<!-- left button -->
+				<a href="$self?$left"><img src="$STATIC_IMG_DIR/left.png" width="20" height="128" border="0"></a>
+			</td>
+			<td>
+				<!-- the map itself -->
+				<table border="1"><tr><td>
+					<form method="get" action="$self" target="_self">
 
-			<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
-			<input id="to" type="hidden" name="to" value="$toTxtSafe" />
+					<!-- for preserving state when the user clicks the map -->
+					<input type="hidden" name="xoff" value="$xoff" />
+					<input type="hidden" name="yoff" value="$yoff" />
+					<input type="hidden" name="scale" value="$scale" />
+					<input type="hidden" name="size" value="$size" />
 
-			<!-- the image itself is really a form input, to allow center-on-click -->
-			<input type="image" name="map" width="$width" height="$height" border="0"
-				src="$fname" />
-			</form>
-		</td></tr></table>
+					<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
+					<input id="to" type="hidden" name="to" value="$toTxtSafe" />
+
+					<!-- the image itself is really a form input, to allow center-on-click -->
+					<input type="image" name="map" width="$width" height="$height" border="0"
+						src="$fname" />
+					</form>
+				</td></tr></table>
+			</td>
+			<td align="left" valign="center">
+				<!-- right button -->
+				<a href="$self?$right"><img src="$STATIC_IMG_DIR/right.png" width="20" height="128" border="0"></a>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3" align="center" valign="top">
+				<!-- down button -->
+				<a href="$self?$down"><img src="$STATIC_IMG_DIR/down.png" width="128" height="20" border="0"></a>
+			</td>
+		</tr>
+		</table>
 
 	</td>
 
-	<!-- right button -->
-	<td valign="center" align="left">
-		<a href="$self?$right"><img src="$STATIC_IMG_DIR/right.png" width="20" height="128" border="0"></a>
-	</td>
-
-</tr>
-
-<!-- bottom row of buttons: down-left, down, down-right -->
-<tr>
-	<td valign="top" align="center">
-		<!--
-		<a href="$self?$downLeft"><img src="$STATIC_IMG_DIR/down-left.png" width="50" height="50" border="0"></a>
-		-->
-	</td>
-	<td valign="top" align="center">
-		<a href="$self?$down"><img src="$STATIC_IMG_DIR/down.png" width="128" height="20" border="0"></a>
-	</td>
-	<td valign="top" align="center">
-		<!--
-		<a href="$self?$downRight"><img src="$STATIC_IMG_DIR/down-right.png" width="50" height="50" border="0"></a>
-		-->
-	</td>
-</tr>
-</table>
+</tr></table>
 
 <p>&copy; 2005
 	<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Michael Kelly</a> and

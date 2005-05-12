@@ -7,7 +7,7 @@
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Tue May 10 21:55:19 PDT 2005
+# Wed May 11 21:20:23 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -76,9 +76,13 @@ my $width  = $sizes[$size][0];
 my $height = $sizes[$size][1];
 
 # click offsets from the map
-# (these are the only two input variables that could be undefined)
 my $mapx = defined($q->param('map.x')) ? int($q->param('map.x')) : undef;
 my $mapy = defined($q->param('map.y')) ? int($q->param('map.y')) : undef;
+
+# click offsets from the thumbnail
+my $thumbx = defined($q->param('thumb.x')) ? int($q->param('thumb.x')) : undef;
+my $thumby = defined($q->param('thumb.y')) ? int($q->param('thumb.y')) : undef;
+# one or the other (map or thumb click offsets) should be undef
 
 # clear out any old images
 MapGlobals::reaper($MapGlobals::DYNAMIC_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
@@ -230,6 +234,11 @@ if( defined($mapx) && defined($mapy) ){
 	$xoff += $mapx/$SCALES[$scale];
 	$yoff += $mapy/$SCALES[$scale];
 }
+# if we got a thumbnail click, it's a little easier
+elsif( defined($thumbx) && defined($thumbx) ){
+	$xoff = $thumbx/$MapGlobals::RATIO_X;
+	$yoff = $thumby/$MapGlobals::RATIO_Y;
+}
 
 # get the HTML for the widget that controls map zoom levels (scale)
 my $zoomWidget = zoomWidget($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size);
@@ -238,6 +247,69 @@ my $zoomWidget = zoomWidget($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size)
 # (but only AFTER we remember them for the links dependent on the current, unadjusted state)
 $xoff = between(($width/$SCALES[$scale])/2, $MapGlobals::IMAGE_X - ($width/$SCALES[$scale])/2, $xoff);
 $yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SCALES[$scale])/2, $yoff);
+
+# now that we have valid offsets, we can generate the thumbnail (highlighting
+# the visible window) safely
+my $thumb = GD::Image->newFromPng($MapGlobals::THUMB_FILE, 1);
+
+# store the ratio between the thumbnail and the main base image
+# (these two REALLY should be the same...)
+my $ratio_x = $MapGlobals::THUMB_X / $MapGlobals::IMAGE_X;
+my $ratio_y = $MapGlobals::THUMB_Y / $MapGlobals::IMAGE_Y;
+
+# this is the color in which we draw the edge-of-view lines
+my $yellow = $thumb->colorAllocate(0, 230, 230);
+
+# top line
+$thumb->line(
+	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	$yellow
+);
+# bottom line
+$thumb->line(
+	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	$yellow
+);
+# left line
+$thumb->line(
+	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	$yellow
+);
+# right line
+$thumb->line(
+	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	$yellow
+);
+
+# now make a temporary file to put this image in
+# XXX: eventually just make this a separate CGI script?
+# I don't know -- which has higher cost: creating/deleting a file, or starting
+# another perl process?
+my $tmpthumb = new File::Temp(
+		TEMPLATE => 'ucsdmap-XXXXXX',
+		DIR => $DYNAMIC_IMG_DIR,
+		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
+		UNLINK => 0,
+	);
+my $thumbname = $tmpthumb->filename;
+chmod(0644, $thumbname);
+
+# write out the finished thumbnail to the file
+binmode($tmpthumb);
+print $tmpthumb $thumb->png();
+close($tmpthumb);
 
 # states for the directions
 my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale, $size);
@@ -317,7 +389,7 @@ close($tmpfile);
 my $version = '$Id$';
 
 # now put everthing into a simple output template
-# TODO: separate this from the code, maybe?
+# TODO: separate this from the code!
 print <<_HTML_;
 Content-type: text/html
 
@@ -385,6 +457,22 @@ Content-type: text/html
 	<td rowspan="3" align="center" valign="top">
 		<!-- begin control panel -->
 		<table border="1" bgcolor="#cccccc" cellpadding="2">
+		<tr><td>
+			<!-- display the thumbnail -->
+			<form method="get" action="$self" target="_self">
+
+			<!-- for preserving state when the user clicks the thumbnail -->
+			<input type="hidden" name="scale" value="$scale" />
+			<input type="hidden" name="size" value="$size" />
+
+			<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
+			<input id="to" type="hidden" name="to" value="$toTxtSafe" />
+
+			<!-- the image itself is really a form input, to allow center-on-click -->
+			<input type="image" name="thumb" width="$MapGlobals::THUMB_X" height="$MapGlobals::THUMB_Y" border="0"
+				src="$thumbname" />
+			</form>
+		</td></tr>
 		<tr><td>
 			$zoomWidget
 			<br />

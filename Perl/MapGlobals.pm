@@ -8,7 +8,7 @@
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Fri Apr 22 22:06:33 PDT 2005
+# Wed May 11 21:20:14 PDT 2005
 # -----------------------------------------------------------------
 
 package MapGlobals;
@@ -18,8 +18,6 @@ use constant{
 	INFINITY	=> ~0,
 	TRUE		=> 1,
 	FALSE		=> 0,
-#	MAX_SCALE	=> 1,
-#	MIN_SCALE	=> 0.125,
 };
 
 require Exporter;
@@ -46,6 +44,16 @@ our $OUT_IMAGE		= 'Output.png';
 # size of the base image, in pixels
 our $IMAGE_X = 7200;
 our $IMAGE_Y = 6600;
+
+# size of the thumbnail image
+our $THUMB_X = 192;
+our $THUMB_Y = 176;
+our $THUMB_FILE = 'thumbnail.png';
+
+# store the ratio between the thumbnail and the main base image
+# (these two REALLY should be the same...)
+our $RATIO_X = $THUMB_X / $IMAGE_X;
+our $RATIO_Y = $THUMB_Y / $IMAGE_Y;
 
 # where to center when there isn't any selection.
 # (2184, 3264) is Geisel Library

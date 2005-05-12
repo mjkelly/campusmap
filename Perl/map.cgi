@@ -447,7 +447,7 @@ Content-type: text/html
 	</td>
 
 	<!-- the right column, containing the display -->
-	<td align="center" valign="center">
+	<td align="center" valign="top">
 
 		<!-- table to lay out the map image and the panning buttons -->
 		<table border="0" cellpadding="0" cellspacing="0">

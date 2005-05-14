@@ -551,7 +551,10 @@ sub buildMenu{
 	my ($values, $target, $cur) = (@_);
 	my($evalue, $dsplvalue);
 
-	my $retStr = qq|<select>\n|;
+	my $name = $target;
+	$name =~ s/\.//g;
+
+	my $retStr = qq|<select name="$name" onChange="$target = this.form.$name.value">\n|;
 	my $selected;
 	foreach my $value (@$values){
 		$selected = ($value eq $cur) ? ' selected="selected"' : '';
@@ -565,7 +568,12 @@ sub buildMenu{
 		}
 		my $js = '';
 		if($target ne ''){
+			# onClick for Mozilla, onChange for Safari and IE
+			#$js = qq| onClick="$target = '$evalue'"|;
+			#$js = qq| onClick="$target = '$evalue'" onChange="$target = '$evalue'"|;
+			# I think this is for Safari...
 			$js = qq| onClick="$target = '$evalue'"|;
+			#$js = qq| onClick="alert('woohoo')"|;
 		}
 		$retStr .= qq|<option value="$evalue"$selected$js>| .
 		           qq|$dsplvalue</option>\n|;

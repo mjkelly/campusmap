@@ -566,13 +566,14 @@ sub buildMenu{
 		else{
 			$evalue = $dsplvalue = CGI::escapeHTML($value);
 		}
+		# keep this code in here until it's confirmed to work in Firefox.
 		my $js = '';
 		if($target ne ''){
 			# onClick for Mozilla, onChange for Safari and IE
 			#$js = qq| onClick="$target = '$evalue'"|;
 			#$js = qq| onClick="$target = '$evalue'" onChange="$target = '$evalue'"|;
 			# I think this is for Safari...
-			$js = qq| onClick="$target = '$evalue'"|;
+			#$js = qq| onClick="$target = '$evalue'"|;
 			#$js = qq| onClick="alert('woohoo')"|;
 		}
 		$retStr .= qq|<option value="$evalue"$selected$js>| .

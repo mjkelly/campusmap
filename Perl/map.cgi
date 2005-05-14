@@ -71,6 +71,10 @@ my $yoff   = int($q->param('yoff')   || 0);
 my $scale  =     $q->param('scale')  || 0;
 my $size   = int(defined($q->param('size')) ? $q->param('size') : 1);
 
+# how fast do you walk?
+# in minutes per mile.
+my $mpm  =     $q->param('mpm')  || 30;
+
 # width and height of the viewing window (total image size is in MapGlobals)
 my $width  = $sizes[$size][0];
 my $height = $sizes[$size][1];
@@ -288,26 +292,26 @@ print $tmpthumb $thumb->png();
 close($tmpthumb);
 
 # states for the directions
-my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale, $size);
-my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale, $size);
-my $up    = state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$SCALES[$scale], $scale, $size);
-my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $scale, $size);
+my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm);
+my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm);
+my $up    = state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$SCALES[$scale], $scale, $size, $mpm);
+my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $scale, $size, $mpm);
 
 # the diagonal buttons actually cheat: the total movement is about 141 pixels,
 # because we move 100 up AND 100 left, for instance. I don't think anyone cares.
 # XXX: unused at the moment -- not sure how to fit them into the display cleanly
 #my $upLeft    = state($fromTxtURL, $toTxtURL,
-#	$xoff - $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size);
+#	$xoff - $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size, $mpm);
 #my $upRight   = state($fromTxtURL, $toTxtURL,
-#	$xoff + $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size);
+#	$xoff + $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size, $mpm);
 #my $downLeft  = state($fromTxtURL, $toTxtURL,
-#	$xoff - $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size);
+#	$xoff - $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size, $mpm);
 #my $downRight = state($fromTxtURL, $toTxtURL,
-#	$xoff + $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size);
+#	$xoff + $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size, $mpm);
 
 # buttons to make the window bigger/smaller 
-my $bigger = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size);
-my $smaller = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size);
+my $bigger = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size, $mpm);
+my $smaller = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm);
 
 # these store the _path_ IDs of the starting and ending point, which we
 # need to actually find the shortest path
@@ -351,6 +355,7 @@ if($path){
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 	$dist /= $MapGlobals::PIXELS_PER_UNIT;
 	$STATUS .= sprintf(" Distance is %.2f %s.", $dist, $MapGlobals::UNITS);
+	$STATUS .= sprintf(" If you walk one mile in %d minutes, this should take about %.0d minutes.", $mpm, $dist*$mpm);
 }
 
 MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
@@ -392,6 +397,7 @@ Content-type: text/html
 			<!-- for preserving state when the user clicks the thumbnail -->
 			<input type="hidden" name="scale" value="$scale" />
 			<input type="hidden" name="size" value="$size" />
+			<input type="hidden" name="mpm" value="$mpm" />
 
 			<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
 			<input id="to" type="hidden" name="to" value="$toTxtSafe" />
@@ -414,6 +420,7 @@ Content-type: text/html
 			<!-- remember zoom level and window size when searching --> 
 			<input type="hidden" name="scale" value="$scale" />
 			<input type="hidden" name="size" value="$size" />
+
 			<table border="0" cellpadding="2" cellspacing="2">
 				<tr>
 					<td><label for="from">From:</label></td>
@@ -427,6 +434,11 @@ Content-type: text/html
 					<td>
 						<input id="to" type="text" name="to" value="$toTxtSafe" />
 						$toMenu
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						It takes me <input type="text" name="mpm" value="$mpm" /> minutes to walk one mile.
 					</td>
 				</tr>
 				<tr>
@@ -473,6 +485,7 @@ Content-type: text/html
 					<input type="hidden" name="yoff" value="$yoff" />
 					<input type="hidden" name="scale" value="$scale" />
 					<input type="hidden" name="size" value="$size" />
+					<input type="hidden" name="mpm" value="$mpm" />
 
 					<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
 					<input id="to" type="hidden" name="to" value="$toTxtSafe" />
@@ -522,12 +535,13 @@ _HTML_
 #	- y-offset
 #	- map scale
 #	- viewing window size
+#	- minutes it takes the user to walk one mile
 # Returns:
 #	- query string
 ###################################################################
 sub state{
-	my ($from, $to, $x, $y, $scale, $size) = (@_);
-	return "from=$from&amp;to=$to&amp;xoff=$x&amp;yoff=$y&amp;scale=$scale&amp;size=$size";
+	my ($from, $to, $x, $y, $scale, $size, $mpm) = (@_);
+	return "from=$from&amp;to=$to&amp;xoff=$x&amp;yoff=$y&amp;scale=$scale&amp;size=$size&amp;mpm=$mpm";
 }
 
 ###################################################################
@@ -613,16 +627,15 @@ sub between{
 #	- the HTML for the widget
 ###################################################################
 sub zoomWidget{
-	my ($from, $to, $x, $y, $scale, $size) = (@_);
+	my ($from, $to, $x, $y, $scale, $size, $mpm) = (@_);
 
 	# generate "+" and "-" buttons
 	my $zoomOut = $self . '?' . state($from, $to, $x, $y,
-		($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size);
+		($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size, $mpm);
 	my $zoomIn  = $self . '?' . state($from, $to, $x, $y,
-		($scale > 0) ? $scale - 1 : 0, $size);
+		($scale > 0) ? $scale - 1 : 0, $size, $mpm);
 
 	my $ret = qq|Zoom: <a href="$zoomOut">[-]</a> <a href="$zoomIn">[+]</a>|;
-	#my $ret .= qq|<table border="0"><tr><td><a href="$zoomOut">[-]</a></td>|;
 	$ret .= qq|<table border="0"><tr>|;
 
 	my ($curState, $style);
@@ -631,12 +644,11 @@ sub zoomWidget{
 	# zoom internally (why? that's actually a good question. Not sure if
 	# there's a reason. It may change.)
 	for my $i (reverse(0..$#MapGlobals::SCALES)){
-		$curState = $self . '?' . state($from, $to, $x, $y, $i, $size);
+		$curState = $self . '?' . state($from, $to, $x, $y, $i, $size, $mpm);
 		$style = ($i == $scale) ? 'background: #CCFF00' : '';
 		$ret .= qq|<td style="$style"><small>[<a href="$curState">| . ($MapGlobals::SCALES[$i]*100) . qq|%</a>]</small></td>|;
 	}
 
-	#$ret .= qq|<td><a href="$zoomIn">[+]</a></td></tr></table>|;
 	$ret .= qq|</tr></table>|;
 
 	return $ret;

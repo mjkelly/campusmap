@@ -41,6 +41,8 @@ our $_BASE_GD2_IMAGE	= 'UCSDmap';
 our $BASE_GD2_IMAGE	= $_BASE_GD2_IMAGE . 'gd2';
 our $OUT_IMAGE		= 'Output.png';
 
+our $TEMPLATE		= 'template.html';
+
 # size of the base image, in pixels
 our $IMAGE_X = 7200;
 our $IMAGE_Y = 6600;

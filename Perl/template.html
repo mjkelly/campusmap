@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>UCSD Map</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+</head>
+<body bgcolor="#ffffff">
+
+<!-- main layout table: one row, two columns -->
+<table border="0" cellpadding="0" cellspacing="0"><tr>
+
+	<!-- the left column, containing most of the controls -->
+	<td align="center" valign="top" width="30%">
+		<!-- begin control panel -->
+		<table border="1" bgcolor="#cccccc" cellpadding="2">
+		<tr><td>
+			<!-- display the thumbnail -->
+			<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self">
+
+			<!-- for preserving state when the user clicks the thumbnail -->
+			<input type="hidden" name="scale" value="<TMPL_VAR NAME=SCALE>" />
+			<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
+			<input type="hidden" name="mpm" value="<TMPL_VAR NAME=MPM>" />
+
+			<input id="from" type="hidden" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+			<input id="to" type="hidden" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+
+			<!-- the image itself is really a form input, to allow center-on-click -->
+			<input type="image" name="thumb"
+				width="<TMPL_VAR NAME=THUMB_WIDTH>"
+				height="<TMPL_VAR NAME=THUMB_HEIGHT>" border="0"
+				src="<TMPL_VAR NAME=IMG_THUMB>" />
+			</form>
+		</td></tr>
+		<tr><td>
+			<TMPL_VAR NAME=HTML_ZOOM_WIDGET>
+			<br />
+			Window Size: <TMPL_VAR NAME=VIEW_WIDTH> x <TMPL_VAR NAME=VIEW_HEIGHT>
+			<table border="0"><tr>
+				<td><small>[<a href="<TMPL_VAR NAME=SMALLER_URL>">Smaller</a>]</small></td>
+				<td><small>[<a href="<TMPL_VAR NAME=BIGGER_URL>">Bigger</a>]</small></td>
+			</tr></table>
+
+			<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self" name="main">
+			<!-- remember zoom level and window size when searching --> 
+			<input type="hidden" name="scale" value="<TMPL_VAR NAME=SCALE>" />
+			<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
+
+			<table border="0" cellpadding="2" cellspacing="2">
+				<tr>
+					<td><label for="from">From:</label></td>
+					<td>
+						<input id="from" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+						<TMPL_VAR NAME=HTML_MENU_FROM>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="to">To:</label></td>
+					<td>
+						<input id="to" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+						<TMPL_VAR NAME=HTML_MENU_TO>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						It takes me <input type="text" name="mpm" value="<TMPL_VAR NAME=MPM>" /> minutes to walk one mile.
+					</td>
+				</tr>
+				<tr>
+					<td><input type="submit" name="submit" value="Submit" /></td>
+				</tr>
+			</table>
+
+			</form>
+		</td></tr>
+		<tr><td>
+			<!-- status messages inserted here -->
+			<TMPL_VAR NAME=TXT_STATUS>
+		</td></tr>
+		</table>
+
+		<p><TMPL_VAR NAME=TXT_ERROR></p>
+		<!-- end control panel -->
+	</td>
+
+	<!-- the right column, containing the display -->
+	<td align="center" valign="top">
+
+		<!-- table to lay out the map image and the panning buttons -->
+		<table border="0" cellpadding="0" cellspacing="0">
+
+		<tr>
+			<td colspan="3" align="center" valign="bottom">
+				<!-- up button -->
+				<a href="<TMPL_VAR NAME=UP_URL>"><img src="<TMPL_VAR NAME=IMG_UP>" width="128" height="20" border="0"></a><br />
+			</td>
+		</tr>
+		<tr>
+			<td align="right" valign="center">
+				<!-- left button -->
+				<a href="<TMPL_VAR NAME=LEFT_URL>"><img src="<TMPL_VAR NAME=IMG_LEFT>" width="20" height="128" border="0"></a>
+			</td>
+			<td>
+				<!-- the map itself -->
+				<table border="1"><tr><td>
+					<form method="get" action="$self" target="_self">
+
+					<!-- for preserving state when the user clicks the map -->
+					<input type="hidden" name="xoff" value="<TMPL_VAR NAME=XOFF>" />
+					<input type="hidden" name="yoff" value="<TMPL_VAR NAME=YOFF>" />
+					<input type="hidden" name="scale" value="<TMPL_VAR NAME=SCALE>" />
+					<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
+					<input type="hidden" name="mpm" value="<TMPL_VAR NAME=MPM>" />
+
+					<input id="from" type="hidden" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+					<input id="to" type="hidden" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+
+					<!-- the image itself is really a form input, to allow center-on-click -->
+					<input type="image" name="map"
+						width="<TMPL_VAR NAME=VIEW_WIDTH>"
+						height="<TMPL_VAR NAME=VIEW_HEIGHT>"
+						border="0"
+						src="<TMPL_VAR NAME=IMG_VIEW>" />
+					</form>
+				</td></tr></table>
+			</td>
+			<td align="left" valign="center">
+				<!-- right button -->
+				<a href="<TMPL_VAR NAME=RIGHT_URL>"><img src="<TMPL_VAR NAME=IMG_RIGHT>" width="20" height="128" border="0"></a>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3" align="center" valign="top">
+				<!-- down button -->
+				<a href="<TMPL_VAR NAME=DOWN_URL>"><img src="<TMPL_VAR NAME=IMG_DOWN>" width="128" height="20" border="0"></a>
+			</td>
+		</tr>
+		</table>
+
+	</td>
+
+</tr></table>
+
+<p>&copy; 2005
+	<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Michael Kelly</a> and
+	<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#100;&#108;&#105;&#110;&#100;&#113;&#117;&#105;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">David Lindquist</a>
+<br /><pre><small><TMPL_VAR NAME=VERSION></small></pre>
+</p>
+
+</body>
+</html>

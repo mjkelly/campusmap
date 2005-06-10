@@ -7,19 +7,21 @@
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Wed May 11 21:20:23 PDT 2005
+# Fri Jun 10 14:34:24 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
 use warnings;
 
 use CGI;
+use File::Temp ();
+use HTML::Template;
+
 use MapGlobals
 	qw(@SCALES INFINITY TRUE FALSE $DYNAMIC_IMG_DIR $STATIC_IMG_DIR);
 use LoadData;
 use MapGraphics;
 use ShortestPath;
-use File::Temp ();
 
 my $q = CGI::new();
 
@@ -369,161 +371,50 @@ close($tmpfile);
 # the tag gets updated whenever this file is commited
 my $version = '$Id$';
 
-# now put everthing into a simple output template
-# TODO: separate this from the code!
-print <<_HTML_;
-Content-type: text/html
+# now we slam everything into a template and print it out
+my $tmpl = HTML::Template->new(filename => $MapGlobals::TEMPLATE);
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<title>UCSD Map</title>
-<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
-</head>
-<body bgcolor="#ffffff">
+# basic info: who we are, where to find images, etc
+$tmpl->param( SELF => $self );
+$tmpl->param( VERSION => $version );
+$tmpl->param( IMG_UP => "$STATIC_IMG_DIR/up.png" );
+$tmpl->param( IMG_DOWN => "$STATIC_IMG_DIR/down.png" );
+$tmpl->param( IMG_LEFT => "$STATIC_IMG_DIR/left.png" );
+$tmpl->param( IMG_RIGHT => "$STATIC_IMG_DIR/right.png" );
+$tmpl->param( IMG_VIEW => $fname );
+$tmpl->param( IMG_THUMB => $thumbname );
 
-<!-- main layout table: one row, two columns -->
-<table border="0" cellpadding="0" cellspacing="0"><tr>
+# add info about current state
+$tmpl->param( SCALE => $scale );
+$tmpl->param( SIZE => $size );
+$tmpl->param( MPM => $mpm );
+$tmpl->param( XOFF => $xoff );
+$tmpl->param( YOFF => $yoff );
+$tmpl->param( VIEW_WIDTH => $width );
+$tmpl->param( VIEW_HEIGHT => $height );
+$tmpl->param( THUMB_WIDTH => $MapGlobals::THUMB_X );
+$tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
 
-	<!-- the left column, containing most of the controls -->
-	<td align="center" valign="top" width="30%">
-		<!-- begin control panel -->
-		<table border="1" bgcolor="#cccccc" cellpadding="2">
-		<tr><td>
-			<!-- display the thumbnail -->
-			<form method="get" action="$self" target="_self">
+# the strings representing the state of various buttons
+$tmpl->param( UP_URL => "$self?$up" );
+$tmpl->param( DOWN_URL => "$self?$down" );
+$tmpl->param( LEFT_URL => "$self?$left" );
+$tmpl->param( RIGHT_URL => "$self?$right" );
+$tmpl->param( SMALLER_URL => "$self?$smaller" );
+$tmpl->param( BIGGER_URL => "$self?$bigger" );
 
-			<!-- for preserving state when the user clicks the thumbnail -->
-			<input type="hidden" name="scale" value="$scale" />
-			<input type="hidden" name="size" value="$size" />
-			<input type="hidden" name="mpm" value="$mpm" />
+# text
+$tmpl->param( TXT_SRC => $fromTxtSafe );
+$tmpl->param( TXT_DST => $toTxtSafe );
+$tmpl->param( TXT_STATUS => $STATUS );
+$tmpl->param( TXT_ERROR => $ERROR );
 
-			<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
-			<input id="to" type="hidden" name="to" value="$toTxtSafe" />
+# HTML -- XXX: these should eventually be rolled into the template itself!
+$tmpl->param( HTML_MENU_FROM => $fromMenu );
+$tmpl->param( HTML_MENU_TO => $toMenu );
+$tmpl->param( HTML_ZOOM_WIDGET => $zoomWidget );
 
-			<!-- the image itself is really a form input, to allow center-on-click -->
-			<input type="image" name="thumb" width="$MapGlobals::THUMB_X" height="$MapGlobals::THUMB_Y" border="0"
-				src="$thumbname" />
-			</form>
-		</td></tr>
-		<tr><td>
-			$zoomWidget
-			<br />
-			Window Size: $width x $height
-			<table border="0"><tr>
-				<td><small>[<a href="$self?$smaller">Smaller</a>]</small></td>
-				<td><small>[<a href="$self?$bigger">Bigger</a>]</small></td>
-			</tr></table>
-
-			<form method="get" action="$self" target="_self" name="main">
-			<!-- remember zoom level and window size when searching --> 
-			<input type="hidden" name="scale" value="$scale" />
-			<input type="hidden" name="size" value="$size" />
-
-			<table border="0" cellpadding="2" cellspacing="2">
-				<tr>
-					<td><label for="from">From:</label></td>
-					<td>
-						<input id="from" type="text" name="from" value="$fromTxtSafe" />
-						$fromMenu
-					</td>
-				</tr>
-				<tr>
-					<td><label for="to">To:</label></td>
-					<td>
-						<input id="to" type="text" name="to" value="$toTxtSafe" />
-						$toMenu
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						It takes me <input type="text" name="mpm" value="$mpm" /> minutes to walk one mile.
-					</td>
-				</tr>
-				<tr>
-					<td><input type="submit" name="submit" value="Submit" /></td>
-				</tr>
-			</table>
-
-			</form>
-		</td></tr>
-		<tr><td>
-			<!-- status messages inserted here -->
-			$STATUS
-		</td></tr>
-		</table>
-
-		<p>$ERROR</p>
-		<!-- end control panel -->
-	</td>
-
-	<!-- the right column, containing the display -->
-	<td align="center" valign="top">
-
-		<!-- table to lay out the map image and the panning buttons -->
-		<table border="0" cellpadding="0" cellspacing="0">
-
-		<tr>
-			<td colspan="3" align="center" valign="bottom">
-				<!-- up button -->
-				<a href="$self?$up"><img src="$STATIC_IMG_DIR/up.png" width="128" height="20" border="0"></a><br />
-			</td>
-		</tr>
-		<tr>
-			<td align="right" valign="center">
-				<!-- left button -->
-				<a href="$self?$left"><img src="$STATIC_IMG_DIR/left.png" width="20" height="128" border="0"></a>
-			</td>
-			<td>
-				<!-- the map itself -->
-				<table border="1"><tr><td>
-					<form method="get" action="$self" target="_self">
-
-					<!-- for preserving state when the user clicks the map -->
-					<input type="hidden" name="xoff" value="$xoff" />
-					<input type="hidden" name="yoff" value="$yoff" />
-					<input type="hidden" name="scale" value="$scale" />
-					<input type="hidden" name="size" value="$size" />
-					<input type="hidden" name="mpm" value="$mpm" />
-
-					<input id="from" type="hidden" name="from" value="$fromTxtSafe" />
-					<input id="to" type="hidden" name="to" value="$toTxtSafe" />
-
-					<!-- the image itself is really a form input, to allow center-on-click -->
-					<input type="image" name="map" width="$width" height="$height" border="0"
-						src="$fname" />
-					</form>
-				</td></tr></table>
-			</td>
-			<td align="left" valign="center">
-				<!-- right button -->
-				<a href="$self?$right"><img src="$STATIC_IMG_DIR/right.png" width="20" height="128" border="0"></a>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="3" align="center" valign="top">
-				<!-- down button -->
-				<a href="$self?$down"><img src="$STATIC_IMG_DIR/down.png" width="128" height="20" border="0"></a>
-			</td>
-		</tr>
-		</table>
-
-	</td>
-
-</tr></table>
-
-<p>&copy; 2005
-	<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Michael Kelly</a> and
-	<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#100;&#108;&#105;&#110;&#100;&#113;&#117;&#105;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">David Lindquist</a>
-<br /><pre><small>$version</small></pre>
-</p>
-
-</body>
-</html>
-_HTML_
-
-
+print "Content-type: text/html\n\n" . $tmpl->output();
 
 ###################################################################
 # Given information about the current map state, return a query string that

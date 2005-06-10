@@ -47,8 +47,7 @@ my $tmpfile = new File::Temp(
 		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
 		UNLINK => 0,
 	);
-my $fname = $tmpfile->filename;
-chmod(0644, $fname);
+chmod(0644, $tmpfile->filename);
 
 # load all the data we'll need
 my $points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
@@ -199,10 +198,20 @@ foreach (sort keys %$locations){
 # add a 'None' location to the beginning of the list
 unshift(@locNames, 'None');
 # build menus to change the values of the form fields
-# (These menus have no names, so they shouldn't submit any form data)
-my $fromMenu = buildMenu(\@locNames, 'main.from.value', $fromTxt);
-my $toMenu = buildMenu(\@locNames, 'main.to.value', $toTxt);
-
+# the actual values submitted by these menus are ignored, because they serve
+# only to change the values of their associated text input fields
+my $fromMenu = $q->popup_menu(
+	-name => 'from_selector',
+	-values => \@locNames,
+	-default => $fromTxt,
+	-onChange => "main.from.value = this.form.from_selector.value"
+);
+my $toMenu = $q->popup_menu(
+	-name => 'to_selector',
+	-values => \@locNames,
+	-default => $toTxt,
+	-onChange => "main.to.value = this.form.to_selector.value"
+);
 
 # if we still don't have offsets, use the default ones
 if(!$xoff && !$yoff){
@@ -285,8 +294,7 @@ my $tmpthumb = new File::Temp(
 		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
 		UNLINK => 0,
 	);
-my $thumbname = $tmpthumb->filename;
-chmod(0644, $thumbname);
+chmod(0644, $tmpthumb->filename);
 
 # write out the finished thumbnail to the file
 binmode($tmpthumb);
@@ -368,21 +376,18 @@ binmode($tmpfile);
 print $tmpfile $im->png();
 close($tmpfile);
 
-# the tag gets updated whenever this file is commited
-my $version = '$Id$';
-
 # now we slam everything into a template and print it out
 my $tmpl = HTML::Template->new(filename => $MapGlobals::TEMPLATE);
 
 # basic info: who we are, where to find images, etc
-$tmpl->param( SELF => $self );
-$tmpl->param( VERSION => $version );
+$tmpl->param( SELF => $self ); # whoooooooooo are you?
+$tmpl->param( VERSION => '$Id$');
 $tmpl->param( IMG_UP => "$STATIC_IMG_DIR/up.png" );
 $tmpl->param( IMG_DOWN => "$STATIC_IMG_DIR/down.png" );
 $tmpl->param( IMG_LEFT => "$STATIC_IMG_DIR/left.png" );
 $tmpl->param( IMG_RIGHT => "$STATIC_IMG_DIR/right.png" );
-$tmpl->param( IMG_VIEW => $fname );
-$tmpl->param( IMG_THUMB => $thumbname );
+$tmpl->param( IMG_VIEW => $tmpfile->filename );
+$tmpl->param( IMG_THUMB => $tmpthumb->filename );
 
 # add info about current state
 $tmpl->param( SCALE => $scale );
@@ -396,12 +401,18 @@ $tmpl->param( THUMB_WIDTH => $MapGlobals::THUMB_X );
 $tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
 
 # the strings representing the state of various buttons
-$tmpl->param( UP_URL => "$self?$up" );
-$tmpl->param( DOWN_URL => "$self?$down" );
-$tmpl->param( LEFT_URL => "$self?$left" );
-$tmpl->param( RIGHT_URL => "$self?$right" );
-$tmpl->param( SMALLER_URL => "$self?$smaller" );
-$tmpl->param( BIGGER_URL => "$self?$bigger" );
+$tmpl->param( UP_URL => 
+	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$SCALES[$scale], $scale, $size, $mpm));
+$tmpl->param( DOWN_URL => 
+	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $scale, $size, $mpm));
+$tmpl->param( LEFT_URL => 
+	"$self?" . state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm));
+$tmpl->param( RIGHT_URL => 
+	"$self?" . state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm));
+$tmpl->param( SMALLER_URL => 
+	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm));
+$tmpl->param( BIGGER_URL => 
+	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size, $mpm));
 
 # text
 $tmpl->param( TXT_SRC => $fromTxtSafe );
@@ -409,7 +420,7 @@ $tmpl->param( TXT_DST => $toTxtSafe );
 $tmpl->param( TXT_STATUS => $STATUS );
 $tmpl->param( TXT_ERROR => $ERROR );
 
-# HTML -- XXX: these should eventually be rolled into the template itself!
+# HTML -- XXX: should these eventually be rolled into the template itself?
 $tmpl->param( HTML_MENU_FROM => $fromMenu );
 $tmpl->param( HTML_MENU_TO => $toMenu );
 $tmpl->param( HTML_ZOOM_WIDGET => $zoomWidget );
@@ -433,59 +444,6 @@ print "Content-type: text/html\n\n" . $tmpl->output();
 sub state{
 	my ($from, $to, $x, $y, $scale, $size, $mpm) = (@_);
 	return "from=$from&amp;to=$to&amp;xoff=$x&amp;yoff=$y&amp;scale=$scale&amp;size=$size&amp;mpm=$mpm";
-}
-
-###################################################################
-# Create a menu from an array of values, which, when selected, modifies the
-# given form object. Uses what I think is the basic, cross-browser DOM. Should
-# work (almost) everywhere.
-# Confirmed to WORK in:
-#	Mozilla, Firefox, Opera, Galeon
-# Confirmed NOT TO WORK in:
-#	lynx, links ;)
-#
-# Args:
-#	- hashref of values to build menu from
-#	- DOM name of target object to change (i.e., formname.inputname.value).
-#	  Leave blank to skip this.
-#	- the currently-selected value (value, not index)
-# Returns:
-#	- a <select> HTML element
-###################################################################
-sub buildMenu{
-	my ($values, $target, $cur) = (@_);
-	my($evalue, $dsplvalue);
-
-	my $name = $target;
-	$name =~ s/\.//g;
-
-	my $retStr = qq|<select name="$name" onChange="$target = this.form.$name.value">\n|;
-	my $selected;
-	foreach my $value (@$values){
-		$selected = ($value eq $cur) ? ' selected="selected"' : '';
-		# escape HTML; the 'None' location is a null string
-		if($value eq 'None'){
-			$evalue = '';
-			$dsplvalue = '(None)';
-		}
-		else{
-			$evalue = $dsplvalue = CGI::escapeHTML($value);
-		}
-		# keep this code in here until it's confirmed to work in Firefox.
-		my $js = '';
-		if($target ne ''){
-			# onClick for Mozilla, onChange for Safari and IE
-			#$js = qq| onClick="$target = '$evalue'"|;
-			#$js = qq| onClick="$target = '$evalue'" onChange="$target = '$evalue'"|;
-			# I think this is for Safari...
-			#$js = qq| onClick="$target = '$evalue'"|;
-			#$js = qq| onClick="alert('woohoo')"|;
-		}
-		$retStr .= qq|<option value="$evalue"$selected$js>| .
-		           qq|$dsplvalue</option>\n|;
-	}
-	$retStr .= "</select>\n";
-	return $retStr;
 }
 
 ###################################################################

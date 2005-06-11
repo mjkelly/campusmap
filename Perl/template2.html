@@ -15,7 +15,7 @@
 	#right {
 		float: left;
 		width: 25%;
-	}
+	} 
 
 	#buttons {
 		/*
@@ -125,7 +125,7 @@
 				</tr>
 				<tr>
 					<td colspan="3">
-						<a href="<TMPL_VAR NAME=ZOOM_IN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" />
+						<a href="<TMPL_VAR NAME=ZOOM_IN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" /></a>
 					</td>
 				</tr>
 
@@ -180,8 +180,8 @@
 	<p><b>From</b>: <TMPL_VAR NAME=TXT_SRC></p>
 	<p><b>To</b>: <TMPL_VAR NAME=TXT_DST></p>
 	<TMPL_IF NAME=GOT_PATH>
-		<p><b>Distance</b>: <TMPL_VAR NAME=DISTANCE></p>
-		<p><b>Time</b>: <TMPL_VAR NAME=TIME></p>
+		<p><b>Distance</b>: <TMPL_VAR NAME=DISTANCE> mi</p>
+		<p><b>Time</b>: <TMPL_VAR NAME=TIME> min</p>
 
 		<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self" name="main">
 

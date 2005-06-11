@@ -199,7 +199,7 @@ foreach (sort keys %$locations){
 }
 
 # add a 'None' location to the beginning of the list
-unshift(@locNames, 'None');
+unshift(@locNames, '');
 # build menus to change the values of the form fields
 # the actual values submitted by these menus are ignored, because they serve
 # only to change the values of their associated text input fields

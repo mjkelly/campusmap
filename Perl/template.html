@@ -60,14 +60,36 @@
 					<td><label for="from">From:</label></td>
 					<td>
 						<input id="from" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
-						<TMPL_VAR NAME=HTML_MENU_FROM>
+						<select name="from_selector"
+							onchange="main.from.value = this.form.from_selector.value">
+							<option value="">(None)</option>
+							<TMPL_LOOP NAME=LOCATIONS>
+								<option
+									value="<TMPL_VAR NAME=NAME>"
+									<TMPL_IF NAME=SELECTED_FROM>
+										selected="selected"
+									</TMPL_IF>
+								><TMPL_VAR NAME=NAME></option>
+							</TMPL_LOOP>
+						</select>
 					</td>
 				</tr>
 				<tr>
 					<td><label for="to">To:</label></td>
 					<td>
 						<input id="to" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
-						<TMPL_VAR NAME=HTML_MENU_TO>
+						<select name="to_selector"
+							onchange="main.to.value = this.form.to_selector.value">
+							<option value="">(None)</option>
+							<TMPL_LOOP NAME=LOCATIONS>
+								<option
+									value="<TMPL_VAR NAME=NAME>"
+									<TMPL_IF NAME=SELECTED_TO>
+										selected="selected"
+									</TMPL_IF>
+								><TMPL_VAR NAME=NAME></option>
+							</TMPL_LOOP>
+						</select>
 					</td>
 				</tr>
 				<tr>

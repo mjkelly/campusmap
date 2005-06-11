@@ -106,6 +106,7 @@ my ($from, $to) = (0, 0);
 if($fromTxt eq '' && $toTxt eq ''){
 	$ERROR .= "Enter a start and destination location to find the shortest"
 		. " path between the two, or select only one to zoom to that location.";
+	($src_found, $dst_found) = (FALSE, FALSE);
 
 }
 # otherwise, attempt to look up both locations
@@ -190,31 +191,17 @@ my $fromTxtURL = CGI::escape($fromTxt);
 my $toTxtURL = CGI::escape($toTxt);
 
 # build a list of printable location names
-my @locNames = ();
+my @locParam;
 foreach (sort keys %$locations){
 	# add each unique name
 	if( substr($_, 0, 5) eq 'name:' ){
-		push(@locNames, $locations->{$_}{'Name'});
+		push(@locParam, {
+			NAME => $locations->{$_}{'Name'},
+			SELECTED_TO => ($toTxt eq $locations->{$_}{'Name'}),
+			SELECTED_FROM => ($fromTxt eq $locations->{$_}{'Name'}),
+		});
 	}
 }
-
-# add a 'None' location to the beginning of the list
-unshift(@locNames, '');
-# build menus to change the values of the form fields
-# the actual values submitted by these menus are ignored, because they serve
-# only to change the values of their associated text input fields
-my $fromMenu = $q->popup_menu(
-	-name => 'from_selector',
-	-values => \@locNames,
-	-default => $fromTxt,
-	-onChange => "main.from.value = this.form.from_selector.value"
-);
-my $toMenu = $q->popup_menu(
-	-name => 'to_selector',
-	-values => \@locNames,
-	-default => $toTxt,
-	-onChange => "main.to.value = this.form.to_selector.value"
-);
 
 # if we still don't have offsets, use the default ones
 if(!$xoff && !$yoff){
@@ -257,9 +244,6 @@ elsif( defined($thumbx) && defined($thumbx) ){
 	$xoff = $thumbx/$MapGlobals::RATIO_X;
 	$yoff = $thumby/$MapGlobals::RATIO_Y;
 }
-
-# get the HTML for the widget that controls map zoom levels (scale)
-my $zoomWidget = zoomWidget($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size);
 
 # make sure the x/y offsets are in range, and correct them if they aren't
 # (but only AFTER we remember them for the links dependent on the current, unadjusted state)
@@ -422,6 +406,8 @@ $tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
 $tmpl->param( ZOOM_WIDGET =>
 	listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size));
 
+$tmpl->param( LOCATIONS => \@locParam );
+
 # the strings representing the state of various buttons
 $tmpl->param( UP_URL => 
 	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$SCALES[$scale], $scale, $size, $mpm));
@@ -447,14 +433,13 @@ $tmpl->param( TXT_DST => $toTxtSafe );
 $tmpl->param( TXT_STATUS => $STATUS );
 $tmpl->param( TXT_ERROR => $ERROR );
 
+# this is tells whether we're actually displaying a path between two separate locations
 $tmpl->param( GOT_PATH => $path );
 $tmpl->param( DISTANCE => sprintf("%.02f", $dist) );
 $tmpl->param( TIME => sprintf("%.02f", $dist*$mpm) );
 
-# HTML -- XXX: should these eventually be rolled into the template itself?
-$tmpl->param( HTML_MENU_FROM => $fromMenu );
-$tmpl->param( HTML_MENU_TO => $toMenu );
-#$tmpl->param( HTML_ZOOM_WIDGET => $zoomWidget );
+$tmpl->param( SRC_FOUND => $src_found );
+$tmpl->param( DST_FOUND => $dst_found );
 
 print "Content-type: text/html\n\n" . $tmpl->output();
 
@@ -499,42 +484,13 @@ sub between{
 }
 
 ###################################################################
-# Return HTML for widget that shows the current zoom level, and allows an easy
-# way to change it. (Does NOT print.)
+# Return a list of zoom levels that can be used to build a zoom widget inside
+# the template.
 # Args:
 #	Identical to state().
 # Returns:
-#	- the HTML for the widget
+#	- an array of hashrefs containing info for each zoom level
 ###################################################################
-sub zoomWidget{
-	my ($from, $to, $x, $y, $scale, $size, $mpm) = (@_);
-
-	# generate "+" and "-" buttons
-	my $zoomOut = $self . '?' . state($from, $to, $x, $y,
-		($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size, $mpm);
-	my $zoomIn  = $self . '?' . state($from, $to, $x, $y,
-		($scale > 0) ? $scale - 1 : 0, $size, $mpm);
-
-	my $ret = qq|Zoom: <a href="$zoomOut">[-]</a> <a href="$zoomIn">[+]</a>|;
-	$ret .= qq|<table border="0"><tr>|;
-
-	my ($curState, $style);
-	# print out all the zoom levels
-	# we iterate in reverse because zooms are stored in order of decreasing
-	# zoom internally (why? that's actually a good question. Not sure if
-	# there's a reason. It may change.)
-	for my $i (reverse(0..$#MapGlobals::SCALES)){
-		$curState = $self . '?' . state($from, $to, $x, $y, $i, $size, $mpm);
-		$style = ($i == $scale) ? 'background: #CCFF00' : '';
-		$ret .= qq|<td style="$style"><small>[<a href="$curState">| . ($MapGlobals::SCALES[$i]*100) . qq|%</a>]</small></td>|;
-	}
-
-	$ret .= qq|</tr></table>|;
-
-	return $ret;
-}
-
-
 sub listZoomLevels{
 	my ($from, $to, $x, $y, $scale, $size, $mpm) = (@_);
 

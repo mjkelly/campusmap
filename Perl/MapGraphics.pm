@@ -102,32 +102,23 @@ sub drawAllEdges{
 ###################################################################
 sub drawLocation{
 	my($location, $im, $textColor, $dotColor, $xoff, $yoff, $w, $h, $scale) = (@_);
-
-	# make sure we're drawing on the viewable window
-	#if( $location->{'x'} - $xoff >= 0 && $location->{'x'} - $xoff <= $w
-	# && $location->{'y'} - $yoff >= 0 && $location->{'y'} - $yoff <= $h ){
-	 	# all the dot locations are adjusted for the scale before being passed
-		# to the lower-level routines
-
-		# print the name of the location, at a slight offset
-		$im->string(
-			gdMediumBoldFont,
-			$location->{'x'}*$scale - $xoff + 5,
-			$location->{'y'}*$scale - $yoff - 6,
-			$location->{'Name'},
-			$textColor
-		);
-		
-		# ...and a dot!
-		$im->filledRectangle(
-			$location->{'x'}*$scale - $xoff - 2,
-			$location->{'y'}*$scale - $yoff - 2,
-			$location->{'x'}*$scale - $xoff + 2,
-			$location->{'y'}*$scale - $yoff + 2,
-			$dotColor
-		);
-
-	#}
+	# print the name of the location, at a slight offset
+	$im->string(
+		gdMediumBoldFont,
+		$location->{'x'}*$scale - $xoff + 5,
+		$location->{'y'}*$scale - $yoff - 6,
+		$location->{'Name'},
+		$textColor
+	);
+	
+	# ...and a dot!
+	$im->filledRectangle(
+		$location->{'x'}*$scale - $xoff - 2,
+		$location->{'y'}*$scale - $yoff - 2,
+		$location->{'x'}*$scale - $xoff + 2,
+		$location->{'y'}*$scale - $yoff + 2,
+		$dotColor
+	);
 }
 
 # XXX: proper desc. and function header

@@ -34,7 +34,15 @@
 			</form>
 		</td></tr>
 		<tr><td>
-			<TMPL_VAR NAME=HTML_ZOOM_WIDGET>
+			[<a href="<TMPL_VAR NAME=ZOOM_OUT_URL>">-</a>]
+			<TMPL_LOOP NAME=ZOOM_WIDGET>
+				<TMPL_IF NAME=SELECTED>
+					[<a href="<TMPL_VAR NAME=URL>">ZOOM</a>]
+				<TMPL_ELSE>
+					[<a href="<TMPL_VAR NAME=URL>">zoom</a>]
+				</TMPL_IF>
+			</TMPL_LOOP>
+			[<a href="<TMPL_VAR NAME=ZOOM_IN_URL>">+</a>]
 			<br />
 			Window Size: <TMPL_VAR NAME=VIEW_WIDTH> x <TMPL_VAR NAME=VIEW_HEIGHT>
 			<table border="0"><tr>
@@ -104,7 +112,7 @@
 			<td>
 				<!-- the map itself -->
 				<table border="1"><tr><td>
-					<form method="get" action="$self" target="_self">
+					<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self">
 
 					<!-- for preserving state when the user clicks the map -->
 					<input type="hidden" name="xoff" value="<TMPL_VAR NAME=XOFF>" />

@@ -3,11 +3,14 @@
 # map.cgi -- The user interface for the UCSDMap.
 # Copyright 2005 Michael Kelly and David Lindquist
 #
+# TODO: Create some kind of 'state' object to avoid passing around
+# these huge, indecipherable (and frequently-changing!) lists.
+#
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Fri Jun 10 14:34:24 PDT 2005
+# Fri Jun 10 19:50:54 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -368,7 +371,12 @@ if($path){
 	$STATUS .= sprintf(" If you walk one mile in %d minutes, this should take about %.0d minutes.", $mpm, $dist*$mpm);
 }
 
-MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
+#MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
+#				$width, $height, $SCALES[$scale]);
+
+MapGraphics::drawLocation($locations->{$from}, $im, $red, $red, $rawxoff, $rawyoff,
+				$width, $height, $SCALES[$scale]);
+MapGraphics::drawLocation($locations->{$to}, $im, $red, $red, $rawxoff, $rawyoff,
 				$width, $height, $SCALES[$scale]);
 
 # print the data out to a temporary file
@@ -377,7 +385,11 @@ print $tmpfile $im->png();
 close($tmpfile);
 
 # now we slam everything into a template and print it out
-my $tmpl = HTML::Template->new(filename => $MapGlobals::TEMPLATE);
+my $tmpl = HTML::Template->new(
+	filename => $MapGlobals::TEMPLATE,
+	die_on_bad_params => 0,
+	global_vars => 1
+);
 
 # basic info: who we are, where to find images, etc
 $tmpl->param( SELF => $self ); # whoooooooooo are you?
@@ -388,6 +400,7 @@ $tmpl->param( IMG_LEFT => "$STATIC_IMG_DIR/left.png" );
 $tmpl->param( IMG_RIGHT => "$STATIC_IMG_DIR/right.png" );
 $tmpl->param( IMG_VIEW => $tmpfile->filename );
 $tmpl->param( IMG_THUMB => $tmpthumb->filename );
+$tmpl->param( IMG_DIR => $STATIC_IMG_DIR );
 
 # add info about current state
 $tmpl->param( SCALE => $scale );
@@ -399,6 +412,9 @@ $tmpl->param( VIEW_WIDTH => $width );
 $tmpl->param( VIEW_HEIGHT => $height );
 $tmpl->param( THUMB_WIDTH => $MapGlobals::THUMB_X );
 $tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
+
+$tmpl->param( ZOOM_WIDGET =>
+	listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size));
 
 # the strings representing the state of various buttons
 $tmpl->param( UP_URL => 
@@ -414,6 +430,11 @@ $tmpl->param( SMALLER_URL =>
 $tmpl->param( BIGGER_URL => 
 	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size, $mpm));
 
+$tmpl->param( ZOOM_OUT_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, $yoff,
+	($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size, $mpm));
+$tmpl->param( ZOOM_IN_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, $yoff,
+	($scale > 0) ? $scale - 1 : 0, $size, $mpm));
+
 # text
 $tmpl->param( TXT_SRC => $fromTxtSafe );
 $tmpl->param( TXT_DST => $toTxtSafe );
@@ -423,7 +444,7 @@ $tmpl->param( TXT_ERROR => $ERROR );
 # HTML -- XXX: should these eventually be rolled into the template itself?
 $tmpl->param( HTML_MENU_FROM => $fromMenu );
 $tmpl->param( HTML_MENU_TO => $toMenu );
-$tmpl->param( HTML_ZOOM_WIDGET => $zoomWidget );
+#$tmpl->param( HTML_ZOOM_WIDGET => $zoomWidget );
 
 print "Content-type: text/html\n\n" . $tmpl->output();
 
@@ -501,4 +522,19 @@ sub zoomWidget{
 	$ret .= qq|</tr></table>|;
 
 	return $ret;
+}
+
+
+sub listZoomLevels{
+	my ($from, $to, $x, $y, $scale, $size, $mpm) = (@_);
+
+	my @ret;
+	for my $i (0..$#MapGlobals::SCALES){
+		push(@ret, {
+			URL => $self . '?' . state($from, $to, $x, $y, $i, $size, $mpm),
+			SELECTED => ($i == $scale),
+		});
+	}
+
+	return \@ret;
 }

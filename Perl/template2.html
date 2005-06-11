@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>UCSD Map</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+
+<style type="text/css">
+	#left {
+		float: left;
+		width: 70%;
+		text-align: left;
+	}
+
+	#right {
+		float: left;
+		width: 25%;
+	}
+
+	#buttons {
+		/*
+		position: absolute;
+		top: 110px;
+		left: 10px;
+		*/
+		float: left;
+		width: 70px;
+		text-align: center;
+	}
+
+	#image {
+		
+	}
+
+	#top {
+
+	}
+
+	#logo{
+		float: left;
+		width: 20%;
+		height: 80px;
+	}
+
+	#divFrom{
+		float: center;
+		height: 80px;
+	}
+
+	#divEnd{
+		width: 40%;
+		float: right;
+		height: 80px;
+	}
+
+	#map{
+
+	}
+</style>
+
+</head>
+<body>
+
+<div id="left">
+	<div id="top">
+		<div id="logo">
+			[Logo]
+		</div>
+
+		<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self" name="main">
+			<!-- remember zoom level and window size when searching --> 
+			<input type="hidden" name="scale" value="<TMPL_VAR NAME=SCALE>" />
+			<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
+
+		<div id="divEnd">
+			<label for="to">End:</label>
+			<input id="to" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+			<TMPL_VAR NAME=HTML_MENU_TO>
+			<input type="submit" name="submit" value="Submit" />
+		</div>
+
+		<div id="divFrom">
+			<label for="from">Start:</label>
+			<input id="from" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+			<TMPL_VAR NAME=HTML_MENU_FROM>
+		</div>
+
+		</form>
+
+	</div>
+
+
+        <div id="map">
+		<!-- this is the directional control pad -->
+		<div id="buttons">
+			<table border="0" cellspacing="1" cellpadding="1" align="center">
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<a href="<TMPL_VAR NAME=UP_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/up-arr.png" width="20" height="20" border="0" /></a>
+					</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>
+						<a href="<TMPL_VAR NAME=LEFT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/left-arr.png" width="20" height="20" border="0" /></a>
+					</td>
+					<td>
+						<!-- we have not yet implemented the circle -->
+						<img src="<TMPL_VAR NAME=IMG_DIR>/circle.png" width="20" height="20" border="0" />
+					</td>
+					<td>
+						<a href="<TMPL_VAR NAME=RIGHT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/right-arr.png" width="20" height="20" border="0" /></a>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<a href="<TMPL_VAR NAME=DOWN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/down-arr.png" width="20" height="20" border="0" /></a>
+					</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<a href="<TMPL_VAR NAME=ZOOM_IN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" />
+					</td>
+				</tr>
+
+				<TMPL_LOOP NAME=ZOOM_WIDGET>
+					<tr>
+						<td colspan="3">
+							<a href="<TMPL_VAR NAME=URL>">
+						<TMPL_IF NAME=SELECTED>
+							<img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png" width="30" height="15" border="0" />
+						<TMPL_ELSE>
+							<img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level.png" width="30" height="15" border="0" />
+						</TMPL_IF>
+							</a>
+						</td>
+					</tr>
+				</TMPL_LOOP>
+				<tr>
+					<td colspan="3" class="buttoncell">
+						<a href="<TMPL_VAR NAME=ZOOM_OUT_URL>"<img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" />
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="image">
+			<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self">
+
+			<!-- for preserving state when the user clicks the map -->
+			<input type="hidden" name="xoff" value="<TMPL_VAR NAME=XOFF>" />
+			<input type="hidden" name="yoff" value="<TMPL_VAR NAME=YOFF>" />
+			<input type="hidden" name="scale" value="<TMPL_VAR NAME=SCALE>" />
+			<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
+			<input type="hidden" name="mpm" value="<TMPL_VAR NAME=MPM>" />
+
+			<input id="from" type="hidden" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+			<input id="to" type="hidden" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+
+			<!-- the image itself is really a form input, to allow center-on-click -->
+			<input type="image" name="map"
+				width="<TMPL_VAR NAME=VIEW_WIDTH>"
+				height="<TMPL_VAR NAME=VIEW_HEIGHT>"
+				border="0"
+				src="<TMPL_VAR NAME=IMG_VIEW>" />
+			</form>
+		</div>
+	</div>
+</div>
+
+<div id="right">
+	This is on the right.
+</div>
+
+</body>
+</html>

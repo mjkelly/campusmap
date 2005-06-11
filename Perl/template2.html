@@ -177,6 +177,25 @@
 </div>
 
 <div id="right">
+
+	<!-- display the thumbnail -->
+	<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self">
+
+	<!-- for preserving state when the user clicks the thumbnail -->
+	<input type="hidden" name="scale" value="<TMPL_VAR NAME=SCALE>" />
+	<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
+	<input type="hidden" name="mpm" value="<TMPL_VAR NAME=MPM>" />
+
+	<input type="hidden" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+	<input type="hidden" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+
+	<!-- the image itself is really a form input, to allow center-on-click -->
+	<input type="image" name="thumb"
+		width="<TMPL_VAR NAME=THUMB_WIDTH>"
+		height="<TMPL_VAR NAME=THUMB_HEIGHT>" border="0"
+		src="<TMPL_VAR NAME=IMG_THUMB>" />
+	</form>
+
 	<p><b>From</b>: <TMPL_VAR NAME=TXT_SRC></p>
 	<p><b>To</b>: <TMPL_VAR NAME=TXT_DST></p>
 	<TMPL_IF NAME=GOT_PATH>
@@ -200,7 +219,9 @@
 		</form>
 
 	</TMPL_IF>
-	<b><TMPL_VAR NAME=TXT_ERROR></b>
+	<TMPL_IF NAME=TXT_ERROR>
+		<b>Error: <TMPL_VAR NAME=TXT_ERROR></b>
+	</TMPL_IF>
 </div>
 
 </body>

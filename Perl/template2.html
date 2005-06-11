@@ -64,7 +64,7 @@
 <div id="left">
 	<div id="top">
 		<div id="logo">
-			[Logo]
+			<img src="../../ucsdmap/ucsdmaplogo_small.png" width="151" height="77" />
 		</div>
 
 		<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self" name="main">
@@ -144,7 +144,9 @@
 				</TMPL_LOOP>
 				<tr>
 					<td colspan="3" class="buttoncell">
-						<a href="<TMPL_VAR NAME=ZOOM_OUT_URL>"<img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" />
+						<a href="<TMPL_VAR NAME=ZOOM_OUT_URL>">
+						<img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" />
+						</a>
 					</td>
 				</tr>
 			</table>
@@ -168,13 +170,37 @@
 				height="<TMPL_VAR NAME=VIEW_HEIGHT>"
 				border="0"
 				src="<TMPL_VAR NAME=IMG_VIEW>" />
+
 			</form>
 		</div>
 	</div>
 </div>
 
 <div id="right">
-	This is on the right.
+	<p><b>From</b>: <TMPL_VAR NAME=TXT_SRC></p>
+	<p><b>To</b>: <TMPL_VAR NAME=TXT_DST></p>
+	<TMPL_IF NAME=GOT_PATH>
+		<p><b>Distance</b>: <TMPL_VAR NAME=DISTANCE></p>
+		<p><b>Time</b>: <TMPL_VAR NAME=TIME></p>
+
+		<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self" name="main">
+
+			<input type="hidden" name="xoff" value="<TMPL_VAR NAME=XOFF>" />
+			<input type="hidden" name="yoff" value="<TMPL_VAR NAME=YOFF>" />
+			<input type="hidden" name="scale" value="<TMPL_VAR NAME=SCALE>" />
+			<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
+			<input type="hidden" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+			<input type="hidden" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+
+			It takes me
+			<input type="text" size="3" name="mpm" value="<TMPL_VAR NAME=MPM>" />
+			minutes to walk one mile.
+
+			<input type="submit" name="submit" value="Recalculate" />
+		</form>
+
+	</TMPL_IF>
+	<b><TMPL_VAR NAME=TXT_ERROR></b>
 </div>
 
 </body>

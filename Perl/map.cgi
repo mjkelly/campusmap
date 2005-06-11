@@ -362,9 +362,10 @@ my $green = $im->colorAllocate(0, 255, 0);
 #MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 
 # do the shortest path stuff
+my $dist;
 if($path){
 	ShortestPath::find($startID, $points);
-	my $dist = ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green,
+	$dist = ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green,
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 	$dist /= $MapGlobals::PIXELS_PER_UNIT;
 	$STATUS .= sprintf(" Distance is %.2f %s.", $dist, $MapGlobals::UNITS);
@@ -374,10 +375,15 @@ if($path){
 #MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
 #				$width, $height, $SCALES[$scale]);
 
-MapGraphics::drawLocation($locations->{$from}, $im, $red, $red, $rawxoff, $rawyoff,
-				$width, $height, $SCALES[$scale]);
-MapGraphics::drawLocation($locations->{$to}, $im, $red, $red, $rawxoff, $rawyoff,
-				$width, $height, $SCALES[$scale]);
+# only draw the source and destination locations -- not everything
+if($src_found){
+	MapGraphics::drawLocation($locations->{$from}, $im, $red, $red, $rawxoff, $rawyoff,
+					$width, $height, $SCALES[$scale]);
+}
+if($dst_found){
+	MapGraphics::drawLocation($locations->{$to}, $im, $red, $red, $rawxoff, $rawyoff,
+					$width, $height, $SCALES[$scale]);
+}
 
 # print the data out to a temporary file
 binmode($tmpfile);
@@ -440,6 +446,10 @@ $tmpl->param( TXT_SRC => $fromTxtSafe );
 $tmpl->param( TXT_DST => $toTxtSafe );
 $tmpl->param( TXT_STATUS => $STATUS );
 $tmpl->param( TXT_ERROR => $ERROR );
+
+$tmpl->param( GOT_PATH => $path );
+$tmpl->param( DISTANCE => sprintf("%.02f", $dist) );
+$tmpl->param( TIME => sprintf("%.02f", $dist*$mpm) );
 
 # HTML -- XXX: should these eventually be rolled into the template itself?
 $tmpl->param( HTML_MENU_FROM => $fromMenu );

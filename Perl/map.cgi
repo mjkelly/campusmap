@@ -383,11 +383,20 @@ my $tmpl = HTML::Template->new(
 
 # basic info: who we are, where to find images, etc
 $tmpl->param( SELF => $self ); # whoooooooooo are you?
-$tmpl->param( VERSION => '$Id$');
+
+# a bunch of CVS tags
+$tmpl->param( CVS_ID => '$Id$');
+$tmpl->param( CVS_REVISION => '$Revision$');
+$tmpl->param( CVS_DATE => '$Date$');
+$tmpl->param( CVS_AUTHOR => '$Author$');
+
+# URLS and pathnames to various important things
+# (Note: IMG_* tags are only used by the old template.)
 $tmpl->param( IMG_UP => "$STATIC_IMG_DIR/up.png" );
 $tmpl->param( IMG_DOWN => "$STATIC_IMG_DIR/down.png" );
 $tmpl->param( IMG_LEFT => "$STATIC_IMG_DIR/left.png" );
 $tmpl->param( IMG_RIGHT => "$STATIC_IMG_DIR/right.png" );
+
 $tmpl->param( IMG_VIEW => $tmpfile->filename );
 $tmpl->param( IMG_THUMB => $tmpthumb->filename );
 $tmpl->param( IMG_DIR => $STATIC_IMG_DIR );

@@ -169,6 +169,19 @@ else{
 
 }
 
+# build a list of printable location names
+my @locParam;
+foreach (sort keys %$locations){
+	# add each unique name
+	if( substr($_, 0, 5) eq 'name:' ){
+		push(@locParam, {
+			NAME => $locations->{$_}{'Name'},
+			SELECTED_TO => ($toTxt eq $locations->{$_}{'Name'}),
+			SELECTED_FROM => ($fromTxt eq $locations->{$_}{'Name'}),
+		});
+	}
+}
+
 # we actually run the shortest-path algorithm only if we found both
 # the source and destination locations
 my $path = ($src_found && $dst_found);
@@ -220,6 +233,18 @@ if($path){
 				last;
 			}
 		}
+	}
+}
+# if we don't have a full path, check if we have a single location,
+# and center on that
+else{
+	if($src_found){
+		$xoff = $locations->{$from}{'x'};
+		$yoff = $locations->{$from}{'y'};
+	}
+	elsif($dst_found){
+		$xoff = $locations->{$to}{'x'};
+		$yoff = $locations->{$to}{'y'};
 	}
 }
 
@@ -302,19 +327,6 @@ binmode($tmpfile);
 print $tmpfile $im->png();
 close($tmpfile);
 
-
-# build a list of printable location names
-my @locParam;
-foreach (sort keys %$locations){
-	# add each unique name
-	if( substr($_, 0, 5) eq 'name:' ){
-		push(@locParam, {
-			NAME => $locations->{$_}{'Name'},
-			SELECTED_TO => ($toTxt eq $locations->{$_}{'Name'}),
-			SELECTED_FROM => ($fromTxt eq $locations->{$_}{'Name'}),
-		});
-	}
-}
 
 # now that we have valid offsets, we can generate the thumbnail (highlighting
 # the visible window) safely

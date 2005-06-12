@@ -9,59 +9,65 @@
 	#left {
 		float: left;
 		width: 70%;
-		text-align: left;
 	}
 
 	#right {
 		float: left;
-		width: 25%;
+		width: 20%;
 	} 
 
-	#buttons {
-		/*
+	/* 
+	 * Buttons for controling zoom and direction...position is abosolutely
+	 * relative to map :)
+	 */
+  	 #buttons {
 		position: absolute;
-		top: 110px;
+		top: 20px;
 		left: 10px;
-		*/
 		float: left;
 		width: 70px;
 		text-align: center;
 	}
 
 	#image {
-		
+
 	}
 
 	#top {
-
+	    	height: 80px;
 	}
 
 	#logo{
+	    	height: 100%;
 		float: left;
 		width: 20%;
-		height: 80px;
+		border-right: 10px solid white;
 	}
 
 	#divFrom{
+	    	border-top: 13px solid white;
 		float: center;
-		height: 80px;
 	}
 
 	#divEnd{
+	    	border-top: 13px solid white;
 		width: 40%;
 		float: right;
-		height: 80px;
 	}
 
 	#map{
-
+	    	position: relative;
+		border-top: 40px solid #333399;
 	}
-
+	#mapImage{
+	}
+	/* The area of the display...text and misc information */
 	#bottom{
 		display: block;
 		float: left;
 		font-size: 75%;
 		width: 100%;
+		text-align: center;
 	}
 </style>
 
@@ -71,18 +77,18 @@
 <div id="left">
 	<div id="top">
 		<div id="logo">
-			<img src="../../ucsdmap/ucsdmaplogo_small.png" width="151" height="77" />
+			<img src="../../ucsdmap/ucsdmaplogo_small.png" width="151" height="77" alt="ucsdmapLogo" />
 		</div>
 
 		<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self" name="main">
 			<!-- remember zoom level and window size when searching --> 
-			<input type="hidden" name="scale" value="<TMPL_VAR NAME=SCALE>" />
 			<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
 			<input type="hidden" name="mpm" value="<TMPL_VAR NAME=MPM>" />
 
 		<div id="divEnd">
 			<label for="to">End:</label>
 			<input id="to" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+			<br>
 			<select name="to_selector"
 				onchange="main.to.value = this.form.to_selector.value">
 				<option value="">(None)</option>
@@ -101,6 +107,7 @@
 		<div id="divFrom">
 			<label for="from">Start:</label>
 			<input id="from" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+			<br>
 			<select name="from_selector"
 				onchange="main.from.value = this.form.from_selector.value">
 				<option value="">(None)</option>
@@ -136,8 +143,9 @@
 						<a href="<TMPL_VAR NAME=LEFT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/left-arr.png" width="20" height="20" border="0" /></a>
 					</td>
 					<td>
-						<!-- we have not yet implemented the circle -->
-						<img src="<TMPL_VAR NAME=IMG_DIR>/circle.png" width="20" height="20" border="0" />
+						<a href="<TMPL_VAR NAME=RECENTER_URL>">
+						<img src="<TMPL_VAR NAME=IMG_DIR>/circle.png" width="20" height="20" border="0" class="nomargin" />
+						</a>
 					</td>
 					<td>
 						<a href="<TMPL_VAR NAME=RIGHT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/right-arr.png" width="20" height="20" border="0" /></a>
@@ -198,7 +206,7 @@
 			<input type="image" name="map"
 				width="<TMPL_VAR NAME=VIEW_WIDTH>"
 				height="<TMPL_VAR NAME=VIEW_HEIGHT>"
-				border="0"
+				border="1"
 				src="<TMPL_VAR NAME=IMG_VIEW>" />
 
 			</form>
@@ -256,6 +264,12 @@
 	</TMPL_IF>
 	<TMPL_IF NAME=TXT_ERROR>
 		<b><TMPL_VAR NAME=TXT_ERROR></b>
+	</TMPL_IF>
+
+	<!-- this is just for printing debug output... we can remove it once
+	map.cgi is more stable. -->
+	<TMPL_IF NAME=DEBUG>
+		Debug: <TMPL_VAR NAME=DEBUG>
 	</TMPL_IF>
 </div>
 

@@ -2,13 +2,13 @@
 # MapGlobals.pm -- Global variables and a few general-purpose 
 # subroutines.
 #
-# Copyright 2005 Michael Kelly (jedimike.net)
+# Copyright 2005 Michael Kelly and David Lindquist
 #
 # This program is released under the terms of the GNU General Public
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Wed May 11 21:20:14 PDT 2005
+# Sun Jun 12 13:22:08 PDT 2005
 # -----------------------------------------------------------------
 
 package MapGlobals;
@@ -22,7 +22,7 @@ use constant{
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(reaper getGd2Filename @SCALES);
+@EXPORT_OK = qw(reaper getGd2Filename between min max @SCALES);
 @EXPORT = qw(
 	INFINITY TRUE FALSE
 	$DYNAMIC_IMG_DIR $STATIC_IMG_DIR
@@ -86,7 +86,19 @@ our $DYNAMIC_IMG_SUFFIX	= '.png';
 # maximum age, in seconds, of dynamically generated images
 our $DYNAMIC_MAX_AGE	= 5*60;
 
-# return a the filename of GD2 image file corresponding to the given scale
+
+# we also have some basic utility functions in here, that any part
+# of the script may want to use
+
+###################################################################
+# Given a scale, return the path to the GD2 base image at that scale.
+# Does NOT check if the file exists.
+# Args:
+#	- the scale (as a multiplier, not an array offset)
+# Returns:
+#	- the path to the GD2 base image at that scale. File might
+#	  not exist.
+###################################################################
 sub getGd2Filename{
 	my ($scale) = (@_);
 	return $_BASE_GD2_IMAGE . '-' . $scale . '.gd2';
@@ -122,4 +134,61 @@ sub reaper{
 	}
 
 	closedir(DIR);
+}
+
+###################################################################
+# Given numbers A, B, and C, returns the value that is as close to C as
+# possible while still being in [A, B].
+# Args:
+#	- minimum value (A)
+#	- maximum value (B)
+#	- target value (C)
+# Returns:
+#	- Value in [A, B] that's closest to the target value.
+###################################################################
+sub between{
+	my($min, $max, $val) = (@_);
+	if($val < $min){
+		return $min;
+	}
+	if($val > $max){
+		return $max;
+	}
+	return $val;
+}
+
+###################################################################
+# Return the smaller of two numeric values.
+# Args:
+#	- X
+#	- Y
+# Returns:
+#	- the smaller of X and Y
+###################################################################
+sub min{
+	my($x, $y) = @_;
+	if($x < $y){
+		return $x;
+	}
+	else{
+		return $y;
+	}
+}
+
+###################################################################
+# Return the greater of two numeric values.
+# Args:
+#	- X
+#	- Y
+# Returns:
+#	- the greater of X and Y
+###################################################################
+sub max{
+	my($x, $y) = @_;
+	if($x > $y){
+		return $x;
+	}
+	else{
+		return $y;
+	}
 }

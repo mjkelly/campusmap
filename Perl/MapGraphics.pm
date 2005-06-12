@@ -8,7 +8,7 @@
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Fri Mar 25 00:39:45 PST 2005
+# Sun Jun 12 13:22:01 PDT 2005
 # -----------------------------------------------------------------
 
 package MapGraphics;
@@ -17,6 +17,7 @@ use strict;
 use warnings;
 
 use GD;
+use MapGlobals qw(min max);
 
 ###################################################################
 # Draw the given edge to a GD image in the given color.
@@ -32,6 +33,13 @@ use GD;
 #	- the scale multiplier (output image scale over original image scale)
 # Returns:
 #	- nothing
+#	- a hash representing the bounding rectangle of this edge:
+#	  {
+#		xmin => upper-left corner's X coord
+#		ymin => upper-left corner's Y coord
+#		xmax => lower-right corner's X coord
+#		ymax => lower-right corner's Y coord
+#	  }
 ###################################################################
 sub drawEdge{
 	my($edge, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale, $force) = (@_);
@@ -40,39 +48,34 @@ sub drawEdge{
 	my $curpt;
 	my $prevpt;
 
-	# if the current point is in-bounds
-	#my $curInBounds = 0;
-	# if the previous point was in-bounds
-	#my $prevInBounds = 0;
+	my($xmin, $xmax, $ymin, $ymax);
+
 
 	$im->setThickness($thickness);
 
 	# cycle through each point in this Edge
 	foreach $curpt ( @{$edge->{'Path'}} ){
+
+		# keep the min/max values up to date
+		$xmax = $curpt->{'x'} if( !defined($xmax) || $curpt->{'x'} > $xmax );
+		$xmin = $curpt->{'x'} if( !defined($xmin) || $curpt->{'x'} < $xmin );
+		$ymax = $curpt->{'y'} if( !defined($ymax) || $curpt->{'y'} > $ymax );
+		$ymin = $curpt->{'y'} if( !defined($ymin) || $curpt->{'y'} < $ymin );
+
 		if( defined($prevpt) ){
-			# check if the current point is in-bounds
-			#$curInBounds =
-			#	($curpt->{'x'} - $xoff >= 0 && $curpt->{'x'} - $xoff <= $w
-			#	&& $curpt->{'y'} - $yoff >= 0 && $curpt->{'y'} - $yoff <= $h);
-
-			# if either the current or the previous point was in bounds,
-			# we print (this is to allow for lines that go off the screen)
-			#if($curInBounds || $prevInBounds || $force){
-				# take the scale into account for each set of points
-				$im->line(
-					$prevpt->{'x'}*$scale - $xoff,
-					$prevpt->{'y'}*$scale - $yoff,
-					$curpt->{'x'}*$scale - $xoff,
-					$curpt->{'y'}*$scale - $yoff,
-					$color
-				);
-			#}
-
+			# take the scale into account for each set of points
+			$im->line(
+				$prevpt->{'x'}*$scale - $xoff,
+				$prevpt->{'y'}*$scale - $yoff,
+				$curpt->{'x'}*$scale - $xoff,
+				$curpt->{'y'}*$scale - $yoff,
+				$color
+			);
 		}
-		#$prevInBounds = $curInBounds;
 		$prevpt = $curpt;
 	}
 
+	return ( xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax );
 }
 
 # XXX: proper desc. and function header
@@ -130,6 +133,31 @@ sub drawAllLocations{
 			drawLocation($locations->{$_}, $im, $textColor, $dotColor,
 				$xoff, $yoff, $w, $h, $scale);
 		}
+	}
+}
+
+sub drawLines{
+	my($points, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
+
+	# draw all the Edge lines
+	my $curpt;
+	my $prevpt;
+
+	$im->setThickness($thickness);
+
+	# cycle through each point in this Edge
+	foreach $curpt ( @$points ){
+		if( defined($prevpt) ){
+			# take the scale into account for each set of points
+			$im->line(
+				$prevpt->{'x'}*$scale - $xoff,
+				$prevpt->{'y'}*$scale - $yoff,
+				$curpt->{'x'}*$scale - $xoff,
+				$curpt->{'y'}*$scale - $yoff,
+				$color
+			);
+		}
+		$prevpt = $curpt;
 	}
 }
 

@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 # -----------------------------------------------------------------
 # map.cgi -- The user interface for the UCSDMap.
+#
 # Copyright 2005 Michael Kelly and David Lindquist
 #
 # TODO: Create some kind of 'state' object to avoid passing around
@@ -10,7 +11,7 @@
 # License as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# Fri Jun 10 19:50:54 PDT 2005
+# Sun Jun 12 13:22:05 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -21,10 +22,12 @@ use File::Temp ();
 use HTML::Template;
 
 use MapGlobals
-	qw(@SCALES INFINITY TRUE FALSE $DYNAMIC_IMG_DIR $STATIC_IMG_DIR);
+	qw(@SCALES INFINITY TRUE FALSE $DYNAMIC_IMG_DIR $STATIC_IMG_DIR between);
 use LoadData;
 use MapGraphics;
 use ShortestPath;
+
+use GD::Polyline;
 
 my $q = CGI::new();
 
@@ -72,7 +75,7 @@ my $toTxtLookup = LoadData::nameLookup($toTxt);
 # x and y display offsets, from the upper left
 my $xoff   = int($q->param('xoff')   || 0);
 my $yoff   = int($q->param('yoff')   || 0);
-my $scale  =     $q->param('scale')  || 0;
+my $scale  =     $q->param('scale');
 my $size   = int(defined($q->param('size')) ? $q->param('size') : 1);
 
 # how fast do you walk?
@@ -100,6 +103,7 @@ my ($src_found, $dst_found) = (TRUE, TRUE);
 
 # now convert $fromTxt and $toTxt to IDs
 my $ERROR = '';
+my $DEBUG = '';
 my ($from, $to) = (0, 0);
 
 # if we got no input, put up an informative message
@@ -116,12 +120,6 @@ else{
 
 	if( exists($locations->{$toTxtLookup}) ){
 		$to = $locations->{$toTxtLookup}{'ID'};
-
-		# set the offsets to the coords of the 'to' location
-		if(!$xoff && !$yoff){
-			$xoff = $locations->{$to}{'x'};
-			$yoff = $locations->{$to}{'y'};
-		}
 	}
 	elsif($toTxt ne ''){
 		# fall back to fuzzy matching here
@@ -133,10 +131,6 @@ else{
 			$toTxt = $locations->{$id}{'Name'};
 			$toTxtSafe = CGI::escapeHTML($toTxt);
 			$toTxtLookup = LoadData::nameLookup($toTxt);
-			if(!$xoff && !$yoff){
-				$xoff = $locations->{$to}{'x'};
-				$yoff = $locations->{$to}{'y'};
-			}
 		}
 		else{
 			# I've done all I can. He's dead, Jim.
@@ -151,13 +145,6 @@ else{
 
 	if( exists($locations->{$fromTxtLookup}) ){
 		$from = $locations->{$fromTxtLookup}{'ID'};
-
-		# this is only here so that, if the 'to' location doesn't exist,
-		# we set the offsets to _something_ reasonable
-		if(!$xoff && !$yoff){
-			$xoff = $locations->{$from}{'x'};
-			$yoff = $locations->{$from}{'y'};
-		}
 	}
 	elsif($fromTxt ne ''){
 		# fall back to fuzzy matching here
@@ -169,10 +156,6 @@ else{
 			$fromTxt = $locations->{$id}{'Name'};
 			$fromTxtSafe = CGI::escapeHTML($fromTxt);
 			$fromTxtLookup = LoadData::nameLookup($fromTxt);
-			if(!$xoff && !$yoff){
-				$xoff = $locations->{$from}{'x'};
-				$yoff = $locations->{$from}{'y'};
-			}
 		}
 		else{
 			$ERROR .= "<b>Start location &quot;$fromTxtSafe&quot; not found.</b>\n"
@@ -186,20 +169,57 @@ else{
 
 }
 
+# we actually run the shortest-path algorithm only if we found both
+# the source and destination locations
+my $path = ($src_found && $dst_found);
+
 # URL-safe versions of the from and to text
 my $fromTxtURL = CGI::escape($fromTxt);
 my $toTxtURL = CGI::escape($toTxt);
 
-# build a list of printable location names
-my @locParam;
-foreach (sort keys %$locations){
-	# add each unique name
-	if( substr($_, 0, 5) eq 'name:' ){
-		push(@locParam, {
-			NAME => $locations->{$_}{'Name'},
-			SELECTED_TO => ($toTxt eq $locations->{$_}{'Name'}),
-			SELECTED_FROM => ($fromTxt eq $locations->{$_}{'Name'}),
-		});
+# these store the _path_ IDs of the starting and ending point, which we
+# need to actually find the shortest path
+my $startID = 0;
+my $endID = 0;
+
+# if start and end locations are the same, don't draw
+if( $from == $to ){
+	$path = FALSE;
+}
+# otherwise, assign the start and end IDs to meaningful values
+else{
+	$startID = $locations->{$fromTxtLookup}{'PointID'};
+	$endID = $locations->{$toTxtLookup}{'PointID'};
+}
+
+# do the shortest path stuff
+my $dist;
+my $rect;
+my $pathPoints;
+if($path){
+	ShortestPath::find($startID, $points);
+
+	($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $edges, $points->{$endID});
+
+	$dist /= $MapGlobals::PIXELS_PER_UNIT;
+
+	if(!$xoff && !$yoff){
+		$xoff = ($rect->{'xmin'} + $rect->{'xmax'}) / 2;
+		$yoff = ($rect->{'ymin'} + $rect->{'ymax'}) / 2;
+	}
+
+	# now pick a zoom level, if one hasn't already been specified
+	if(!defined($scale)){
+		my $w = $rect->{'xmax'} - $rect->{'xmin'};
+		my $h = $rect->{'ymax'} - $rect->{'ymin'};
+
+		# find the first level that encompasses the entire rectangle
+		for my $i (0..$#SCALES){
+			if($w < $width/$SCALES[$i] && $h < $height/$SCALES[$i]){
+				$scale = $i;
+				last;
+			}
+		}
 	}
 }
 
@@ -207,26 +227,6 @@ foreach (sort keys %$locations){
 if(!$xoff && !$yoff){
 	$xoff = $MapGlobals::DEFAULT_XOFF;
 	$yoff = $MapGlobals::DEFAULT_YOFF;
-}
-
-# we actually run the shortest-path algorithm only if we found both
-# the source and destination locations
-my $path = ($src_found && $dst_found);
-
-# build the status message
-my $STATUS = 'No path selected.';
-if($fromTxt ne '' || $toTxt ne ''){
-	if($path && $fromTxt ne $toTxt){
-		$STATUS = "Path from $fromTxtSafe to $toTxtSafe.";
-	}
-	else{
-		if($src_found){
-			$STATUS = "Zoomed to $fromTxtSafe.";
-		}
-		elsif($dst_found){
-			$STATUS = "Zoomed to $toTxtSafe.";
-		}
-	}
 }
 
 # integrate the image click offsets (if the image was clicked to recenter)
@@ -249,6 +249,72 @@ elsif( defined($thumbx) && defined($thumbx) ){
 # (but only AFTER we remember them for the links dependent on the current, unadjusted state)
 $xoff = between(($width/$SCALES[$scale])/2, $MapGlobals::IMAGE_X - ($width/$SCALES[$scale])/2, $xoff);
 $yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SCALES[$scale])/2, $yoff);
+
+# adjust xoff/yoff so they point to the upper-left-hand corner, which is what
+# the low-level MapGraphics functions use. additionally, take scale into
+# account at the right time, so it doesn't offset scaled views.
+my $rawxoff = $xoff*$SCALES[$scale] - $width/2;
+my $rawyoff = $yoff*$SCALES[$scale] - $height/2;
+
+my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
+	$rawxoff, $rawyoff, $width, $height)
+	|| die "Could not load image $MapGlobals::BASE_GD2_IMAGE\n";
+
+my $red = $im->colorAllocate(255, 0, 0);
+my $green = $im->colorAllocate(0, 255, 0);
+
+# uncomment to draw ALL paths
+#MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
+
+# uncomment to draw ALL locations
+#MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
+#				$width, $height, $SCALES[$scale]);
+
+if($path){
+	foreach my $line (@$pathPoints){
+		MapGraphics::drawLines($line, $im, 2, $green, $rawxoff, $rawyoff,
+			$width, $height, $SCALES[$scale]);
+	}
+
+	# uncomment to draw bounding rectangle
+	#$im->setThickness(1);
+	#$im->rectangle(
+	#	$rect->{'xmin'}*$SCALES[$scale] - $rawxoff,
+	#	$rect->{'ymin'}*$SCALES[$scale] - $rawyoff,
+	#	$rect->{'xmax'}*$SCALES[$scale] - $rawxoff,
+	#	$rect->{'ymax'}*$SCALES[$scale] - $rawyoff,
+	#	$red
+	#);
+}
+
+# only draw the source and destination locations
+if($src_found){
+	MapGraphics::drawLocation($locations->{$from}, $im, $red, $red, $rawxoff, $rawyoff,
+					$width, $height, $SCALES[$scale]);
+}
+if($dst_found){
+	MapGraphics::drawLocation($locations->{$to}, $im, $red, $red, $rawxoff, $rawyoff,
+					$width, $height, $SCALES[$scale]);
+}
+
+# print the data out to a temporary file
+binmode($tmpfile);
+print $tmpfile $im->png();
+close($tmpfile);
+
+
+# build a list of printable location names
+my @locParam;
+foreach (sort keys %$locations){
+	# add each unique name
+	if( substr($_, 0, 5) eq 'name:' ){
+		push(@locParam, {
+			NAME => $locations->{$_}{'Name'},
+			SELECTED_TO => ($toTxt eq $locations->{$_}{'Name'}),
+			SELECTED_FROM => ($fromTxt eq $locations->{$_}{'Name'}),
+		});
+	}
+}
 
 # now that we have valid offsets, we can generate the thumbnail (highlighting
 # the visible window) safely
@@ -310,69 +376,9 @@ my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $
 my $bigger = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size, $mpm);
 my $smaller = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm);
 
-# these store the _path_ IDs of the starting and ending point, which we
-# need to actually find the shortest path
-my $startID = 0;
-my $endID = 0;
-
-# if start and end locations are the same, don't draw
-if( $from == $to ){
-	$path = FALSE;
-}
-# otherwise, assign the start and end IDs to meaningful values
-else{
-	$startID = $locations->{$fromTxtLookup}{'PointID'};
-	$endID = $locations->{$toTxtLookup}{'PointID'};
-}
-
-# adjust xoff/yoff so they point to the upper-left-hand corner, which is what
-# the low-level MapGraphics functions use. additionally, take scale into
-# account at the right time, so it doesn't offset scaled views.
-my $rawxoff = $xoff*$SCALES[$scale] - $width/2;
-my $rawyoff = $yoff*$SCALES[$scale] - $height/2;
-
 # make sure the offsets don't go out of range
 $rawxoff = between(0, $MapGlobals::IMAGE_X - $width, $rawxoff);
 $rawyoff = between(0, $MapGlobals::IMAGE_Y - $height, $rawyoff);
-
-my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
-	$rawxoff, $rawyoff, $width, $height)
-	|| die "Could not load image $MapGlobals::BASE_GD2_IMAGE\n";
-
-my $red = $im->colorAllocate(255, 0, 0);
-my $green = $im->colorAllocate(0, 255, 0);
-
-# uncomment this to draw ALL paths. useful for debugging.
-#MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
-
-# do the shortest path stuff
-my $dist;
-if($path){
-	ShortestPath::find($startID, $points);
-	$dist = ShortestPath::drawTo($points, $edges, $points->{$endID}, $im, $green,
-		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
-	$dist /= $MapGlobals::PIXELS_PER_UNIT;
-	$STATUS .= sprintf(" Distance is %.2f %s.", $dist, $MapGlobals::UNITS);
-	$STATUS .= sprintf(" If you walk one mile in %d minutes, this should take about %.0d minutes.", $mpm, $dist*$mpm);
-}
-
-#MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
-#				$width, $height, $SCALES[$scale]);
-
-# only draw the source and destination locations -- not everything
-if($src_found){
-	MapGraphics::drawLocation($locations->{$from}, $im, $red, $red, $rawxoff, $rawyoff,
-					$width, $height, $SCALES[$scale]);
-}
-if($dst_found){
-	MapGraphics::drawLocation($locations->{$to}, $im, $red, $red, $rawxoff, $rawyoff,
-					$width, $height, $SCALES[$scale]);
-}
-
-# print the data out to a temporary file
-binmode($tmpfile);
-print $tmpfile $im->png();
-close($tmpfile);
 
 # now we slam everything into a template and print it out
 my $tmpl = HTML::Template->new(
@@ -436,10 +442,12 @@ $tmpl->param( ZOOM_OUT_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, 
 $tmpl->param( ZOOM_IN_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, $yoff,
 	($scale > 0) ? $scale - 1 : 0, $size, $mpm));
 
+$tmpl->param( RECENTER_URL => 
+	"$self?" . state($fromTxtURL, $toTxtURL, undef, undef, undef, undef, $mpm));
+
 # text
 $tmpl->param( TXT_SRC => $fromTxtSafe );
 $tmpl->param( TXT_DST => $toTxtSafe );
-$tmpl->param( TXT_STATUS => $STATUS );
 $tmpl->param( TXT_ERROR => $ERROR );
 
 # this is tells whether we're actually displaying a path between two separate locations
@@ -449,6 +457,9 @@ $tmpl->param( TIME => sprintf("%.02f", $dist*$mpm) );
 
 $tmpl->param( SRC_FOUND => $src_found );
 $tmpl->param( DST_FOUND => $dst_found );
+
+# this is for shuttling various debug messages out to the interface
+$tmpl->param( DEBUG => $DEBUG );
 
 print "Content-type: text/html\n\n" . $tmpl->output();
 
@@ -468,28 +479,15 @@ print "Content-type: text/html\n\n" . $tmpl->output();
 ###################################################################
 sub state{
 	my ($from, $to, $x, $y, $scale, $size, $mpm) = (@_);
-	return "from=$from&amp;to=$to&amp;xoff=$x&amp;yoff=$y&amp;scale=$scale&amp;size=$size&amp;mpm=$mpm";
-}
-
-###################################################################
-# Given numbers A, B, and C, returns the value that is as close to C as
-# possible while still being in [A, B].
-# Args:
-#	- minimum value (A)
-#	- maximum value (B)
-#	- target value (C)
-# Returns:
-#	- Value in [A, B] that's closest to the target value.
-###################################################################
-sub between{
-	my($min, $max, $val) = (@_);
-	if($val < $min){
-		return $min;
+	my @keys = qw(from to xoff yoff scale size mpm);
+	my $str;
+	for my $i (0..$#_){
+		if(defined($_[$i])){
+			$str .= '&' if defined($str);
+			$str .= "$keys[$i]=$_[$i]";
+		}
 	}
-	if($val > $max){
-		return $max;
-	}
-	return $val;
+	return $str;
 }
 
 ###################################################################

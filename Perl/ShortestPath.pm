@@ -143,6 +143,9 @@ sub drawTo{
 
 	my $dist = 0;
 
+	my %rect;
+	my($xmin, $xmax, $ymin, $ymax);
+
 	# follow 'from' links until we reach the original point
 	my $conn;
 	while( defined($target->{'From'}{'ID'}) ){
@@ -150,15 +153,89 @@ sub drawTo{
 		$conn = $target->{'Connections'}{$target->{'From'}{'ID'}};
 		$dist += $conn->{'Weight'};
 
-		MapGraphics::drawEdge(
+		%rect = MapGraphics::drawEdge(
 			$edges->{$conn->{'EdgeID'}}, $im, 2, $color,
 			$xoff, $yoff, $w, $h, $scale, 1);
 
 		# keep following the trail back to its source
 		$target = $target->{'From'};
+
+		# keep the min/max values up to date
+		$xmax = $rect{'xmax'} if( !defined($xmax) || $rect{'xmax'} > $xmax );
+		$xmin = $rect{'xmin'} if( !defined($xmin) || $rect{'xmin'} < $xmin );
+		$ymax = $rect{'ymax'} if( !defined($ymax) || $rect{'ymax'} > $ymax );
+		$ymin = $rect{'ymin'} if( !defined($ymin) || $rect{'ymin'} < $ymin );
 	}
 
-	return $dist;
+	return ($dist, { xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax });
+}
+
+# collect the coords of all points along a path and remember the maximum and minimum values
+# XXX: proper desc. and function header
+sub pathPoints{
+	my($points, $edges, $target) = (@_);
+
+	my $dist = 0;
+	my @pathPoints;
+
+	my($xmin, $xmax, $ymin, $ymax);
+
+	# follow 'from' links until we reach the original point
+	my $conn;
+	while( defined($target->{'From'}{'ID'}) ){
+		my $subPath = [];
+
+		$conn = $target->{'Connections'}{$target->{'From'}{'ID'}};
+		my $thisEdge = $edges->{$conn->{'EdgeID'}};
+		$dist += $conn->{'Weight'};
+
+		# cycle through each point in this edge
+		foreach my $curpt ( @{$thisEdge->{'Path'}} ){
+
+			# keep the min/max values up to date
+			$xmax = $curpt->{'x'} if( !defined($xmax) || $curpt->{'x'} > $xmax );
+			$xmin = $curpt->{'x'} if( !defined($xmin) || $curpt->{'x'} < $xmin );
+			$ymax = $curpt->{'y'} if( !defined($ymax) || $curpt->{'y'} > $ymax );
+			$ymin = $curpt->{'y'} if( !defined($ymin) || $curpt->{'y'} < $ymin );
+			
+			push(@$subPath, { x => $curpt->{'x'}, y => $curpt->{'y'} });
+		}
+
+		push(@pathPoints, $subPath);
+
+		# keep following the trail back to its source
+		$target = $target->{'From'};
+	}
+
+	return (
+		$dist,
+		{ xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax },
+		\@pathPoints
+	);
+}
+
+sub edgePoints{
+	my($edge) = @_;
+	my @points;
+
+	my($xmin, $xmax, $ymin, $ymax);
+
+	# cycle through each point in this edge
+	foreach my $curpt ( @{$edge->{'path'}} ){
+
+		# keep the min/max values up to date
+		$xmax = $curpt->{'x'} if( !defined($xmax) || $curpt->{'x'} > $xmax );
+		$xmin = $curpt->{'x'} if( !defined($xmin) || $curpt->{'x'} < $xmin );
+		$ymax = $curpt->{'y'} if( !defined($ymax) || $curpt->{'y'} > $ymax );
+		$ymin = $curpt->{'y'} if( !defined($ymin) || $curpt->{'y'} < $ymin );
+		
+		push(@points, { x => $curpt->{'x'}, y => $curpt->{'y'} });
+	}
+
+	return (
+		{ xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax },
+		\@points,
+	);
 }
 
 1;

@@ -80,7 +80,7 @@ my $size   = int(defined($q->param('size')) ? $q->param('size') : 1);
 
 # how fast do you walk?
 # in minutes per mile.
-my $mpm  =     $q->param('mpm')  || 30;
+my $mpm  =     $q->param('mpm')  || 15;
 
 # width and height of the viewing window (total image size is in MapGlobals)
 my $width  = $sizes[$size][0];
@@ -175,7 +175,7 @@ foreach (sort keys %$locations){
 	# add each unique name
 	if( substr($_, 0, 5) eq 'name:' ){
 		push(@locParam, {
-			NAME => $locations->{$_}{'Name'},
+			NAME => CGI::escapeHTML($locations->{$_}{'Name'}),
 			SELECTED_TO => ($toTxt eq $locations->{$_}{'Name'}),
 			SELECTED_FROM => ($fromTxt eq $locations->{$_}{'Name'}),
 		});
@@ -217,8 +217,8 @@ if($path){
 	$dist /= $MapGlobals::PIXELS_PER_UNIT;
 
 	if(!$xoff && !$yoff){
-		$xoff = ($rect->{'xmin'} + $rect->{'xmax'}) / 2;
-		$yoff = ($rect->{'ymin'} + $rect->{'ymax'}) / 2;
+		$xoff = int(($rect->{'xmin'} + $rect->{'xmax'}) / 2);
+		$yoff = int(($rect->{'ymin'} + $rect->{'ymax'}) / 2);
 	}
 
 	# now pick a zoom level, if one hasn't already been specified
@@ -246,6 +246,11 @@ else{
 		$xoff = $locations->{$to}{'x'};
 		$yoff = $locations->{$to}{'y'};
 	}
+
+	# use the default scale
+	if(!defined($scale)){
+		$scale = 0;
+	}
 }
 
 # if we still don't have offsets, use the default ones
@@ -266,8 +271,8 @@ if( defined($mapx) && defined($mapy) ){
 }
 # if we got a thumbnail click, it's a little easier
 elsif( defined($thumbx) && defined($thumbx) ){
-	$xoff = $thumbx/$MapGlobals::RATIO_X;
-	$yoff = $thumby/$MapGlobals::RATIO_Y;
+	$xoff = int($thumbx/$MapGlobals::RATIO_X);
+	$yoff = int($thumby/$MapGlobals::RATIO_Y);
 }
 
 # make sure the x/y offsets are in range, and correct them if they aren't
@@ -278,8 +283,8 @@ $yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SC
 # adjust xoff/yoff so they point to the upper-left-hand corner, which is what
 # the low-level MapGraphics functions use. additionally, take scale into
 # account at the right time, so it doesn't offset scaled views.
-my $rawxoff = $xoff*$SCALES[$scale] - $width/2;
-my $rawyoff = $yoff*$SCALES[$scale] - $height/2;
+my $rawxoff = int($xoff*$SCALES[$scale] - $width/2);
+my $rawyoff = int($yoff*$SCALES[$scale] - $height/2);
 
 my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
 	$rawxoff, $rawyoff, $width, $height)
@@ -495,7 +500,7 @@ sub state{
 	my $str;
 	for my $i (0..$#_){
 		if(defined($_[$i])){
-			$str .= '&' if defined($str);
+			$str .= '&amp;' if defined($str);
 			$str .= "$keys[$i]=$_[$i]";
 		}
 	}
@@ -518,6 +523,7 @@ sub listZoomLevels{
 		push(@ret, {
 			URL => $self . '?' . state($from, $to, $x, $y, $i, $size, $mpm),
 			SELECTED => ($i == $scale),
+			LEVEL => $i,
 		});
 	}
 

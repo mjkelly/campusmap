@@ -25,15 +25,6 @@
 		width: 100%;
 	}
 
-	#border{
-		clear: all;
-		width: 100%;
-		/* hack, hack, hack! (this pushes the border below the
-		 * thumbnail) */
-		height: 100%;
-		/*border-bottom: 7px solid #339;*/
-	}
-
 	#headerLeft{
 		width: 560px;
 		float: left;
@@ -41,7 +32,8 @@
 
 	/* this is the logo */
 	#headerLeftTop{
-		border-bottom: 4px solid white;
+		margin-left: 10px;
+		margin-bottom: 4px;
 	}
 
 	#headerLeftBottom{
@@ -69,17 +61,17 @@
 	}
 
 	#display{
-		position: relative;
 		width: 100%;
 		clear: both;
 	}
 
 	#displayLeft{
 		float: left;
-		width: 240px;
+		width: 180px;
 	}
 
 	#displayMap{
+		float: right;
 		margin-top: 3px;
 	}
 
@@ -88,9 +80,7 @@
 	 * relative to map :)
 	 */
 	#buttons{
-		position: absolute;
-		top: 20px;
-		left: 250px;
+		border-top: 20px solid white;
 		float: left;
 		width: 70px;
 		text-align: center;
@@ -104,7 +94,7 @@
 	}
 
 	#thumb{
-		/*
+		/* these are the dimensions of the old thumbnail
 		width: 192px;
 		height: 176px;
 		*/
@@ -189,10 +179,6 @@
 		</div>
 	</div>
 
-	<div id="border">
-		<br />
-	</div>
-
 	<div id="display">
 
 		<div id="displayLeft">
@@ -237,7 +223,6 @@
 			<!-- end status text -->
 		</div>
 
-		<div id="displayMap">
 
 		    <div id="buttons">
 		    <table border="0" cellspacing="0" cellpadding="0">
@@ -277,7 +262,7 @@
 			</table>
 			<!-- end div buttons -->
 			</div>
-
+		<div id="displayMap">
 
 			<!-- begin main image -->
 			<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self">
@@ -295,6 +280,7 @@
 				src="<TMPL_VAR NAME=IMG_VIEW>" />
 			</form>
 			<!-- end main image -->
+
 		</div>
 
 	</div>

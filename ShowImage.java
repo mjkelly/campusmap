@@ -278,14 +278,14 @@ class ScrollablePicture extends JLabel implements Scrollable,
     private boolean missingPicture = false;
     
     // The current path that we're focusing on
-    private Vector lines;
+    private Vector <Point>lines;
     
     // Vector of paths -- a vector where each element is a
     // vector of points (vector of points == path)
-    private Vector paths;
+    private Vector <Vector<Point>>paths;
     
     //  Vector of locations (a location is basically point with a name)
-    private Vector locations;
+    private Vector <Location>locations;
 
     //Index of where we are  in the paths array (paths vector).
     private int pathNumIndex = 0;
@@ -357,11 +357,11 @@ class ScrollablePicture extends JLabel implements Scrollable,
         // ...but also need to make sure we can receive (key?) focus
         setFocusable(true);
         
-        paths = new Vector(128);
-        locations = new Vector(128);
+        paths = new Vector<Vector<Point>>(128);
+        locations = new Vector<Location>(128);
 
-        paths.add( new Vector() );
-        lines = (Vector)paths.get(pathNumIndex);
+        paths.add( new Vector<Point>() );
+        lines = paths.get(pathNumIndex);
         parent.statusBar.setText( statusBarText() );
         
         // save the curent 'this' for the inner class
@@ -419,7 +419,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         if(lines == null)
         {
         	// Allocate new vector
-        	lines = new Vector();
+        	lines = new Vector<Point>();
         }
         
         //add the point to the current path
@@ -704,7 +704,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	// Only go back if a paths exists
         if(pathNumIndex >= 1){
         	// Set focus
-            lines = (Vector)paths.get(--pathNumIndex);
+            lines = paths.get(--pathNumIndex);
             // Automatically focus on the last element
             setPointNumIndex(true);
             // Set statusbar
@@ -728,7 +728,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         if(pathNumIndex < paths.size() - 1)
         {
         	// Advance
-            lines = (Vector)paths.get(++pathNumIndex);
+            lines = paths.get(++pathNumIndex);
             // Automatically focus on the last element
             setPointNumIndex(true);
             // Set statusBar
@@ -824,9 +824,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	// The new element is created.
         pathNumIndex = paths.size();
         // Create the space for the new path.
-        paths.add( new Vector() );
+        paths.add( new Vector<Point>() );
         // Set focus
-        lines = (Vector)paths.get(pathNumIndex);
+        lines = paths.get(pathNumIndex);
 
         //Start at the 0th point.  
         pointNumIndex = 0;
@@ -1040,7 +1040,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	            pathNumIndex = paths.size();
 	        
 	        //Set lines
-	        lines = (Vector)paths.get(pathNumIndex);
+	        lines = paths.get(pathNumIndex);
 	        
 	        // Do the repaint dance...woooo!
 	        repaint();
@@ -1445,7 +1445,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		pathNumIndex = lastVertex;
 		
 		// Set current path
-        lines = (Vector)paths.get(pathNumIndex);
+        lines = paths.get(pathNumIndex);
 		
         
 		//Set point number index to the end.  
@@ -1495,7 +1495,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     public Point getPointInPath(int pathIndex, int elementIndex)
     {
     	// cast away!
-    	return((Point)((Vector)paths.get(pathIndex)).get(elementIndex));
+    	return ( (paths.get(pathIndex)).get(elementIndex) );
     }
     
     
@@ -1656,7 +1656,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		    	// Get the current point by first getting the apppropriate
 		    	// path from paths Vector, cast to a Vector (as it should be)
 		    	// and then get the point in the vector & cast it to a Point.
-		        cur = (Point) ((Vector)paths.get(pathsIndex)).get(pointInPath);
+		        cur = ( (paths.get(pathsIndex)).get(pointInPath) );
 		        
 		        
 	        	// If the path that we're drawing is the current one in

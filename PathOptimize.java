@@ -10,26 +10,39 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Path Optimize
+ * 
+ * This program creates optimized path data to be fead into a script.
+ * The program takes in raw data generated from ShowImage.java
+ * vectors of vectors of points (paths) and locations and 
+ * merges them into a connected graph with path compression.  
+ * @author David Lindquist and Michael Kelly
+ *
+ */
 public class PathOptimize
 {
 	// These fields only hold data from readData
-    private Vector readPaths; // Vector of paths
-    private Vector readLocations;  // Vector of locations (see class Locations)
+    private Vector <Vector<Point>>readPaths; // Vector of paths
+    private Vector <Location>readLocations;  // Vector of locations 
+											 // (see class Locations)
 
-    private Vector pathPoints;
+    private Vector <PathPoint> pathPoints;
     
-    private Vector graphPoints;
+    private Vector <GraphPoint> graphPoints;
     
     // These fields are for the vectors to be written out in a format
     // that can be read by ShowImage
-    private Vector outPaths;
-    private Vector outLocations;
-    private Vector outEdges = new Vector();
+    private Vector <Vector<Point>> outPaths;
+    private Vector <Location> outLocations;
+    private Vector <Edge> outEdges;
 
-    /** Driver */
+    /**
+     * Driver for testing PathOptimize
+     * @param args passed in command line arguments (none expected)
+     */
     public static void main(String[] args)
     {
-    	
     	final String rawPathFile = "data/rawPath.dat";
     	final String rawLocFile = "data/rawLocations.dat";
     	final String optPathFile = "data/optimizedPath.dat";
@@ -42,14 +55,24 @@ public class PathOptimize
     	);
     }
     
-    /**
-     * Runs the optimization program.  
-     * @param inPathFile Incomming path file
-     * @param inLocFile Incoming locations file
-     * @param outPathFile Outgoing path file
-     * @param outLocFile Outgoing locations file
-     * @return boolean is success.  
-     */
+
+	/**
+	 * TODO: better comment?
+	 * This method is used to run PathOptimized on raw data generated
+	 * by ShowImage.
+	 * 
+	 * This method is called from ShowImage!
+	 * 
+	 * I don't want to talk about this right now...
+	 * @param inPathFile
+	 * @param inLocFile
+	 * @param outPathFile
+	 * @param outLocFile
+	 * @param binaryPoints
+	 * @param binaryLocations
+	 * @param binaryEdges
+	 * @return True all the time, for no reason whatsoever...
+	 */
     public static boolean run(String inPathFile, String inLocFile,
     		String outPathFile, String outLocFile, 
 			String binaryPoints, String binaryLocations, String binaryEdges)
@@ -101,21 +124,26 @@ public class PathOptimize
     }
     
     /**
-     * Generic constructor. It just initializes all the member fields.
+     * Generic constructor. 
+     * Initializes all the member fields.
      */
     public PathOptimize()
     {
-    	outLocations = new Vector();
-    	outPaths = new Vector();
-    	pathPoints = new Vector();
-    	readLocations = new Vector();
-    	readPaths = new Vector();
+    	readPaths     = new Vector <Vector<Point>> ();
+    	readLocations = new Vector <Location>      ();
+    	pathPoints    = new Vector <PathPoint>     ();
+    	outPaths      = new Vector <Vector<Point>> ();
+    	outLocations  = new Vector <Location>      ();
+		outEdges      = new Vector <Edge>          ();
     }
     
-    /**
-     * Method readData,  loads the paths and locations fields from 
+	/**
+	 * Loads the paths and locations fields from 
      * files.  
-     */
+	 * @param pathFileName
+	 * @param locFileName
+	 * @return Success if both pathLoadSuccess and locationLoadSuccess
+	 */
     public boolean readPoints(String pathFileName, String locFileName){
         boolean pathLoadSuccess = false;
         boolean locationLoadSuccess = false;
@@ -206,7 +234,8 @@ public class PathOptimize
     			
     			// initialize the current PathPoint
     			// this is a constructor call.
-    			currentPP = new PathPoint(inPoint, new Vector(2), atlocation);
+    			currentPP = new PathPoint(inPoint, new Vector<PathPoint>(2), 
+						atlocation);
     			// Add the newPathPoint to the vector of Path Points
     			pathPoints.add(currentPP);
     			
@@ -224,6 +253,11 @@ public class PathOptimize
     	}
     }
     
+	/**
+	 * This method converts GraphPoints to Points...
+	 * This method was used for debugging.  (to load the final
+	 * graph point set into ShowImage)s
+	 */
     public void convertGraphPointsToPoints()
     {
     	for(int graphIndex = 0; graphIndex < graphPoints.size(); graphIndex++)
@@ -266,7 +300,7 @@ public class PathOptimize
     		// one-point path, and move on.
     		if(thisPoint.numConnectedPoints() == 0)
     		{
-    			Vector thisPath = new Vector(2);
+    			Vector <Point>thisPath = new Vector<Point>(2);
     			thisPath.add( thisPoint.point );
     			outPaths.add(thisPath);
     			continue;
@@ -278,7 +312,7 @@ public class PathOptimize
     		{
     			// create a new vector to represent this path
     			// (which consists of only two points)
-    			Vector thisPath = new Vector(2);
+    			Vector <Point>thisPath = new Vector<Point>(2);
     			thisPath.add( thisPoint.point );
     			thisPath.add( thisPoint.getConnectedPoint(conPoint) );
     			
@@ -287,10 +321,12 @@ public class PathOptimize
     		}
     	}
     }
-    
-    /**
-     * Write ShowImage-style data to disk.
-     */
+
+	/**
+	 * Write ShowImage-style data to disk.
+	 * @param pathFileName 
+	 * @param locFileName
+	 */
     public void writePoints(String pathFileName, String locFileName){
         boolean pathWriteSuccess = false;
     	boolean locationWriteSuccess = false;
@@ -339,12 +375,16 @@ public class PathOptimize
         }
     }
     
-    /**
-     * Write data to disk in binary format, suitable for reading from
+	/**
+	 * Write data to disk in binary format, suitable for reading from
      * the web-based frontend.
-     */
-    public void binaryWrite(String pointFileName, String locFileName,
-    		String edgeFileName){
+	 * @param pointFileName
+	 * @param locFileName
+	 * @param edgeFileName
+	 */
+	public void binaryWrite(String pointFileName, String locFileName,
+    		String edgeFileName)
+	{
 		
 		File pointOutputFile = new File(pointFileName);
         File locOutputFile = new File(locFileName);
@@ -451,7 +491,7 @@ public class PathOptimize
      */
     public Point pointInReadPaths(int pathIndex, int elementIndex)
     {
-    	return((Point)((Vector)readPaths.get(pathIndex)).get(elementIndex));    	
+    	return( (readPaths.get(pathIndex)).get(elementIndex) );    	
     }
     
     /**
@@ -693,7 +733,7 @@ AP1:    		for(int activeIndex2 = 0;
 							PathPoint pi = new PathPoint(
 							        new Point( (int)intersectX,
 							                (int)intersectYTest),
-							        new Vector(2), null );
+							        new Vector<PathPoint>(2), null );
 							
 							System.err.println(
 									"pi: (" + pi.point.x + ", " + pi.point.y + ") ");
@@ -753,6 +793,14 @@ AP1:    		for(int activeIndex2 = 0;
         System.err.println("End intersections().");
     }
     
+	/**
+	 * Checks to see if the passed in Path Point has an intersection
+	 * with any other pathPoints.  Returns the index
+	 * of the PathPoint in the pathPoints vector.
+	 * @param pi The PathPoint to check for overlaps with...
+	 * @return The index in the pathPoints vector of the first
+	 * pathPoint found that contains an intersection
+	 */
     public int checkForPathPointOverlap(PathPoint pi)
     {
 		// Loop through all path points again to look for intersections
@@ -771,6 +819,13 @@ AP1:    		for(int activeIndex2 = 0;
 		return(-1);
     }
 
+	/**
+	 * Checks whether testVal is between val1, val2. 
+	 * @param val1 
+	 * @param val2
+	 * @param testVal
+	 * @return True if testVal is between val1, val2, false otherwise.
+	 */
     public boolean checkRange(double val1, double val2, double testVal)
     {
     	System.err.println("CHECKRANGE:");
@@ -822,7 +877,8 @@ AP1:    		for(int activeIndex2 = 0;
      * @param ap2 second point in first test line
      * @param tp1 first point in the second test line
      * @param tp2 second point in the second test line
-     * @return
+     * @return A rectangle...that is the intersection of two 
+     * rectangles based on the two lines.  
      */
     public boolean rectangleTest(PathPoint ap1, PathPoint ap2, PathPoint tp1,
     		PathPoint tp2)
@@ -852,7 +908,7 @@ AP1:    		for(int activeIndex2 = 0;
      * Call intersectReplace on both combinations of p1 and p2, to effect a 
      * full integration of pi into the line segment connecting p1 and p2.
      * 
-     * @see intersectReplace
+     * see intersectReplace
      * 
      * @param p1 One end of a line segment
      * @param p2 The other end of a line segment
@@ -928,7 +984,15 @@ AP1:    		for(int activeIndex2 = 0;
     
     
     
-    
+    /**
+     * See method from hell that calls hell...
+     * 
+     * Okay, fine, it really isn't that bad...but still
+     * 
+     * This method converts the PathPoints vector that was loaded from
+     * raw path data generated by ShowImage into GraphPoints.
+     * GraphPoints are the optimized connected graph.  
+     */
     public void convertPathPointsToGraphPoints()
     {
     	GraphPoint gp;
@@ -943,7 +1007,7 @@ AP1:    		for(int activeIndex2 = 0;
     	// original point
     	int edgeIndex;
     	
-    	graphPoints = new Vector();
+    	graphPoints = new Vector<GraphPoint>();
     	
     	// create a GraphPoint for every "significant" PathPoint
     	for(ppIndex = 0; ppIndex < pathPoints.size(); ppIndex++)
@@ -1071,7 +1135,7 @@ class PathPoint
 
 	// This field is a vector of Points that are
 	// connected to the PathPoint's point.
-	Vector connectedPoints;
+	Vector <PathPoint> connectedPoints;
 	// Any location associated with the point
 	Location location;
 	
@@ -1093,7 +1157,7 @@ class PathPoint
 	/**
 	 * Tests to see if two points have the same location.
 	 * @param p
-	 * @return
+	 * @return True if the two points equal, false otherwise.
 	 */
 	public boolean equals(PathPoint p)
 	{
@@ -1107,14 +1171,15 @@ class PathPoint
 	 * initilized to null since we don't even know about graphPoints yet.
 	 * (If you're following through the program, don't think about 
 	 * graphPoints yet). 
-	 * @param inpoint What to initilize the Point field point to.  
+	 * @param inPoint What to initilize the Point field point to.  
 	 * @param inConnectPoints What to initilize the Vector field 
 	 * connetedPoints to.  This field is a vector of Points that are
 	 * connected to the PathPoint's point.
 	 * @param inLoc The location to initilize the PathPoint to
 	 * The location is the location associated with PathPoint's point.
 	 */
-	public PathPoint(Point inPoint, Vector inConnectPoints, Location inLoc){
+	public PathPoint(Point inPoint, Vector <PathPoint>inConnectPoints, 
+			Location inLoc){
 		// Simply initilize the fields to the ones passed in.  
 		point = inPoint;
 		connectedPoints = inConnectPoints;
@@ -1232,9 +1297,10 @@ class PathPoint
 	}
 	
 	/**
-	 * 
-	 * @param p
-	 * @return
+	 * This method gets the weight between two path points
+	 * @param p Passed in pathPoint object
+	 * @return The weight between the two path points (the one passed
+	 * and the pathPoint used to call it).  
 	 */
 	public double getWeight(PathPoint p)
 	{
@@ -1244,6 +1310,7 @@ class PathPoint
 	/**
 	 * Print this PathPoint's x/y coordinates, the name of its associated
 	 * Location (if applicable), and the coordinates of any connections it has.
+	 * @return String describing the PathPoint object
 	 */
 	public String toString(){
 		String outStr = "(" + point.x + ", " + point.y + ") ";
@@ -1265,12 +1332,16 @@ class GraphPoint
 	// Binary file identifier
 	int ID;
 	Point point;
-	Vector edges;
+	Vector <Edge> edges;
 	Location locLabel;
 	
 	// Binary file identifier
 	static int IDcount = 1;
 	
+	/**
+	 * Default constructor for GraphPoint
+	 * @param pp
+	 */
 	public GraphPoint(PathPoint pp)
 	{
 		point = new Point(pp.point);
@@ -1279,7 +1350,7 @@ class GraphPoint
 		if(pp.location != null && !pp.location.name.equals("<nolink>"))			
 			locLabel = pp.location;
 
-		edges = new Vector();
+		edges = new Vector<Edge>();
 		// Set the ID and increment the static variable for the next ID
 		ID = IDcount++;
 	}
@@ -1299,7 +1370,8 @@ class GraphPoint
 	 * This checks if the current GraphPoint has any OUTGOING Edges
 	 * that point to the passed-in point. It does NOT check incoming Edges
 	 * (that is, Edges that were set from other GraphPoints).
-	 * @param gp The passed-in point
+	 * @param gp The passed-in point.
+	 * @param incoming The incoming edge.
 	 * @return true if current point has Edges that point to 'gp', false
 	 * otherwise
 	 */
@@ -1482,7 +1554,10 @@ class GraphPoint
 		return("");
 	}
 	
-	
+	/**
+	 * This is a simple toString() method
+	 * @return String describing the GraphPoint object.
+	 */
 	public String toString()
 	{
 		String outStr = "GraphPoint @ (" + point.x + ", " + point.y + ")\n";
@@ -1504,15 +1579,18 @@ class Edge
 	GraphPoint endpt1;
 	GraphPoint endpt2;
 	
-	Vector path;  // Vector Points
+	Vector <Point> path;  // Vector Points
 	double weight = 0;
 	
 	// Binary file identifier
 	static int IDcount = 1;
 	
+	/**
+	 * Default constructor for edges
+	 */
 	public Edge()
 	{
-		path = new Vector();
+		path = new Vector <Point>();
 		endpt1 = endpt2 = null;
 		
 		// Set the ID and increment the static variable for the next ID
@@ -1532,6 +1610,7 @@ class Edge
 	/**
 	 * toString method for Edges.  
 	 * This method is used for debugging.  
+	 * @return String describing the Edge object.
 	 */
 	public String toString()
 	{

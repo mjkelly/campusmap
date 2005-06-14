@@ -249,7 +249,7 @@ else{
 
 	# use the default scale
 	if(!defined($scale)){
-		$scale = 0;
+		$scale = $MapGlobals::DEFAULT_SCALE;
 	}
 }
 

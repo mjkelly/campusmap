@@ -48,8 +48,10 @@ our $IMAGE_X = 7200;
 our $IMAGE_Y = 6600;
 
 # size of the thumbnail image
-our $THUMB_X = 192;
-our $THUMB_Y = 176;
+#our $THUMB_X = 192;
+#our $THUMB_Y = 176;
+our $THUMB_X = 144;
+our $THUMB_Y = 132;
 our $THUMB_FILE = 'thumbnail.png';
 
 # store the ratio between the thumbnail and the main base image
@@ -59,8 +61,9 @@ our $RATIO_Y = $THUMB_Y / $IMAGE_Y;
 
 # where to center when there isn't any selection.
 # (2184, 3264) is Geisel Library
-our $DEFAULT_XOFF = 2184;
-our $DEFAULT_YOFF = 3264;
+our $DEFAULT_XOFF  = 2184;
+our $DEFAULT_YOFF  = 3264;
+our $DEFAULT_SCALE = 3; #index into the @SCALES array
 
 # how many pixels (on the largest base map) equal one meter
 # From tests, we've determined that 288696.00 px is approximately 0.72 mi.

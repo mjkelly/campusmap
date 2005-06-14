@@ -19,16 +19,18 @@ To rename a location:
 
 To create a bridge, tunnel, or other intersecting path that should NOT create
 a node at the intersection:
-	Nodes on either side of at least one intersecting path should both have
-	the special location name "<nolink>".
+	The "intersect" checkbox should be deselected for the nodes on either side
+	of at least one intersecting path. THESE NODES MUST HAVE ASSOCIATED
+	LOCATIONS. Don't ask... just give a bogus name and uncheck
+	"display location."
 
 Keys:
-	Left-click: Add a new node to the end of the current path (and select the
-	            new node).
+	Left-click:  Add a new node to the end of the current path (and select the
+	             new node).
 	Right-click: Reposition the currently selected node. If a location exists at
 	             that point, it will be deleted (if the text field is empty), or
 	             renamed (if the text field is filled before the click).
-	Other-click: Opens up a dialog box to select a location to connect to.
+	Other-click: (This means middle-click, in practice.) Opens up a dialog box to select a location to connect to.
 				 On clicking of a location name from the list, a new point is created
 				 at that location.  
 	
@@ -43,9 +45,6 @@ Keys:
 	F8: Read point/location data from disk
 	    (rawPathData.dat, rawLocationData.dat).
 	F9: Print locations to file in human-readable format (locations.txt).
-	F10: Manually place a node (prompt for X/Y coordinates).
-	     NOTE: If you currently have the last node in a path selected, this will
-	     place a NEW node. If you have a previous node selected, this will
-	     change the location of that node.
+	F10: Manually change the coordinates of the current node.
 	F11: Refresh the status bar.
 	F12: New path.

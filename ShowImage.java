@@ -120,11 +120,12 @@ public class ShowImage extends JFrame{
         scroll.setPreferredSize(new Dimension(600, 500));
         scroll.setWheelScrollingEnabled(false);
         
-        // a button to clear the text field and remove its focus
-        JButton clearButton = new JButton("Clear");
+        // a button to remove focus from the text field, so
+        // we can use hotkeys
+        JButton clearButton = new JButton("Unfocus");
         clearButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                locationNameEntry.setText("");
+                //locationNameEntry.setText("");
                 ipanel.requestFocus();
             }
         });
@@ -1213,7 +1214,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
     
     /**
      * Display a dialog that allows the user to place a point (node) at a
-     * specified & entered x/y coordinate.  
+     * specified & entered x/y coordinate. If nothing (or an invalid integer)
+     * is entered in either field, that coordinate remains unchanged.
      */
     public void manualPlaceDialog ()
     {
@@ -1250,33 +1252,37 @@ class ScrollablePicture extends JLabel implements Scrollable,
     			// Fling the dialog box out of the window.
     			dialog.setVisible(false);
     			dialog.dispose();
-    			
-    			Point newPoint;  // The point to be added.  
-    			try{
-    				// create the point
-        			newPoint = 
-        				new Point(Integer.parseInt(xinput.getText()), 
-        						Integer.parseInt(yinput.getText()));				
+                
+                // the new X and Y coordinates, wherever they may be
+                // (they might even be the current coords)
+                int newX, newY;
+    			Point newPoint;  // The point to be added.
+                
+                // try to set the X value to what the user entered.
+    			try
+                {
+                    newX = Integer.parseInt(xinput.getText());			
     			}
-    			catch(NumberFormatException numException){
-    				parent.statusBar.setText("No input entered! (Bad format)");
-    				return;
-    			}
-    			
-    			// If we're not focused on the end point,
-    			// change the current in focus point to the entered point
-    			if (pointNumIndex < lines.size() - 1)
-    			{
-    				lines.set(pointNumIndex,newPoint);
-    			}
-    			else
-    			{
-    				// Create the new point.  
-    				lines.add(newPoint);
-    				pointNumIndex = lines.size() - 1;
-    			}
-    			// Do the repaint dance!
-    			repaint();
+                // if we can't, use the current value
+    			catch(NumberFormatException numException)
+                {
+                    newX = lines.get(pointNumIndex).x;
+                }
+                
+    			// try to set the Y value to what the user entered.
+                try
+                {
+                    newY = Integer.parseInt(yinput.getText());          
+                }
+                // if we can't, use the current value
+                catch(NumberFormatException numException)
+                {
+                    newY = lines.get(pointNumIndex).y;
+                }
+                
+                // change the location of the current point, and do all the
+                // associated mangling of locations, and whatnot
+                changeCurSelectedPointCord(newX, newY);
     		}
     	});
     	

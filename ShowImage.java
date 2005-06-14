@@ -1317,7 +1317,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	if( locations.size() > 0 && lines.size() > 0)
     	{
     		int locIndex=findLocationAtPoint((Point)lines.get(pointNumIndex));
-    		// For all locations
+    		// If a valid index was found for in the locations array...
 			if (locIndex >= 0)
 			{
 				stringToReturn = ", Locations: ";
@@ -1326,24 +1326,53 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	    		stringToReturn += locToPrint.name;
 	    		
 	    		if(locToPrint.isAllowIntersections())
+				{
 	    			stringToReturn += "--> intersect: true, ";
+					parent.intersectBox.setSelected(true);
+				}
 	    		else
-	    			stringToReturn += "--> intersect: false, ";
+				{
+					stringToReturn += "--> intersect: false, ";
+					parent.intersectBox.setSelected(false);
+				}
 	    		
 	    		if(locToPrint.isCanPassThrough())
-	    			stringToReturn += "pass: true, ";
+				{
+					stringToReturn += "pass: true, ";
+					parent.passBox.setSelected(true);
+				}
 	    		else
-	    			stringToReturn += "pass: false, ";
+				{
+					stringToReturn += "pass: false, ";
+					parent.passBox.setSelected(false);
+				}
 	    		
 	    		if(locToPrint.isDisplayName())
-	    			stringToReturn += " displayable: true.";
+				{
+					stringToReturn += " displayable: true.";
+					parent.displayBox.setSelected(true);
+				}
 	    		else
-	    			stringToReturn += " displayable: false.";
+				{
+					stringToReturn += " displayable: false.";
+					parent.displayBox.setSelected(false);
+				}
 	
 	    		return(stringToReturn);
 			}
+			// The status we are attempting to refresh is not a location
+			else
+			{
+				// Set select boxes to default values
+				parent.intersectBox.setSelected(true);
+				parent.displayBox.setSelected(true);
+				parent.passBox.setSelected(true);
+			}
 		}
-    	return("");
+		
+
+
+		return("");
     }
     
     /**
@@ -1842,7 +1871,8 @@ class Location implements Serializable
 		else
 			canPassThrough = false;
 		
-		// Determines if we can allow intersections.  
+		// Determines if we can allow intersections.
+		//XXX: Where we set intersections...
 		if(parent.intersectBox.isSelected())
 			allowIntersections = true;
 		else

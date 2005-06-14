@@ -1251,7 +1251,6 @@ class PathPoint
         return (location.isAllowIntersections()
                 &&  other.location.isAllowIntersections()
                 );
-
 	}
 	
 	/**

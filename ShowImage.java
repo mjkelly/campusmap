@@ -8,10 +8,6 @@
  * Original sections of ScrollablePicture class copyright 1994-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  * The rest copyright 2005 David Lindquist and Michael Kelly
- *
- * This program is released under the terms of the GNU General Public
- * License as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
  -----------------------------------------------------------------*/
 
 import javax.swing.*;
@@ -145,6 +141,7 @@ public class ShowImage extends JFrame{
         	}
         });
         
+		// Checkboxes that determine properties of a location, default=true
         intersectBox = new JCheckBox("Intersect", true);
         passBox = new JCheckBox("pass through", true);
         displayBox = new JCheckBox("Display name", true);
@@ -387,12 +384,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
                     
                 }
                 // If you use any other buttton on your mouse...
-                /**
-                 * Middle click design to open a menu to select a location
-                 * to connect to.  
-                 */
                 else
                 {
+					// Open menu that allows you to select a location to go
+			        // to.  
                 	middleClickGoToLocation();
                 }
                 
@@ -404,9 +399,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
     
     /**
      * This method creates a new point in the currently selected path
-     * at the passed in (x,y) pair.  
-     * @param x -- x coordinate to create point at. 
-     * @param y -- y coordinate to create point at.
+     * at the passed in (x,y) pair.  (Will also create a location
+     * if text is entered in the text bar).  
+     * @param x -- x coordinate to create the point at. 
+     * @param y -- y coordinate to create the point at.
      */
     public void createNewPointInCurPath(int x, int y)
     {
@@ -447,7 +443,6 @@ class ScrollablePicture extends JLabel implements Scrollable,
         
         //set focus (listeners) back onto the picture
         this.requestFocus();
-
     }
 
     /**
@@ -523,10 +518,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	((Point)lines.get(pointNumIndex)).setLocation(x,y);
     	
     	// set statusbar text
-        parent.statusBar.setText( statusBarText() );    	
+        parent.statusBar.setText( statusBarText() );
     	repaint();
-
     }
+
     /**
      * This method sets up a dialog box with a list of locations
      * on the map.  The user can click on one of the items in the list
@@ -534,15 +529,23 @@ class ScrollablePicture extends JLabel implements Scrollable,
      */
     public void middleClickGoToLocation()
     {
-
+		// Index into the locationNames[] and locations vector
     	int index; 
+		
+		// Create the dialog box...
     	final JDialog dialog = new JDialog(parent, 
     			"Place Point at location", true);
+		
+		// Set the layout of the dialog box...
     	dialog.getContentPane().setLayout( new FlowLayout() );
+		
+		// Cancel button...
     	JButton cancel = new JButton("Cancel");
+		
+		// Message
     	final JLabel message = new JLabel("Choose a location:");
 
-    	// add all the interface elements the dialog box
+    	// add the message to the dialog box...rest is added later...reason?
     	dialog.getContentPane().add(message);
     	
     	// create an array for location names
@@ -558,15 +561,13 @@ class ScrollablePicture extends JLabel implements Scrollable,
     	
     	//Create the JList, passing the array of location names
     	final JList locBox = new JList(locationNames);
-    	
-    	// Add the list
+
+		// Add the list of locations and the cancel button to the dialog box.
     	dialog.getContentPane().add(locBox);
-    	
-    	// add a cancel button
     	dialog.getContentPane().add(cancel);
     	
-    	// let's go packing!  You can't have a pack smaller than
-    	// what you're packing.
+    	// Let's go packing!  You can't have a pack smaller than
+    	// what you're packing...
     	dialog.pack();
     	
     	// Can you hear the cricket's chirping?
@@ -577,7 +578,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 				int location = locBox.getSelectedIndex();
 				Point tempPoint= 
 					((Location)locations.get(location)).cord;
-				Point newPoint = new Point(tempPoint);	
+				Point newPoint = new Point(tempPoint);
 				
     			// If we're not focused on the end point,
     			// change the current in focus point to the 
@@ -1872,7 +1873,6 @@ class Location implements Serializable
 			canPassThrough = false;
 		
 		// Determines if we can allow intersections.
-		//XXX: Where we set intersections...
 		if(parent.intersectBox.isSelected())
 			allowIntersections = true;
 		else

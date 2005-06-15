@@ -57,13 +57,13 @@ our $FONT_HEIGHT = 13;
 # colors!
 # these are triplets of values between 0 and 255 (inclusive)
 # color associated with 'from' location
-our @SRC_COLOR = (255, 0, 0);
+our @SRC_COLOR = (0, 255, 0);
 # color associated with 'to' location
-our @DST_COLOR = (0, 255, 0);
+our @DST_COLOR = (255, 0, 0);
 # color paths are drawn in
-our @PATH_COLOR = (0, 0, 204);
+our @PATH_COLOR = (0, 0, 255);
 # color the viewport outline rectangle (in the thumbnail) is drawn in
-our @RECT_COLOR = (0, 0, 204);
+our @RECT_COLOR = (0, 0, 255);
 # color location background text (@SRC_COLOR and @DST_COLOR) is drawn in
 our @LOC_BG_COLOR = (100, 100, 100);
 

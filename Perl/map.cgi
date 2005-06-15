@@ -533,6 +533,12 @@ $tmpl->param( SRC_OR_DST_FOUND => ($src_found || $dst_found) );
 $tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
 $tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
 
+# hex triplets representing the colors for the source and destination locations
+$tmpl->param( SRC_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::SRC_COLOR));
+$tmpl->param( DST_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::DST_COLOR));
+$tmpl->param( PATH_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::PATH_COLOR));
+$tmpl->param( BG_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::LOC_BG_COLOR));
+
 print "Content-type: text/html\n\n" . $tmpl->output();
 
 ###################################################################

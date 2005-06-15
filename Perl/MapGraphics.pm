@@ -4,10 +4,6 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# This program is released under the terms of the GNU General Public
-# License as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
 # Sun Jun 12 13:22:01 PDT 2005
 # -----------------------------------------------------------------
 
@@ -104,12 +100,42 @@ sub drawAllEdges{
 #	- nothing
 ###################################################################
 sub drawLocation{
-	my($location, $im, $textColor, $dotColor, $xoff, $yoff, $w, $h, $scale) = (@_);
+	my($location, $im, $textColor, $dotColor, $bgColor, $xoff, $yoff, $w, $h, $scale) = (@_);
+
+
+	# these are the actual pixel locations (on the output image) where we 
+	# start drawing the location name
+	my $xDraw = $location->{'x'}*$scale - $xoff + 5;
+	my $yDraw = $location->{'y'}*$scale - $yoff - 6;
+
+	# where does this location's name end?
+	my $textWidth = length($location->{'Name'}) * $MapGlobals::FONT_WIDTH;
+	my $nameEnd = $xDraw + $textWidth;
+
+	# don't bother going any further if the location won't appear on the screen
+	if( $nameEnd < 0 || $xDraw > $w || $yDraw < 0 || $yDraw > $h ){
+		return;
+	}
+
+	# check if it ends past the edge of the screen
+	# AND the location is actually on the screen
+	if($nameEnd > $w){
+		# adjust the x-coord where we start drawing the location name
+		$xDraw = ($location->{'x'}*$scale - $xoff) - 5 - $textWidth;
+		$nameEnd = $xDraw + $textWidth;
+	}
+
+	if( defined($bgColor) ){
+		$im->filledRectangle($xDraw - 3, $yDraw,
+			$nameEnd, $yDraw + $MapGlobals::FONT_HEIGHT, $bgColor);
+	}
+
 	# print the name of the location, at a slight offset
 	$im->string(
+		# this font is 7x13; see FONT_WIDTH and FONT_HEIGHT in
+		# MapGlobals.pm
 		gdMediumBoldFont,
-		$location->{'x'}*$scale - $xoff + 5,
-		$location->{'y'}*$scale - $yoff - 6,
+		$xDraw, $yDraw,
 		$location->{'Name'},
 		$textColor
 	);
@@ -126,11 +152,11 @@ sub drawLocation{
 
 # XXX: proper desc. and function header
 sub drawAllLocations{
-	my($locations, $im, $textColor, $dotColor, $xoff, $yoff, $w, $h, $scale) = (@_);
+	my($locations, $im, $textColor, $dotColor, $bgColor, $xoff, $yoff, $w, $h, $scale) = (@_);
 
 	foreach (keys %$locations){
 		if(!/:/){
-			drawLocation($locations->{$_}, $im, $textColor, $dotColor,
+			drawLocation($locations->{$_}, $im, $textColor, $dotColor, $bgColor,
 				$xoff, $yoff, $w, $h, $scale);
 		}
 	}

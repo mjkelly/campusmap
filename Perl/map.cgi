@@ -7,10 +7,6 @@
 # TODO: Create some kind of 'state' object to avoid passing around
 # these huge, indecipherable (and frequently-changing!) lists.
 #
-# This program is released under the terms of the GNU General Public
-# License as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
 # Sun Jun 12 13:22:05 PDT 2005
 # -----------------------------------------------------------------
 
@@ -229,6 +225,35 @@ if($path){
 		# find the first level that encompasses the entire rectangle
 		for my $i (0..$#SCALES){
 			if($w < $width/$SCALES[$i] && $h < $height/$SCALES[$i]){
+				# we know it's big enough. now, make sure
+				# nothing's too close to the edges
+
+				# x pixels on the actual output image
+				# correspond to x/$SCALES[$i] pixels on the
+				# base image (to counteract the scale
+				# multiplier).
+
+				# if any of the locations are too close to any edge,
+				# reject this zoom level and move to the next one
+				if(abs($xoff - $locations->{$from}{'x'}) > $width/(2*$SCALES[$i]) - 5){
+					next;
+				}
+				if(abs($xoff - $locations->{$to}{'x'}) > $width/(2*$SCALES[$i]) - 5){
+					next;
+				}
+
+				if(abs($yoff - $locations->{$from}{'y'}) > $height/(2*$SCALES[$i]) - 5){
+					next;
+				}
+				if(abs($yoff - $locations->{$to}{'y'}) > $height/(2*$SCALES[$i]) - 5){
+					next;
+				}
+
+				# if location names would ordinarily go off the
+				# edge of the screen, drawLocation draws them
+				# to the left instead
+
+				# if we made it this far, this is a good scale!
 				$scale = $i;
 				last;
 			}
@@ -290,14 +315,17 @@ my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
 	$rawxoff, $rawyoff, $width, $height)
 	|| die "Could not load image $MapGlobals::BASE_GD2_IMAGE\n";
 
+$im->alphaBlending(1);
+
 my $red = $im->colorAllocate(255, 0, 0);
 my $green = $im->colorAllocate(0, 255, 0);
+my $textBg = $im->colorAllocate(100, 100, 100);
 
 # uncomment to draw ALL paths
 #MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 
 # uncomment to draw ALL locations
-#MapGraphics::drawAllLocations($locations, $im, $red, $red, $rawxoff, $rawyoff,
+#MapGraphics::drawAllLocations($locations, $im, $red, $red, $textBg, $rawxoff, $rawyoff,
 #				$width, $height, $SCALES[$scale]);
 
 if($path){
@@ -319,11 +347,11 @@ if($path){
 
 # only draw the source and destination locations
 if($src_found){
-	MapGraphics::drawLocation($locations->{$from}, $im, $red, $red, $rawxoff, $rawyoff,
+	MapGraphics::drawLocation($locations->{$from}, $im, $red, $red, $textBg, $rawxoff, $rawyoff,
 					$width, $height, $SCALES[$scale]);
 }
 if($dst_found){
-	MapGraphics::drawLocation($locations->{$to}, $im, $red, $red, $rawxoff, $rawyoff,
+	MapGraphics::drawLocation($locations->{$to}, $im, $red, $red, $textBg, $rawxoff, $rawyoff,
 					$width, $height, $SCALES[$scale]);
 }
 

@@ -3,10 +3,6 @@
 # LoadData.pl -- A driver for the LoadData module.
 # Copyright 2005 Michael Kelly (jedimike.net)
 #
-# This program is released under the terms of the GNU General Public
-# License as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
 # Thu Mar 24 14:32:56 PST 2005
 # -----------------------------------------------------------------
 

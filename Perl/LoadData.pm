@@ -4,10 +4,6 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# This program is released under the terms of the GNU General Public
-# License as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
 # Thu Mar 24 13:50:31 PST 2005
 # -----------------------------------------------------------------
 

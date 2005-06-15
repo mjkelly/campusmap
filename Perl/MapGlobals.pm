@@ -4,10 +4,6 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# This program is released under the terms of the GNU General Public
-# License as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
 # Sun Jun 12 13:22:08 PDT 2005
 # -----------------------------------------------------------------
 
@@ -53,6 +49,10 @@ our $IMAGE_Y = 6600;
 our $THUMB_X = 144;
 our $THUMB_Y = 132;
 our $THUMB_FILE = 'thumbnail.png';
+
+# how wide the font that we use for drawling location names is, in pixels
+our $FONT_WIDTH = 7;
+our $FONT_HEIGHT = 13;
 
 # store the ratio between the thumbnail and the main base image
 # (these two REALLY should be the same...)

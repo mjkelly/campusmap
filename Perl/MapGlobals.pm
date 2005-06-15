@@ -48,11 +48,24 @@ our $IMAGE_Y = 6600;
 #our $THUMB_Y = 176;
 our $THUMB_X = 144;
 our $THUMB_Y = 132;
-our $THUMB_FILE = 'thumbnail.png';
+our $THUMB_FILE = 'thumbnail.gd2';
 
 # how wide the font that we use for drawling location names is, in pixels
 our $FONT_WIDTH = 7;
 our $FONT_HEIGHT = 13;
+
+# colors!
+# these are triplets of values between 0 and 255 (inclusive)
+# color associated with 'from' location
+our @SRC_COLOR = (255, 0, 0);
+# color associated with 'to' location
+our @DST_COLOR = (0, 255, 0);
+# color paths are drawn in
+our @PATH_COLOR = (0, 0, 204);
+# color the viewport outline rectangle (in the thumbnail) is drawn in
+our @RECT_COLOR = (0, 0, 204);
+# color location background text (@SRC_COLOR and @DST_COLOR) is drawn in
+our @LOC_BG_COLOR = (100, 100, 100);
 
 # store the ratio between the thumbnail and the main base image
 # (these two REALLY should be the same...)

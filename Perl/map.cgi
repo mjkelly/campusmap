@@ -319,20 +319,21 @@ my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
 
 $im->alphaBlending(1);
 
-my $red = $im->colorAllocate(255, 0, 0);
-my $green = $im->colorAllocate(0, 255, 0);
-my $textBg = $im->colorAllocate(100, 100, 100);
+my $src_color = $im->colorAllocate(@MapGlobals::SRC_COLOR);
+my $dst_color = $im->colorAllocate(@MapGlobals::DST_COLOR);
+my $path_color = $im->colorAllocate(@MapGlobals::PATH_COLOR);
+my $bg_color = $im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
 
 # uncomment to draw ALL paths
-#MapGraphics::drawAllEdges($edges, $im, 1, $red, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
+#MapGraphics::drawAllEdges($edges, $im, 1, $path_color, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 
 # uncomment to draw ALL locations
-#MapGraphics::drawAllLocations($locations, $im, $red, $red, $textBg, $rawxoff, $rawyoff,
+#MapGraphics::drawAllLocations($locations, $im, $src_color, $src_color, $bg_color, $rawxoff, $rawyoff,
 #				$width, $height, $SCALES[$scale]);
 
 if($path){
 	foreach my $line (@$pathPoints){
-		MapGraphics::drawLines($line, $im, 2, $green, $rawxoff, $rawyoff,
+		MapGraphics::drawLines($line, $im, 2, $path_color, $rawxoff, $rawyoff,
 			$width, $height, $SCALES[$scale]);
 	}
 
@@ -343,18 +344,18 @@ if($path){
 	#	$rect->{'ymin'}*$SCALES[$scale] - $rawyoff,
 	#	$rect->{'xmax'}*$SCALES[$scale] - $rawxoff,
 	#	$rect->{'ymax'}*$SCALES[$scale] - $rawyoff,
-	#	$red
+	#	$rect_color
 	#);
 }
 
 # only draw the source and destination locations
 if($src_found){
-	MapGraphics::drawLocation($locations->{$from}, $im, $red, $red, $textBg, $rawxoff, $rawyoff,
-					$width, $height, $SCALES[$scale]);
+	MapGraphics::drawLocation($locations->{$from}, $im, $src_color, $src_color, $bg_color,
+		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 }
 if($dst_found){
-	MapGraphics::drawLocation($locations->{$to}, $im, $red, $red, $textBg, $rawxoff, $rawyoff,
-					$width, $height, $SCALES[$scale]);
+	MapGraphics::drawLocation($locations->{$to}, $im, $dst_color, $dst_color, $bg_color,
+		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 }
 
 # print the data out to a temporary file
@@ -365,7 +366,7 @@ close($tmpfile);
 
 # now that we have valid offsets, we can generate the thumbnail (highlighting
 # the visible window) safely
-my $thumb = GD::Image->newFromPng($MapGlobals::THUMB_FILE, 1);
+my $thumb = GD::Image->newFromGd2($MapGlobals::THUMB_FILE);
 
 # store the ratio between the thumbnail and the main base image
 # (these two REALLY should be the same...)
@@ -373,16 +374,39 @@ my $ratio_x = $MapGlobals::THUMB_X / $MapGlobals::IMAGE_X;
 my $ratio_y = $MapGlobals::THUMB_Y / $MapGlobals::IMAGE_Y;
 
 # this is the color in which we draw the edge-of-view lines
-my $yellow = $thumb->colorAllocate(0, 230, 230);
+my $thumb_src_color = $thumb->colorAllocate(@MapGlobals::SRC_COLOR);
+my $thumb_dst_color = $thumb->colorAllocate(@MapGlobals::DST_COLOR);
+my $thumb_rect_color = $thumb->colorAllocate(@MapGlobals::RECT_COLOR);
 
-# top line
+# the outline of the current view
 $thumb->rectangle(
 	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
 	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
 	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X - 1,
 	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y - 1,
-	$yellow
+	$thumb_rect_color
 );
+
+# dots for the start and end locations
+if($src_found){
+	$thumb->filledRectangle(
+		$locations->{$from}{'x'}*$MapGlobals::RATIO_X - 1,
+		$locations->{$from}{'y'}*$MapGlobals::RATIO_Y - 1,
+		$locations->{$from}{'x'}*$MapGlobals::RATIO_X + 1,
+		$locations->{$from}{'y'}*$MapGlobals::RATIO_Y + 1,
+		$thumb_src_color,
+	);
+}
+
+if($dst_found){
+	$thumb->filledRectangle(
+		$locations->{$to}{'x'}*$MapGlobals::RATIO_X - 1,
+		$locations->{$to}{'y'}*$MapGlobals::RATIO_Y - 1,
+		$locations->{$to}{'x'}*$MapGlobals::RATIO_X + 1,
+		$locations->{$to}{'y'}*$MapGlobals::RATIO_Y + 1,
+		$thumb_dst_color,
+	);
+}
 
 # now make a temporary file to put this image in
 # XXX: eventually just make this a separate CGI script?

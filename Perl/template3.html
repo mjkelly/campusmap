@@ -83,13 +83,13 @@
 	}
 
 	/* 
-	 * Buttons for controlling zoom and direction...position is abosolutely
+	 * Buttons for controlling zoom and direction...position is absolutely
 	 * relative to map :)
 	 */
 	#buttons{
-		border-top: 20px solid white;
 		float: left;
 		width: 70px;
+		margin-top: 20px;
 		text-align: center;
 	}
 	
@@ -101,10 +101,6 @@
 	}
 
 	#thumb{
-		/* these are the dimensions of the old thumbnail
-		width: 192px;
-		height: 176px;
-		*/
 		width: 145px;
 		height: 130px;
 	}
@@ -116,7 +112,6 @@
 <div id="container">
 	<div id="header">
 		<div id="headerLeft">
-
 
 			<div id="headerLeftTop">
 				<img src="<TMPL_VAR NAME=IMG_DIR>/ucsdmaplogo_small.png"
@@ -236,45 +231,46 @@
 			&nbsp;
 		</div>
 
-
-		    <div id="buttons">
-		    <table border="0" cellspacing="0" cellpadding="0">
+		<div id="buttons">
+			<table border="0" cellspacing="0" cellpadding="0">
 			<!-- this is the directional control pad -->
 			<tr>
-			    <td>&nbsp;</td>
-			    <td><a href="<TMPL_VAR NAME=UP_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/up-arr.png" width="20" height="20" border="0" alt="Up" /></a></td>
-			    <td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td><a href="<TMPL_VAR NAME=UP_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/up-arr.png" width="20" height="20" border="0" alt="Up" /></a></td>
+				<td>&nbsp;</td>
 			</tr>
 			<tr>
-			    <td><a href="<TMPL_VAR NAME=LEFT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/left-arr.png" width="20" height="20" border="0" alt="Left" /></a></td>
-			    <td><a href="<TMPL_VAR NAME=RECENTER_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/circle.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
-			    <td><a href="<TMPL_VAR NAME=RIGHT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/right-arr.png" width="20" height="20" border="0" alt="Right" /></a></td>
+				<td><a href="<TMPL_VAR NAME=LEFT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/left-arr.png" width="20" height="20" border="0" alt="Left" /></a></td>
+				<td><a href="<TMPL_VAR NAME=RECENTER_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/circle.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
+				<td><a href="<TMPL_VAR NAME=RIGHT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/right-arr.png" width="20" height="20" border="0" alt="Right" /></a></td>
 			</tr>
 			<tr>
-			    <td>&nbsp;</td>
-			    <td><a href="<TMPL_VAR NAME=DOWN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/down-arr.png" width="20" height="20" border="0" alt="Down" /></a></td>
-			    <td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td><a href="<TMPL_VAR NAME=DOWN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/down-arr.png" width="20" height="20" border="0" alt="Down" /></a></td>
+				<td>&nbsp;</td>
 			</tr>
 			<tr>
-			    <td colspan="3">&nbsp;</td>
+				<td colspan="3">&nbsp;</td>
 			</tr>
 
 			<!-- this is the zoom widget -->
 			<tr>
-			    <td colspan="3"><a href="<TMPL_VAR NAME=ZOOM_IN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
+				<td colspan="3"><a href="<TMPL_VAR NAME=ZOOM_IN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
 			</tr>
 			<tr>
-				<!-- yes, this is an awful, awful line right
-				here. I'm only doing it this way because
-				extra whitespace messes up the display. :( -->
+				<!-- this is compressed to one line because
+				whitespace messes up IE. expand it to make it
+				comprehensible. as it stands, you are not
+				expected to understand this ;) -->
 				<td colspan="3"><TMPL_LOOP NAME=ZOOM_WIDGET><a href="<TMPL_VAR NAME=URL>"><TMPL_IF NAME=SELECTED><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png" width="30" height="15" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL> (current)" /><TMPL_ELSE><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level.png" width="30" height="15" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL>" /></TMPL_IF></a><br /></TMPL_LOOP></td>
 			</tr>
 			<tr>
-			    <td colspan="3" class="buttoncell"><a href="<TMPL_VAR NAME=ZOOM_OUT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
+				<td colspan="3" class="buttoncell"><a href="<TMPL_VAR NAME=ZOOM_OUT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
 			</tr>
 			</table>
 			<!-- end div buttons -->
-			</div>
+		</div>
+
 		<div id="displayMap">
 
 			<!-- begin main image -->

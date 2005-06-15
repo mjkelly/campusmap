@@ -113,7 +113,7 @@ sub drawLocation{
 	my $nameEnd = $xDraw + $textWidth;
 
 	# don't bother going any further if the location won't appear on the screen
-	if( $nameEnd < 0 || $xDraw > $w || $yDraw < 0 || $yDraw > $h ){
+	if( $nameEnd < 0 || $xDraw - 5 > $w || $yDraw < 0 || $yDraw > $h ){
 		return;
 	}
 

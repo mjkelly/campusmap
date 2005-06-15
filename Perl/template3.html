@@ -30,14 +30,21 @@
 		float: left;
 	}
 
+	#headerMiddleTop{
+		margin: 20px;
+	}
+
 	/* this is the logo */
 	#headerLeftTop{
 		margin-left: 10px;
 		margin-bottom: 4px;
+		margin-right: 20px;
+		float: left;
 	}
 
 	#headerLeftBottom{
 		text-align: left;
+		clear: left;
 	}
 
 	/* this is the 'start' field */
@@ -110,10 +117,16 @@
 	<div id="header">
 		<div id="headerLeft">
 
+
 			<div id="headerLeftTop">
-				<img src="../../ucsdmap/ucsdmaplogo_small.png"
+				<img src="<TMPL_VAR NAME=IMG_DIR>/ucsdmaplogo_small.png"
 					width="151" height="77" alt="ucsdmapLogo" />
 			</div>
+
+			<div id="headerMiddleTop">
+				Enter a start and destination location to find the shortest path between the two, or select only one to zoom to that location.
+			</div>
+
 			<div id="headerLeftBottom">
 
 				<!-- for input forms -->
@@ -158,6 +171,7 @@
 			</div>
 
 		</div>
+
 		<div id="headerRight">
 
 			<!-- display the thumbnail -->
@@ -177,6 +191,7 @@
 			<!-- end display of the thumbnail -->
 
 		</div>
+
 	</div>
 
 	<div id="display">
@@ -214,13 +229,11 @@
 			<TMPL_IF NAME=TXT_ERROR>
 				<b><TMPL_VAR NAME=TXT_ERROR></b>
 			</TMPL_IF>
-
-			<!-- this is just for printing debug output... we can remove it once
-			map.cgi is more stable. -->
-			<TMPL_IF NAME=DEBUG>
-				Debug: <TMPL_VAR NAME=DEBUG>
-			</TMPL_IF>
 			<!-- end status text -->
+
+			<!-- if this is blank, don't screw up
+			alignment...non-breaking space -->
+			&nbsp;
 		</div>
 
 

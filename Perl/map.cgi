@@ -13,6 +13,9 @@
 use strict;
 use warnings;
 
+# for the server
+##use lib qw(/home/jedimike/perl/lib/perl5/site_perl/5.8.3);
+
 use CGI;
 use File::Temp ();
 use HTML::Template;
@@ -99,13 +102,12 @@ my ($src_found, $dst_found) = (TRUE, TRUE);
 
 # now convert $fromTxt and $toTxt to IDs
 my $ERROR = '';
-my $DEBUG = '';
 my ($from, $to) = (0, 0);
 
 # if we got no input, put up an informative message
 if($fromTxt eq '' && $toTxt eq ''){
-	$ERROR .= "Enter a start and destination location to find the shortest"
-		. " path between the two, or select only one to zoom to that location.";
+	#$ERROR .= "Enter a start and destination location to find the shortest"
+	#	. " path between the two, or select only one to zoom to that location.";
 	($src_found, $dst_found) = (FALSE, FALSE);
 
 }
@@ -500,11 +502,12 @@ $tmpl->param( GOT_PATH => $path );
 $tmpl->param( DISTANCE => sprintf("%.02f", $dist) );
 $tmpl->param( TIME => sprintf("%.02f", $dist*$mpm) );
 
+# a bunch of boolean values, for whatever strange logic we may need inside the template
 $tmpl->param( SRC_FOUND => $src_found );
 $tmpl->param( DST_FOUND => $dst_found );
-
-# this is for shuttling various debug messages out to the interface
-$tmpl->param( DEBUG => $DEBUG );
+$tmpl->param( SRC_OR_DST_FOUND => ($src_found || $dst_found) );
+$tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
+$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
 
 print "Content-type: text/html\n\n" . $tmpl->output();
 

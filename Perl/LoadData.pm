@@ -11,6 +11,7 @@ package LoadData;
 
 use strict;
 use warnings;
+use Text::LevenshteinXS qw(distance);
 use MapGlobals;
 
 use constant {
@@ -396,6 +397,7 @@ sub findName{
 		if( substr($_, 0, 5) eq 'name:' ){
 			$loc = substr($_, 5);
 			# check of the location is a superset of the search string
+			# TODO: use some kind of strstr() method, instead of a regex
 			if( $loc =~ /$name/ ){
 				# either this is the first match, or this is SHORTER
 				# than the existing one
@@ -412,6 +414,29 @@ sub findName{
 					$match = $loc;
 				}
 			}
+		}
+	}
+
+	if(!defined($match)){
+		# last resort: do expensive fuzzy matching
+		my($min, $minLoc, $dist);
+		foreach (keys %$locations){
+			if( substr($_, 0, 5) eq 'name:' ){
+				$loc = substr($_, 5);
+				$dist = distance($name, $loc);
+				##print "$name --> $loc = $dist\n";
+				# keep track of the shortest Levenshtein distance we find
+				if(!defined($min) || $dist < $min){
+					$min = $dist;
+					$minLoc = $loc;
+				}
+			}
+		}
+		# if the shortest distance is an acceptable match,
+		# use it
+		if( $min <= length($name)/2 ){
+			##print "Min dist: $min ($minLoc)\n";
+			$match = $minLoc;
 		}
 	}
 

@@ -113,8 +113,6 @@ if($fromTxt eq '' && $toTxt eq ''){
 }
 # otherwise, attempt to look up both locations
 else{
-	# the ordering of these two if-blocks is significant!
-	# switching them results in the view centering on the START location.
 
 	if( exists($locations->{$toTxtLookup}) ){
 		$to = $locations->{$toTxtLookup}{'ID'};

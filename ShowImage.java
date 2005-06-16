@@ -11,9 +11,6 @@
  -----------------------------------------------------------------*/
 
 import javax.swing.*;
-
-import sun.security.krb5.internal.p;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -571,9 +568,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
         
         //Create the JList, passing the array of location names
         final JList locBox = new JList(locationNames);
+		JScrollPane scrollPane = new JScrollPane(locBox);
 
         // Add the list of locations and the cancel button to the dialog box.
-        dialog.getContentPane().add(locBox);
+        dialog.getContentPane().add(scrollPane);
         dialog.getContentPane().add(cancel);
         
         // Let's go packing!  You can't have a pack smaller than

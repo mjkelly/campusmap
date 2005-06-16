@@ -12,9 +12,11 @@ use warnings;
 use LoadData;
 use MapGlobals;
 
+my $dir = 'test';
+
 print "===== Points =====\n";
 
-my $points = LoadData::loadPoints($MapGlobals::POINT_FILE);
+my $points = LoadData::loadPoints($dir . '/' . $MapGlobals::POINT_FILE);
 
 print "Traversing data structure:\n";
 
@@ -26,6 +28,7 @@ foreach my $pointID ( sort(keys(%$points)) ){
 
 	# the ID of the location corresponding to this point (0 means no location)
 	print "\tLocation ID: $points->{$pointID}{'LocationID'}\n";
+	print "\tPassThrough: $points->{$pointID}{'PassThrough'}\n";
 
 	# step through the hash of significant connected points
 	print "\tNumber of significant connections: " . (keys %{$points->{$pointID}{'Connections'}}) . "\n";
@@ -63,7 +66,7 @@ foreach my $pointID ( sort(keys(%$points)) ){
 
 print "\n\n===== Locations =====\n";
 
-my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
+my $locations = LoadData::loadLocations($dir . '/' . $MapGlobals::LOCATION_FILE);
 
 print "Traversing data structure:\n";
 
@@ -71,8 +74,9 @@ print "Traversing data structure:\n";
 foreach my $locID ( sort(keys(%$locations)) ){
 	# each value in $locations is simply another hash, which has these fields:
 	# ID, x, y, PointID, Name
-	print "Location ID: $locations->{$locID}{'ID'}\n";
+	print "Location ID: $locations->{$locID}{'ID'} (from key: $locID)\n";
 	print "\tCoordinates: ($locations->{$locID}{'x'}, $locations->{$locID}{'y'})\n";
+	print "\tDisplayName: $locations->{$locID}{'DisplayName'}\n";
 	print "\tPoint ID: $locations->{$locID}{'PointID'}\n";
 	print "\tName: $locations->{$locID}{'Name'}\n";
 	print "\tNormalized Name: " . LoadData::nameNormalize($locations->{$locID}{'Name'}) . "\n";
@@ -80,7 +84,7 @@ foreach my $locID ( sort(keys(%$locations)) ){
 
 print "\n\n==== Edges =====\n";
 
-my $edges = LoadData::loadEdges($MapGlobals::EDGE_FILE);
+my $edges = LoadData::loadEdges($dir . '/' . $MapGlobals::EDGE_FILE);
 
 print "Traversing data structure:\n";
 

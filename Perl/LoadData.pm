@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Thu Mar 24 13:50:31 PST 2005
+# Wed Jun 15 23:54:16 PDT 2005
 # -----------------------------------------------------------------
 
 package LoadData;
@@ -63,6 +63,7 @@ sub loadPoints{
 		$points->{$ID}{'ConnectionsArray'} = [];
 
 		# loop as many times as there are connections
+		
 		for my $i (1..$conns){
 			print STDERR "---Start connection---\n" if DEBUG;
 			
@@ -104,6 +105,8 @@ sub loadPoints{
 
 		# read the location ID
 		$points->{$ID}{'LocationID'} = readInt(*INPUT);
+		# and any binary flags
+		$points->{$ID}{'PassThrough'} = readByte(*INPUT);
 
 		# now we initialize fields for shortest-path calculations
 		$points->{$ID}{'Known'} = FALSE;
@@ -157,6 +160,9 @@ sub loadLocations{
 		$locations->{$ID}{'y'} = readInt(*INPUT);
 		print STDERR "Location coords: "
 			. "($locations->{$ID}{'x'}, $locations->{$ID}{'y'})\n" if DEBUG;
+
+		# read the boolean flags
+		$locations->{$ID}{'DisplayName'} = readByte(*INPUT);
 
 		# get the associated GraphPoint's ID
 		$locations->{$ID}{'PointID'} = readInt(*INPUT);
@@ -262,6 +268,29 @@ sub readInt{
 	}
 
 	return asInt($buf);
+}
+
+###################################################################
+# read one byte from the specified filehandle.
+# Args:
+#	- a typeglob specifying the filehandle to read from
+# Returns:
+#	- the read byte, or undef if the read() failed
+###################################################################
+sub readByte{
+	if(!@_){
+		warn "readByte() requires an argument!\n";
+		return;
+	}
+
+	my $fh = shift(@_);
+	my $buf;
+
+	if(! read($fh, $buf, 1) ){
+		return undef;
+	}
+	# since it's only one byte, we don't have to worry about network byte order
+	return ord($buf);
 }
 
 ###################################################################

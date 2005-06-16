@@ -25,6 +25,10 @@ sub find{
 	my($s, $v, $w);
 	my $smallestIndex;
 	my $connID;
+	# this should be bigger than any other "real" distance, yet it should be small
+	# enough that any other real distance plus this one does NOT cause integer
+	# overflow.
+	my $KONSTANT = 1e7;
 
 	# translate the starting ID into an actual graph point
 	$s = $points->{$startID};
@@ -52,26 +56,41 @@ sub find{
 		# loop over all points adjacent to $v
 		for $connID ( keys %{$v->{'Connections'}} ){
 			# assign the adjacent point to $w
+			# $w is a GraphPoint
 			$w = $points->{$connID};
 
 			#XXX: print STDERR "Adjacent node ID: $connID\n";
 
 			# if $w hasn't been visited yet
 			if( !$w->{'Known'} ){
-				
-				# if v's distance + the distance between v and w is less
-				# than w's distance
-				if($v->{'Distance'} + $v->{'Connections'}{$connID}{'Weight'} <
-					$w->{'Distance'})
+				if( $w->{'PassThrough'} == 0 )
 				{
-					# we've found a lower distance, so update w's distance
-					$w->{'Distance'} =
-						$v->{'Distance'}
-						+ $v->{'Connections'}{$connID}{'Weight'};
+					# if v's distance + the distance between v and w is less
+					# than w's distance
+					if($v->{'Distance'} + $KONSTANT + $v->{'Connections'}{$connID}{'Weight'} <
+						$w->{'Distance'})
+					{
+						$w->{'Distance'} = $v->{'Distance'} + $KONSTANT
+							+ $v->{'Connections'}{$connID}{'Weight'};
 
-					# indicate where we got this path
-					$w->{'From'} = $v;
+						# indicate where we got this path
+						$w->{'From'} = $v;
+					}
 				}
+				else{
+					# if v's distance + the distance between v and w is less
+					# than w's distance
+					if($v->{'Distance'} + $v->{'Connections'}{$connID}{'Weight'} <
+						$w->{'Distance'})
+					{
+						$w->{'Distance'} = $v->{'Distance'}
+							+ $v->{'Connections'}{$connID}{'Weight'};
+
+						# indicate where we got this path
+						$w->{'From'} = $v;
+					}
+				}
+
 			}
 
 		}
@@ -106,10 +125,6 @@ sub smallestUnknown{
 # XXX: proper desc. and function header
 sub createMinCache{
 	my($points) = (@_);
-
-	# copy the values of the given hashref: we know each of these is itself
-	# a hashref, so we can directly access each point
-	my $i = 0;
 
 	return (values %$points);
 }
@@ -148,15 +163,13 @@ sub drawTo{
 
 		$conn = $target->{'Connections'}{$target->{'From'}{'ID'}};
 		$dist += $conn->{'Weight'};
-
-		%rect = MapGraphics::drawEdge(
-			$edges->{$conn->{'EdgeID'}}, $im, 2, $color,
-			$xoff, $yoff, $w, $h, $scale, 1);
-
 		# keep following the trail back to its source
 		$target = $target->{'From'};
 
-		# keep the min/max values up to date
+		# this is all housekeeping for the smart zoom
+		%rect = MapGraphics::drawEdge(
+			$edges->{$conn->{'EdgeID'}}, $im, 2, $color,
+			$xoff, $yoff, $w, $h, $scale, 1);
 		$xmax = $rect{'xmax'} if( !defined($xmax) || $rect{'xmax'} > $xmax );
 		$xmin = $rect{'xmin'} if( !defined($xmin) || $rect{'xmin'} < $xmin );
 		$ymax = $rect{'ymax'} if( !defined($ymax) || $rect{'ymax'} > $ymax );
@@ -185,6 +198,9 @@ sub pathPoints{
 		my $thisEdge = $edges->{$conn->{'EdgeID'}};
 		$dist += $conn->{'Weight'};
 
+		# keep following the trail back to its source
+		$target = $target->{'From'};
+
 		# cycle through each point in this edge
 		foreach my $curpt ( @{$thisEdge->{'Path'}} ){
 
@@ -198,9 +214,6 @@ sub pathPoints{
 		}
 
 		push(@pathPoints, $subPath);
-
-		# keep following the trail back to its source
-		$target = $target->{'From'};
 	}
 
 	return (

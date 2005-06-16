@@ -94,7 +94,7 @@ my $thumbx = defined($q->param('thumb.x')) ? int($q->param('thumb.x')) : undef;
 my $thumby = defined($q->param('thumb.y')) ? int($q->param('thumb.y')) : undef;
 # one or the other (map or thumb click offsets) should be undef
 
-# clear out any old images
+# don't fear the reaper...
 MapGlobals::reaper($MapGlobals::DYNAMIC_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
 
 # whether source and destination locations were found
@@ -209,9 +209,15 @@ if($path){
 	ShortestPath::find($startID, $points);
 
 	($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $edges,
-		$points->{$endID});
-
-	$dist /= $MapGlobals::PIXELS_PER_UNIT;
+		$points->{$startID}, $points->{$endID});
+	
+	if(defined($dist)){
+		$dist /= $MapGlobals::PIXELS_PER_UNIT;
+	}
+	else{
+		$path = FALSE;
+		$ERROR .= "<p>These two locations are not connected.</p>\n";
+	}
 
 	if(!$xoff && !$yoff){
 		$xoff = int(($rect->{'xmin'} + $rect->{'xmax'}) / 2);
@@ -275,7 +281,14 @@ else{
 
 	# use the default scale
 	if(!defined($scale)){
-		$scale = $MapGlobals::DEFAULT_SCALE;
+		# we use different levels of zoom depending on whether we're
+		# not focused on _anything_, or if the user selected a single location
+		if($src_found || $dst_found){
+			$scale = $MapGlobals::SINGLE_LOC_SCALE;
+		}
+		else{
+			$scale = $MapGlobals::DEFAULT_SCALE;
+		}
 	}
 }
 
@@ -315,8 +328,6 @@ my $rawyoff = int($yoff*$SCALES[$scale] - $height/2);
 my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
 	$rawxoff, $rawyoff, $width, $height)
 	|| die "Could not load image $MapGlobals::BASE_GD2_IMAGE\n";
-
-$im->alphaBlending(1);
 
 my $src_color = $im->colorAllocate(@MapGlobals::SRC_COLOR);
 my $dst_color = $im->colorAllocate(@MapGlobals::DST_COLOR);

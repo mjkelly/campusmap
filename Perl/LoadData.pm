@@ -54,6 +54,11 @@ sub loadPoints{
 		# XXX: take this out later?
 		$points->{$ID}{'ID'} = $ID;
 
+		# just in case we want coords without having to cycle through
+		# connections
+		$points->{$ID}{'x'} = readInt(*INPUT);
+		$points->{$ID}{'y'} = readInt(*INPUT);
+
 		# get the number of connections
 		my $conns = readInt(*INPUT);
 		print STDERR "$conns connections.\n" if DEBUG;

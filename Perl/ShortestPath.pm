@@ -12,7 +12,7 @@ package ShortestPath;
 use strict;
 use warnings;
 
-use MapGlobals;
+use MapGlobals qw(TRUE FALSE INFINITY min max);
 use MapGraphics;
 
 use GD;
@@ -182,12 +182,27 @@ sub drawTo{
 # collect the coords of all points along a path and remember the maximum and minimum values
 # XXX: proper desc. and function header
 sub pathPoints{
-	my($points, $edges, $target) = (@_);
+	my($points, $edges, $source, $target) = (@_);
 
 	my $dist = 0;
 	my @pathPoints;
 
-	my($xmin, $xmax, $ymin, $ymax);
+	my $xmin = min($source->{'x'}, $target->{'x'});
+	my $xmax = max($source->{'x'}, $target->{'x'});
+	my $ymin = min($source->{'y'}, $target->{'y'});
+	my $ymax = max($source->{'y'}, $target->{'y'});
+
+	print STDERR "XXX: ($xmin, $ymin) - ($xmax, $ymax)\n";
+
+	# abort right now if we find a disconnected node
+	if( $target->{'Distance'} >= INFINITY ){
+		print STDERR "XXX: BREAK!\n";
+		return(
+			undef, 
+			{ xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax },
+			[]
+		);
+	}
 
 	# follow 'from' links until we reach the original point
 	my $conn;
@@ -199,6 +214,7 @@ sub pathPoints{
 		$dist += $conn->{'Weight'};
 
 		# keep following the trail back to its source
+		print STDERR "XXX: $target->{'Name'}'s distance = $target->{'Distance'}\n";
 		$target = $target->{'From'};
 
 		# cycle through each point in this edge

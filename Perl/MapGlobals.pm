@@ -76,12 +76,16 @@ our $RATIO_Y = $THUMB_Y / $IMAGE_Y;
 # (2184, 3264) is Geisel Library
 our $DEFAULT_XOFF  = 2184;
 our $DEFAULT_YOFF  = 3264;
-our $DEFAULT_SCALE = 3; #index into the @SCALES array
+our $DEFAULT_SCALE = 3; #index into @SCALES
+# this is the scale we use when we're zoomed to a single
+# location (a real one). also an index into @SCALES.
+our $SINGLE_LOC_SCALE = 1;
 
 # how many pixels (on the largest base map) equal one meter
 # From tests, we've determined that 288696.00 px is approximately 0.72 mi.
 # that gives us ~400967 px per mile.
-our $PIXELS_PER_UNIT = 400967;
+#our $PIXELS_PER_UNIT = 400967; # <--- this was when we multiplied all distances by 100
+our $PIXELS_PER_UNIT = 4010;
 # an abbreviation of the unit we're using (m for meters, mi for miles, etc)
 our $UNITS = "mi";
 

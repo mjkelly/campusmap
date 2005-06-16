@@ -25,6 +25,7 @@ print "Traversing data structure:\n";
 foreach my $pointID ( sort(keys(%$points)) ){
 	# print this point's fields
 	print "Point ID: $points->{$pointID}{'ID'}\n";
+	print "\tCoordinates: ($points->{$pointID}{'x'}, $points->{$pointID}{'y'})\n";
 
 	# the ID of the location corresponding to this point (0 means no location)
 	print "\tLocation ID: $points->{$pointID}{'LocationID'}\n";

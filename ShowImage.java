@@ -566,6 +566,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 ((Location)locations.get(index)).name;
         }
         
+        Arrays.sort(locationNames);
+        
         //Create the JList, passing the array of location names
         final JList locBox = new JList(locationNames);
 		JScrollPane scrollPane = new JScrollPane(locBox);

@@ -7,7 +7,7 @@
 # TODO: Create some kind of 'state' object to avoid passing around
 # these huge, indecipherable (and frequently-changing!) lists.
 #
-# Sun Jun 12 13:22:05 PDT 2005
+# Wed Jun 15 23:54:08 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -210,7 +210,8 @@ my $pathPoints;
 if($path){
 	ShortestPath::find($startID, $points);
 
-	($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $edges, $points->{$endID});
+	($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $edges,
+		$points->{$endID});
 
 	$dist /= $MapGlobals::PIXELS_PER_UNIT;
 

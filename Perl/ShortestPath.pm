@@ -221,10 +221,10 @@ sub pathPoints{
 		foreach my $curpt ( @{$thisEdge->{'Path'}} ){
 
 			# keep the min/max values up to date
-			$xmax = $curpt->{'x'} if( !defined($xmax) || $curpt->{'x'} > $xmax );
-			$xmin = $curpt->{'x'} if( !defined($xmin) || $curpt->{'x'} < $xmin );
-			$ymax = $curpt->{'y'} if( !defined($ymax) || $curpt->{'y'} > $ymax );
-			$ymin = $curpt->{'y'} if( !defined($ymin) || $curpt->{'y'} < $ymin );
+			$xmax = $curpt->{'x'} if( $curpt->{'x'} > $xmax );
+			$xmin = $curpt->{'x'} if( $curpt->{'x'} < $xmin );
+			$ymax = $curpt->{'y'} if( $curpt->{'y'} > $ymax );
+			$ymin = $curpt->{'y'} if( $curpt->{'y'} < $ymin );
 			
 			push(@$subPath, { x => $curpt->{'x'}, y => $curpt->{'y'} });
 		}

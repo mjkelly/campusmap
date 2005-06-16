@@ -39,18 +39,21 @@ public class PathOptimize
 
     /**
      * Driver for testing PathOptimize
+     * 
+     * WARNING: this method will not work as currently set up!
+     * 
      * @param args passed in command line arguments (none expected)
      */
     public static void main(String[] args)
     {
-    	final String rawPathFile = "data/rawPath.dat";
-    	final String rawLocFile = "data/rawLocations.dat";
+    	//final String rawPathFile = "data/rawPath.dat";
+    	//final String rawLocFile = "data/rawLocations.dat";
     	final String optPathFile = "data/optimizedPath.dat";
     	final String optLocFile = "data/optimizedLocations.dat";
     	final String binaryPoints = "data/binPointData.dat";
     	final String binaryLocations =  "data/binLocationData.dat";
     	final String binaryEdges = "data/binEdgeData.dat";
-    	run(rawPathFile, rawLocFile, optPathFile, optLocFile,
+    	run(null, null, optPathFile, optLocFile,
     			binaryPoints, binaryLocations, binaryEdges
     	);
     }
@@ -64,8 +67,8 @@ public class PathOptimize
 	 * This method is called from ShowImage!
 	 * 
 	 * I don't want to talk about this right now...
-	 * @param inPathFile
-	 * @param inLocFile
+	 * @param inPaths
+	 * @param inLocations
 	 * @param outPathFile
 	 * @param outLocFile
 	 * @param binaryPoints
@@ -73,7 +76,8 @@ public class PathOptimize
 	 * @param binaryEdges
 	 * @return True all the time, for no reason whatsoever...
 	 */
-    public static boolean run(String inPathFile, String inLocFile,
+    public static boolean run(Vector <Vector<Point>>inPaths, 
+			Vector <Location> inLocations,
     		String outPathFile, String outLocFile, 
 			String binaryPoints, String binaryLocations, String binaryEdges)
     {
@@ -86,8 +90,8 @@ public class PathOptimize
     	 * This reads in the Vector of vector of points and Vector of 
     	 * locations.  These go into the field readPoints and readLocation.
     	 */
-    	if(! pathOp.readPoints(inPathFile, inLocFile) )
-            return(false);
+		pathOp.readPaths = inPaths;
+		pathOp.readLocations = inLocations;
     	
         
     	/*
@@ -140,6 +144,11 @@ public class PathOptimize
 	/**
 	 * Loads the paths and locations fields from 
      * files.  
+     * 
+     * This method is no longer used since we path in the locations
+     * and paths vector to run();
+     * 
+     * 
 	 * @param pathFileName
 	 * @param locFileName
 	 * @return Success if both pathLoadSuccess and locationLoadSuccess

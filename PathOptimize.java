@@ -1443,7 +1443,6 @@ class GraphPoint
 	 */
 	public void binaryWrite(DataOutputStream out)
 	{
-		final int WEIGHT_SCALE = 100;  // scaling of the weight.  
     	// output ID of GraphPoint
 		try{
 			System.err.println("ID: " + ID + "      (" + point.x + ", "
@@ -1454,43 +1453,50 @@ class GraphPoint
 			out.writeInt(edges.size());
 			
 			// for each Edge connected to this GraphPoint
+            
 			for(int i = 0; i < edges.size(); i++)
 			{
 	    		System.err.println("--Start connection--");
 	    		// print ID of each connection
-				if(((Edge)edges.get(i)).endpt1 == this){
+				//if(edges.get(i).endpt1 == this){
+                if(((Edge)edges.get(i)).endpt1 == this){
 					System.err.println("Connection ID (endpt2): " +
-							((Edge)edges.get(i)).endpt2.ID);
-					out.writeInt( ((Edge)edges.get(i)).endpt2.ID );
+							edges.get(i).endpt2.ID);
+					out.writeInt( edges.get(i).endpt2.ID );
 				}
 				else{
 					System.err.println("Connection ID (endpt1): " +
-							((Edge)edges.get(i)).endpt1.ID);
-					out.writeInt( ((Edge)edges.get(i)).endpt1.ID );
+							edges.get(i).endpt1.ID);
+					out.writeInt( edges.get(i).endpt1.ID );
 				}
 				
 				// print value of each weight
-	    		out.writeInt( 
-	    				(int)((WEIGHT_SCALE)*((Edge)edges.get(i)).weight) );
-	    		System.err.println("Weight: " + 
-	    				(int)((WEIGHT_SCALE)*((Edge)edges.get(i)).weight));
+	    		out.writeInt( (int)edges.get(i).weight );
+	    		System.err.println("Weight: " + edges.get(i).weight );
 				
 	    		// print ID of each edge
-	    		out.writeInt( ((Edge)edges.get(i)).ID );
-	    		System.err.println("Edge ID: " + ((Edge)edges.get(i)).ID);
+	    		out.writeInt( edges.get(i).ID );
+	    		System.err.println("Edge ID: " + edges.get(i).ID);
 	    		
 			}
+            
     		
 			// write the ID of the associated location, if there is one;
 			// if there isn't, use 0 (all IDs are > 0)
 			if(locLabel != null){
 				System.err.println("Location ID: " + locLabel.ID);
 				out.writeInt(locLabel.ID);
+                System.err.println("PassThrough: "
+                        + locLabel.isCanPassThrough());
+                out.writeByte( locLabel.isCanPassThrough() ? 1 : 0 );
 			}
 			else
 			{
+                out.writeInt(0);
 				System.err.println("Location ID: 0");
-				out.writeInt(0);		
+                // GraphPoints without locations are always PassThrough
+                System.err.println("PassThrough: true");
+				out.writeByte(1);
 			}
 			
 			System.err.println("---end---");
@@ -1517,19 +1523,27 @@ class GraphPoint
 			// output ID of Location
 			System.err.println("Location ID: " + locLabel.ID);
 			out.writeInt(locLabel.ID);
-	        // output (x,y) coordinates of Location
+	        
+            // output (x,y) coordinates of Location
 			System.err.println("Location coords: (" + locLabel.cord.x +
 					", " + locLabel.cord.y + ")");
 			out.writeInt(locLabel.cord.x);
 			out.writeInt(locLabel.cord.y);
-	        // output ID of associated GraphPoint
+            
+            // write out boolean flags as single bytes
+            System.err.println("DisplayName:" + locLabel.isDisplayName());
+            out.writeByte(locLabel.isDisplayName() ? 1 : 0);
+	        
+            // output ID of associated GraphPoint
 			System.err.println("Associated GraphPoint: " + ID);
 			out.writeInt(ID);
-	        // output length of display name
+	        
+            // output length of display name
 			System.err.println("Display name length: "
 					+ locLabel.name.length());
 			out.writeInt(locLabel.name.length());
-			// output display name
+			
+            // output display name
 			System.err.println("Display name: " + locLabel.name);
 			out.writeChars(locLabel.name);
 			

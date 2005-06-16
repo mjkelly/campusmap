@@ -1457,6 +1457,8 @@ class GraphPoint
 			System.err.println("ID: " + ID + "      (" + point.x + ", "
 					+ point.y + ")");
 			out.writeInt(ID);
+            out.writeInt(point.x);
+            out.writeInt(point.y);
 	    	// output number of connections/weights/edges
 			System.err.println("Connections/weights/edges: " + edges.size());
 			out.writeInt(edges.size());

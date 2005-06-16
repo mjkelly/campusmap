@@ -192,11 +192,8 @@ sub pathPoints{
 	my $ymin = min($source->{'y'}, $target->{'y'});
 	my $ymax = max($source->{'y'}, $target->{'y'});
 
-	print STDERR "XXX: ($xmin, $ymin) - ($xmax, $ymax)\n";
-
 	# abort right now if we find a disconnected node
 	if( $target->{'Distance'} >= INFINITY ){
-		print STDERR "XXX: BREAK!\n";
 		return(
 			undef, 
 			{ xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax },
@@ -214,7 +211,6 @@ sub pathPoints{
 		$dist += $conn->{'Weight'};
 
 		# keep following the trail back to its source
-		print STDERR "XXX: $target->{'Name'}'s distance = $target->{'Distance'}\n";
 		$target = $target->{'From'};
 
 		# cycle through each point in this edge

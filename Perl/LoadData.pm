@@ -11,7 +11,7 @@ package LoadData;
 
 use strict;
 use warnings;
-use Text::LevenshteinXS qw(distance);
+use Text::Levenshtein qw(fastdistance);
 use MapGlobals;
 
 use constant {
@@ -417,14 +417,15 @@ sub findName{
 		}
 	}
 
+	# last resort: do expensive fuzzy matching
+	# TODO: use distance($@) here instead of fastdistance($$) in a loop?
 	if(!defined($match)){
-		# last resort: do expensive fuzzy matching
 		my($min, $minLoc, $dist);
 		foreach (keys %$locations){
 			if( substr($_, 0, 5) eq 'name:' ){
 				$loc = substr($_, 5);
-				$dist = distance($name, $loc);
-				##print "$name --> $loc = $dist\n";
+				$dist = fastdistance($name, $loc);
+				print "$name --> $loc = $dist\n";
 				# keep track of the shortest Levenshtein distance we find
 				if(!defined($min) || $dist < $min){
 					$min = $dist;
@@ -435,7 +436,7 @@ sub findName{
 		# if the shortest distance is an acceptable match,
 		# use it
 		if( $min <= length($name)/2 ){
-			##print "Min dist: $min ($minLoc)\n";
+			print "Min dist: $min ($minLoc)\n";
 			$match = $minLoc;
 		}
 	}

@@ -275,8 +275,8 @@ public class ShowImage extends JFrame{
 class ScrollablePicture extends JLabel implements Scrollable, 
                                                   MouseMotionListener{
 	//XXX: Here is the path and location version numbers.  
-	final int PATH_VERSION_NUMBER = 1;
-	final int LOCATION_VERSION_NUMBER = 1;
+	final static int PATH_VERSION_NUMBER = 1;
+	final static int LOCATION_VERSION_NUMBER = 1;
 	
     private int maxUnitIncrement = 5;
     private boolean missingPicture = false;
@@ -299,7 +299,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     
     // This should be a pointer to ShowImage to allow us to modify
     // fields such as the statusBar.
-    private ShowImage parent;
+    private static ShowImage parent;
     
     // The name of the location that was last searched
     private String lastLocationSearched;
@@ -874,8 +874,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * Write data to disk.
      * @param pathFileName The passed in name for the raw path data file.  
      * @param locFileName The passed in name for the raw location data file.
+     * @param pathsToWrite The paths vector to write
+     * @param locationsToWrite the locations vector to write
      */
-    public void writeData(String pathFileName, String locFileName){
+    public static void writeData(String pathFileName, String locFileName,
+			Vector <Vector<Point>> pathsToWrite, 
+			Vector <Location> locationsToWrite){
 		
         // Booleans to tell if the writing of both path and location data
         // was a success.
@@ -915,7 +919,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 			pathout.writeInt(PATH_VERSION_NUMBER);
 			
             // Write out the object...
-            pathout.writeObject(paths);
+            pathout.writeObject(pathsToWrite);
 
             // Close stream
             pathout.close();
@@ -942,13 +946,13 @@ class ScrollablePicture extends JLabel implements Scrollable,
 			locout.writeInt(LOCATION_VERSION_NUMBER);
 			
 			// print out the size of the location Vector
-			locout.writeInt(locations.size());
+			locout.writeInt(locationsToWrite.size());
 			
 			// write out the static ID variable...IDcount
 			locout.writeInt(Location.IDcount);
 			
 			// For each location in the location Vector
-			for (Location loc : locations) {
+			for (Location loc : locationsToWrite) {
 				locout.writeBoolean(loc.isAllowIntersections());
 				locout.writeBoolean(loc.isCanPassThrough());
 				locout.writeObject(loc.cord);
@@ -1292,7 +1296,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
             public void actionPerformed(ActionEvent e){
                 dialog.setVisible(false);
                 dialog.dispose();
-                writeData(rawPathFile, rawLocFile);
+                writeData(rawPathFile, rawLocFile, paths, locations);
             }
         });
         

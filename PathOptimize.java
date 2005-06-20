@@ -170,6 +170,7 @@ public class PathOptimize
 	        ObjectInputStream pathin = new ObjectInputStream(
 	                new FileInputStream(pathsInputFile));
 	        // Get Vector
+			// Produces a warning due to reading in an unknown object
 	        readPaths = (Vector)pathin.readObject();
 	        // close stream
 	        pathin.close();
@@ -337,52 +338,9 @@ public class PathOptimize
 	 * @param locFileName
 	 */
     public void writePoints(String pathFileName, String locFileName){
-        boolean pathWriteSuccess = false;
-    	boolean locationWriteSuccess = false;
-		// Load files
-		final String pathNotFound = 
-			"File \"" + pathFileName + "\" not found!     ";
-		final String locNotFound = "File \"" + locFileName + "\" not found!";
-    	// Define output files for paths and locations.
-        File pathOutputFile = new File(pathFileName);
-        File locationOutputFile = new File(locFileName);
-        try{
-        	// Write out the paths vector
-            ObjectOutputStream pathout = new ObjectOutputStream(
-                    new FileOutputStream(pathOutputFile));
-            pathout.writeObject(outPaths);
-            pathWriteSuccess = true;
-            // close stream
-            pathout.close();
-        }
-	    catch(FileNotFoundException e){
-	    	System.err.println(pathNotFound);
-	    }
-	    catch(IOException e){
-	    	
-	    	System.err.println("Error in writing \"" + pathFileName + "\"!\n"
-	    			+ e + ": " + e.getMessage());
-	    }
-	    
-        try{
-            // Write out the locations vector
-            ObjectOutputStream locout = new ObjectOutputStream(
-                    new FileOutputStream(locationOutputFile));
-            locout.writeObject(outLocations);
-            locationWriteSuccess = true;
-            //close stream
-            locout.close();
-        }
-	    catch(FileNotFoundException e){
-	    	System.err.println(locNotFound);
-	    }
-	    catch(IOException e){
-	    	System.err.println("Error in writing \"" + locFileName + "\"!");
-	    }
-	    if(locationWriteSuccess && pathWriteSuccess){
-	        // Set status
-        }
-    }
+		ScrollablePicture.writeData(pathFileName, locFileName, 
+				outPaths, outLocations);
+	}
     
 	/**
 	 * Write data to disk in binary format, suitable for reading from
@@ -665,23 +623,23 @@ AP1:    		for(int activeIndex2 = 0;
 			    		if(!rectangleTest(ap1, ap2, tp1, tp2))
 			    			continue;
 			    		
-						System.err.print(
-								"ap1: (" + ap1.point.x + ", " + ap1.point.y + ") ");
+						//System.err.print(
+						//		"ap1: (" + ap1.point.x + ", " + ap1.point.y + ") ");
 						
-						System.err.println(
-								";  ap2: (" + ap2.point.x + ", " + ap2.point.y + ") ");
+						//System.err.println(
+						//		";  ap2: (" + ap2.point.x + ", " + ap2.point.y + ") ");
 						
-						System.err.print(
-								"tp1: (" + tp1.point.x + ", " + tp1.point.y + ") ");
+						//System.err.print(
+						//		"tp1: (" + tp1.point.x + ", " + tp1.point.y + ") ");
 						
-						System.err.println(
-								";  tp2: (" + tp2.point.x + ", " + tp2.point.y + ") ");
+						//System.err.println(
+						//		";  tp2: (" + tp2.point.x + ", " + tp2.point.y + ") ");
 						
-						System.err.println("Active slope: " + activeSlope);
+						//System.err.println("Active slope: " + activeSlope);
 			    		
 						testSlope = getSlope(tp1, tp2);
 
-						System.err.println("Test slope: " + testSlope);
+						//System.err.println("Test slope: " + testSlope);
 						
 						if(testSlope == activeSlope)
 							continue;
@@ -726,14 +684,14 @@ AP1:    		for(int activeIndex2 = 0;
 										tp2.point.y, intersectYActive);
 							intersectX = tp1.point.x;
 						}
-						System.err.println("iA: " + intersectYActive + "\n" +
-								"iT: " + intersectYTest);
+//						System.err.println("iA: " + intersectYActive + "\n" +
+//								"iT: " + intersectYTest);
 						if((Math.abs(intersectYActive-intersectYTest) < 0.00001)
 								|| intersect)
 						{
-							System.err.println("Points are equal!");
-							System.err.println("(" + intersectX + ", " 
-									+ intersectYTest + ")");
+//							System.err.println("Points are equal!");
+//							System.err.println("(" + intersectX + ", " 
+//									+ intersectYTest + ")");
 							
 							// (this is actually supposed to be "P-sub-i", not
                             // the Greek letter Pi.)
@@ -744,8 +702,8 @@ AP1:    		for(int activeIndex2 = 0;
 							                (int)intersectYTest),
 							        new Vector<PathPoint>(2), null );
 							
-							System.err.println(
-									"pi: (" + pi.point.x + ", " + pi.point.y + ") ");
+//							System.err.println(
+//									"pi: (" + pi.point.x + ", " + pi.point.y + ") ");
 							
 							// ensure that the potential point is actually on
 							// both lines
@@ -761,12 +719,12 @@ AP1:    		for(int activeIndex2 = 0;
 								if(!pi.equals(ap1) && !pi.equals(ap2))
 									twoWayIntersectReplace(ap1, ap2, pi);
 
-								System.err.println("pi, 1: " + pi);
+//								System.err.println("pi, 1: " + pi);
 								
 								if(!pi.equals(tp1) && !pi.equals(tp2))
 									twoWayIntersectReplace(tp1, tp2, pi);
 								
-								System.err.println("pi, 2: " + pi);
+//								System.err.println("pi, 2: " + pi);
 
 							}
 							else
@@ -780,12 +738,12 @@ AP1:    		for(int activeIndex2 = 0;
 
 							
 							
-							System.err.println("pi, after: " + pi);
-							
-							System.err.println("ap1, after: " + ap1);
-							System.err.println("ap2, after: " + ap2);
-							System.err.println("tp1, after: " + tp1);
-							System.err.println("tp2, after: " + tp2);
+//							System.err.println("pi, after: " + pi);
+//							
+//							System.err.println("ap1, after: " + ap1);
+//							System.err.println("ap2, after: " + ap2);
+//							System.err.println("tp1, after: " + tp1);
+//							System.err.println("tp2, after: " + tp2);
 							
 							// since we've found an intercept, abort this
 							// entire test line, and move on to the next 
@@ -837,10 +795,10 @@ AP1:    		for(int activeIndex2 = 0;
 	 */
     public boolean checkRange(double val1, double val2, double testVal)
     {
-    	System.err.println("CHECKRANGE:");
+//    	System.err.println("CHECKRANGE:");
     	double min = Math.min(val1, val2);
     	double max = Math.max(val1, val2);
-    	System.err.println("Min: " + min + " Max: " + max + "test: " + testVal);
+//    	System.err.println("Min: " + min + " Max: " + max + "test: " + testVal);
     	if(testVal < min)
     		return(false);
     	if(testVal > max)
@@ -1014,7 +972,7 @@ AP1:    		for(int activeIndex2 = 0;
     	
     	// the index, if any, of the Edge pointing from an endpoint to the 
     	// original point
-    	int edgeIndex;
+    	int edgeIndex = 0;
     	
     	graphPoints = new Vector<GraphPoint>();
     	
@@ -1091,8 +1049,18 @@ AP1:    		for(int activeIndex2 = 0;
 				
 				// check if the end point of the Edge we just created already
 				// has an Edge pointing back to the original GraphPoint.
-				edgeIndex = (prevPP.getGraphPoint()).outgoingEdge(
-						graphPP.getGraphPoint(), tempEdge);
+				if(prevPP.getGraphPoint() != null)
+				{
+					edgeIndex = (prevPP.getGraphPoint()).outgoingEdge(
+							graphPP.getGraphPoint(), tempEdge);
+				}
+				else
+				{
+					System.err.println("Working with an end that needs" +
+							" to be discarded, (isn't a graphPoint)");
+					tempEdge.discard();
+					continue;
+				}
 				System.err.println("Edge Index = " + edgeIndex);
 				if(edgeIndex != -1)
 				{
@@ -1275,11 +1243,19 @@ class PathPoint
 	 */
 	public boolean isGraphPoint()
 	{
-		if(numConnectedPoints() > 2 || numConnectedPoints() == 1)
+		//TODO: remove print statements
+		if(numConnectedPoints() > 2){
+			System.err.println("#con pts > 2 ==> true");
 			return(true);
+		}
 		// Null guard to prevent exceptions
-		if(location != null && !location.name.equals("<nolink>"))
+		
+		// TODO: Deletion of unnecessary locations can go here...
+		if(location != null && numConnectedPoints() > 0){
+			System.err.println("Location ==> true");
 			return(true);
+		}
+		System.err.println("Returning false");
 		return(false);
 	}
 	
@@ -1296,7 +1272,9 @@ class PathPoint
 	 */
 	public PathPoint pathPointTraversal(PathPoint prevPoint)
 	{
-		if(isGraphPoint())
+		// This could be written better...but it works...
+		// Basically, we're checking if a next point exists
+		if(isGraphPoint() || (numConnectedPoints() == 1) )
 			return(null);
 		
 		if(prevPoint == getConnectedPathPoint(0))

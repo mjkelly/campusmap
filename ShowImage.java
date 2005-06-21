@@ -1785,10 +1785,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
      */
     public void searchAndFocusToLocation(String locationName)
     {
-        // Message to display on successful completion
-        String success = "Path #" + (pathNumIndex + 1) +
-            " intersects with location \"" + locationName + "\"";
-        int locIndex;    // The index of the location inside of the
+
+
+		int locIndex;    // The index of the location inside of the
                         // locations array.  
 
         // we're searching for a path intersecting with the locataion.
@@ -1851,6 +1850,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
         lastLocationSearched = locationName;
         
         // Set the status bar to the successful completion message
+        // Message to display on successful completion
+        String success = "Path #" + (pathNumIndex + 1) +
+            " intersects with location \"" + locFound.name + "\"";
         parent.statusBar.setText(success);
     }
     
@@ -1902,11 +1904,11 @@ class ScrollablePicture extends JLabel implements Scrollable,
     public int findLocationWithName (String locationName)
     {
         for(int i = 0; i < locations.size(); i++)
-            if(((Location)locations.get(i)).name.equals(locationName))
+            if( ((Location)locations.get(i)).name.indexOf(locationName) >= 0 )
                 return(i);
         parent.statusBar.setText("Corresponding location could" +
             " not be found!");
-        return(-1);        
+        return(-1);
     }
     
     

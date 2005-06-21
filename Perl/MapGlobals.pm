@@ -50,6 +50,10 @@ our $THUMB_X = 144;
 our $THUMB_Y = 132;
 our $THUMB_FILE = 'thumbnail.gd2';
 
+# _URL_ to the 
+our $CSS_FILE = '../../ucsdmap/css/main.css';
+##our $CSS_FILE = '/css/main.css';
+
 # how wide the font that we use for drawling location names is, in pixels
 our $FONT_WIDTH = 7;
 our $FONT_HEIGHT = 13;

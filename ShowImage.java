@@ -382,7 +382,6 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 if(SwingUtilities.isLeftMouseButton(e)) {
                     createNewPointInCurPath(x, y);
                 }
-                
                 // Right click.
                 else if(SwingUtilities.isRightMouseButton(e)) {
                     // Change the coordinates of the currently selected

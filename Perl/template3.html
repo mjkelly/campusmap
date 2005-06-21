@@ -139,9 +139,7 @@
 					<select name="from_selector"
 						onchange="main.from.value = this.form.from_selector.value">
 						<option value="">(None)</option>
-						<TMPL_LOOP NAME=LOCATIONS>
-							<option value="<TMPL_VAR NAME=NAME>" <TMPL_IF NAME=SELECTED_FROM>selected="selected"</TMPL_IF>><TMPL_VAR NAME=NAME></option>
-						</TMPL_LOOP>
+						<TMPL_VAR NAME=LOCATION_OPT_FROM>
 					</select>
 				</div>
 				<div id="headerLeftBottomRight">
@@ -156,9 +154,7 @@
 				<select name="to_selector"
 					onchange="main.to.value = this.form.to_selector.value">
 					<option value="">(None)</option>
-					<TMPL_LOOP NAME=LOCATIONS>
-						<option value="<TMPL_VAR NAME=NAME>" <TMPL_IF NAME=SELECTED_TO>selected="selected"</TMPL_IF>><TMPL_VAR NAME=NAME></option>
-					</TMPL_LOOP>
+					<TMPL_VAR NAME=LOCATION_OPT_TO>
 				</select>
 
 				</form>
@@ -194,6 +190,7 @@
 
 		<div id="displayLeft">
 			<!-- status text -->
+
 			<TMPL_IF NAME=SRC_FOUND>
 				<p><div style="border-bottom: 2px solid <TMPL_VAR NAME=SRC_COLOR_HEX>; display: inline;">
 					<b>From</b>: <TMPL_VAR NAME=TXT_SRC>
@@ -229,6 +226,7 @@
 			<TMPL_IF NAME=TXT_ERROR>
 				<b><TMPL_VAR NAME=TXT_ERROR></b>
 			</TMPL_IF>
+
 			<!-- end status text -->
 
 			<!-- if this is blank, don't screw up

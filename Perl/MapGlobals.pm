@@ -54,6 +54,10 @@ our $THUMB_FILE = 'thumbnail.gd2';
 our $FONT_WIDTH = 7;
 our $FONT_HEIGHT = 13;
 
+# maximum number of characters of a location's name to display in the
+# drop-down menu
+our $MAX_NAME_LEN = 30;
+
 # colors!
 # these are triplets of values between 0 and 255 (inclusive)
 # color associated with 'from' location
@@ -94,6 +98,11 @@ our $POINT_FILE		= 'binPointData.dat';
 our $LOCATION_FILE	= 'binLocationData.dat';
 our $EDGE_FILE		= 'binEdgeData.dat';
 
+# where cache files (which store the coordinates of shortest paths) go
+our $CACHE_DIR		= 'cache';
+# how long cache files hang around for, in seconds
+our $CACHE_EXPIRY	= 600;
+
 # where static images (such as the button graphics) are stored
 our $STATIC_IMG_DIR	= '../../ucsdmap';
 ##our $STATIC_IMG_DIR	= '../images';
@@ -104,7 +113,7 @@ our $DYNAMIC_IMG_DIR	= '../../ucsdmap/dynamic';
 # deletion
 our $DYNAMIC_IMG_SUFFIX	= '.png';
 # maximum age, in seconds, of dynamically generated images
-our $DYNAMIC_MAX_AGE	= 5*60;
+our $DYNAMIC_MAX_AGE	= 300;
 
 
 # we also have some basic utility functions in here, that any part
@@ -122,6 +131,13 @@ our $DYNAMIC_MAX_AGE	= 5*60;
 sub getGd2Filename{
 	my ($scale) = (@_);
 	return $_BASE_GD2_IMAGE . '-' . $scale . '.gd2';
+}
+
+###################################################################
+###################################################################
+sub getCacheName{
+	my($from, $to) = (@_);
+	return $CACHE_DIR . '/' . min($from, $to) . '-' . max($from, $to) . '.cache';
 }
 
 ###################################################################

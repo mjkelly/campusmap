@@ -26,8 +26,6 @@ use LoadData;
 use MapGraphics;
 use ShortestPath;
 
-use GD::Polyline;
-
 my $q = CGI::new();
 
 # window sizes
@@ -54,14 +52,16 @@ my $tmpfile = new File::Temp(
 	);
 chmod(0644, $tmpfile->filename);
 
-# load all the data we'll need
-my $points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
-my $locations	= LoadData::loadLocations($MapGlobals::LOCATION_FILE);
-my $edges	= LoadData::loadEdges($MapGlobals::EDGE_FILE);
+
 
 # source and destination location names
 my $fromTxt = $q->param('from') || '';
 my $toTxt   = $q->param('to')   || '';
+
+my($points, $locations, $edgeFH, $edgeSize);
+
+# we always need all the locations, so load them off disk
+$locations	= LoadData::loadLocations($MapGlobals::LOCATION_FILE);
 
 # HTML-safe versions of the from and to text
 my $fromTxtSafe = CGI::escapeHTML($fromTxt);
@@ -130,7 +130,7 @@ else{
 		}
 		else{
 			# I've done all I can. He's dead, Jim.
-			$ERROR .= "<b>Destination location &quot;$toTxtSafe&quot; not found.</b>\n"
+			$ERROR .= "<p>Destination location &quot;$toTxtSafe&quot; not found.</p>\n"
 				if($toTxt ne '');
 			$dst_found = FALSE;
 		}
@@ -154,7 +154,7 @@ else{
 			$fromTxtLookup = LoadData::nameLookup($fromTxt);
 		}
 		else{
-			$ERROR .= "<b>Start location &quot;$fromTxtSafe&quot; not found.</b>\n"
+			$ERROR .= "<p>Start location &quot;$fromTxtSafe&quot; not found.</p>\n"
 				if($fromTxt ne '');
 			$src_found = FALSE;
 		}
@@ -167,14 +167,21 @@ else{
 
 # build a list of printable location names
 my @locParam;
+my($name, $trunc);
+my($loc_opt_from, $loc_opt_to);
 foreach (sort keys %$locations){
 	# add each unique name
 	if( substr($_, 0, 5) eq 'name:' ){
-		push(@locParam, {
-			NAME => CGI::escapeHTML($locations->{$_}{'Name'}),
-			SELECTED_TO => ($toTxt eq $locations->{$_}{'Name'}),
-			SELECTED_FROM => ($fromTxt eq $locations->{$_}{'Name'}),
-		});
+
+		# truncate the name if it's too long
+		$trunc = $name = $locations->{$_}{'Name'};
+		if(length($name) > $MapGlobals::MAX_NAME_LEN){
+			$trunc = substr($name, 0, $MapGlobals::MAX_NAME_LEN) . '...';
+		}
+
+		#XXX: clean up
+		$loc_opt_from .= '<option value="' . CGI::escapeHTML($name) . ($fromTxt eq $locations->{$_}{'Name'} ? 'selected="selected"' : '') . '">' . CGI::escapeHTML($trunc) . "</option>\n";
+		$loc_opt_to .= '<option value="' . CGI::escapeHTML($name) . ($toTxt eq $locations->{$_}{'Name'} ? 'selected="selected"' : '') . '">' . CGI::escapeHTML($trunc) . "</option>\n";
 	}
 }
 
@@ -202,14 +209,32 @@ else{
 }
 
 # do the shortest path stuff
-my $dist;
+my $dist = 0;
 my $rect;
 my $pathPoints;
 if($path){
-	ShortestPath::find($startID, $points);
 
-	($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $edges,
-		$points->{$startID}, $points->{$endID});
+	# first, check if there's a cache file for the path we want
+	my $cachefile = MapGlobals::getCacheName($from, $to);
+	if( -e $cachefile ){
+		# yay! we have a cache file. life is good. :)
+		($dist, $rect, $pathPoints) = LoadData::loadCache($cachefile);
+	}
+	else{
+		# nothing cached, load everything from disk :(
+		$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
+		($edgeFH, $edgeSize) = LoadData::initEdgeFile($MapGlobals::EDGE_FILE);
+
+		ShortestPath::find($startID, $points);
+
+		($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $edgeFH, $edgeSize,
+			$points->{$startID}, $points->{$endID});
+		LoadData::writeCache($cachefile, $dist, $rect, $pathPoints);
+
+		# if we created a cache file, we're responsible for clearing
+		# out any old ones too
+		LoadData::cacheReaper();
+	}
 	
 	if(defined($dist)){
 		$dist /= $MapGlobals::PIXELS_PER_UNIT;
@@ -230,6 +255,7 @@ if($path){
 		my $h = $rect->{'ymax'} - $rect->{'ymin'};
 
 		# find the first level that encompasses the entire rectangle
+		$scale = -1; # we set a bogus scale so we can test for it later
 		for my $i (0..$#SCALES){
 			if($w < $width/$SCALES[$i] && $h < $height/$SCALES[$i]){
 				# we know it's big enough. now, make sure
@@ -264,6 +290,15 @@ if($path){
 				$scale = $i;
 				last;
 			}
+		}
+
+		# if $scale is still a bogus value, we couldn't find ANY zoom level
+		# to accomodate the two locations! fall back to centering on the destination,
+		# and zooming in a bit
+		if($scale == -1){
+			$scale = $MapGlobals::SINGLE_LOC_SCALE;
+			$xoff = $locations->{$to}{'x'};
+			$yoff = $locations->{$to}{'y'};
 		}
 	}
 }
@@ -324,6 +359,7 @@ $yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SC
 # account at the right time, so it doesn't offset scaled views.
 my $rawxoff = int($xoff*$SCALES[$scale] - $width/2);
 my $rawyoff = int($yoff*$SCALES[$scale] - $height/2);
+
 
 my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
 	$rawxoff, $rawyoff, $width, $height)
@@ -435,6 +471,11 @@ binmode($tmpthumb);
 print $tmpthumb $thumb->png();
 close($tmpthumb);
 
+# while we're at it, close the edge file that was opened with initEdgeFile
+if( defined($edgeFH) ){
+	close($edgeFH);
+}
+
 # states for the directions
 my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm);
 my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm);
@@ -472,17 +513,17 @@ my $tmpl = HTML::Template->new(
 $tmpl->param( SELF => $self ); # whoooooooooo are you?
 
 # a bunch of CVS tags
-$tmpl->param( CVS_ID => '$Id$');
+#$tmpl->param( CVS_ID => '$Id$');
 $tmpl->param( CVS_REVISION => '$Revision$');
-$tmpl->param( CVS_DATE => '$Date$');
-$tmpl->param( CVS_AUTHOR => '$Author$');
+#$tmpl->param( CVS_DATE => '$Date$');
+#$tmpl->param( CVS_AUTHOR => '$Author$');
 
 # URLS and pathnames to various important things
 # (Note: IMG_* tags are only used by the old template.)
-$tmpl->param( IMG_UP => "$STATIC_IMG_DIR/up.png" );
-$tmpl->param( IMG_DOWN => "$STATIC_IMG_DIR/down.png" );
-$tmpl->param( IMG_LEFT => "$STATIC_IMG_DIR/left.png" );
-$tmpl->param( IMG_RIGHT => "$STATIC_IMG_DIR/right.png" );
+#$tmpl->param( IMG_UP => "$STATIC_IMG_DIR/up.png" );
+#$tmpl->param( IMG_DOWN => "$STATIC_IMG_DIR/down.png" );
+#$tmpl->param( IMG_LEFT => "$STATIC_IMG_DIR/left.png" );
+#$tmpl->param( IMG_RIGHT => "$STATIC_IMG_DIR/right.png" );
 
 $tmpl->param( IMG_VIEW => $tmpfile->filename );
 $tmpl->param( IMG_THUMB => $tmpthumb->filename );
@@ -494,15 +535,17 @@ $tmpl->param( SIZE => $size );
 $tmpl->param( MPM => $mpm );
 $tmpl->param( XOFF => $xoff );
 $tmpl->param( YOFF => $yoff );
-$tmpl->param( VIEW_WIDTH => $width );
-$tmpl->param( VIEW_HEIGHT => $height );
+#$tmpl->param( VIEW_WIDTH => $width );
+#$tmpl->param( VIEW_HEIGHT => $height );
 $tmpl->param( THUMB_WIDTH => $MapGlobals::THUMB_X );
 $tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
 
 $tmpl->param( ZOOM_WIDGET =>
 	listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size));
 
-$tmpl->param( LOCATIONS => \@locParam );
+#$tmpl->param( LOCATIONS => \@locParam );
+$tmpl->param( LOCATION_OPT_FROM => $loc_opt_from);
+$tmpl->param( LOCATION_OPT_TO =>  $loc_opt_to);
 
 # the strings representing the state of various buttons
 $tmpl->param( UP_URL => 
@@ -513,10 +556,10 @@ $tmpl->param( LEFT_URL =>
 	"$self?" . state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm));
 $tmpl->param( RIGHT_URL => 
 	"$self?" . state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm));
-$tmpl->param( SMALLER_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm));
-$tmpl->param( BIGGER_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size, $mpm));
+#$tmpl->param( SMALLER_URL => 
+#	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm));
+#$tmpl->param( BIGGER_URL => 
+#	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size, $mpm));
 
 $tmpl->param( ZOOM_OUT_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, $yoff,
 	($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size, $mpm));
@@ -539,9 +582,9 @@ $tmpl->param( TIME => sprintf("%.02f", $dist*$mpm) );
 # a bunch of boolean values, for whatever strange logic we may need inside the template
 $tmpl->param( SRC_FOUND => $src_found );
 $tmpl->param( DST_FOUND => $dst_found );
-$tmpl->param( SRC_OR_DST_FOUND => ($src_found || $dst_found) );
-$tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
-$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
+#$tmpl->param( SRC_OR_DST_FOUND => ($src_found || $dst_found) );
+#$tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
+#$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
 
 # hex triplets representing the colors for the source and destination locations
 $tmpl->param( SRC_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::SRC_COLOR));

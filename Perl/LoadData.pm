@@ -13,9 +13,12 @@ use strict;
 use warnings;
 use Text::Levenshtein qw(fastdistance);
 use MapGlobals;
+use Heap::Elem::GraphPoint;
+use Fcntl qw(:seek);
 
 use constant {
 	INT => 4,	# the size of an integer, in bytes
+	BYTE => 1,	# the size of a byte, in bytes ;)
 	DEBUG => 0,	# whether to print lots of debugging info when reading
 };
 
@@ -43,30 +46,31 @@ sub loadPoints{
 
 	open(INPUT, '<', $filename) or die "Cannot open $filename for reading: $!\n";
 
+	# hash we build up for each new point
 	# loop while we can read an ID from disk (terminate on EOF)
 	while( defined(my $ID = readInt(*INPUT)) ){
 		print STDERR "Read point ID $ID\n" if DEBUG;
 
-		# create a sub-hash in %points to store this point object
-		$points->{$ID} = {};
+		# this is where we put all the values we read off disk
+		my %newpt = ();
 
 		# set its 'ID' attribute
-		# XXX: take this out later?
-		$points->{$ID}{'ID'} = $ID;
+		# XXX: take this out later? wasteful?
+		$newpt{'ID'} = $ID;
 
 		# just in case we want coords without having to cycle through
 		# connections
-		$points->{$ID}{'x'} = readInt(*INPUT);
-		$points->{$ID}{'y'} = readInt(*INPUT);
+		$newpt{'x'} = readInt(*INPUT);
+		$newpt{'y'} = readInt(*INPUT);
 
 		# get the number of connections
 		my $conns = readInt(*INPUT);
 		print STDERR "$conns connections.\n" if DEBUG;
 
 		# make 'Connections' an array in the current point object
-		$points->{$ID}{'Connections'} = {};
+		$newpt{'Connections'} = {};
 
-		$points->{$ID}{'ConnectionsArray'} = [];
+		$newpt{'ConnectionsArray'} = [];
 
 		# loop as many times as there are connections
 		
@@ -92,11 +96,11 @@ sub loadPoints{
 			# (collisions mean there are two paths between two given points, and
 			# we'll NEVER, in our shortest-path algorithms, want to take the
 			# longer one. we only keep it for completeness.)
-			if( !exists($points->{$ID}{'Connections'}{$connID})
-				|| $points->{$ID}{'Connections'}{$connID}{'Weight'} > $weight)
+			if( !exists($newpt{'Connections'}{$connID})
+				|| $newpt{'Connections'}{$connID}{'Weight'} > $weight)
 			{
-				$points->{$ID}{'Connections'}{$connID} = {
-					# XXX: take this out later?
+				$newpt{'Connections'}{$connID} = {
+					# XXX: take this out later? wasteful?
 					ConnectionID => $connID,
 					Weight => $weight,
 					EdgeID => $edgeID,
@@ -105,22 +109,27 @@ sub loadPoints{
 
 			# then, we add a reference to this connection to an
 			# array of connections
-			push( @{$points->{$ID}{'ConnectionsArray'}},
-				$points->{$ID}{'Connections'}{$connID});
+			push( @{$newpt{'ConnectionsArray'}},
+				$newpt{'Connections'}{$connID});
 		}
 
 		# read the location ID
-		$points->{$ID}{'LocationID'} = readInt(*INPUT);
+		$newpt{'LocationID'} = readInt(*INPUT);
 		# and any binary flags
-		$points->{$ID}{'PassThrough'} = readByte(*INPUT);
+		$newpt{'PassThrough'} = readByte(*INPUT);
 
 		# now we initialize fields for shortest-path calculations
-		$points->{$ID}{'Known'} = FALSE;
-		$points->{$ID}{'Distance'} = INFINITY;
-		$points->{$ID}{'From'} = undef;
+		$newpt{'Known'} = FALSE;
+		$newpt{'Distance'} = INFINITY;
+		$newpt{'From'} = undef;
 
-		print STDERR "Location ID: $points->{$ID}{'LocationID'}\n" if DEBUG;
+		print STDERR "Location ID: $newpt{'LocationID'}\n" if DEBUG;
 		print STDERR "---end---\n" if DEBUG;
+
+		# finally, we stick all of this into our $points hashref
+		#$points->{$ID} = \%newpt;
+		$points->{$ID} = Heap::Elem::GraphPoint->new(%newpt);
+		
 	}
 
 	close(INPUT);
@@ -195,6 +204,8 @@ sub loadLocations{
 
 ###################################################################
 # Read Edges from a binary disk file.
+# XXX: DEPRECATED. Use initEdgeFile() and loadEdge() instead.
+#
 # Args:
 #	- the name of the file to load from
 # Returns:
@@ -261,19 +272,23 @@ sub loadEdges{
 #	- the read data, as an int, or undef if the read() failed
 ###################################################################
 sub readInt{
-	if(!@_){
-		warn "readInt() requires an argument!\n";
-		return;
-	}
-
-	my $fh = shift(@_);
 	my $buf;
-
-	if(! read($fh, $buf, INT) ){
+	if(! read(shift, $buf, INT) ){
 		return undef;
 	}
+	return unpack("N", $buf);
+}
 
-	return asInt($buf);
+###################################################################
+# write the given integer ito the given filehandle as a network-order
+# (big-endian) long.
+# Args:
+#	- the filehandle to write to
+#	- the integer to write
+###################################################################
+sub writeInt{
+	my($fh, $i) = @_;
+	print $fh pack("N", $i);
 }
 
 ###################################################################
@@ -284,15 +299,8 @@ sub readInt{
 #	- the read byte, or undef if the read() failed
 ###################################################################
 sub readByte{
-	if(!@_){
-		warn "readByte() requires an argument!\n";
-		return;
-	}
-
-	my $fh = shift(@_);
 	my $buf;
-
-	if(! read($fh, $buf, 1) ){
+	if(! read(shift(), $buf, BYTE) ){
 		return undef;
 	}
 	# since it's only one byte, we don't have to worry about network byte order
@@ -300,20 +308,76 @@ sub readByte{
 }
 
 ###################################################################
-# unpack a native-format int, given
-# Args: 
-#	- a scalar holding the data to decode
-# Returns:
-#	- the unpacked data, as a Perl int
+# Load an edge of a given ID from the edge file. Objects are of 
+# constant length, so it's a simple matter of seeking to the
+# correct spot in the file.
+#
+# Args:
+#	- the filehandle to the edge file
+#	- the size of each edge object on disk
+#	- the ID of the edge file to load
 ###################################################################
-sub asInt{
-	if(!@_){
-		warn "asInt() requires an argument!\n";
-		return;
+sub loadEdge{
+	my($fh, $size, $id) = @_;
+
+	my $offset = INT + ($size*($id-1));
+	print STDERR "Loading Edge ID $id. Edge size is $size. Seeking to: $offset\n" if DEBUG;
+	seek($fh, $offset, SEEK_SET);
+	
+	# initialize a new hash to hold this Edge
+	my $edge = {};
+	my $ID = readInt($fh);
+	$edge->{'ID'} = $ID;
+	print STDERR "----\n" if DEBUG;
+	print STDERR "Edge ID: $ID\n" if DEBUG;
+
+	# the IDs of the GraphPoints at the start and end of this Edge
+	$edge->{'StartPoint'} = readInt($fh);
+	$edge->{'EndPoint'} = readInt($fh);
+	print STDERR "StartPoint ID: $edge->{'StartPoint'}\n" if DEBUG;
+	print STDERR "EndPoint ID: $edge->{'EndPoint'}\n" if DEBUG;
+
+	my $numPoints = readInt($fh);
+	print STDERR "Number of points: $numPoints\n" if DEBUG;
+
+	# initialize this Edge's path to an empty array
+	$edge->{'Path'} = ();
+	for my $i (1..$numPoints){
+		# read in (x,y) coordinates
+		my $x = readInt($fh);
+		my $y = readInt($fh);
+
+		print STDERR "Path Point: ($x, $y)\n" if DEBUG;
+
+		# add those coordinates to this Edge's path
+		push(@{$edge->{'Path'}}, {
+			x => $x,
+			y => $y,
+		});
 	}
-	return unpack("N", shift(@_));
+	print STDERR "---end---\n" if DEBUG;
+
+	return $edge;
 }
 
+###################################################################
+# open a file handle to the edges file, and return the size
+# of each edge object (which is constant for all edges).
+# Args:
+#	- filename of the edge file
+# Returns:
+#	- filehandle to the opened file
+#	- the (constant) size of each edge object in the file
+###################################################################
+sub initEdgeFile{
+	my($filename) = @_;
+	my $fh;
+
+	open($fh, '<', $filename) or die "Cannot open edge file $filename: $!\n";
+	my $size = readInt($fh);
+
+	return($fh, $size);
+}
 
 ###################################################################
 # Read a Java character array (not a String object) from the 
@@ -344,6 +408,113 @@ sub readJavaString{
 
 	# now unpack the string, using the length and data we read before
 	return unpack("n/a*", $len . $buf);
+}
+
+###################################################################
+###################################################################
+sub writeCache{
+	my ($file, $dist, $rect, $pathPoints) = @_;
+
+	# dist is 0 if it's undefined
+	$dist ||= 0;
+
+	print STDERR "WRITING TO CACHE...\n" if DEBUG;
+	open(CACHE, '>', $file) or die "Cannot open cache file $file for writing: $!\n";
+	# the distance of the path
+	print STDERR "distance: $dist\n" if DEBUG;
+	writeInt( *CACHE, $dist );
+
+	# the corners of the bounding rectangle around the path
+	print STDERR "bounding rectangle: ($rect->{'xmin'}, $rect->{'ymin'}) - ($rect->{'xmax'}, $rect->{'ymax'})\n" if DEBUG;
+	writeInt( *CACHE, $rect->{'xmin'} );
+	writeInt( *CACHE, $rect->{'ymin'} );
+	writeInt( *CACHE, $rect->{'xmax'} );
+	writeInt( *CACHE, $rect->{'ymax'} );
+
+	# the number of point pairs in the file
+	print STDERR "number of points: " . scalar(@$pathPoints) . "\n" if DEBUG;
+	writeInt( *CACHE, scalar(@$pathPoints) );
+
+	# the actual path coordinates
+	foreach my $subpath (@$pathPoints){
+		# how long the subpath is
+		print "SUBPATH: " . scalar(@$subpath) . "\n" if DEBUG;
+		writeInt( *CACHE, scalar(@$subpath) );
+
+		# each coordinate in the subpath
+		foreach (@$subpath){
+			print STDERR "           ($_->{'x'}, $_->{'y'})\n" if DEBUG;
+			writeInt( *CACHE, $_->{'x'} );
+			writeInt( *CACHE, $_->{'y'} );
+		}
+	}
+	close(CACHE);
+}
+
+###################################################################
+###################################################################
+sub loadCache{
+	my ($file) = @_;
+
+	print STDERR "LOADING FROM CACHE...\n" if DEBUG;
+	open(CACHE, '<', $file) or die "Cannot open cache file $file for reading: $!\n";
+	# the distance of the path
+	my $dist = readInt(*CACHE);
+	# undef is converted to 0 in writeCache(), so we need to
+	# convert it back
+	if($dist == 0){
+		$dist = undef;
+	}
+
+	# the corners of the bounding rectangle around the path
+	my %rect = ();
+	$rect{'xmin'} = readInt(*CACHE);
+	$rect{'ymin'} = readInt(*CACHE);
+	$rect{'xmax'} = readInt(*CACHE);
+	$rect{'ymax'} = readInt(*CACHE);
+	print STDERR "bounding rectangle: ($rect{'xmin'}, $rect{'ymin'}) - ($rect{'xmax'}, $rect{'ymax'})\n" if DEBUG;
+
+	# the number of point pairs in the file
+	my $numPoints = readInt(*CACHE);
+	print STDERR "number of points: $numPoints\n" if DEBUG;
+
+	my @points;
+	my ($x, $y);
+	my $sublength = 0;
+	for(1..$numPoints){
+		my $subpoints = [];
+		# read in the length of the subpath
+		$sublength = readInt(*CACHE);
+		# read in each ordered pair in this subpath
+		for(1..$sublength){
+			$x = readInt(*CACHE);
+			$y = readInt(*CACHE);
+			print STDERR "\t($x, $y)\n" if DEBUG;
+			push(@$subpoints, { x => $x, y => $y });
+		}
+
+		push(@points, $subpoints);
+	}
+
+	close(CACHE);
+	return($dist, \%rect, \@points);
+}
+
+###################################################################
+# don't fear the reaper...
+###################################################################
+sub cacheReaper{
+	my $now = time();
+	opendir(DIR, $MapGlobals::CACHE_DIR) or die "Cannot open directory $MapGlobals::CACHE_DIR\n";
+	while( defined(my $file = readdir(DIR)) ){
+		# 8 is atime, 9 is mtime, 10 is ctime
+		my $time = (stat( "$MapGlobals::CACHE_DIR/$file"))[8];
+		# delete files if they're too old
+		if( $now - $time > $MapGlobals::CACHE_EXPIRY ){
+			unlink("$MapGlobals::CACHE_DIR/$file");
+		}
+	}
+	closedir(DIR);
 }
 
 ###################################################################
@@ -430,7 +601,7 @@ sub findName{
 			if( substr($_, 0, 5) eq 'name:' ){
 				$loc = substr($_, 5);
 				$dist = fastdistance($name, $loc);
-				print "$name --> $loc = $dist\n";
+				##print "$name --> $loc = $dist\n";
 				# keep track of the shortest Levenshtein distance we find
 				if(!defined($min) || $dist < $min){
 					$min = $dist;
@@ -441,7 +612,7 @@ sub findName{
 		# if the shortest distance is an acceptable match,
 		# use it
 		if( $min <= length($name)/2 ){
-			print "Min dist: $min ($minLoc)\n";
+			##print "Min dist: $min ($minLoc)\n";
 			$match = $minLoc;
 		}
 	}

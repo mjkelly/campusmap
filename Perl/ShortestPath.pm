@@ -14,6 +14,8 @@ use warnings;
 
 use MapGlobals qw(TRUE FALSE INFINITY min max);
 use MapGraphics;
+use Heap::Elem::GraphPoint;
+use Heap::Fibonacci;
 
 use GD;
 
@@ -33,25 +35,18 @@ sub find{
 	# translate the starting ID into an actual graph point
 	$s = $points->{$startID};
 
-	my @minCache = createMinCache($points);
+	my $fibheap = makeMinHeap($points);
 
 	$s->{'Distance'} = 0;
 
 	while(1){
-		# find the index of the smallest unknown vertex
-		$smallestIndex = smallestUnknown(\@minCache);
-
-		if( !defined($smallestIndex) ){
+		# get the smallest unknown vertex.
+		# we end when we run out of elements in the tree.
+		if( !defined( $v = $fibheap->extract_top() ) ){
 			last;
 		}
-
-		# assign $v to the smallest unknown vertex, and set known = true
-		$v = $minCache[$smallestIndex];
+		# $v is now a known vertex
 		$v->{'Known'} = TRUE;
-
-		# indicate in @minCache that the element at $smallestIndex is no longer
-		# unknown by removing it from the array
-		splice(@minCache, $smallestIndex, 1);
 
 		# loop over all points adjacent to $v
 		for $connID ( keys %{$v->{'Connections'}} ){
@@ -75,6 +70,9 @@ sub find{
 
 						# indicate where we got this path
 						$w->{'From'} = $v;
+
+						# we changed the value, so the tree must be notified
+						$fibheap->decrease_key($w);
 					}
 				}
 				else{
@@ -88,9 +86,11 @@ sub find{
 
 						# indicate where we got this path
 						$w->{'From'} = $v;
+
+						# we changed the value, so the tree must be notified
+						$fibheap->decrease_key($w);
 					}
 				}
-
 			}
 
 		}
@@ -98,35 +98,14 @@ sub find{
 	}
 }
 
-# given a cache of unknown vertices, find the smallest one
-# TODO: add check for "not-a-through-street" flag on locations, 
-# don't visit them, UNLESS they are the start node.
-# XXX: proper desc. and function header
-sub smallestUnknown{
-	my($minCache) = (@_);
-	my $minDist = INFINITY;
-	my $minIndex = undef;
-
-	# loop through every item in the passed-in points arrayref
-	for (my $i = 0; $i < @$minCache; $i++){
-		# if the item at this index has a smaller distance than the stored
-		# smallest distance, update the smallest distance
-		if($minCache->[$i]{'Distance'} < $minDist){
-			$minDist = $minCache->[$i]{'Distance'};
-			$minIndex = $i;
-		}
-	}
-
-	# return the smallest distance
-	return $minIndex;
-}
-
-# create an initial hash of minimum distances
-# XXX: proper desc. and function header
-sub createMinCache{
+# create a new heap (a Fibonacci tree) containing all the GraphPoints
+sub makeMinHeap{
 	my($points) = (@_);
-
-	return (values %$points);
+	my $fib = Heap::Fibonacci->new();
+	foreach ( values %$points ){
+		$fib->add($_);
+	}
+	return $fib;
 }
 
 # given a data structure populated by shortestPath(), find the shortest
@@ -182,7 +161,7 @@ sub drawTo{
 # collect the coords of all points along a path and remember the maximum and minimum values
 # XXX: proper desc. and function header
 sub pathPoints{
-	my($points, $edges, $source, $target) = (@_);
+	my($points, $edgeFH, $edgeSize, $source, $target) = (@_);
 
 	my $dist = 0;
 	my @pathPoints;
@@ -207,7 +186,8 @@ sub pathPoints{
 		my $subPath = [];
 
 		$conn = $target->{'Connections'}{$target->{'From'}{'ID'}};
-		my $thisEdge = $edges->{$conn->{'EdgeID'}};
+		#my $thisEdge = $edges->{$conn->{'EdgeID'}};
+		my $thisEdge = LoadData::loadEdge( $edgeFH, $edgeSize, $conn->{'EdgeID'} );
 		$dist += $conn->{'Weight'};
 
 		# keep following the trail back to its source

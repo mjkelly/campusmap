@@ -55,8 +55,8 @@ chmod(0644, $tmpfile->filename);
 
 
 # source and destination location names
-my $fromTxt = $q->param('from') || '';
-my $toTxt   = $q->param('to')   || '';
+my $fromTxt = $q->param('from') || 'Center Hall';
+my $toTxt   = $q->param('to')   || 'Applied Physics and Mathematics Building (AP&M)';
 
 my($points, $locations, $edgeFH, $edgeSize);
 
@@ -537,8 +537,8 @@ $tmpl->param( XOFF => $xoff );
 $tmpl->param( YOFF => $yoff );
 #$tmpl->param( VIEW_WIDTH => $width );
 #$tmpl->param( VIEW_HEIGHT => $height );
-$tmpl->param( THUMB_WIDTH => $MapGlobals::THUMB_X );
-$tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
+#$tmpl->param( THUMB_WIDTH => $MapGlobals::THUMB_X );
+#$tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
 
 $tmpl->param( ZOOM_WIDGET =>
 	listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size));
@@ -587,10 +587,11 @@ $tmpl->param( DST_FOUND => $dst_found );
 #$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
 
 # hex triplets representing the colors for the source and destination locations
-$tmpl->param( SRC_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::SRC_COLOR));
-$tmpl->param( DST_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::DST_COLOR));
-$tmpl->param( PATH_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::PATH_COLOR));
-$tmpl->param( BG_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::LOC_BG_COLOR));
+#$tmpl->param( SRC_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::SRC_COLOR));
+#$tmpl->param( DST_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::DST_COLOR));
+#$tmpl->param( PATH_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::PATH_COLOR));
+#$tmpl->param( BG_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::LOC_BG_COLOR));
+$tmpl->param( CSS_FILE => $MapGlobals::CSS_FILE );
 
 print "Content-type: text/html\n\n" . $tmpl->output();
 

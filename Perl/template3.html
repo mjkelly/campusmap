@@ -105,6 +105,17 @@
 		width: <TMPL_VAR NAME=THUMB_WIDTH>px;
 		height: <TMPL_VAR NAME=THUMB_HEIGHT>px;
 	}
+
+	#fromTxt{
+		border-bottom: 2px solid <TMPL_VAR NAME=SRC_COLOR_HEX>;
+		line-height: 18px;
+		display: inline;
+	}
+	#toTxt{
+		border-bottom: 2px solid <TMPL_VAR NAME=DST_COLOR_HEX>;
+		line-height: 18px;
+		display: inline;
+	}
 </style>
 
 </head>
@@ -192,12 +203,12 @@
 			<!-- status text -->
 
 			<TMPL_IF NAME=SRC_FOUND>
-				<p><div style="border-bottom: 2px solid <TMPL_VAR NAME=SRC_COLOR_HEX>; display: inline;">
+				<p><div id="fromTxt">
 					<b>From</b>: <TMPL_VAR NAME=TXT_SRC>
 				</div></p>
 			</TMPL_IF>
 			<TMPL_IF NAME=DST_FOUND>
-				<p><div style="border-bottom: 2px solid <TMPL_VAR NAME=DST_COLOR_HEX>; display: inline;">
+				<p><div id="toTxt">
 					<b>To</b>: <TMPL_VAR NAME=TXT_DST>
 				</div></p>
 			</TMPL_IF>

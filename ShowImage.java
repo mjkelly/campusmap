@@ -117,7 +117,7 @@ public class ShowImage extends JFrame{
 
         // Create the main window: a scroll pane with the new image panel
         JScrollPane scroll = new JScrollPane(ipanel);
-        scroll.setPreferredSize(new Dimension(600, 500));
+        scroll.setPreferredSize(new Dimension(1000, 600));
         scroll.setWheelScrollingEnabled(false);
         
         // a button to remove focus from the text field, so
@@ -681,10 +681,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
         {
             manualPlaceDialog();
         }
-        // F11: Refresh statusBar
+        // F11: Location editor!
         else if(c == KeyEvent.VK_F11)
         {
-            statusBarText();
+            locationEditor();
         }
         // F12: Create new path
         else if(c == KeyEvent.VK_F12)
@@ -985,6 +985,206 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		}
     }
     
+	/**
+	 * This method launches a dialog box hereby known as the locationEditor
+	 * This all powerful God of an editor allows for the editing of data in the
+	 * location vector.  
+	 */
+	public void locationEditor()
+	{
+		// The number of items (i.e. text boxes, submit buttons etc, 
+		// to be displayed per location
+		final int ITEMS_PER_LOC = 2;
+		
+		// The overall dialog box, this contains everything need...
+		final JDialog dialog = new JDialog(parent, "Location Editor");
+		
+		final String SUBMIT_NAME = "Submit";
+		
+		// Set layout of the dialog box
+		dialog.getContentPane().setLayout( new FlowLayout() );
+
+		// JPannel to contain the scroll
+		JPanel panel = new JPanel();
+		
+		// To list all of the locations in rows (with submit buttons)
+		panel.setLayout( new GridLayout(locations.size()*ITEMS_PER_LOC, 1) );
+		
+		// General purpose index variable, reset after loops
+		int index = 0;
+		
+		// Create an array for sorted locations, slam in all of the locations
+		// in the locations vector
+		Location [] sortedLocs = new Location[locations.size()];
+		for (Location loc : locations) {
+			sortedLocs[index] = loc;
+			index++;
+		}
+		// sort the array
+		Arrays.sort(sortedLocs, new Comparator<Location>(){
+			public int compare(Location o1, Location o2)
+			{  return(o1.name.compareTo(o2.name));  }
+		});
+		// reset counter
+		index = 0;
+		
+		// Create an array of JTextAreas to contain the location names in
+		// Create an array of submit buttons
+		JTextArea [] locationNames = new JTextArea[locations.size()];
+		JButton [] submitButtons = new JButton[locations.size()];
+		
+		//Listeners for stuff...
+		ActionListener updateListener = 
+			new updateButtonListener(sortedLocs, locationNames, submitButtons);
+		KeyListener nameFieldListener = 
+			new textFieldListener(locationNames, sortedLocs);
+		
+		for (Location loc : sortedLocs) {
+			// Create text area: 
+			// name = location's name, height = 1, columns = 70
+			locationNames[index] = new JTextArea(loc.name, 1, 60);
+			locationNames[index].addKeyListener(nameFieldListener);
+			
+			// add button with defined name
+			submitButtons[index] = new JButton(SUBMIT_NAME);
+			submitButtons[index].addActionListener(updateListener);
+			submitButtons[index].setSize(
+					new Dimension(20,10));
+			// add to panel
+			panel.add(locationNames[index]);
+			panel.add(submitButtons[index]);
+			index++;
+		}
+		// reset counter
+		index = 0;
+		
+		// create a new scroll over the panel
+		JScrollPane scroll = new JScrollPane(panel);
+		// set size of scroll
+		scroll.setPreferredSize(new Dimension(780,650));
+		// Force the scroll bars
+		scroll.setVerticalScrollBarPolicy(
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scroll.setHorizontalScrollBarPolicy(
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		JButton close = new JButton("close");
+		dialog.add(scroll);
+		dialog.add(close);
+		dialog.setSize(800,700);
+		dialog.setVisible(true);
+		
+		close.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				dialog.dispose();
+				dialog.setVisible(false);
+			}
+		});
+	}
+	
+	/**
+	 * KeyListener class for the textField...turns the backgrounds 
+	 * red if they are edited.
+	 */
+	class textFieldListener implements KeyListener
+	{
+		JTextArea [] locNameBoxes;
+		Location [] sortedLocs;
+		/**
+		 * Constructor, allows for the passing in of needed arrays
+		 * @param locationNames Array of JTextArea boxes that hold location 
+		 * names
+		 * @param sortedLocs Array of sorted Location pointers
+		 */
+		public textFieldListener(JTextArea [] locationNames, 
+				Location[] sortedLocs)
+		{
+			this.locNameBoxes = locationNames;
+			this.sortedLocs = sortedLocs;
+		}
+
+		/**
+		 * @param e The event that triggered the call to this method
+		 */
+		public void keyReleased(KeyEvent e)
+		{
+			for (int i = 0; i < sortedLocs.length; i++)
+				// Find the index of the textBox that triggered the event
+				if(e.getSource() == locNameBoxes[i])
+				{
+					// If the name in the box isn't the same as the text in the
+					// storage array
+					if(!locNameBoxes[i].getText().equals(sortedLocs[i].name))
+						// color the background of the box red.  
+						locNameBoxes[i].setBackground(Color.RED);
+					else
+						locNameBoxes[i].setBackground(Color.WHITE);
+				}
+		}
+		/**
+		 * Stub
+		 * @param e null
+		 */
+		public void keyPressed (KeyEvent e)
+		{ }
+		/**
+		 * Stub
+		 * @param e null
+		 */
+		public void keyTyped (KeyEvent e)
+		{ }
+	}
+
+
+	/**
+	 * This class implements actionlistener for the Location editor's submit
+	 * button.  
+	 * @author David Lindquist
+	 */
+	class updateButtonListener implements ActionListener
+	{
+		Location [] locObjects;
+		JTextArea [] locNameBoxes;
+		JButton [] submitButtons; 
+		/**
+		 * Constructor for the updateButtonListener, passes in needed fields
+		 * @param locObjects Array of location pointers, in sorted order
+		 * @param locNameBoxes Array of location name JTextAreas (to
+		 * get user input from)
+		 * @param submitButtons
+		 */
+		public updateButtonListener(Location [] locObjects, 
+				JTextArea [] locNameBoxes, JButton [] submitButtons)
+		{
+			this.locObjects = locObjects;
+			this.locNameBoxes = locNameBoxes;
+			this.submitButtons = submitButtons;
+		}
+		/**
+		 * This method is called when an action occurs in a button/pane
+		 * that has the class listener applied to it.<br>
+		 * 
+		 * @param e the ActionEvent that triggered the method.
+		 */
+		public void actionPerformed(ActionEvent e)
+		{
+			for (int index = 0; index < submitButtons.length; index++) {
+				if(e.getSource() == submitButtons[index])
+				{
+					// If there is no change in the names, just return
+					if(locNameBoxes[index].getText().equals(
+							locObjects[index].name))
+						return;
+					System.err.print("Changed location \"" + 
+							locObjects[index].name + "\" to: ");
+					locObjects[index].name = locNameBoxes[index].getText();
+					System.err.println(locObjects[index].name);
+					locNameBoxes[index].setBackground(Color.GREEN);
+				}
+			}
+		}
+	}
+	
     /**
      * This method deletes the current link.
      */
@@ -1414,7 +1614,6 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 // the new X and Y coordinates, wherever they may be
                 // (they might even be the current coords)
                 int newX, newY;
-                Point newPoint;  // The point to be added.
                 
                 // try to set the X value to what the user entered.
                 try
@@ -2061,3 +2260,4 @@ class Location implements Serializable
         return(name + " @ (" + cord.x + ", " + cord.y + ")");
     }
 }
+

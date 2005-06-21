@@ -1342,7 +1342,6 @@ class PathPoint
 	 */
 	public boolean isGraphPoint()
 	{
-		//TODO: remove print statements
 		if(numConnectedPoints() > 2){
 			if(PathOptimize.debugPPtoGP)
 				System.err.println("#con pts > 2 ==> isGraphPoint = true");

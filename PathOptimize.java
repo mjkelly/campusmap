@@ -22,6 +22,31 @@ import java.util.*;
  */
 public class PathOptimize
 {
+	/**
+	 * General debug flag...will set all flags to false if set to false
+	 */
+	public static boolean debugOn = false;
+	/**
+	 * Debug flag for debugging intersection()
+	 */
+	public static boolean intersectDebug = false;
+	/**
+	 * Debug flag for the binary writing of binary GraphPoint data
+	 */
+	public static boolean debugBinaryGraphPoints = false;
+	/**
+	 * Debug flag for the binary writing of binary Edge data
+	 */
+	public static boolean debugBinaryEdges = false;
+	/**
+	 * Debug flag for the binary writing of location data
+	 */
+	public static boolean debugBinaryLocations = false;
+	/**
+	 * Debug flag for the conversion of PathPoints to GraphPoints
+	 */
+	public static boolean debugPPtoGP = false;
+	
 	// These fields only hold data from readData
     private Vector <Vector<Point>>readPaths; // Vector of paths
     private Vector <Location>readLocations;  // Vector of locations 
@@ -101,29 +126,39 @@ public class PathOptimize
     	 * contains a Vector which contains points
     	 * Takes the points from readLocations and readPoints.  
     	 */
+		System.err.print("\tConverting Points to PathPoints.....");
     	pathOp.convertPointsToPathPoints();
     	/*
     	 * Data is now all stored in the pathPoints vector
     	 */
-    	
-    	
+    	System.err.println("done.");
+
+		System.err.print("\tCollapsing duplicate PathPoints.....");
     	//Collapse all duplications of PathPoints.  
     	pathOp.condensePathPoints();
+		System.err.println("done.");
     	
+		System.err.print("\tHandeling intersection of paths.....");
     	/* 
     	 * Create new pathPoints at intersections and redirect "links" of 
     	 * the points that caused the intersections to the intersection
     	 * point
     	 */
     	pathOp.intersections();
-    	
-    	/*
-    	 * 
-    	 */
-    	pathOp.convertPathPointsToGraphPoints();
+    	System.err.println("done.");
+		
+		System.err.print("\tConverting PathPoints to Graph Points.....");
+		pathOp.convertPathPointsToGraphPoints();
+		System.err.println("done.");
+		System.err.print("\tConverting GraphPoints down to plain points" +
+				" and writing path and location objects.....");
     	pathOp.convertGraphPointsToPoints();
     	pathOp.writePoints(outPathFile, outLocFile);
+		System.err.println("done.");
+		System.err.print("\tWriting out to binary files.....");
     	pathOp.binaryWrite(binaryPoints, binaryLocations, binaryEdges);
+		System.err.println("done.");
+		System.err.println("====== Path Optimize complete! ======");
     	return(true);
     }
     
@@ -139,6 +174,15 @@ public class PathOptimize
     	outPaths      = new Vector <Vector<Point>> ();
     	outLocations  = new Vector <Location>      ();
 		outEdges      = new Vector <Edge>          ();
+		
+		if(!debugOn)
+		{
+			// Assign all debug flags to false
+			debugBinaryEdges = false;
+			debugBinaryGraphPoints = false;
+			debugBinaryLocations = false;
+			debugPPtoGP = false;
+		}
     }
     
 	/**
@@ -277,8 +321,9 @@ public class PathOptimize
     		// Handle locations
     		if(thisGP.locLabel != null)
     		{
-	    		System.err.println("Adding location: " + thisGP.locLabel.cord +
-	    				", " + thisGP.locLabel.name);
+				if(debugPPtoGP)
+		    		System.err.println("Adding location: " + 
+							thisGP.locLabel.cord + ", " + thisGP.locLabel.name);
 	    		outLocations.add( thisGP.locLabel );
     		}
     	}
@@ -352,6 +397,9 @@ public class PathOptimize
 	public void binaryWrite(String pointFileName, String locFileName,
     		String edgeFileName)
 	{
+		if(debugBinaryEdges || debugBinaryLocations || debugBinaryGraphPoints)
+			System.err.println("\n======  START OF BINARY FILE OUTPUT  " +
+					"======\n");
 		
 		File pointOutputFile = new File(pointFileName);
         File locOutputFile = new File(locFileName);
@@ -359,10 +407,12 @@ public class PathOptimize
         
         // output point data
         try{
-            DataOutputStream pointOut= new DataOutputStream(
-                    new FileOutputStream(pointOutputFile));
+            DataOutputStream pointOut = new DataOutputStream(
+					new BufferedOutputStream(
+							new FileOutputStream(pointOutputFile)));
             
-            System.err.println("===== GraphPoints =====");
+			if(debugBinaryGraphPoints)
+				System.err.println("===== GraphPoints =====");
             // for each GraphPoint
             for(int i = 0; i < graphPoints.size(); i++)
             {
@@ -371,6 +421,8 @@ public class PathOptimize
             
             //close stream
             pointOut.close();
+			if(debugBinaryGraphPoints)
+				System.err.println("==== END of GraphPoints ====");
         }
 	    catch(IOException e){
 	    	System.err.println("Error in writing \"" + pointFileName + "\"!\n"
@@ -381,9 +433,11 @@ public class PathOptimize
 	    // output location data
         try{
             DataOutputStream locOut= new DataOutputStream(
-                    new FileOutputStream(locOutputFile));
+					new BufferedOutputStream(
+							new FileOutputStream(locOutputFile)));
             
-            System.err.println("===== Locations =====");
+			if(debugBinaryLocations)
+				System.err.println("===== Locations =====");
             // for each Location
             for(int i = 0; i < graphPoints.size(); i++)
             {
@@ -392,6 +446,8 @@ public class PathOptimize
             }
             //close stream
             locOut.close();
+			if(debugBinaryLocations)
+				System.err.println("==== END of Locations =====");
         }
 	    catch(IOException e){
 	    	System.err.println("Error in writing \"" + locFileName + "\"!\n"
@@ -401,11 +457,13 @@ public class PathOptimize
 	    
 	    // output edge data
         try{
-            DataOutputStream edgeOut= new DataOutputStream(
-                    new FileOutputStream(edgeOutputFile));
-            
-            System.err.println("===== Edges =====");
+			if(debugBinaryEdges)
+				System.err.println("===== Edges =====");
 			
+            DataOutputStream edgeOut= new DataOutputStream(
+					new BufferedOutputStream(
+							new FileOutputStream(edgeOutputFile)));
+            
 			int maxEdgeSize = 0;
 			
 			// Get the maximum number of points in the set of edgegs...
@@ -424,12 +482,16 @@ public class PathOptimize
             }
             //close stream
             edgeOut.close();
+			if(debugBinaryEdges)
+				System.err.println("==== END of Edges ====");
         }
 	    catch(IOException e){
 	    	System.err.println("Error in writing \"" + edgeFileName + "\"!\n"
 	    			+ e + ": " + e.getMessage());
 	    	return;
 	    }
+		if(debugBinaryEdges || debugBinaryLocations || debugBinaryGraphPoints)
+			System.err.println("\n======  END OF BINARY FILE OUTPUT  ======");
     }
 	
     /**
@@ -607,8 +669,6 @@ AP1:    		for(int activeIndex2 = 0;
                     
 					activeSlope = getSlope(ap1, ap2);
 		    		
-
-		    		
 					// For all points that are connected to that test point 1 
 					// PathPoint
 					for(int testIndex2 = 0; 
@@ -635,19 +695,23 @@ AP1:    		for(int activeIndex2 = 0;
 			    		if(!rectangleTest(ap1, ap2, tp1, tp2))
 			    			continue;
 			    		
-						//System.err.print(
-						//		"ap1: (" + ap1.point.x + ", " + ap1.point.y + ") ");
+						// Debug printing of the active and test points
+						if(intersectDebug)
+						{
+							System.err.print("ap1: (" + ap1.point.x + ", " + 
+									ap1.point.y + ") ");
 						
-						//System.err.println(
-						//		";  ap2: (" + ap2.point.x + ", " + ap2.point.y + ") ");
-						
-						//System.err.print(
-						//		"tp1: (" + tp1.point.x + ", " + tp1.point.y + ") ");
-						
-						//System.err.println(
-						//		";  tp2: (" + tp2.point.x + ", " + tp2.point.y + ") ");
-						
-						//System.err.println("Active slope: " + activeSlope);
+							System.err.println(";  ap2: (" + ap2.point.x + 
+									", " + ap2.point.y + ") ");
+							
+							System.err.print("tp1: (" + tp1.point.x + ", " + 
+									tp1.point.y + ") ");
+							
+							System.err.println(";  tp2: (" + tp2.point.x + 
+									", " + tp2.point.y + ") ");
+							
+							System.err.println("Active slope: " + activeSlope);
+						}
 			    		
 						testSlope = getSlope(tp1, tp2);
 
@@ -696,15 +760,19 @@ AP1:    		for(int activeIndex2 = 0;
 										tp2.point.y, intersectYActive);
 							intersectX = tp1.point.x;
 						}
-//						System.err.println("iA: " + intersectYActive + "\n" +
-//								"iT: " + intersectYTest);
-						if((Math.abs(intersectYActive-intersectYTest) < 0.00001)
-								|| intersect)
+						// Debug print of the active and intersect slopes
+						if(intersectDebug)
+							System.err.println("iA: " + intersectYActive + "\n" 
+									+ "iT: " + intersectYTest);
+						if((intersect
+						|| Math.abs(intersectYActive-intersectYTest) < 0.00001))
 						{
-//							System.err.println("Points are equal!");
-//							System.err.println("(" + intersectX + ", " 
-//									+ intersectYTest + ")");
-							
+							// Debug printing if the points inersect
+							if(intersectDebug){
+								System.err.println("Points are equal!");
+								System.err.println("(" + intersectX + ", " 
+										+ intersectYTest + ")");
+							}
 							// (this is actually supposed to be "P-sub-i", not
                             // the Greek letter Pi.)
 							// create a PathPoint in the location of the
@@ -714,8 +782,9 @@ AP1:    		for(int activeIndex2 = 0;
 							                (int)intersectYTest),
 							        new Vector<PathPoint>(2), null );
 							
-//							System.err.println(
-//									"pi: (" + pi.point.x + ", " + pi.point.y + ") ");
+							if(intersectDebug)
+								System.err.println("pi: (" + pi.point.x + ", " 
+										+ pi.point.y + ") ");
 							
 							// ensure that the potential point is actually on
 							// both lines
@@ -730,13 +799,15 @@ AP1:    		for(int activeIndex2 = 0;
 								// and integrate the new point with its neighbors
 								if(!pi.equals(ap1) && !pi.equals(ap2))
 									twoWayIntersectReplace(ap1, ap2, pi);
-
-//								System.err.println("pi, 1: " + pi);
+								
+								if(intersectDebug)
+									System.err.println("pi, 1: " + pi);
 								
 								if(!pi.equals(tp1) && !pi.equals(tp2))
 									twoWayIntersectReplace(tp1, tp2, pi);
 								
-//								System.err.println("pi, 2: " + pi);
+								if(intersectDebug)
+									System.err.println("pi, 2: " + pi);
 
 							}
 							else
@@ -747,16 +818,14 @@ AP1:    		for(int activeIndex2 = 0;
 								twoWayIntersectReplace(tp1, tp2, pi);
 							}
 
-
-							
-							
-//							System.err.println("pi, after: " + pi);
-//							
-//							System.err.println("ap1, after: " + ap1);
-//							System.err.println("ap2, after: " + ap2);
-//							System.err.println("tp1, after: " + tp1);
-//							System.err.println("tp2, after: " + tp2);
-							
+							if(intersectDebug){
+								System.err.println("pi, after: " + pi);
+								
+								System.err.println("ap1, after: " + ap1);
+								System.err.println("ap2, after: " + ap2);
+								System.err.println("tp1, after: " + tp1);
+								System.err.println("tp2, after: " + tp2);
+							}
 							// since we've found an intercept, abort this
 							// entire test line, and move on to the next 
 							// 'active point 2'
@@ -768,8 +837,8 @@ AP1:    		for(int activeIndex2 = 0;
 
 			}
     	}
-        
-        System.err.println("End intersections().");
+		if(intersectDebug)
+			System.err.println("End intersections().");
     }
     
 	/**
@@ -791,7 +860,9 @@ AP1:    		for(int activeIndex2 = 0;
 			if(pi.point.equals(
 					getPointAtPathPointsIndex(overlapIndex)))
 			{
-				System.err.println("Identical PathPoint found for intersections");
+				if(intersectDebug)
+					System.err.println("Identical PathPoint found " +
+							"for intersections");
 				return(overlapIndex);
 			}
 		}
@@ -807,10 +878,13 @@ AP1:    		for(int activeIndex2 = 0;
 	 */
     public boolean checkRange(double val1, double val2, double testVal)
     {
-//    	System.err.println("CHECKRANGE:");
+		if(intersectDebug)
+			System.err.println("CHECKRANGE:");
     	double min = Math.min(val1, val2);
     	double max = Math.max(val1, val2);
-//    	System.err.println("Min: " + min + " Max: " + max + "test: " + testVal);
+		if(intersectDebug)
+    		System.err.println("Min: " + min + " Max: " + max 
+					+ "test: " + testVal);
     	if(testVal < min)
     		return(false);
     	if(testVal > max)
@@ -997,7 +1071,9 @@ AP1:    		for(int activeIndex2 = 0;
     			// and the new GraphPoint
     			gp = new GraphPoint(getPathPoint(ppIndex));
     			graphPoints.add(gp);
-    			//System.err.println("Making " + gp.locLabel.name + " a GraphPoint.");
+				if(debugPPtoGP)
+					System.err.println("Making " + getPathPoint(ppIndex) + 
+							" a GraphPoint.");
     		}
     	}
     	
@@ -1011,7 +1087,9 @@ AP1:    		for(int activeIndex2 = 0;
     		// This gets a significant PathPoint
     		graphPP = getPathPoint(ppIndex);
     		
-    		System.err.println("Signficant PathPoint " + graphPP.toString());
+			if(debugPPtoGP)
+				System.err.println("Signficant PathPoint " 
+						+ graphPP.toString());
     		
     		// For all connections of significant PathPoints
     		for(conIndex = 0; conIndex < graphPP.numConnectedPoints();
@@ -1033,7 +1111,9 @@ AP1:    		for(int activeIndex2 = 0;
     			// add the connection of the significant pathPoint (a PathPoint)
     			// to the path Vector.  
     			tempEdge.path.add(curPP.point);
-    			System.err.println("Adding point: " + curPP);
+				
+				if(debugPPtoGP)
+					System.err.println("Adding point: " + curPP);
 
     			// Increment weight
     			tempEdge.weight += graphPP.getWeight(curPP);
@@ -1048,15 +1128,16 @@ AP1:    		for(int activeIndex2 = 0;
 				while( (curPP = curPP.pathPointTraversal(whereFrom)) != null )
 				{
 					tempEdge.path.add(curPP.point);
-	    			System.err.println("Adding point: " + curPP);
-	    			
+
+					if(debugPPtoGP)
+						System.err.println("Adding point: " + curPP);
 					tempEdge.weight += prevPP.getWeight(curPP);
-					
 					whereFrom = prevPP;
 					prevPP = curPP;
 				}
 				
-				//System.err.println("Setting end");
+				if(debugPPtoGP)
+					System.err.println("Setting end");
 				tempEdge.endpt2 = prevPP.getGraphPoint();
 				
 				// check if the end point of the Edge we just created already
@@ -1068,12 +1149,14 @@ AP1:    		for(int activeIndex2 = 0;
 				}
 				else
 				{
-					System.err.println("Working with an end that needs" +
-							" to be discarded, (isn't a graphPoint)");
+					if(debugPPtoGP)
+						System.err.println("Working with an end that needs" +
+								" to be discarded, (isn't a graphPoint)");
 					tempEdge.discard();
 					continue;
 				}
-				System.err.println("Edge Index = " + edgeIndex);
+				if(debugPPtoGP)
+					System.err.println("Edge Index = " + edgeIndex);
 				if(edgeIndex != -1)
 				{
 					// if it does, we just attach to the existing edge, and
@@ -1083,12 +1166,17 @@ AP1:    		for(int activeIndex2 = 0;
 					
 					// this decrements the Edge class' static ID count
 					tempEdge.discard();
-					System.err.println("  --Discarding edge--");
+					if(debugPPtoGP)
+						System.err.println("  --Discarding edge--");
 				}
 				else{
-					System.err.println("  --Added edge--");
-					System.err.println("tempEdge's ID:" + tempEdge.ID);
-					System.err.println(" To graph: " + graphPP.getGraphPoint().ID);
+					if(debugPPtoGP){
+						System.err.println("  --Added edge--");
+						System.err.println("tempEdge's ID:" + tempEdge.ID);
+						System.err.println(" To graph: " 
+								+ graphPP.getGraphPoint().ID);
+					}
+					
 					// take significant pathPoint, get its corresponding
 					// graph point.  Use that point to add the new edge created
 					// to the graph point's edge vector.  
@@ -1102,10 +1190,9 @@ AP1:    		for(int activeIndex2 = 0;
     		}
     		
     	}
-    	for(int graphPI = 0; graphPI < graphPoints.size(); graphPI++)
-    	{
-    		 System.err.println(((GraphPoint)graphPoints.get(graphPI)).toString());
-    	}
+		if(debugPPtoGP)
+	    	for(int graphPI = 0; graphPI < graphPoints.size(); graphPI++)
+	    		 System.err.println(((GraphPoint)graphPoints.get(graphPI)));
     }
     
     
@@ -1257,17 +1344,20 @@ class PathPoint
 	{
 		//TODO: remove print statements
 		if(numConnectedPoints() > 2){
-			System.err.println("#con pts > 2 ==> true");
+			if(PathOptimize.debugPPtoGP)
+				System.err.println("#con pts > 2 ==> isGraphPoint = true");
 			return(true);
 		}
 		// Null guard to prevent exceptions
 		
 		// TODO: Deletion of unnecessary locations is here...
 		if(location != null && numConnectedPoints() > 0){
-			System.err.println("Location ==> true");
+			if(PathOptimize.debugPPtoGP)
+				System.err.println("Location ==> isGraphPoint = true");
 			return(true);
 		}
-		System.err.println("Returning false");
+		if(PathOptimize.debugPPtoGP)
+			System.err.println("isGraphPoint returns false");
 		return(false);
 	}
 	
@@ -1385,13 +1475,15 @@ class GraphPoint
 			// Reset the boolean values
 			forward = true;
 			reverse = true;
-			System.err.println("If condition: " + getEdge(i).endpt2.point +
-					" == " + gp.point);
+			if(PathOptimize.debugPPtoGP)
+				System.err.println("Outgoing Edge: " + getEdge(i).endpt2.point +
+						" == " + gp.point);
 			if(getEdge(i).endpt2 == gp){
 				outEdge = (Edge)getEdge(i);
-			
-				System.err.println("Size condition: " + outEdge.path.size()
-						+ " == " + incoming.path.size());
+				
+				if(PathOptimize.debugPPtoGP)
+					System.err.println("Size condition: " + outEdge.path.size()
+							+ " == " + incoming.path.size());
 				if( outEdge.path.size() != incoming.path.size() )
 					continue;
 				
@@ -1401,15 +1493,15 @@ class GraphPoint
 				for(int ptIndex = 0; ptIndex < outEdge.path.size();
 					ptIndex++)
 				{
-					System.err.println("Comparing: " + 
-							outEdge.path.get(outEdge.path.size() - ptIndex -1 ) 
-							+ " and "
-							+ incoming.path.get(ptIndex));
+					if(PathOptimize.debugPPtoGP)
+						System.err.println("Comparing: " + 
+								outEdge.path.get(
+										(outEdge.path.size() - ptIndex -1 ) ) 
+								+ " and " + incoming.path.get(ptIndex));
 					if(!outEdge.path.get(
 							outEdge.path.size() - ptIndex -1 ).equals(
 							incoming.path.get(ptIndex)))
 						reverse = false;
-
 				}
 
 				// Go through forward order
@@ -1419,7 +1511,6 @@ class GraphPoint
 					if(!outEdge.path.get(ptIndex).equals(
 							incoming.path.get(ptIndex)))
 						forward = false;
-
 				}
 				// If one of the ways that you compared
 				// the two edges turned to be true
@@ -1444,40 +1535,47 @@ class GraphPoint
 	{
     	// output ID of GraphPoint
 		try{
-//			System.err.println("ID: " + ID + "      (" + point.x + ", "
-//					+ point.y + ")");
+			if(PathOptimize.debugBinaryGraphPoints)
+				System.err.println("ID: " + ID + "      (" + point.x + ", "
+						+ point.y + ")");
 			out.writeInt(ID);
             out.writeInt(point.x);
             out.writeInt(point.y);
 	    	// output number of connections/weights/edges
-//			System.err.println("Connections/weights/edges: " + edges.size());
+			if(PathOptimize.debugBinaryGraphPoints)
+				System.err.println("Connections/weights/edges: " +edges.size());
 			out.writeInt(edges.size());
 			
 			// for each Edge connected to this GraphPoint
             
 			for(int i = 0; i < edges.size(); i++)
 			{
-//	    		System.err.println("--Start connection--");
+				if(PathOptimize.debugBinaryGraphPoints)
+					System.err.println("--Start connection--");
 	    		// print ID of each connection
 				//if(edges.get(i).endpt1 == this){
                 if(((Edge)edges.get(i)).endpt1 == this){
-					System.err.println("Connection ID (endpt2): " +
-							edges.get(i).endpt2.ID);
+					if(PathOptimize.debugBinaryGraphPoints)
+						System.err.println("Connection ID (endpt2): " +
+								edges.get(i).endpt2.ID);
 					out.writeInt( edges.get(i).endpt2.ID );
 				}
 				else{
-					System.err.println("Connection ID (endpt1): " +
-							edges.get(i).endpt1.ID);
+					if(PathOptimize.debugBinaryGraphPoints)
+						System.err.println("Connection ID (endpt1): " +
+								edges.get(i).endpt1.ID);
 					out.writeInt( edges.get(i).endpt1.ID );
 				}
 				
 				// print value of each weight
 	    		out.writeInt( (int)edges.get(i).weight );
-//	    		System.err.println("Weight: " + edges.get(i).weight );
-				
+				if(PathOptimize.debugBinaryGraphPoints)
+		    		System.err.println("Weight: " + edges.get(i).weight );
+					
 	    		// print ID of each edge
 	    		out.writeInt( edges.get(i).ID );
-//	    		System.err.println("Edge ID: " + edges.get(i).ID);
+				if(PathOptimize.debugBinaryGraphPoints)
+					System.err.println("Edge ID: " + edges.get(i).ID);
 	    		
 			}
             
@@ -1485,22 +1583,27 @@ class GraphPoint
 			// write the ID of the associated location, if there is one;
 			// if there isn't, use 0 (all IDs are > 0)
 			if(locLabel != null){
-				System.err.println("Location ID: " + locLabel.ID);
+				if(PathOptimize.debugBinaryGraphPoints)
+					System.err.println("Location ID: " + locLabel.ID);
 				out.writeInt(locLabel.ID);
-//                System.err.println("PassThrough: "
-//                        + locLabel.isCanPassThrough());
+				if(PathOptimize.debugBinaryGraphPoints)
+					System.err.println("PassThrough: "
+							+ locLabel.isCanPassThrough());
                 out.writeByte( locLabel.isCanPassThrough() ? 1 : 0 );
 			}
 			else
 			{
                 out.writeInt(0);
-//				System.err.println("Location ID: 0");
+				if(PathOptimize.debugBinaryGraphPoints)
+					System.err.println("Location ID: 0");
                 // GraphPoints without locations are always PassThrough
-//                System.err.println("PassThrough: true");
+				if(PathOptimize.debugBinaryGraphPoints)
+					System.err.println("PassThrough: true");
 				out.writeByte(1);
 			}
 			
-//			System.err.println("---end---");
+			if(PathOptimize.debugBinaryGraphPoints)
+				System.err.println("---end---");
 		}
 		catch(IOException e)
 		{
@@ -1522,33 +1625,40 @@ class GraphPoint
 	
 		try{
 			// output ID of Location
-//			System.err.println("Location ID: " + locLabel.ID);
+			if(PathOptimize.debugBinaryLocations)
+				System.err.println("Location ID: " + locLabel.ID);
 			out.writeInt(locLabel.ID);
 	        
             // output (x,y) coordinates of Location
-//			System.err.println("Location coords: (" + locLabel.cord.x +
-//					", " + locLabel.cord.y + ")");
+			if(PathOptimize.debugBinaryLocations)
+				System.err.println("Location coords: (" + locLabel.cord.x +
+						", " + locLabel.cord.y + ")");
 			out.writeInt(locLabel.cord.x);
 			out.writeInt(locLabel.cord.y);
             
             // write out boolean flags as single bytes
-//            System.err.println("DisplayName:" + locLabel.isDisplayName());
+			if(PathOptimize.debugBinaryLocations)
+				System.err.println("DisplayName:" + locLabel.isDisplayName());
             out.writeByte(locLabel.isDisplayName() ? 1 : 0);
 	        
             // output ID of associated GraphPoint
-//			System.err.println("Associated GraphPoint: " + ID);
+			if(PathOptimize.debugBinaryLocations)
+				System.err.println("Associated GraphPoint: " + ID);
 			out.writeInt(ID);
 	        
             // output length of display name
-//			System.err.println("Display name length: "
-//					+ locLabel.name.length());
+			if(PathOptimize.debugBinaryLocations)
+				System.err.println("Display name length: "
+					+ locLabel.name.length());
 			out.writeInt(locLabel.name.length());
 			
             // output display name
-//			System.err.println("Display name: " + locLabel.name);
+			if(PathOptimize.debugBinaryLocations)
+				System.err.println("Display name: " + locLabel.name);
 			out.writeChars(locLabel.name);
 			
-//			System.err.println("---end---");
+			if(PathOptimize.debugBinaryLocations)
+				System.err.println("---end---");
 		}
 	    catch(IOException e){
 	    	System.err.println("Error in GraphPoint.binaryWriteLocation!");
@@ -1669,26 +1779,32 @@ class Edge
 	{
 		try{
 			//print ID of edge
-			System.err.println("Edge ID: " + ID);
+			if(PathOptimize.debugBinaryEdges)
+				System.err.println("Edge ID: " + ID);
 			out.writeInt(ID);
 			
 	    	// print ID of starting GraphPoint
-			System.err.println("Start GraphPoint ID: " + endpt1.ID);
+			if(PathOptimize.debugBinaryEdges)
+				System.err.println("Start GraphPoint ID: " + endpt1.ID);
 			out.writeInt(endpt1.ID);
 			
 	    	// print ID of ending GraphPoint
-			System.err.println("End GraphPoint ID: " + endpt2.ID);
+			if(PathOptimize.debugBinaryEdges)
+				System.err.println("End GraphPoint ID: " + endpt2.ID);
 			out.writeInt(endpt2.ID);
 			
 	    	// print number of points
-			System.err.println("Number of points: " + path.size());
+			if(PathOptimize.debugBinaryEdges)
+				System.err.println("Number of points: " + path.size());
 			out.writeInt(path.size());
 
 			// print ordered pairs
 			for(int i = 0; i < path.size(); i++)
 			{
-				System.err.println("Coordinate: (" + ((Point)path.get(i)).x
-						+ ", " + ((Point)path.get(i)).y + ")");
+				if(PathOptimize.debugBinaryEdges)
+					System.err.println("Coordinate: (" + ((Point)path.get(i)).x
+							+ ", " + ((Point)path.get(i)).y + ")");
+				
 				out.writeInt(((Point)path.get(i)).x);
 				out.writeInt(((Point)path.get(i)).y);
 			}
@@ -1699,11 +1815,12 @@ class Edge
 				out.writeInt(0);
 				out.writeInt(0);
 			}
-			System.err.println("---end---");
+			if(PathOptimize.debugBinaryEdges)
+				System.err.println("---end---");
 		}
 		catch(IOException e)
 		{
-			System.err.println("Error in Edge.binaryWrite!");
+			System.err.println("Error in Edge.binaryWrite()!");
 		}
 	}
 }

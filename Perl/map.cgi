@@ -52,16 +52,15 @@ my $tmpfile = new File::Temp(
 	);
 chmod(0644, $tmpfile->filename);
 
-
-
 # source and destination location names
-my $fromTxt = $q->param('from') || 'Center Hall';
-my $toTxt   = $q->param('to')   || 'Applied Physics and Mathematics Building (AP&M)';
-
-my($points, $locations, $edgeFH, $edgeSize);
+my $fromTxt = $q->param('from') || '';
+my $toTxt   = $q->param('to')   || '';
 
 # we always need all the locations, so load them off disk
-$locations	= LoadData::loadLocations($MapGlobals::LOCATION_FILE);
+my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
+
+# these may or may not be loaded later on
+my($points, $edgeFH, $edgeSize);
 
 # HTML-safe versions of the from and to text
 my $fromTxtSafe = CGI::escapeHTML($fromTxt);

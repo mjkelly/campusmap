@@ -800,7 +800,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         
         try{
             textOutput =  new FileOutputStream(locationsTextFile);
-            outStream = new PrintStream( textOutput );
+            outStream = new PrintStream( new BufferedOutputStream(textOutput));
             
             outStream.println(locTextHeader);
             
@@ -913,7 +913,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
         try{
             // Open stream
             ObjectOutputStream pathout = new ObjectOutputStream(
-                    new FileOutputStream(pathOutputFile));
+					new BufferedOutputStream(
+							new FileOutputStream(pathOutputFile)));
 
 			pathout.writeInt(PATH_VERSION_NUMBER);
 			
@@ -939,7 +940,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
         try{
             //Open stream
             ObjectOutputStream locout = new ObjectOutputStream(
-                    new FileOutputStream(locationOutputFile));
+					new BufferedOutputStream(
+							new FileOutputStream(locationOutputFile)));
             
 			// Write out the locations version number
 			locout.writeInt(LOCATION_VERSION_NUMBER);

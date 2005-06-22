@@ -159,6 +159,10 @@ public class PathOptimize
     	pathOp.binaryWrite(binaryPoints, binaryLocations, binaryEdges);
 		System.err.println("done.");
 		System.err.println("====== Path Optimize complete! ======");
+		System.err.println("Wrote out:");
+		System.err.println(pathOp.graphPoints.size() + " GraphPoints");
+		System.err.println(pathOp.outEdges.size() + " Edges");
+		System.err.println(pathOp.outLocations.size() + " Locations");
     	return(true);
     }
     

@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Wed Jun 15 23:54:16 PDT 2005
+# Wed Jun 22 13:31:31 PDT 2005
 # -----------------------------------------------------------------
 
 package LoadData;
@@ -55,7 +55,6 @@ sub loadPoints{
 		my %newpt = ();
 
 		# set its 'ID' attribute
-		# XXX: take this out later? wasteful?
 		$newpt{'ID'} = $ID;
 
 		# just in case we want coords without having to cycle through
@@ -100,7 +99,6 @@ sub loadPoints{
 				|| $newpt{'Connections'}{$connID}{'Weight'} > $weight)
 			{
 				$newpt{'Connections'}{$connID} = {
-					# XXX: take this out later? wasteful?
 					ConnectionID => $connID,
 					Weight => $weight,
 					EdgeID => $edgeID,
@@ -127,7 +125,6 @@ sub loadPoints{
 		print STDERR "---end---\n" if DEBUG;
 
 		# finally, we stick all of this into our $points hashref
-		#$points->{$ID} = \%newpt;
 		$points->{$ID} = Heap::Elem::GraphPoint->new(%newpt);
 		
 	}
@@ -167,7 +164,6 @@ sub loadLocations{
 		$locations->{$ID} = {};
 
 		# set this location's ID
-		# XXX: take this out later?
 		$locations->{$ID}{'ID'} = $ID;
 
 		# get (x,y) coordinates
@@ -200,68 +196,6 @@ sub loadLocations{
 	close(INPUT);
 
 	return $locations;
-}
-
-###################################################################
-# Read Edges from a binary disk file.
-# XXX: DEPRECATED. Use initEdgeFile() and loadEdge() instead.
-#
-# Args:
-#	- the name of the file to load from
-# Returns:
-#	- a hashref containing all the data read
-#	  (see LoadData.pl for an example of traversing this data structure)
-###################################################################
-sub loadEdges{
-	my($filename) = @_;
-
-	my $buf;
-
-	# a hashref containing all the read Edges, indexed by ID, to return
-	my $edges = {};
-
-	open(INPUT, '<', $filename) or die "Cannot open $filename for reading: $!\n";
-
-	# read until EOF
-	while( defined(my $ID = readInt(*INPUT)) ){
-		# initialize a new hash to hold this Edge
-		$edges->{$ID} = {};
-
-		# initialize
-		# XXX: take this out later?
-		$edges->{$ID}{'ID'} = $ID;
-		print STDERR "----\n" if DEBUG;
-		print STDERR "Edge ID: $ID\n" if DEBUG;
-
-		# the IDs of the GraphPoints at the start and end of this Edge
-		$edges->{$ID}{'StartPoint'} = readInt(*INPUT);
-		$edges->{$ID}{'EndPoint'} = readInt(*INPUT);
-		print STDERR "StartPoint ID: $edges->{$ID}{'StartPoint'}\n" if DEBUG;
-		print STDERR "EndPoint ID: $edges->{$ID}{'EndPoint'}\n" if DEBUG;
-
-		my $numPoints = readInt(*INPUT);
-
-		# initialize this Edge's path to an empty array
-		$edges->{$ID}{'Path'} = ();
-		for my $i (1..$numPoints){
-			# read in (x,y) coordinates
-			my $x = readInt(*INPUT);
-			my $y = readInt(*INPUT);
-
-			print STDERR "Path Point: ($x, $y)\n" if DEBUG;
-
-			# add those coordinates to this Edge's path
-			push(@{$edges->{$ID}{'Path'}}, {
-				x => $x,
-				y => $y,
-			});
-		}
-		print STDERR "---end---\n" if DEBUG;
-	}
-
-	close(INPUT);
-
-	return $edges;
 }
 
 ###################################################################
@@ -411,6 +345,20 @@ sub readJavaString{
 }
 
 ###################################################################
+# Write a set of points representing the shortest path between two locations to
+# a cache file, for quick retrieval (without running Dijkstra's algorithm)
+# later.
+# TODO: add detailed description of file format.
+#
+# Args:
+#	- the filename to write to
+#	- the distance between the two points, in pixels
+#	- the viewing rectangle: that is, the minimum and maximum x and y
+#	  coordinates of the points making up the path (yes, we could calculate
+#	  these, but it's only 16 bytes)
+#	- an arrayref containing arrayrefs of points (which are hashes with 'x'
+#	  and 'y' keys). Each sub-arrayref represents an Edge object.
+# Returns: n/a
 ###################################################################
 sub writeCache{
 	my ($file, $dist, $rect, $pathPoints) = @_;
@@ -452,6 +400,12 @@ sub writeCache{
 }
 
 ###################################################################
+# Load a given file as a cache of the points on the shortest path between two
+# locations. The file is in a binary format described by writeCache().
+# Args:
+#	- the name of the cache file to load
+# Returns:
+#	- the same as ShortestPath::pathPoints().
 ###################################################################
 sub loadCache{
 	my ($file) = @_;
@@ -501,9 +455,13 @@ sub loadCache{
 }
 
 ###################################################################
-# don't fear the reaper...
+# Clear the patch cache of old files. The cache directory and
+# the expiry time of cache files are defined in MapGlobals.pm.
+# Args: n/a
+# Returns: n/a
 ###################################################################
 sub cacheReaper{
+	# Don't fear the reaper...
 	my $now = time();
 	opendir(DIR, $MapGlobals::CACHE_DIR) or die "Cannot open directory $MapGlobals::CACHE_DIR\n";
 	while( defined(my $file = readdir(DIR)) ){
@@ -558,8 +516,15 @@ sub nameLookup{
 #	- a search string
 #	- a hashref of locations to search
 # Returns:
-#	(- the ID of the best-matching location, or -1 if there is none)
-#	- array of IDs of best matches?
+#	- an array containing the best matches: each element in the array is a
+#	  hashref containing the keys 'id' (the ID of the location) and
+#	  'matches' (a floating-point number representing the relative goodness
+#	  of a match). The array is sorted by the 'matches' field. i.e., 
+#	  (
+#		{ id => 6, matches => 0.25 },
+#		{ id => 42, matches => 0.20 },
+#		{ id => 17, matches => 0.15 }
+#	  )
 ###################################################################
 sub findName{
 	my ($search_str, $locations) = @_;
@@ -595,6 +560,8 @@ SEARCH:				foreach my $s_tok (@search_toks){
 
 						$matches += $strength;
 						$l_matched++;
+						# we found a perfect match for this token.
+						# move on to the next token.
 						next LOC;
 					}
 					# substring search
@@ -640,9 +607,16 @@ SEARCH:				foreach my $s_tok (@search_toks){
 
 			# if we had any matches, keep track of this result
 			if($matches && $l_matched){
+				# we heavily weight in favor of multiple word matches,
+				# but lightly weight against longer matches.
+				# In other words, if you search for "foo bar",
+				# the following strings should match in the
+				# following order:
+				# 1. "foo bar"
+				# 2. "foo bar baz"
+				# 3. "foo baz"
+				# All of this is subject to change, of course. ;)
 				$matches = $matches**2 / ($loc_len);
-				#$matches = $matches**2;
-				# only add the remotely decent matches
 				if($matches >= 0.05){
 					push(@top_matches, { matches => $matches, id => $_});
 				}
@@ -680,8 +654,15 @@ SEARCH:				foreach my $s_tok (@search_toks){
 	}
 }
 
-# tokenize a given string: return an array containing the normalized version of
-# each word of the string
+###################################################################
+# Tokenize a given string: return an array containing the normalized version of
+# each word of the string. Extremely common or otherwise insignificant words
+# are removed.
+# Args:
+#	- the string to tokenize
+# Returns:
+#	- an array containing all the tokens
+###################################################################
 sub tokenize{
 	my($str) = @_;
 
@@ -702,73 +683,6 @@ sub tokenize{
 
 	# return the whole thing
 	return keys %newtoks;
-}
-
-# the old version, no tokenizing
-sub findName_old{
-	my ($name, $locations) = @_;
-
-	# we're not going anywhere without a normalized name
-	$name = nameNormalize($name);
-
-	my $match;
-	my $loc;
-	# loop through all the locations, checking for possible matches
-	foreach (keys %$locations){
-		if( substr($_, 0, 5) eq 'name:' ){
-			$loc = substr($_, 5);
-			# check of the location is a superset of the search string
-			# TODO: use some kind of strstr() method, instead of a regex
-			if( $loc =~ /$name/ ){
-				# either this is the first match, or this is SHORTER
-				# than the existing one
-				if(! defined($match) || length($match) > length($loc) ){
-					$match = $loc;
-				}
-			}
-			# check if the search string is a superset of the location
-			# (this is less desirable)
-			elsif( $name =~ /$loc/ ){
-				# either this is the first match, or this is LONGER
-				# than the existing one
-				if(! defined($match) || length($match) < length($loc) ){
-					$match = $loc;
-				}
-			}
-		}
-	}
-
-	# last resort: do expensive fuzzy matching
-	# TODO: use distance($@) here instead of fastdistance($$) in a loop?
-	if(!defined($match)){
-		my($min, $minLoc, $dist);
-		foreach (keys %$locations){
-			if( substr($_, 0, 5) eq 'name:' ){
-				$loc = substr($_, 5);
-				$dist = fastdistance($name, $loc);
-				##print "$name --> $loc = $dist\n";
-				# keep track of the shortest Levenshtein distance we find
-				if(!defined($min) || $dist < $min){
-					$min = $dist;
-					$minLoc = $loc;
-				}
-			}
-		}
-		# if the shortest distance is an acceptable match,
-		# use it
-		if( $min <= length($name)/2 ){
-			##print "Min dist: $min ($minLoc)\n";
-			$match = $minLoc;
-		}
-	}
-
-	# get the ID of the match, if one was found
-	my $id = -1;
-	if(defined($match)){
-		$id = $locations->{nameLookup($match)}{'ID'};
-	}
-
-	return $id;
 }
 
 1;

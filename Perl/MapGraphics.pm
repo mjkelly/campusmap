@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Wed Jun 22 12:02:06 PDT 2005
+# Wed Jun 22 13:22:14 PDT 2005
 # -----------------------------------------------------------------
 
 package MapGraphics;
@@ -28,7 +28,6 @@ use MapGlobals qw(min max);
 #	- the height of the image we're drawing on (relative to original image)
 #	- the scale multiplier (output image scale over original image scale)
 # Returns:
-#	- nothing
 #	- a hash representing the bounding rectangle of this edge:
 #	  {
 #		xmin => upper-left corner's X coord
@@ -74,7 +73,21 @@ sub drawEdge{
 	return ( xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax );
 }
 
-# XXX: proper desc. and function header
+###################################################################
+# Um... draw... all... the... edges.
+# XXX: DEPRECATED by the new way of loading edges on-demand.
+#
+# Args:
+#	- a hashref containing all the edges on the map
+#	- the GD image to print to
+#	- the GD color object to use for the location's name
+#	- the GD color object to use for the the location's dot
+#	- X offset of the image we're drawing on (relative to original image)
+#	- Y offset of the image we're drawing on (relative to original image)
+#	- the width of the image we're drawing on (relative to original image)
+#	- the height of the image we're drawing on (relative to original image)
+#	- the scale multiplier (output image scale over original image scale)
+###################################################################
 sub drawAllEdges{
 	my($edges, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
 	foreach (values %$edges){

@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Mon Mar 28 19:50:39 PST 2005
+# Wed Jun 22 13:18:42 PDT 2005
 # -----------------------------------------------------------------
 
 package ShortestPath;
@@ -19,8 +19,15 @@ use Heap::Fibonacci;
 
 use GD;
 
-# create a hash of minimum distances with Dijkstra's algorithm
-# XXX: proper desc. and function header
+###################################################################
+# Create a hash of minimum distances with Dijkstra's algorithm.
+# Args:
+#	- the ID of the GraphPoint from which paths should be calculated.
+#	- a hashref of GraphPoints to search over. this is also an output
+#	  parameter: the 'Distance' and 'From' fields are set to usable values.
+# Returns: 
+#	- nothing, but the hashref of points is altered.
+###################################################################
 sub find{
 	my($startID, $points) = (@_);
 
@@ -53,8 +60,6 @@ sub find{
 			# assign the adjacent point to $w
 			# $w is a GraphPoint
 			$w = $points->{$connID};
-
-			#XXX: print STDERR "Adjacent node ID: $connID\n";
 
 			# if $w hasn't been visited yet
 			if( !$w->{'Known'} ){
@@ -98,7 +103,14 @@ sub find{
 	}
 }
 
-# create a new heap (a Fibonacci tree) containing all the GraphPoints
+###################################################################
+# Create a new heap (a Fibonacci tree) containing all the GraphPoints given.
+# Args:
+#	- a hashref of GraphPoints to add to the tree
+# Returns:
+#	- a Heap::Fibonacci object containing all the given GraphPoints (shall
+#	  I say that once more?)
+###################################################################
 sub makeMinHeap{
 	my($points) = (@_);
 	my $fib = Heap::Fibonacci->new();
@@ -108,9 +120,20 @@ sub makeMinHeap{
 	return $fib;
 }
 
-# given a data structure populated by shortestPath(), find the shortest
-# path to a given point ID.
-# XXX: proper desc. and function header
+###################################################################
+# Given a hashref of points that has been run through ShortestPath::find(),
+# print the shortest path to a given point. (The 'source' locatiion was given
+# to find() to create the hashref of GraphPoints.)
+#
+# XXX: Does this even still work? I haven't used it in a long time.
+#
+# Args:
+#	- a hashref of GraphPoint objects
+#	- a reference to the target Graphpoint
+#	- a string to prepend to the output
+# Returns:
+#	- a string describing the path
+###################################################################
 sub pathTo{
 	my $points = shift;
 	my $target = shift;
@@ -124,42 +147,26 @@ sub pathTo{
 	return $str;
 }
 
-# write the path to a given target point, given a hashref of post-Dijkstra
-# points, a hashref of edges, a GD image to draw to, and a color to draw with.
-# returns pixel distance between the two points
-# XXX: proper desc. and function header
-sub drawTo{
-	my($points, $edges, $target, $im, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
-
-	my $dist = 0;
-
-	my %rect;
-	my($xmin, $xmax, $ymin, $ymax);
-
-	# follow 'from' links until we reach the original point
-	my $conn;
-	while( defined($target->{'From'}{'ID'}) ){
-
-		$conn = $target->{'Connections'}{$target->{'From'}{'ID'}};
-		$dist += $conn->{'Weight'};
-		# keep following the trail back to its source
-		$target = $target->{'From'};
-
-		# this is all housekeeping for the smart zoom
-		%rect = MapGraphics::drawEdge(
-			$edges->{$conn->{'EdgeID'}}, $im, 2, $color,
-			$xoff, $yoff, $w, $h, $scale, 1);
-		$xmax = $rect{'xmax'} if( !defined($xmax) || $rect{'xmax'} > $xmax );
-		$xmin = $rect{'xmin'} if( !defined($xmin) || $rect{'xmin'} < $xmin );
-		$ymax = $rect{'ymax'} if( !defined($ymax) || $rect{'ymax'} > $ymax );
-		$ymin = $rect{'ymin'} if( !defined($ymin) || $rect{'ymin'} < $ymin );
-	}
-
-	return ($dist, { xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax });
-}
-
-# collect the coords of all points along a path and remember the maximum and minimum values
-# XXX: proper desc. and function header
+###################################################################
+# Collect the coordinates of all points along a path and calculate the viewing
+# rectangle necessary to view the entire path, as well as the distance of the
+# path (in pixels).
+# Args:
+#	- a hashref of GraphPoints that has been modified by
+#	  ShortestPath::find() (i.e., the 'Distance' and 'From' fields have been
+#	  set)
+#	- an open filehandle to the Edge file (from LoadData::initEdgeFile())
+#	- the length of each edge record (also from LoadData::initEdgeFile())
+#	- hashref to to the 'source' GraphPoint
+#	- hashref to to the 'destination' GraphPoint
+# Returns:
+#	- the distance of the path OR undef if the two points are not connected.
+#	- a hashref specifying the two corners of the viewing rectangle necessary to view the path:
+#	  Keys: (xmin, ymin, xmax, ymax)
+#	- an arrayref of arrayrefs of point hashrefs (containing 'x' and 'y') keys.
+#	  Each sub-arrayref represents a single Edge. This data structure can
+#	  be fed to MapGraphics::drawLines().
+###################################################################
 sub pathPoints{
 	my($points, $edgeFH, $edgeSize, $source, $target) = (@_);
 
@@ -215,7 +222,15 @@ sub pathPoints{
 	);
 }
 
-# find the distance to a given point
+###################################################################
+# Find the distance to a given point.
+# Args:
+#	- a hashref of points, run through find(). The arguments to find()
+#	  determine how this is generated, and thus what the "source" location is.
+#	- a hashref to the "destination" location.
+# Returns:
+#	- the shortest distance between the two points, in pixels.
+###################################################################
 sub distTo{
 	my($points, $target) = (@_);
 	my $dist = 0;
@@ -228,6 +243,20 @@ sub distTo{
 	return $dist;
 }
 
+###################################################################
+# Given an edge, its bounding rectangle and extract its points.
+#
+# XXX: Is this called from anywhere? I think it's an orphan. I'll kill it once
+# I'm sure.
+#
+# Args:
+#	- a hashref to said edge
+# Returns:
+#	- bounding rectangle of said edge. Same as second return value of
+#	  pathPoints().
+#	- an arrayref of all the points in the edge (stored as hashrefs with
+#	  'x' and 'y' keys).
+###################################################################
 sub edgePoints{
 	my($edge) = @_;
 	my @points;

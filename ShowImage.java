@@ -46,7 +46,6 @@ public class ShowImage extends JFrame{
     JCheckBox intersectBox;
     JCheckBox passBox;
     JCheckBox displayBox;
-
     
     // For accessing the locationName text field
 
@@ -798,6 +797,19 @@ class ScrollablePicture extends JLabel implements Scrollable,
         FileOutputStream textOutput;
         PrintStream outStream;
         
+		Location [] sortedLocs = new Location [locations.size()];
+		for(int i = 0; i < locations.size(); i++)
+		{
+			sortedLocs[i] = getLocation(i);
+		}
+		
+		Arrays.sort(sortedLocs, new Comparator<Location>(){
+			public int compare(Location o1, Location o2)
+			{
+				return(o1.name.compareTo(o2.name));
+			}
+		});
+		
         try{
             textOutput =  new FileOutputStream(locationsTextFile);
             outStream = new PrintStream( new BufferedOutputStream(textOutput));
@@ -806,11 +818,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
             
             // loop through each location and print its name and
             // (x,y) coordinates
-            for(int locIndex = 0; locIndex < locations.size(); locIndex++)
+            for(Location loc: sortedLocs)
             {
-                outStream.println("Location " + (locIndex + 1) + " of " +
-                        locations.size() + ": " + 
-                        getLocation(locIndex).toString());
+                outStream.println( loc.toString() );
             }
             //Set the status bar for success
             parent.statusBar.setText(locStatusBar);

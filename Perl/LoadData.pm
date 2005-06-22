@@ -642,7 +642,10 @@ SEARCH:				foreach my $s_tok (@search_toks){
 			if($matches && $l_matched){
 				$matches = $matches**2 / ($loc_len);
 				#$matches = $matches**2;
-				push(@top_matches, { matches => $matches, id => $_});
+				# only add the remotely decent matches
+				if($matches >= 0.05){
+					push(@top_matches, { matches => $matches, id => $_});
+				}
 			}
 
 			$outstr .= "\t$matches matches ($l_matched).\n";
@@ -665,25 +668,6 @@ SEARCH:				foreach my $s_tok (@search_toks){
 		if( $top_matches[0]{'matches'} > 0.5 ){
 			return $top_matches[0];
 		}
-		# we get a lot of plain 1 matches (one word matched)
-		#elsif( $top_matches[0]{'matches'} == 1 ){
-		#	# if there are no other == 1 matches, return just the top
-		#	# otherwise, return the top 5.
-		#	my $others = 0;
-		#	for(1..$#top_matches){
-		#		if($top_matches[$_]{'matches'} == 1){
-		#			$others = 1;
-		#			last;
-		#		}
-		#	}
-		#
-		#	if($others){
-		#		return @top_matches[0..$four];
-		#	}
-		#	else{
-		#		return $top_matches[0];
-		#	}
-		#}
 		# we've probably got a variety of crappy matches to choose from.
 		# return the top 5.
 		else{

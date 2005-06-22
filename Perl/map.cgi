@@ -53,8 +53,8 @@ my $tmpfile = new File::Temp(
 chmod(0644, $tmpfile->filename);
 
 # source and destination location names
-my $fromTxt = $q->param('from') || '';
-my $toTxt   = $q->param('to')   || '';
+my $fromTxt = $q->param('from') || shift(@ARGV) || '';
+my $toTxt   = $q->param('to')   || shift(@ARGV) || '';
 
 # we always need all the locations, so load them off disk
 my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
@@ -98,10 +98,15 @@ MapGlobals::reaper($MapGlobals::DYNAMIC_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX
 
 # whether source and destination locations were found
 my ($src_found, $dst_found) = (TRUE, TRUE);
+# any text associated with the operation of finding the source or destination
+# (this is "did you mean...?" stuff)
+my($src_help, $dst_help) = ('', '');
 
 # now convert $fromTxt and $toTxt to IDs
 my $ERROR = '';
 my ($from, $to) = (0, 0);
+my @fromids = ();
+my @toids = ();
 
 # if we got no input, put up an informative message
 if($fromTxt eq '' && $toTxt eq ''){
@@ -118,15 +123,21 @@ else{
 	}
 	elsif($toTxt ne ''){
 		# fall back to fuzzy matching here
-		my $id = LoadData::findName($toTxt, $locations);
-		if($id != -1){
+		@toids = LoadData::findName($toTxt, $locations);
+		# we found an exact match
+		if(@toids == 1){
 			# since we found a real location, we've got to reset all the text
 			# associated with the location
-			$to = $id;
-			$toTxt = $locations->{$id}{'Name'};
+			$to = $toids[0]{'id'};
+			$toTxt = $locations->{$to}{'Name'};
 			$toTxtSafe = CGI::escapeHTML($toTxt);
 			$toTxtLookup = LoadData::nameLookup($toTxt);
 		}
+		# we have multiple matches
+		elsif(@toids > 1){
+			$dst_found = FALSE;
+		}
+		# no matches
 		else{
 			# I've done all I can. He's dead, Jim.
 			$ERROR .= "<p>Destination location &quot;$toTxtSafe&quot; not found.</p>\n"
@@ -143,15 +154,21 @@ else{
 	}
 	elsif($fromTxt ne ''){
 		# fall back to fuzzy matching here
-		my $id = LoadData::findName($fromTxt, $locations);
-		if($id != -1){
+		@fromids = LoadData::findName($fromTxt, $locations);
+		# we found an exact match
+		if(@fromids == 1){
 			# since we found a real location, we've got to reset all the text
 			# associated with the location
-			$from = $id;
-			$fromTxt = $locations->{$id}{'Name'};
+			$from = $fromids[0]{'id'};
+			$fromTxt = $locations->{$from}{'Name'};
 			$fromTxtSafe = CGI::escapeHTML($fromTxt);
 			$fromTxtLookup = LoadData::nameLookup($fromTxt);
 		}
+		# we have multiple matches
+		elsif(@fromids > 1){
+			$src_found = FALSE;
+		}
+		# no matches
 		else{
 			$ERROR .= "<p>Start location &quot;$fromTxtSafe&quot; not found.</p>\n"
 				if($fromTxt ne '');
@@ -215,6 +232,7 @@ if($path){
 
 	# first, check if there's a cache file for the path we want
 	my $cachefile = MapGlobals::getCacheName($from, $to);
+
 	if( -e $cachefile ){
 		# yay! we have a cache file. life is good. :)
 		($dist, $rect, $pathPoints) = LoadData::loadCache($cachefile);
@@ -304,6 +322,28 @@ if($path){
 # if we don't have a full path, check if we have a single location,
 # and center on that
 else{
+	# if we got multiple matches, build help text to disambiguate
+	if(@fromids > 1){
+		# if we found a good 'from' location, run shortest path stuff
+		# so we can display distances
+		if($dst_found){
+			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
+			ShortestPath::find($endID, $points);
+		}
+		$src_help = "<p><b>Start location &quot;$fromTxtSafe&quot; not found.</b></p>"
+			. buildHelpText(undef, $toTxtURL, $mpm, $locations, $points, \@fromids);
+	}
+	if(@toids > 1){
+		# if we found a good 'to' location, run shortest path stuff
+		# so we can display distances
+		if($src_found){
+			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
+			ShortestPath::find($startID, $points);
+		}
+		$dst_help = "<p><b>Destination location &quot;$toTxtSafe&quot; not found.</b></p>"
+			. buildHelpText($fromTxtURL, undef, $mpm, $locations, $points, \@toids);
+	}
+
 	if($src_found){
 		$xoff = $locations->{$from}{'x'};
 		$yoff = $locations->{$from}{'y'};
@@ -581,6 +621,10 @@ $tmpl->param( TIME => sprintf("%.02f", $dist*$mpm) );
 # a bunch of boolean values, for whatever strange logic we may need inside the template
 $tmpl->param( SRC_FOUND => $src_found );
 $tmpl->param( DST_FOUND => $dst_found );
+
+# helper text for searching
+$tmpl->param( SRC_HELP => $src_help );
+$tmpl->param( DST_HELP => $dst_help );
 #$tmpl->param( SRC_OR_DST_FOUND => ($src_found || $dst_found) );
 #$tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
 #$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
@@ -642,4 +686,49 @@ sub listZoomLevels{
 	}
 
 	return \@ret;
+}
+
+sub buildHelpText{
+	my ($fromTxt, $toTxt, $mpm, $locations, $points, $ids) = (@_);
+
+	# figure out which kind of help we're giving
+	# one of $fromTxt and $toTxt will be undef. whichever one is,
+	# that's the one we have a list of IDs for.
+	my $helpfor = defined($fromTxt) ? 'to' : 'from';
+
+	#my $str = "<p><b>Found " . @$ids . " close matches:</b></p>\n<ol>\n";
+	my $str = "<p><b>Did you mean...</b></p>\n<ol>\n";
+	my $url;
+	foreach (@$ids){
+		my $dist_txt = '';
+		if( defined($points) ){
+			my $target = $points->{$locations->{$_->{'id'}}{'PointID'}};
+			if($target->{'Distance'} == INFINITY){
+				$dist_txt = ' (&#8734;)'; # this is the infinity symbol
+			}
+			elsif($target->{'Distance'} == 0){
+				$dist_txt = '';
+			}
+			else{
+				$dist_txt = sprintf(" (%0.2f mi)",
+					ShortestPath::distTo($points, $target)/$MapGlobals::PIXELS_PER_UNIT);
+			}
+		}
+
+		# we need to avoid flipping the 'from' and 'to' locations here, so
+		# we're careful about which location we're actually searching for
+		if($helpfor eq 'from'){
+			$url = state(CGI::escape($locations->{$_->{'id'}}{'Name'}), $toTxt,
+				undef, undef, undef, undef, $mpm);
+		}
+		else{
+			$url = state($fromTxt, CGI::escape($locations->{$_->{'id'}}{'Name'}),
+				undef, undef, undef, undef, $mpm);
+		}
+		$str .= sprintf(qq|\t<li><a href="$self?%s">%s</a>%s</li>\n|,
+			$url, CGI::escapeHTML($locations->{$_->{'id'}}{'Name'}), $dist_txt);
+	}
+	$str .= "</ol>\n";
+
+	return $str;
 }

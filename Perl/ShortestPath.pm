@@ -215,6 +215,19 @@ sub pathPoints{
 	);
 }
 
+# find the distance to a given point
+sub distTo{
+	my($points, $target) = (@_);
+	my $dist = 0;
+
+	while( defined($target->{'From'}{'ID'}) ){
+		$dist += $target->{'Connections'}{$target->{'From'}{'ID'}}{'Weight'};
+		# keep following the trail back to its source
+		$target = $target->{'From'};
+	}
+	return $dist;
+}
+
 sub edgePoints{
 	my($edge) = @_;
 	my @points;

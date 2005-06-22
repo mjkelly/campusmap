@@ -93,11 +93,15 @@
 				<p><div id="fromTxt">
 					<b>From</b>: <TMPL_VAR NAME=TXT_SRC>
 				</div></p>
+			<TMPL_ELSE>
+				<p><TMPL_VAR NAME=SRC_HELP></p>
 			</TMPL_IF>
 			<TMPL_IF NAME=DST_FOUND>
 				<p><div id="toTxt">
 					<b>To</b>: <TMPL_VAR NAME=TXT_DST>
 				</div></p>
+			<TMPL_ELSE>
+				<p><TMPL_VAR NAME=DST_HELP></p>
 			</TMPL_IF>
 
 			<TMPL_IF NAME=GOT_PATH>

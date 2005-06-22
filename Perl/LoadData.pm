@@ -11,7 +11,7 @@ package LoadData;
 
 use strict;
 use warnings;
-use Text::Levenshtein qw(fastdistance);
+use Text::WagnerFischer qw(distance);
 use MapGlobals;
 use Heap::Elem::GraphPoint;
 use Fcntl qw(:seek);
@@ -558,9 +558,170 @@ sub nameLookup{
 #	- a search string
 #	- a hashref of locations to search
 # Returns:
-#	- the ID of the best-matching location, or -1 if there is none
+#	(- the ID of the best-matching location, or -1 if there is none)
+#	- array of IDs of best matches?
 ###################################################################
 sub findName{
+	my ($search_str, $locations) = @_;
+	my @search_toks = tokenize($search_str);
+	my $search_len = scalar @search_toks;
+
+	# store the top few matches we get.
+	my @top_matches;
+
+	#print "SEACH STRING: $search_str -> (@search_toks) [$search_len]\n";
+
+	foreach ( keys %$locations ){
+		# there should be a better way to do this. maybe I should
+		# stop polluting the $locations hash with multiple keys for
+		# each ID.
+		my $outstr = '';
+		if( substr($_, 0, 5) ne 'name:' ){
+			my $loc_str = $locations->{$_}{'Name'};
+			my @loc_toks = tokenize($loc_str);
+			my $loc_len = scalar @loc_toks;
+			$outstr .= "LOCATION: $loc_str -> (@loc_toks) [$loc_len]\n";
+
+			# aaaagh, nested loops...
+			my $matches = 0;
+			my $l_matched = 0;
+LOC:			foreach my $l_tok (@loc_toks){
+				$outstr .= "\t$l_tok:";
+SEARCH:				foreach my $s_tok (@search_toks){
+					# exact match
+					if($s_tok eq $l_tok){
+						my $strength = 1;
+						$outstr .= " $s_tok [$strength EXACT]\n";
+
+						$matches += $strength;
+						$l_matched++;
+						next LOC;
+					}
+					# substring search
+					elsif( $l_tok =~ /$s_tok/ ){
+						my $strength = length($s_tok) / length($l_tok);
+						$outstr .= " $s_tok [$strength SUB]";
+
+						$matches += $strength;
+						$l_matched++;
+						next SEARCH;
+					}
+					# superstring search
+					elsif( $s_tok =~ /$l_tok/ ){
+						my $strength = length($l_tok) / length($s_tok);
+						$outstr .= " $s_tok [$strength SUPER]";
+
+						$matches += $strength;
+						$l_matched++;
+						next SEARCH;
+					}
+					# fuzzy matching...
+					else{
+						my $dist = distance([0, 1, 1], $s_tok, $l_tok);
+						# the "weighted distance" is
+						# ($dist/ length($s_tok). the higher
+						# this is, the worse the match.
+						my $strength = 1 - ($dist/ length($s_tok));
+
+						# ignore the really bad matches
+						# this is critical, so long names
+						# don't accumulate match strength
+						# from a series of bad matches
+						if($strength > 0.5){
+							$matches += $strength;
+							$l_matched++;
+							$outstr .= " $s_tok [$dist -> $strength FUZZY]";
+							next SEARCH;
+						}
+					}
+				}
+				$outstr .= "\n";
+			}
+
+			# if we had any matches, keep track of this result
+			if($matches && $l_matched){
+				$matches = $matches**2 / ($loc_len);
+				#$matches = $matches**2;
+				push(@top_matches, { matches => $matches, id => $_});
+			}
+
+			$outstr .= "\t$matches matches ($l_matched).\n";
+			if($l_matched){
+				#print $outstr;
+			}
+		}
+	}
+
+	# this is the fifth or last index
+	my $four = $#top_matches < 4 ? $#top_matches : 4;
+
+	# now we decide how many matches to return
+	if(@top_matches){
+		@top_matches = sort { $b->{'matches'} <=> $a->{'matches'} } @top_matches;
+		#print "MATCHES:\n";
+		#print "\t$locations->{$_->{'id'}}{'Name'} [$_->{'matches'}]\n" for @top_matches;
+
+		# if it's a high enough score...
+		if( $top_matches[0]{'matches'} > 0.5 ){
+			return $top_matches[0];
+		}
+		# we get a lot of plain 1 matches (one word matched)
+		#elsif( $top_matches[0]{'matches'} == 1 ){
+		#	# if there are no other == 1 matches, return just the top
+		#	# otherwise, return the top 5.
+		#	my $others = 0;
+		#	for(1..$#top_matches){
+		#		if($top_matches[$_]{'matches'} == 1){
+		#			$others = 1;
+		#			last;
+		#		}
+		#	}
+		#
+		#	if($others){
+		#		return @top_matches[0..$four];
+		#	}
+		#	else{
+		#		return $top_matches[0];
+		#	}
+		#}
+		# we've probably got a variety of crappy matches to choose from.
+		# return the top 5.
+		else{
+			return @top_matches[0..$four];
+		}
+	}
+	# there were no matches at all. return nothing.
+	else{
+		return ();
+	}
+}
+
+# tokenize a given string: return an array containing the normalized version of
+# each word of the string
+sub tokenize{
+	my($str) = @_;
+
+	# split on whitespace
+	my @toks = split(/[\s\/]+/, $str);
+
+	# normalize each chunk, but don't transfer any values
+	# that are normalized away
+	my %newtoks;
+	my $norm_str;
+	foreach (@toks){
+		$norm_str = nameNormalize($_);
+		next if( $norm_str eq '' );
+		next if( $norm_str =~ /^(and|of|by|for|hall)$/ );
+
+		$newtoks{$norm_str} = 1;
+	}
+
+	# return the whole thing
+	return keys %newtoks;
+}
+
+# the old version, no tokenizing
+sub findName_old{
 	my ($name, $locations) = @_;
 
 	# we're not going anywhere without a normalized name

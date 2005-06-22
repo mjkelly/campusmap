@@ -1350,7 +1350,7 @@ class PathPoint
 		// Null guard to prevent exceptions
 		
 		// TODO: Deletion of unnecessary locations is here...
-		if(location != null && numConnectedPoints() > 0){
+		if(location != null){
 			if(PathOptimize.debugPPtoGP)
 				System.err.println("Location ==> isGraphPoint = true");
 			return(true);

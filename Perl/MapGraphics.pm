@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Sun Jun 12 13:22:01 PDT 2005
+# Wed Jun 22 12:02:06 PDT 2005
 # -----------------------------------------------------------------
 
 package MapGraphics;
@@ -89,8 +89,7 @@ sub drawAllEdges{
 #	- a reference to the location to print
 #	- the GD image to print to
 #	- the GD color object to use for the location's name
-#	- the GD color object to use for the dot on the location's
-#	  dot on the map.
+#	- the GD color object to use for the the location's dot
 #	- X offset of the image we're drawing on (relative to original image)
 #	- Y offset of the image we're drawing on (relative to original image)
 #	- the width of the image we're drawing on (relative to original image)
@@ -117,9 +116,10 @@ sub drawLocation{
 		return;
 	}
 
-	# check if it ends past the edge of the screen
-	# AND the location is actually on the screen
-	if($nameEnd > $w){
+	# check if it ends past the right edge of the screen
+	# AND the new xDraw location isn't past the LEFT edge of the screen
+	# (yes, it's ugly)
+	if($nameEnd > $w && ($location->{'x'}*$scale - $xoff) - 5 - $textWidth > 0){
 		# adjust the x-coord where we start drawing the location name
 		$xDraw = ($location->{'x'}*$scale - $xoff) - 5 - $textWidth;
 		$nameEnd = $xDraw + $textWidth;
@@ -150,7 +150,22 @@ sub drawLocation{
 	);
 }
 
-# XXX: proper desc. and function header
+###################################################################
+# Draw all locations on the screen. Obviously, only the ones
+# actually appearing in the current viewport will appear.
+# Args:
+#	- a reference to the locations hashref
+#	- the GD image to print to
+#	- the GD color object to use for the location's name
+#	- the GD color object to use for the location's dot
+#	- X offset of the image we're drawing on (relative to original image)
+#	- Y offset of the image we're drawing on (relative to original image)
+#	- the width of the image we're drawing on (relative to original image)
+#	- the height of the image we're drawing on (relative to original image)
+#	- the scale multiplier (output image scale over original image scale)
+# Returns:
+#	- nothing
+###################################################################
 sub drawAllLocations{
 	my($locations, $im, $textColor, $dotColor, $bgColor, $xoff, $yoff, $w, $h, $scale) = (@_);
 
@@ -162,6 +177,24 @@ sub drawAllLocations{
 	}
 }
 
+###################################################################
+# Given an arraref of arrayrefs (each of which represents an edge) of points
+# (hashrefs with 'x' and 'y' keys), draw these to the screen.
+# Args:
+#	- 'points' arrayref: this consists of a series of smaller arrayrefs,
+#	  each of which contains hashrefs with 'x' and 'y' keys, representing
+#	  individual points. Lines are drawn between each of the points in each
+#	  smaller arrayref. (The ends of the arrayrefs themselves are not
+#	  connected.)
+#	- the GD image to print to
+#	- the thickness of the line to draw, in pixels
+#	- the GD color object to use for the line
+#	- X offset of the image we're drawing on (relative to original image)
+#	- Y offset of the image we're drawing on (relative to original image)
+#	- the width of the image we're drawing on (relative to original image)
+#	- the height of the image we're drawing on (relative to original image)
+#	- the scale multiplier (output image scale over original image scale)
+###################################################################
 sub drawLines{
 	my($points, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
 

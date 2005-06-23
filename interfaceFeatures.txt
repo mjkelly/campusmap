@@ -1,4 +1,4 @@
-UCSDMap Interface Features:
+UCSDMap (implemented) Interface Features:
 
 Location name labels:
 	- Colored based on whether the location was entered in the start or end box
@@ -36,6 +36,9 @@ Entering a location to search for:
 Displaying of shortest known path between locations:
 	- When two locations are entered, the shortest known path is found between the two points
 		- Computation of the shortest path is accomplished using Dijkstra's Algorithm on provided datafiles
+		- Datafile properties can be set to stop the shortest path from going through certain locations
+		(so people aren't directed to walk through buildings)
+		- Datafile properties can be set to allow for bridges and tunnel
 	- Information of the path is displayed to the left of the navigation bar:
 		- The from (start) location is underlined and labeled in green
 		- The to (end) location is underlined and labeled in red
@@ -52,7 +55,7 @@ Data caching:
 	- A displayed path is cached and will be retreived if a path is asked to be recalculated
 		- Thus, both the main datafiles do not need to loaded and the shortest path does not need to be calculated if previously calculated
 		- This alows for faster zooming and moving around the map
-		- The length of time for the cache files to be retain can be variably adjusted
+		- The length of time that the cache files are retained is adjustable
 
-Notes and features:
-	- Due to the data passed in
+Notes:
+	- You can find the distance to the nearest food facility by typing in the desired location and keyword "food"

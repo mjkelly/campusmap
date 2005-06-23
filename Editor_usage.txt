@@ -42,9 +42,14 @@ Keys:
 	F6: Center on the currently selected node.  
 	F7: Save point/location data to disk
 	    (rawPathData.dat, rawLocationData.dat).
+	    or
+	    Save optimized data to disk
 	F8: Read point/location data from disk
 	    (rawPathData.dat, rawLocationData.dat).
+	    or
+	    Read optimized data (in a converted down format readable by the editor)
 	F9: Print locations to file in human-readable format (locations.txt).
 	F10: Manually change the coordinates of the current node.
-	F11: Refresh the status bar.
-	F12: New path.
+	F11: Displays a dialog box displaying all location names (and allows
+	     for editing of the names)
+	F12: create new path.

@@ -8,12 +8,3 @@ Notes on setting up a CVS server:
 
 Convert a PDF to a PNG:
 	gs -sDEVICE=pngalpha -sOutputFile="UCSDmap%d.png" -r240x240 -dBATCH -dNOPAUSE -c save pop -f UCSDmap.pdf
-
-
-IMPLEMENTATION:
-
-In the future:
-	* Locations that can't be passed through
-	(modify Dijkstra's algo; see ShortestPath.pm:smallesttUnknwon).
-
-	* Non-displayable locations.

@@ -1,61 +1,99 @@
 UCSDMap (implemented) Interface Features:
 
 Location name labels:
-	- Colored based on whether the location was entered in the start or end box
-		- label is colored green if entered in the start box, red if entered in the end box.
-	- If the location label cannot be properly displayed to the right of the location (goes off screen) then it will be flipped to display on the left.
-		- Exception: when the label cannot be displayed either on the left or the right
-		(If this happens you can read it from the "from" or "to" label to the left of the map)
-	- These rules for displaying of the location labels hold while moving on the map. 	
+	- Colored based on whether the location was entered in the start or
+	  end box
+		- label is colored green if entered in the start box, red if
+		  entered in the end box.
+	- If there's no room to display the location label to the right of
+	  the location then it will be displayed on the left.
+		- Exception: when the label cannot be displayed either on the
+		  left or the right. (If this happens, both location names
+		  still appear to the left of the map.)
+	- These rules for displaying of the location labels hold while moving
+	  on the map. 	
 
 Moving and zooming with the map:
 	- Navigation bar operations:
-		- Navigation arrows: movement to the North, South, East, or West.
-		- Circle (in the center of the navigation arrows): returns the map to the default zoom and center of the currently displayed path or location.
+		- Navigation arrows: pan to the North, South, East, or West.
+		- Circle (in the center of the navigation arrows): returns the
+		  map to the default zoom and center of the currently
+		  displayed path or location (the same as clicking the
+		  "submit" button again).
 		- Zoom bar:
-			- Plus and Minus arrows: Moves to the next lower or higher zoom level.
-			- Ovals: Go directly to zoom level (Red oval represents current zoom level)
-	- Clicking anywhere on the map centers the map on the location clicked.
-	- Clicking anywhere on the thumbnail (upper right) centers the map on the location clicked
+			- Plus and Minus arrows: Moves to the next lower or
+			  higher zoom level.
+			- Ovals: Go directly to zoom level. (Red oval
+			  represents current zoom level)
+	- Clicking on the map centers the map on the point clicked
+	- Clicking on the thumbnail (upper right) centers the map on
+	  the point clicked
 
 Thumbnail:
 	- Show the overall view of the map
 	- Blue rectangle shows the current map display
-	- If applicable, green and red boxes indicate the start and end locations
-	- Thumbnail is synchronized with map operations and visa versa
+	- If applicable, green and red boxes indicate the start and end
+	  locations
+	- Thumbnail is synchronized with map operations and vice versa
 
-Entering a location to search for:
-	- A location can be typed into either the Start or End box near the top of the page or selected in the drop down menu
-	- Fuzzy Matching for typed location names
-		- When there is only one close match: Auto-corrects and displays the location
-		- Displays a list of hyperlinks when there are multiple close matches (Matches are sorted by closeness)
-			- If the other entry field has a valid (or auto-correcting) location entered, the list of hyperlinks
-			  contains the distance of each suggested location to the valid location (or infinity if it cannot be reached).
-		- The desired location can be displayed by clicking on the corresponding hyperlink
+Searching for a location:
+	- A location can be typed into either the start or end box near the
+	  top of the page or selected in the drop down menu
+	- Fuzzy matching for typed location names
+		- When there is only one close match: Auto-corrects and
+		  displays the location
+		- Displays a list of hyperlinks when there are multiple close
+		  matches (sorted by closeness)
+			- If the other entry field has a valid (or
+			  auto-corrected) location entered, the list of
+			  hyperlinks contains the distance of each suggested
+			  location to the valid location (or infinity if it
+			  cannot be reached).
+		- The desired location can be displayed by clicking on the
+		  corresponding hyperlink
 
 Displaying of shortest known path between locations:
-	- When two locations are entered, the shortest known path is found between the two points
-		- Computation of the shortest path is accomplished using Dijkstra's Algorithm on provided datafiles
-		- Datafile properties can be set to stop the shortest path from going through certain locations
-		(so people aren't directed to walk through buildings)
-		- Datafile properties can be set to allow for bridges and tunnel
-	- Information of the path is displayed to the left of the navigation bar:
+	- When two locations are entered, the shortest known path is found
+	  between the two points
+		- Computation of the shortest path is accomplished using
+		  Dijkstra's Algorithm on provided datafiles
+		- Datafile properties can be set to stop the shortest path
+		  from going through certain locations (so people aren't
+		  directed to walk through buildings)
+		- Datafile properties can be set to allow for bridges and
+		  tunnel
+	- Information of the path is displayed to the left of the navigation
+	  bar:
 		- The from (start) location is underlined and labeled in green
 		- The to (end) location is underlined and labeled in red
 		- The distance between the two location is displayed in miles.
-	        - The time it takes to walk between the two locations is displayed based on entry of walking speed (15min/mile default)
+		- The time it takes to walk between the two locations is
+		  displayed based on entry of walking speed (15min/mile
+		  default)
 	- The path is displayed on the map:
-		- The path is drawn in blue on the map between the two labeled locations
-		- The drawn paths will maintain itself through zoom levels, recentering, and moving changes
+		- The path is drawn in blue on the map between the two labeled
+		  locations
+		- The drawn path will maintain itself through different zoom
+		  levels and recentering
 	- Default display:
-		- The highest zoom level is used such that all of the path can still be displayed on the map.
-			- Thus, by default, all elements of the path will be viewable (Exception: when the path is too big for the lowest zoom level)
+		- The highest zoom level is used such that all of the path can
+		  still be displayed on the map.
+			- Thus, by default, all elements of the path will be
+			  viewable (Exception: when the path is too big for
+			  the lowest zoom level)
+				- In this case, the display centers on the end
+				  location
 
 Data caching:
-	- A displayed path is cached and will be retreived if a path is asked to be recalculated
-		- Thus, both the main datafiles do not need to loaded and the shortest path does not need to be calculated if previously calculated
+	- All displayed paths are cached and will be retreived if they are
+	  requested again
+		- Caching prevents the need to load two of the main datafiles
+		  and run Dijkstra's algorithm.
 		- This alows for faster zooming and moving around the map
-		- The length of time that the cache files are retained is adjustable
+		- The length of time that the cache files are retained is
+		  adjustable (currently 10 minutes)
 
 Notes:
-	- You can find the distance to the nearest food facility by typing in the desired location and keyword "food"
+	- You can find the distance to the nearest food facility by entering a
+	  start location and "food" for the end location
+

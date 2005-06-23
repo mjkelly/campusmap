@@ -1,0 +1,11 @@
+UCSDMap, A Short Prose Description:
+
+UCSDMap is a web-based application for finding the location of, and shortest
+path between, buildings or areas on the campus. Information about locations
+and the paths between them is entered with a Java (Swing) editor, and exported
+in a format that can be read by the web interface. In the interface, one or
+two locations can be selected from a drop-down menu, or entered manually in a
+text field. If a single location is selected, the map is centered on that
+spot. If two are selected, both are displayed and the shortest path between
+them is highlighted, along with the distance of the path and approximate
+walking time.

@@ -476,8 +476,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
      */
     public void changeCurSelectedPointCord(int x, int y)
     {
-        //if the pathNumIndex is greater than it should be, exit from method.
-        if( pathNumIndex >= lines.size() )
+        //if the pointNumIndex is greater than it should be, exit from method.
+        if( pointNumIndex >= lines.size() )
             return;
         
         // check if there's an existing point

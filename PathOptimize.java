@@ -1340,9 +1340,8 @@ class PathPoint
 	 * a graphPoint.  Since by definition it's not connected to a graphPoint,
 	 * and we're creating the graph based on GraphPoints, the non-connected
 	 * point will disappear from the graph!
-	 * @return True if the point has more than 2 connected points or
-	 * if it has only one connected point. Also returns true if the point
-	 * has a location label.   
+	 * @return True if the point has more than 2 connected points. 
+	 * Also returns true if the point has a location label.   
 	 */
 	public boolean isGraphPoint()
 	{
@@ -1422,22 +1421,33 @@ class GraphPoint
 {
 	// Binary file identifier
 	int ID;
+	// Point where the graphpoint is located at
 	Point point;
+	// Set of edges connected to the graphpoint
 	Vector <Edge> edges;
+	// Any assocated location to the graphpoint (if exists)
 	Location locLabel;
 	
 	// Binary file identifier
 	static int IDcount = 1;
 	
 	/**
-	 * Default constructor for GraphPoint
-	 * @param pp
+	 * Default constructor for GraphPoint<br>
+	 * <b>Initializes fields of the GraphPoint object:<br></b>
+	 * point is initialized to the point field of the passed in PathPoint<br>
+	 * location is initialized to the location field of passed in PathPoint
+	 * if a PathPoint contained a location<br>
+	 * Initializes the edge Vector (edges will be added later)
+	 * Binary ID = IDcount++;
+	 * @param pp The passed in PathPoint (vertex)
 	 */
 	public GraphPoint(PathPoint pp)
 	{
 		point = new Point(pp.point);
 		pp.setGraphPoint(this);
 	
+		// Second part of condition was for discarding an old version of
+		// intersection...does not harm
 		if(pp.location != null && !pp.location.name.equals("<nolink>"))			
 			locLabel = pp.location;
 

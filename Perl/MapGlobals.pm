@@ -18,11 +18,8 @@ use constant{
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(reaper getGd2Filename between min max @SCALES);
-@EXPORT = qw(
-	INFINITY TRUE FALSE
-	$DYNAMIC_IMG_DIR $STATIC_IMG_DIR
-);
+@EXPORT_OK = qw(TRUE FALSE INFINITY between max min @SIZES @SCALES);
+@EXPORT = qw();
 
 # a list of scaling attributes
 # we use indexes in the application, then map them to the acual multiplier
@@ -30,12 +27,19 @@ require Exporter;
 # drawing routines use them to scale path/location draws.
 our @SCALES = (1, 0.5, 0.25, 0.125);
 
+# map display sizes.
+our @SIZES = (
+	[400, 300],
+	[500, 375],
+	[640, 480],
+);
+
+
 # some names for the various base images.
 # TODO: clean this up! (remember old scripts that rely on the old names)
 our $BASE_IMAGE		= 'UCSDmap.png';
 our $_BASE_GD2_IMAGE	= 'UCSDmap';
 our $BASE_GD2_IMAGE	= $_BASE_GD2_IMAGE . 'gd2';
-our $OUT_IMAGE		= 'Output.png';
 
 our $TEMPLATE		= 'template3.html';
 
@@ -105,7 +109,7 @@ our $EDGE_FILE		= 'binEdgeData.dat';
 # where cache files (which store the coordinates of shortest paths) go
 our $CACHE_DIR		= 'cache';
 # how long cache files hang around for, in seconds
-our $CACHE_EXPIRY	= 600;
+our $CACHE_EXPIRY	= 60;
 
 # where static images (such as the button graphics) are stored
 our $STATIC_IMG_DIR	= '../../ucsdmap';
@@ -138,10 +142,22 @@ sub getGd2Filename{
 }
 
 ###################################################################
+# Get given the IDs of two locations, return the filename to be used 
+# for the cache of their shortest path. The order in which the location IDs
+# appear in the argument list is not significant.
+#
+# Args:
+# 	- a location ID
+#	- another location ID
+# Returns:
+# 	- filename for a cache file of the two args.
 ###################################################################
 sub getCacheName{
-	my($from, $to) = (@_);
-	return $CACHE_DIR . '/' . min($from, $to) . '-' . max($from, $to) . '.cache';
+	my($from, $to) = (0, 0);
+	# grab the integer values fom the arguments
+	$from = $1 if(shift =~ /^(\d+)/);
+	$to = $1 if(shift =~ /^(\d+)/);
+	return $CACHE_DIR . '/' . int(min($from, $to)) . '-' . int(max($from, $to)) . '.cache';
 }
 
 ###################################################################
@@ -168,8 +184,12 @@ sub reaper{
 
 		# kill it if it's too old
 		if($age > $max_age){
-			#warn "reaper @ $now: $file: chop, chop, chop!\n";
-			unlink("$DYNAMIC_IMG_DIR/$file");
+			# untaint the filename before we delete
+			if($file =~ /^([-\w]+)$kill_suffix$/){
+				$file = $1 . $kill_suffix;
+				#warn "reaper @ $now: $file: chop, chop, chop!\n";
+				unlink("$DYNAMIC_IMG_DIR/$file");
+			}
 		}
 	}
 

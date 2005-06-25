@@ -4,7 +4,10 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# TODO: Create some kind of 'state' object to avoid passing around
+# TODO: Get script working with taint checks. Remember to check
+#       ALL paths of logic!
+#
+# TODO: Create some kind of 'viewport' object to avoid passing around
 # these huge, indecipherable (and frequently-changing!) lists.
 #
 # Wed Jun 15 23:54:08 PDT 2005
@@ -13,27 +16,23 @@
 use strict;
 use warnings;
 
-# for the server
-##use lib qw(/home/jedimike/perl/lib/perl5/site_perl/5.8.3);
+# the first line is for packages installed on the server.
+# the second is for all our own libraries
+use lib qw(
+	/home/jedimike/perl/lib/perl5/site_perl/5.8.3
+	./lib
+);
 
 use CGI;
 use File::Temp ();
 use HTML::Template;
 
-use MapGlobals
-	qw(@SCALES INFINITY TRUE FALSE $DYNAMIC_IMG_DIR $STATIC_IMG_DIR between);
+use MapGlobals qw(TRUE FALSE INFINITY between @SIZES @SCALES);
 use LoadData;
 use MapGraphics;
 use ShortestPath;
 
-my $q = CGI::new();
-
-# window sizes
-my @sizes = (
-	[400, 300],
-	[500, 375],
-	[640, 480],
-);
+my $q = new CGI();
 
 # the name of this script, for form actions, etc
 our $self = 'map.cgi';
@@ -42,11 +41,10 @@ our $self = 'map.cgi';
 # "down"
 my $pan = 100;
 
-# generate a dynamic filename
-# (this can be used as a string to get its filename, toString()-style)
+# generate a temporary file on disk to store the map image
 my $tmpfile = new File::Temp(
 		TEMPLATE => 'ucsdmap-XXXXXX',
-		DIR => $DYNAMIC_IMG_DIR,
+		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
 		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
 		UNLINK => 0,
 	);
@@ -73,16 +71,19 @@ my $toTxtLookup = LoadData::nameLookup($toTxt);
 # x and y display offsets, from the upper left
 my $xoff   = int($q->param('xoff')   || 0);
 my $yoff   = int($q->param('yoff')   || 0);
-my $scale  =     $q->param('scale');
+# the zoom level of the map; this is an index into the MapGlobals::SCALES
+# array, which contains the actual scale multipliers
+my $scale  = int($q->param('scale')) || undef;	# this generates a warning, but we don't care
+# the size of the map display;  this is an index into MapGlobals::SIZES
 my $size   = int(defined($q->param('size')) ? $q->param('size') : 1);
+
+# width and height of the viewing window (total image size is in MapGlobals)
+my $width  = $SIZES[$size][0];
+my $height = $SIZES[$size][1];
 
 # how fast do you walk?
 # in minutes per mile.
-my $mpm  =     $q->param('mpm')  || 15;
-
-# width and height of the viewing window (total image size is in MapGlobals)
-my $width  = $sizes[$size][0];
-my $height = $sizes[$size][1];
+my $mpm    = int($q->param('mpm'))  || 15;
 
 # click offsets from the map
 my $mapx = defined($q->param('map.x')) ? int($q->param('map.x')) : undef;
@@ -93,7 +94,7 @@ my $thumbx = defined($q->param('thumb.x')) ? int($q->param('thumb.x')) : undef;
 my $thumby = defined($q->param('thumb.y')) ? int($q->param('thumb.y')) : undef;
 # one or the other (map or thumb click offsets) should be undef
 
-# don't fear the reaper...
+# kill old temporary files
 MapGlobals::reaper($MapGlobals::DYNAMIC_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
 
 # whether source and destination locations were found
@@ -400,9 +401,11 @@ my $rawxoff = int($xoff*$SCALES[$scale] - $width/2);
 my $rawyoff = int($yoff*$SCALES[$scale] - $height/2);
 
 
+# get the image of the appropriate scale from disk, and grab only
+# what we need by size and offset
 my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
 	$rawxoff, $rawyoff, $width, $height)
-	|| die "Could not load image $MapGlobals::BASE_GD2_IMAGE\n";
+	|| die "Could not load base image " . MapGlobals::getGd2Filename($SCALES[$scale]) . "\n";
 
 my $src_color = $im->colorAllocate(@MapGlobals::SRC_COLOR);
 my $dst_color = $im->colorAllocate(@MapGlobals::DST_COLOR);
@@ -416,12 +419,12 @@ my $bg_color = $im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
 #MapGraphics::drawAllLocations($locations, $im, $src_color, $src_color, $bg_color, $rawxoff, $rawyoff,
 #				$width, $height, $SCALES[$scale]);
 
+# if we had a path to draw, now's the time to do it
 if($path){
 	foreach my $line (@$pathPoints){
 		MapGraphics::drawLines($line, $im, 2, $path_color, $rawxoff, $rawyoff,
 			$width, $height, $SCALES[$scale]);
 	}
-
 	# uncomment to draw bounding rectangle
 	#$im->setThickness(1);
 	#$im->rectangle(
@@ -449,8 +452,7 @@ print $tmpfile $im->png();
 close($tmpfile);
 
 
-# now that we have valid offsets, we can generate the thumbnail (highlighting
-# the visible window) safely
+# grab the thumbnail from disk
 my $thumb = GD::Image->newFromGd2($MapGlobals::THUMB_FILE);
 
 # store the ratio between the thumbnail and the main base image
@@ -499,7 +501,7 @@ if($dst_found){
 # another perl process?
 my $tmpthumb = new File::Temp(
 		TEMPLATE => 'ucsdmap-XXXXXX',
-		DIR => $DYNAMIC_IMG_DIR,
+		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
 		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
 		UNLINK => 0,
 	);
@@ -534,7 +536,7 @@ my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $
 #	$xoff + $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size, $mpm);
 
 # buttons to make the window bigger/smaller 
-my $bigger = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size, $mpm);
+my $bigger = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#SIZES) ? $size+1 : $size, $mpm);
 my $smaller = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm);
 
 # make sure the offsets don't go out of range
@@ -566,7 +568,7 @@ $tmpl->param( CVS_REVISION => '$Revision$');
 
 $tmpl->param( IMG_VIEW => $tmpfile->filename );
 $tmpl->param( IMG_THUMB => $tmpthumb->filename );
-$tmpl->param( IMG_DIR => $STATIC_IMG_DIR );
+$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
 
 # add info about current state
 $tmpl->param( SCALE => $scale );
@@ -598,7 +600,7 @@ $tmpl->param( RIGHT_URL =>
 #$tmpl->param( SMALLER_URL => 
 #	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm));
 #$tmpl->param( BIGGER_URL => 
-#	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#sizes) ? $size+1 : $size, $mpm));
+#	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#SIZES) ? $size+1 : $size, $mpm));
 
 $tmpl->param( ZOOM_OUT_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, $yoff,
 	($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size, $mpm));
@@ -688,6 +690,28 @@ sub listZoomLevels{
 	return \@ret;
 }
 
+###################################################################
+# Given EITHER the 'from' search text or the 'to' search text (there are two
+# arguments, but one should be undefined), some script state, and a list of IDs
+# of suggested locations, build and return HTML for a list that shows the
+# suggested locations.
+#
+# If given a list of GraphPoints run through ShortestPath::find as well, each
+# location's distance from the source location (determined by find()) will also
+# be listed.
+#
+# This is for when a search has failed, and a number of alternate matches have
+# been found.
+#
+# Args:
+#	- 'from' search text (or undef)
+#	- 'to' search text (or undef)
+#	- miles per minute (to perserve state)
+#	- hashref of locations
+#	- hashref of GraphPoints (optional, to list distances)
+#	- arrayref of location IDs (ints) that are possible matches to the
+#	  search term
+###################################################################
 sub buildHelpText{
 	my ($fromTxt, $toTxt, $mpm, $locations, $points, $ids) = (@_);
 

@@ -12,7 +12,7 @@ package LoadData;
 use strict;
 use warnings;
 use Text::WagnerFischer qw(distance);
-use MapGlobals;
+use MapGlobals qw(TRUE FALSE INFINITY);
 use Heap::Elem::GraphPoint;
 use Fcntl qw(:seek);
 
@@ -469,7 +469,13 @@ sub cacheReaper{
 		my $time = (stat( "$MapGlobals::CACHE_DIR/$file"))[8];
 		# delete files if they're too old
 		if( $now - $time > $MapGlobals::CACHE_EXPIRY ){
-			unlink("$MapGlobals::CACHE_DIR/$file");
+			# make absolutely sure the file is of the right
+			# format to delete
+			if($file =~ /(\d+)-(\d+).cache/){
+				$file = "$1-$2.cache";
+				warn "Cache reaper @ $now: $file: chop, chop, chop!\n";
+				unlink("$MapGlobals::CACHE_DIR/$file");
+			}
 		}
 	}
 	closedir(DIR);

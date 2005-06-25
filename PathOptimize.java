@@ -52,8 +52,10 @@ public class PathOptimize
     private Vector <Location>readLocations;  // Vector of locations 
 											 // (see class Locations)
 
+	// Container for PathPoints
     private Vector <PathPoint> pathPoints;
     
+	// Container for GraphPoints
     private Vector <GraphPoint> graphPoints;
     
     // These fields are for the vectors to be written out in a format
@@ -82,24 +84,22 @@ public class PathOptimize
     			binaryPoints, binaryLocations, binaryEdges
     	);
     }
-    
 
 	/**
-	 * TODO: better comment?
 	 * This method is used to run PathOptimized on raw data generated
-	 * by ShowImage.
-	 * 
-	 * This method is called from ShowImage!
-	 * 
-	 * I don't want to talk about this right now...
-	 * @param inPaths
-	 * @param inLocations
-	 * @param outPathFile
-	 * @param outLocFile
-	 * @param binaryPoints
-	 * @param binaryLocations
-	 * @param binaryEdges
-	 * @return True all the time, for no reason whatsoever...
+	 * by ShowImage.  Follow through the comments to see the process that this
+	 * method goes through.
+	 * <br><br>
+	 * This method is called from ShowImage
+	 * <br>
+	 * @param inPaths The raw path data from ShowImage
+	 * @param inLocations The "raw" location data from ShowImage
+	 * @param outPathFile The filename to write "optimized" raw data to
+	 * @param outLocFile  The filename to write "optimized" location data to
+	 * @param binaryPoints The filename to write binary point data to 
+	 * @param binaryLocations The filename to write binary location data to
+	 * @param binaryEdges The filename to write binary edge data to
+	 * @return True all the time, for no reason whatsoever...  :)
 	 */
     public static boolean run(Vector <Vector<Point>>inPaths, 
 			Vector <Location> inLocations,
@@ -108,18 +108,14 @@ public class PathOptimize
     {
     	PathOptimize pathOp = new PathOptimize();
     	
-        // we abort immediately if we can't load our input files
-    	//   
-    	
-    	/*
+    	/**
     	 * This reads in the Vector of vector of points and Vector of 
     	 * locations.  These go into the field readPoints and readLocation.
     	 */
 		pathOp.readPaths = inPaths;
 		pathOp.readLocations = inLocations;
-    	
-        
-    	/*
+
+    	/**
     	 * Convert the incoming paths of points that we read in
     	 * They come in as Vectors of a Vectors of Points
     	 * That is, it's a Vector where each element of the vector
@@ -128,7 +124,7 @@ public class PathOptimize
     	 */
 		System.err.print("\tConverting Points to PathPoints.....");
     	pathOp.convertPointsToPathPoints();
-    	/*
+    	/**
     	 * Data is now all stored in the pathPoints vector
     	 */
     	System.err.println("done.");
@@ -139,7 +135,7 @@ public class PathOptimize
 		System.err.println("done.");
     	
 		System.err.print("\tHandeling intersection of paths.....");
-    	/* 
+    	/**
     	 * Create new pathPoints at intersections and redirect "links" of 
     	 * the points that caused the intersections to the intersection
     	 * point
@@ -150,14 +146,17 @@ public class PathOptimize
 		System.err.print("\tConverting PathPoints to Graph Points.....");
 		pathOp.convertPathPointsToGraphPoints();
 		System.err.println("done.");
+		
 		System.err.print("\tConverting GraphPoints down to plain points" +
 				" and writing path and location objects.....");
     	pathOp.convertGraphPointsToPoints();
     	pathOp.writePoints(outPathFile, outLocFile);
 		System.err.println("done.");
+		
 		System.err.print("\tWriting out to binary files.....");
     	pathOp.binaryWrite(binaryPoints, binaryLocations, binaryEdges);
 		System.err.println("done.");
+		
 		System.err.println("====== Path Optimize complete! ======");
 		System.err.println("Wrote out:");
 		System.err.println(pathOp.graphPoints.size() + " GraphPoints");
@@ -1787,6 +1786,8 @@ class Edge
 	 * only primitive data types, so that it can be reconstructed by
 	 * other applications in other languages.
 	 * @param out Output stream
+	 * @param numPointsToWrite The number of points to write out to the file
+	 * (regardless of whether they are blank or not)
 	 */
 	public void binaryWrite(DataOutputStream out, int numPointsToWrite)
 	{

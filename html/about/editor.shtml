@@ -15,7 +15,7 @@
     <li><b>Path optimization and data output </b>(PathOptimize.java)</li>
 </ol>
 
-<h2>Editor</h2>
+<h2>1. Editor</h2>
 
 <ul>
     <li><h3>Overview: The editor controls the creation of a graph
@@ -187,7 +187,7 @@
     </ul>
 </ul>
 <li>
-<h2>Path optimization and data output</h2>
+<h2>2. Path optimization and data output</h2>
 <ul>
     <li><h3>Overview: </h3>
     <ul>

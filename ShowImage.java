@@ -454,21 +454,22 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * Method: void changeCurSelectedPointCord(int x, int y)
      * Change the coordinates of the currently selected point to the passed
      * in x-y coordinate.
-     * 3 cases, in call of them we reasign the coordinates of the point
+     * 3 cases, in all of them we reasign the coordinates of the point
      * in the paths array to the passed in points and refresh the status
      * bar<p>
      * 1: Location exists at previous point, but no new location name was 
-     * entered.  ==> Delete the previous point's location from the locations
-     * vector
+     * entered.  ==> Delete the location ONLY if this is the only connected
+     * point.
      * <p>
      * 2: Location exists at previous point, and a new location name was 
      * entered.  ==> replace the location corresponding with the previous
      * point with a new location based on the passed in points and the name
-     * in the location name bar.
+     * in the location name bar.  Move all points that previously were
+     * at the old location's coordinate to the new location.
      * <p>
      * 3: No location exists at previous point, and a new location name was
      * entered. ==> Add a location to the locations vector based on the name
-     * entered and the passed in points.  
+     * entered and the passed in points.
      * 4: No location exists at previous point, and no new location name was 
      * entered.  ==> Do what we do for everything.  
      * @param x -- The x coordinate to change to.
@@ -480,6 +481,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
         if( pointNumIndex >= lines.size() )
             return;
         
+		// Get the old point -- The point before the move...
+		Point oldPoint = ((Point)lines.get(pointNumIndex));
+		
         // check if there's an existing point
         // findLocationAtPoint returns an index if found, -1 if not found.
         int locIndex = findLocationAtPoint(
@@ -489,7 +493,23 @@ class ScrollablePicture extends JLabel implements Scrollable,
         if(locIndex >= 0){
             // if the text field is empty, delete the location
             if(parent.locationNameEntry.getText().equals("")){
-                locations.remove(locIndex);
+				// Get the number of points connected to the location
+				int numPoints = 0;
+				// For all paths
+				for(Vector<Point> path: paths)
+				{
+					// For each path, loop through all points
+					for(Point ptInPath: path)
+					{
+						// If a point is equal to the old point
+						if(ptInPath.equals(oldPoint))
+						{
+							numPoints++;
+						}
+					}
+				}
+				if(numPoints == 1)
+					locations.remove(locIndex);
             }
             // otherwise, we replace the location at this point
             // with another that has the new (x,y) coordinate and 
@@ -498,12 +518,28 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 locations.set(locIndex, new Location(x, y,
                         parent.locationNameEntry.getText(), parent));
 
-                parent.locationNameEntry.setText("");
-                
-                //set focus (listeners) back onto the picture
+                // Clear the location bar
+				parent.locationNameEntry.setText("");
+
+				//set focus (listeners) back onto the picture
                 this.requestFocus();
+				
+				// For all paths
+				for(Vector<Point> path: paths)
+				{
+					// For each path, loop through all points
+					for(Point ptInPath: path)
+					{
+						// If a point is equal to the old point
+						if(ptInPath.equals(oldPoint))
+						{
+							// Set the point equal to the old point to new
+							// new coordinates
+							ptInPath.setLocation(x,y);
+						}
+					}
+				}
             }
-           
         }
         // if we DIDN'T find a matching point, and the text
         // field isn't empty, create a new point
@@ -524,6 +560,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         
         // set statusbar text
         parent.statusBar.setText( statusBarText() );
+		
         repaint();
     }
 
@@ -2272,4 +2309,3 @@ class Location implements Serializable
         return(name + " @ (" + cord.x + ", " + cord.y + ")");
     }
 }
-

@@ -85,11 +85,11 @@ Displaying of shortest known path between locations:
 				  location
 
 Data caching:
-	- All displayed paths are cached and will be retreived if they are
+	- All displayed paths are cached and will be retrieved if they are
 	  requested again
 		- Caching prevents the need to load two of the main datafiles
 		  and run Dijkstra's algorithm.
-		- This alows for faster zooming and moving around the map
+		- This allows for faster zooming and moving around the map
 		- The length of time that the cache files are retained is
 		  adjustable (currently 10 minutes)
 

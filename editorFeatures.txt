@@ -1,0 +1,162 @@
+Java Programs:
+1) Editor (ShowImage.java -- original name retained for humor, it does a more than show an image)
+2) Path optimization and data output (PathOptimize.java)
+
+1) Editor (ShowImage.java)
+
+Overview: The editor controls the creation of a graph representation of paths.
+	- Handles the creation and modification of raw data
+	- Controls the loading/saving/creation of data files
+
+Data information:
+	- Raw data: Raw data can be briefly defined as a set of paths and a separate set of locations.
+		- The paths are stored in a vector and are built by a series of mouse clicks on the map (a series of points)
+		- Each location is stored as an object and contains additional preferences about the location
+			- Object stores the name of the location, a point (coordinate), and preferences
+			- The two currently implemented preferences are: intersection and pass through
+				- If intersection is not flagged, the line joining the two locations will not be allowed to be intersected by any other paths during the running of path optimization.
+				- If pass through is not flagged, a high cost will be added to taking a path through the location during the running of the shortest path algorithm. 
+				(making it disadvantageous but not impossible to go through the location)
+	- Optimized data: Simply put: A graph representing the raw data with optimizations to speed up computation in the interface
+		- Further explained in part 2 (Path Optimization)
+
+Look/GUI:
+Java application containing a scrollable map, a text box for quick entry of location names, a focus button, search buttons, and checkboxes for quick entry of location preferences.
+
+Feature Overview:
+Part I: Creation and modification of raw data
+
+Displays an image (map) to the user.  Allows the user to place points and location on top of the map.
+Mouse keys:
+	Left-click:  Add a new node to the end of the current path (and select the
+	             new node).
+	Right-click: Reposition the currently selected node. If a location exists at
+	             that point, it will be deleted (if the text field is empty), or
+	             renamed (if the text field is filled before the click).
+	Other-click: (This means middle-click, in practice.) Opens up a dialog box to select a location to connect to.
+				 On clicking of a location name from the list, a new point is created
+				 at that location (linking the location to the currently selected path)
+The following function keys are used to manipulate the data:
+	F1: Remove active node/location.
+	F2: Switch to previous path.
+	F3: Switch to next path.
+	F4: Switch to next node in current path.
+	F5: Switch to previous node in current path.
+	F6: Center on the currently selected node.  
+	F7: Save point/location data to disk OR run PathOptimize
+	F8: Read point/location data from disk
+	F9: Print locations to file in human-readable format (locations.txt).
+	F10: Manually change the coordinates of the current node (opens a dialog for entry of coordinates)
+	F11: Displays a dialog box displaying all location names (and allows for editing of the names)
+	F12: Create new path.
+
+(This list gives a general idea of functionality, some of the functions may be discussed in more detail later)
+
+To make a new location:
+	Enter location name in the text field, then left-click to place a node.
+	A node and a location will be created at that point.  (with properties determined by check boxes)
+
+Searching for a location:
+	- Searches for a location whose name contains the search text
+	- Cycles through all paths connected to the location
+
+Part II: File I/O (The saving and loading of raw data and interaction with path optimization)
+Function keys F7 and F8 handle the file I/O.  
+	- F7: Launches a dialog box prompting on writing data options: "Write Optimized files" or "save raw data to disk" or "cancel"
+		- "Writing optimized files" calls PathOptimize passing in the raw data and filenames to write to
+		- "Save raw data files to disk": writes out the representation of the raw data using primitive java objects (This allows the more complicated objects that store the data in runtime to be modified and still allow old datafiles to be loaded)
+	- F8: Launches a dialog box prompting on reading data options: "Load Optimized data output" or "load raw data" or "cancel"
+		- "Loading optimized data output" loads a representation of the optimized graph that was reduced down to raw data format after optimization (This shows how paths were intersected, combined, and which unnecessary points were removed)
+		- "Load raw data" reads in the raw data according to a flag in the file that tells what type of read routine to load (for loading previously written data versions).
+Note: The F8 dialog box is launched on program load, the F7 dialog box is launched on program exit
+
+
+2) Path optimization and data output
+Overview: PathOptimize converts passed in raw data into a three object format consisting of vertexes, edges, and locations that are writable to binary files.
+
+Data information:
+	- Object type "PathPoint" is used to help in the conversion of the raw data into a graph
+		- Contains a point that represents the coordinate of the PathPoint
+		- Contains a container of all other connected PathPoints
+		- Associated location (if one exists)
+
+	- The final vertex object type is called GraphPoint and contains the following information:
+		- ID number to represent it in the binary files and interface
+		- Point where the GraphPoint is located at
+		- container of edges that are connected to the GraphPoint
+		- Associated location (if one exists)
+	- The final edge object type is called Edge and contains the following information:
+		- ID number to represent it in the binary files and interface
+		- The two GraphPoints that the edge straddles
+		- container of points that make up the edge
+		- weight (cost) of the edge based on the pixel length of the edge
+	- The final location object is the same as the raw location object
+
+Program flow:
+Part 1) Passed in raw data is converted into PathPoints
+Part 2) PathPoints at the same location are collapsed down into one PathPoint
+Part 3) All intersections between connecting PathPoints are found and the PathPoints are properly linked together with a new PathPoint located at the intersection
+Part 4) PathPoints are then converted into the three object format (GraphPoints, Edges, Locations)
+Part 5) The three object format is cast down into raw data format for debugging information and written out in raw data format.
+Part 6) The three object format is written out into three binary files for use by the interface
+
+
+Part 1: Converts the points and locations from editor data into PathPoints
+	- Steps through all paths and for each path, creates PathPoints as it traverses each path
+	- PathPoints are linked together as the path is traversed (connecting neighbors in each path)
+
+Part 2: Condensing of PathPoints
+	- Loops through PathPoints, if two overlapping points are found...
+		- Unions the sets of connected path points
+		- Redirects the links pointing to the unnecessary PathPoint
+		- Removes the unnecessary PathPoint
+
+Part 3: Intersections: Finds all intersections of connections from PathPoints and adds a new connected PathPoint at the intersection.
+	- Algorithm loops through combinations of connected PathPoints (including ones that are newly created by this method)
+	- If points are calculated to have an intersection (after being tested for being in "range")...
+		- If the point of the intersection overlaps with an already existing PathPoint
+			- A new PathPoint is created and linking between the points and the new intersection is handled
+		- If the point of the intersection does not overlap with any existing PathPoint
+			- Linking is easily applied and a new PathPoint is added to the PathPoint object container
+		- Looping process is continued
+
+Part 4: PathPoints are converted into the three object format (GraphPoints, Edges, Locations)
+	- If a PathPoint fulfills the requirements of being a GraphPoint, a new GraphPoint is created @ its location.
+		- PathPoint fulfills requirements if: it has more than two connected points or if it is a location
+	- Create the edges based on the PathPoint connections
+		- This is a complicated routine, suffice to say that it creates edges composed of points between GraphPoints.  
+		- Routine will not create edges with an GraphPoint and an endpoint (throws aways dead ends)
+		- No duplicate edges are allowed (edges are undirected)
+		- See description of edge data type above for more information.
+	- 
+
+Part 5: Conversion of GraphPoints down to PathPoints is simply a debugging routine that converts GraphPoints back down to the raw data types.
+	- Writes out paths using edges
+	- Writes out the raw data using the editor's write method
+
+Part 6:
+	- 3 binary files
+		- File 1: GraphPoints - representing vertexes in the graph.  The GraphPoint data file contain the following data:
+			- ID number of the GraphPoint
+			- point (x,y) of the GraphPoint
+			- Information on the edges that the GraphPoint is connected to
+				- ID of edge, ID of GraphPoint edge connects to, weight of edge
+			- An associated location ID if one exists.
+				- flag to tell if the location is "pass through" (can be passed through in computation
+		- File 2: Edges - represents an edge between two GraphPoints.  Contains the following information:
+			- ID of edge
+			- "starting" GraphPoint
+			- "ending" GraphPoint
+			- weight (distance) of edge
+			- Number of points in the edge
+			- List of points in the edge
+			- Note: edges are buffered to the data size of the largest edge to allow seek and lookup operations by the editor
+				- This is allows for faster data loading for the interface
+		- File 3: Locations - representing a building/location/etc.  File contains the following information:
+			- ID number of the location
+			- point (x,y) of the location
+			- flag to tell if the name of the location should be displayed
+			- Associated GraphPoint ID
+			- The display name of the location
+	- Notes: File 1 and file 3 are the only files that need to be completely loaded by the interface.
+		- Essentially, we eliminated the need to load a large percentage of the points outside of the path we're displaying.

@@ -137,7 +137,7 @@
 		</div>
 
 		<div id="buttons">
-			<table border="0" cellspacing="0" cellpadding="0">
+			<table border="0" cellspacing="0" cellpadding="0" align="center">
 			<!-- this is the directional control pad -->
 			<tr>
 				<td>&nbsp;</td>
@@ -160,17 +160,17 @@
 
 			<!-- this is the zoom widget -->
 			<tr>
-				<td colspan="3"><a href="<TMPL_VAR NAME=ZOOM_IN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
+				<td colspan="3" align="center"><a href="<TMPL_VAR NAME=ZOOM_IN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
 			</tr>
 			<tr>
 				<!-- this is compressed to one line because
 				whitespace messes up IE. expand it to make it
 				comprehensible. as it stands, you are not
 				expected to understand this ;) -->
-				<td colspan="3"><TMPL_LOOP NAME=ZOOM_WIDGET><a href="<TMPL_VAR NAME=URL>"><TMPL_IF NAME=SELECTED><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png" width="30" height="15" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL> (current)" /><TMPL_ELSE><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level.png" width="30" height="15" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL>" /></TMPL_IF></a><br /></TMPL_LOOP></td>
+				<td colspan="3" align="center"><TMPL_LOOP NAME=ZOOM_WIDGET><a href="<TMPL_VAR NAME=URL>"><TMPL_IF NAME=SELECTED><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png" width="30" height="15" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL> (current)" /><TMPL_ELSE><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level.png" width="30" height="15" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL>" /></TMPL_IF></a><br /></TMPL_LOOP></td>
 			</tr>
 			<tr>
-				<td colspan="3"><a href="<TMPL_VAR NAME=ZOOM_OUT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
+				<td colspan="3" align="center"><a href="<TMPL_VAR NAME=ZOOM_OUT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
 			</tr>
 			</table>
 			<!-- end div buttons -->

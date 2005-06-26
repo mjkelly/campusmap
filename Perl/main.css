@@ -42,7 +42,7 @@ body{
 /* this is the 'start' field */
 #headerLeftBottomLeft{
 	float: left;
-	margin-left: 30px;
+	margin-left: 10px;
 	margin-right: 20px;
 }
 
@@ -56,7 +56,7 @@ body{
 
 #headerRight{
 	float: right;
-	width: 190px;
+	width: 150px;
 }
 
 #display{

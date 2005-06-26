@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>About UCSDMap: Interface Features</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<!--#include virtual="header.html"-->
+
+<h2>Interface Features</h2>
+
+<h3>Location name labels:</h3>
+	<ul>
+	<li>Colored based on whether the location was entered in the start or
+	  end box
+		<ul>
+		<li>label is colored green if entered in the start box, red if
+		  entered in the end box.</li>
+		</ul>
+	</li>
+	<li>If there's no room to display the location label to the right of
+	  the location then it will be displayed on the left.
+		<ul>
+		<li>Exception: when the label cannot be displayed either on the
+		  left or the right. (If this happens, both location names
+		  still appear to the left of the map.)</li>
+		</ul>
+	</li>
+	<li>These rules for displaying of the location labels hold while moving
+	  on the map. 	</li>
+	</ul>
+
+<h3>Moving and zooming with the map:</h3>
+	<ul>
+	<li>Navigation bar operations:
+		<ul>
+		<li>Navigation arrows: pan to the North, South, East, or West.</li>
+		<li>Circle (in the center of the navigation arrows): returns the</li>
+		  map to the default zoom and center of the currently
+		  displayed path or location (the same as clicking the
+		  &quot;submit&quot; button again).</li>
+		<li>Zoom bar:
+			<ul>
+			<li>Plus and Minus arrows: Moves to the next lower or
+			  higher zoom level.</li>
+			<li>Ovals: Go directly to zoom level. (Red oval
+			  represents current zoom level)</li>
+			</ul>
+		</li>
+		</ul>
+	</li>
+	<li>Clicking on the map centers the map on the point clicked</li>
+	<li>Clicking on the thumbnail (upper right) centers the map on
+	  the point clicked</li>
+	</ul>
+
+<h3>Thumbnail:</h3>
+	<ul>
+	<li>Show the overall view of the map</li>
+	<li>Blue rectangle shows the current map display</li>
+	<li>If applicable, green and red boxes indicate the start and end</li>
+	  locations
+	<li>Thumbnail is synchronized with map operations and vice versa</li>
+	</ul>
+
+<h3>Searching for a location:</h3>
+	<ul>
+	<li>A location can be typed into either the start or end box near the
+	  top of the page or selected in the drop down menu
+	<li>Fuzzy matching for typed location names
+		<ul>
+		<li>When there is only one close match: Auto-corrects and
+		  displays the location</li>
+		<li>Displays a list of hyperlinks when there are multiple close
+		  matches (sorted by closeness)
+			<ul>
+			<li>If the other entry field has a valid (or
+			  auto-corrected) location entered, the list of
+			  hyperlinks contains the distance of each suggested
+			  location to the valid location (or infinity if it
+			  cannot be reached).</li>
+			</ul>
+		</li>
+		<li>The desired location can be displayed by clicking on the
+		  corresponding hyperlink
+		</ul>
+	</li>
+	</ul>
+
+<h3>Displaying of shortest known path between locations:</h3>
+	<ul>
+	<li>When two locations are entered, the shortest known path is found
+	  between the two points
+		<ul>
+		<li>Computation of the shortest path is accomplished using
+		  Dijkstra's Algorithm on provided datafiles</li>
+		<li>Datafile properties can be set to stop the shortest path
+		  from going through certain locations (so people aren't</li>
+		  directed to walk through buildings)</li>
+		<li>Datafile properties can be set to allow for bridges and
+		  tunnel</li>
+		</ul>
+	</li>
+	<li>Information of the path is displayed to the left of the navigation
+	  bar:
+		<ul>
+		<li>The from (start) location is underlined and labeled in green</li>
+		<li>The to (end) location is underlined and labeled in red</li>
+		<li>The distance between the two location is displayed in miles.</li>
+		<li>The time it takes to walk between the two locations is
+		  displayed based on entry of walking speed (15min/mile
+		  default)</li>
+		</ul>
+	</li>
+	<li>The path is displayed on the map:
+		<ul>
+		<li>The path is drawn in blue on the map between the two labeled
+		  locations</li>
+		<li>The drawn path will maintain itself through different zoom
+		  levels and recentering</li>
+		</ul>
+	<li>Default display:
+		<ul>
+		<li>The highest zoom level is used such that all of the path can
+		  still be displayed on the map.
+			<ul>
+			<li>Thus, by default, all elements of the path will be
+			  viewable (Exception: when the path is too big for
+			  the lowest zoom level)
+				<ul>
+				<li>In this case, the display centers on the end
+				  location</li>
+				</ul>
+			</li>
+			</ul>
+		</li>
+		</ul>
+	</li>
+	</ul>
+
+<h3>Data caching:</h3>
+	<ul>
+	<li>All displayed paths are cached and will be retrieved if they are
+	  requested again
+		<ul>
+		<li>Caching prevents the need to load two of the main datafiles
+		  and run Dijkstra's algorithm.</li>
+		<li>This allows for faster zooming and moving around the map
+		<li>The length of time that the cache files are retained is
+		  adjustable (currently 10 minutes)</li>
+		</ul>
+	</li>
+	</ul>
+
+<h3>Notes:</h3>
+	<ul>
+	<li>You can find the distance to the nearest food facility by entering a
+	  start location and &quot;food&quot; for the end location</li>
+	</ul>
+
+
+</body>
+</html>

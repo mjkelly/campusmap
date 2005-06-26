@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>About UCSDMap</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<!--#include virtual="header.html"-->
+
+<h2>Abstract</h2>
+
+<p>
+	UCSDMap is a web-based application for finding the locations of, and shortest
+	paths between, buildings or areas on the campus. A Java (Swing) editor is used
+	to enter information about locations and the paths between them. This data is
+	then converted to a graph, optimized, and exported in a format that can be
+	read by a web interface. In the interface, one or two locations can be
+	selected from a drop-down menu, or searched for via a text field. If one
+	location is selected, the map is centered on that spot. If two are selected,
+	both are displayed and the shortest path between them is highlighted, along
+	with the distance of the path and approximate walking time.
+</p>
+
+</body>
+</html>

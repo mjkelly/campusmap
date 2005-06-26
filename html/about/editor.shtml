@@ -9,16 +9,13 @@
 <body>
 <!--#include virtual="header.html"-->
 
-<h2>Editor Features</h2>
-
-<h2>Java Programs:</h2>
+<h2>Java Programs for creation of the map data used by the interface:</h2>
 <ol>
-    <li>Editor (ShowImage.java -- original name retained for humor, it does a
-    more than show an image)</li>
-    <li>Path optimization and data output (PathOptimize.java)</li>
+    <li><b>Editor</b> (ShowImage.java - original name retained for humor)</li>
+    <li><b>Path optimization and data output </b>(PathOptimize.java)</li>
 </ol>
 
-<h2>Editor (ShowImage.java)</h2>
+<h2>Editor</h2>
 
 <ul>
     <li><h3>Overview: The editor controls the creation of a graph
@@ -31,27 +28,32 @@
 
     <li><h3>Data information:</h3>
     <ul>
-	<li>Raw data: Raw data can be briefly defined as a set of paths and a separate set of locations.
+	<li><b>Raw data:</b> Raw data can be briefly defined as a set of paths and a separate set of locations.
 	<ul>
             <li>The paths are stored in a vector and are built by a series of
 	    mouse clicks on the map (a series of points)</li>
-	    <li>Each location is stored as an object and contains additional
-	    preferences about the location</li>
-	    <li>Object stores the name of the location, a point (coordinate),
-	    and preferences</li>
-	    <li>The two currently implemented preferences are: intersection and
-	    pass through</li>
-	    <li>If intersection is not flagged, the line joining the two
-	    locations will not be allowed to be intersected by any other paths
-	    during the running of path optimization.</li>
-	    <li>If pass through is not flagged, a high cost will be added to
-	    taking a path through the location during the running of the
-	    shortest path algorithm. <br>
-	    (making it disadvantageous but not impossible to go through the
-	    location)</li>
+	    <li>Each location is stored as an object
+	    <ul>
+		<li>Object stores the name of the location, a point (coordinate),
+		and preferences</li>
+		<li>The two currently implemented preferences are: intersection and
+		pass through
+		<ul>
+		    <li>If intersection is not flagged, the line joining the two
+		    locations will not be allowed to be intersected by any other paths
+		    during the running of path optimization.</li>
+		    <li>If pass through is not flagged, a high cost will be added to
+		    taking a path through the location during the running of the
+		    shortest path algorithm. <br>
+		    (making it disadvantageous but not impossible to go through the
+		    location)</li>
+		</ul>
+		</li>
+	    </ul>
+	    </li>
 	</ul>
         </li>
-	<li>Optimized data: Simply put: A graph representing the raw data with
+	<li><b>Optimized data:</b> Simply put - A graph representation of the raw data with
 	optimizations to speed up computation in the interface
 	<ul>
 	    <li>Further explained in part 2 (Path Optimization)</li>
@@ -86,10 +88,9 @@
 		
 		<li>Right-click:
 		<ul>
-		    <li>Reposition the currently selected node. If a location
-		    exists at that point, it will be deleted (if the text field is
-		    empty), or renamed (if the text field is filled before the
-		    click).
+		    <li>Reposition the currently selected node.  Special
+		    cases are handeled for the moving/renaming/deletion of
+		    locations during a right-click.
 		    </li>
 		</ul>
 		</li>
@@ -149,7 +150,7 @@
 	    <li>Function keys F7 and F8 handle the file I/O.<br>
 	    Note: The F8 dialog box is launched on program load, the F7 dialog box
 	    is launched on program exit.
-	    <ol>
+	    <ul>
 		<li>F7: Launches a dialog box prompting on writing data
 		options:<br>
 		"Write Optimized files" or "save raw data to disk" or "cancel"
@@ -222,109 +223,113 @@
 	    <li>Container of points that make up the edge</li>
 	    <li>weight (cost) of the edge based on the pixel length of the
 	    edge</li>
-	    <li>The final location object is the same as the raw location
+	</ul>
+	<li>The final Location object is the same as the raw Location
 	    object</li>
-	</ul>
 	</li>
     </ul>
     </li>
-</ul>
-<li><h3>Program flow:</h3>
-<ol>
+    <li><h3>Program flow:</h3>
+    <ol>
 
-    <li>Converts the points and locations from editor data into PathPoints
-    <ul>
-	<li>Steps through all paths and for each path, creates PathPoints as it traverses each path
-	<li>PathPoints are linked together as the path is traversed (connecting neighbors in each path)
-    </ul>
-
-    <li>Condensing of PathPoints
-    <ul>
-	<li>Loops through PathPoints, if two overlapping points are found...
-	<li>Unions the sets of connected path points
-	<li>Redirects the links pointing to the unnecessary PathPoint
-	<li>Removes the unnecessary PathPoint
-    </ul>
-    </li>
-
-    <li>Intersections: Finds all intersections of connections from PathPoints and adds a new connected PathPoint at the intersection.
-    <ul>
-	<li>Algorithm loops through combinations of connected PathPoints
-	(including ones that are newly created by this method)</li>
-	<li>If points are calculated to have an intersection (after being tested for being in "range")...
-	<li>If the point of the intersection overlaps with an already existing PathPoint
-	<li>A new PathPoint is created and linking between the points and the new intersection is handled
-	<li>If the point of the intersection does not overlap with any existing PathPoint
-	<li>Linking is easily applied and a new PathPoint is added to the PathPoint object container
-	<li>Looping process is continued
-    </ul>
-    </li>
-
-    <li>PathPoints are converted into the three object format (GraphPoints, Edges, Locations)
-    <ul>
-	<li>If a PathPoint fulfills the requirements of being a GraphPoint, a new GraphPoint is created @ its location.
-	<li>PathPoint fulfills requirements if: it has more than two connected points or if it is a location
-	<li>Create the edges based on the PathPoint connections
-	<li>This is a complicated routine, suffice to say that it creates edges composed of points between GraphPoints.  
-	<li>Routine will not create edges with an GraphPoint and an endpoint (throws aways dead ends)
-	<li>No duplicate edges are allowed (edges are undirected)
-	<li>See description of edge data type above for more information.
-    </ul>
-    </li>
-
-    <li>Conversion of GraphPoints down to PathPoints (simply a debugging
-    routine that converts GraphPoints back down to the raw data types.)
-    <ul>
-	<li>Writes out paths using edges<li>
-	<li>Writes out the raw data using the editor's write method</li>
-    </ul>
-    </li>
-
-    <li>
-    The three object format is written out into three binary files for use by the interface
-    <ul>
-	<li>File 1: GraphPoints - representing vertexes in the graph.  The GraphPoint data file contain the following data:
+	<li><b>Converts the points and locations from editor data into
+	    PathPoints</b>
 	<ul>
-	    <li>ID number of the GraphPoint
-	    <li>point (x,y) of the GraphPoint
-	    <li>Information on the edges that the GraphPoint is connected to
-	    <li>ID of edge, ID of GraphPoint edge connects to, weight of edge
-	    <li>An associated location ID if one exists.
-	    <li>flag to tell if the location is "pass through" (can be passed through in computation
+	    <li>Steps through all paths and for each path, creates PathPoints as it traverses each path
+	    <li>PathPoints are linked together as the path is traversed (connecting neighbors in each path)
+	</ul>
+
+	<li><b>Condensing of PathPoints</b>
+	<ul>
+	    <li>Loops through PathPoints, if two overlapping points are found...
+	    <li>Unions the sets of connected path points
+	    <li>Redirects the links pointing to the unnecessary PathPoint
+	    <li>Removes the unnecessary PathPoint
 	</ul>
 	</li>
 
-	<li>File 2: Edges - represents an edge between two GraphPoints.  Contains the following information:
+	<li><b>Intersections: </b>Finds all intersections of connections from
+	PathPoints and adds a new connected PathPoint at the intersection.
 	<ul>
-	    <li>ID of edge
-	    <li>"starting" GraphPoint
-	    <li>"ending" GraphPoint
-	    <li>weight (distance) of edge
-	    <li>Number of points in the edge
-	    <li>List of points in the edge
-	</ul>
-	Note: edges are buffered to the data size of the largest edge to allow seek and lookup operations by the editor
-	<ul>
-	    <li>This is allows for faster data loading for the interface</li>
+	    <li>Algorithm loops through combinations of connected PathPoints
+	    (including ones that are newly created by this method)</li>
+	    <li>If points are calculated to have an intersection (after being tested for being in "range")...
+	    <li>If the point of the intersection overlaps with an already existing PathPoint
+	    <li>A new PathPoint is created and linking between the points and the new intersection is handled
+	    <li>If the point of the intersection does not overlap with any existing PathPoint
+	    <li>Linking is easily applied and a new PathPoint is added to the PathPoint object container
+	    <li>Looping process is continued
 	</ul>
 	</li>
 
-	<li>File 3: Locations - representing a building/location/etc.  File contains the following information:
+	<li><b>PathPoints are converted into the three object format</b> (GraphPoints, Edges, Locations)
 	<ul>
-	    <li>ID number of the location
-	    <li>point (x,y) of the location
-	    <li>flag to tell if the name of the location should be displayed
-	    <li>Associated GraphPoint ID
-	    <li>The display name of the location
+	    <li>If a PathPoint fulfills the requirements of being a GraphPoint, a new GraphPoint is created @ its location.
+	    <li>PathPoint fulfills requirements if: it has more than two connected points or if it is a location
+	    <li>Create the edges based on the PathPoint connections
+	    <li>This is a complicated routine, suffice to say that it creates edges composed of points between GraphPoints.  
+	    <li>Routine will not create edges with an GraphPoint and an endpoint (throws aways dead ends)
+	    <li>No duplicate edges are allowed (edges are undirected)
+	    <li>See description of edge data type above for more information.
+	</ul>
+	</li>
+
+	<li><b>Conversion of GraphPoints down to PathPoints</b> (A debugging
+	routine that converts GraphPoints back down to the raw data types.)
+	<ul>
+	    <li>Writes out paths using edges</li>
+	    <li>Writes out the raw data using the editor's write method</li>
+	    <li>Allows for viewing of the graph the the interface "sees"
+	</ul>
+	</li>
+
+	<li><b>The three object format is written out into three binary files
+	    for use by the interface</b>
+	<ul>
+	    <li>File 1: GraphPoints - representing the vertexes in the graph.  The
+	    GraphPoint data file contain the following data:
+	    <ul>
+		<li>ID number of the GraphPoint
+		<li>point (x,y) of the GraphPoint
+		<li>Information on the edges that the GraphPoint is connected to
+		<li>ID of edge, ID of GraphPoint edge connects to, weight of edge
+		<li>An associated location ID if one exists.
+		<li>flag to tell if the location is "pass through" (can be passed through in computation
+	    </ul>
+	    </li>
+
+	    <li>File 2: Edges - representing the edges between GraphPoints.  Contains the following information:
+	    <ul>
+		<li>ID of edge
+		<li>"starting" GraphPoint
+		<li>"ending" GraphPoint
+		<li>weight (distance) of edge
+		<li>Number of points in the edge
+		<li>List of points in the edge
+	    </ul>
+	    Note: edges are buffered to the data size of the largest edge to allow seek and lookup operations by the editor
+	    <ul>
+		<li>This is allows for faster data loading for the interface</li>
+	    </ul>
+	    </li>
+
+	    <li>File 3: Locations - representing buildings/locations/etc.  File contains the following information:
+	    <ul>
+		<li>ID number of the location
+		<li>point (x,y) of the location
+		<li>flag to tell if the name of the location should be displayed
+		<li>Associated GraphPoint ID
+		<li>The display name of the location
+	    </ul>
+	    </li>
+	</ul>
+	Note: File 1 and file 3 are the only files that need to be completely loaded by the interface.
+	<ul>
+	    <li>Essentially, we eliminated the need to load a large percentage of
+	    the points outside of the path we're displaying.</li>
 	</ul>
 	</li>
     </ul>
-    Note: File 1 and file 3 are the only files that need to be completely loaded by the interface.
-    <ul>
-	<li>Essentially, we eliminated the need to load a large percentage of
-	the points outside of the path we're displaying.</li>
-    </ul>
-    </li>
 </ul>
 </body>
 </html>

@@ -152,6 +152,21 @@
 		  adjustable (currently 10 minutes)</li>
 		</ul>
 	</li>
+	<li>Data stored in cache files is as follows
+		<ul>
+		<li>The distance of the path.</li>
+		<li>The minimum and maximum X and Y coordinates of the points that appear in the path.</li>
+		<li>The number of edges (sets of points) that are stored in the cache.</li>
+		<li>The edges themselves. Edges represent the sets of
+		    points that lie on each vertex of the graph that represents the
+		    paths on the map. Each edge consists of:</li>
+			<ul>
+			<li>The number of coordinate pairs.</li>
+			<li>Each coordinate pair, which is simply an X coordinate followed by a Y coordinate.</li>
+			</ul>
+		</ul>
+	</li>
+	<li>The data in the cache is designed to mimic the data that would be retrieved from disk if no cache was used. This results in a slightly more complicated data format, but allows for more sharing of code once the data is loaded.</li>
 	</ul>
 
 <h3>Notes:</h3>

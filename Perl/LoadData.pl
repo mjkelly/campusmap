@@ -8,6 +8,7 @@
 
 use strict;
 use warnings;
+use lib qw(./lib);
 
 use LoadData;
 use MapGlobals;
@@ -84,11 +85,13 @@ print "\n\n===== Locations =====\n";
 my $locations = LoadData::loadLocations($dir . '/' . $MapGlobals::LOCATION_FILE);
 print STDERR "Loaded " . (keys(%$locations)) . " locations.\n";
 
+my @locIds = grep(!/name:/, keys %$locations);
+
 if($doLocations){
 	print "Traversing data structure:\n";
 
 	# loop through each location key stored in the hashref $locations
-	foreach my $locID ( sort{ $a <=> $b }(keys(%$locations)) ){
+	foreach my $locID ( sort{ $a <=> $b }( @locIds ) ){
 		# each value in $locations is simply another hash, which has these fields:
 		# ID, x, y, PointID, Name
 		print "Location ID: $locations->{$locID}{'ID'} (from key: $locID)\n";
@@ -100,25 +103,26 @@ if($doLocations){
 	}
 }
 
-print "\n\n==== Edges =====\n";
-
-my $edges = LoadData::loadEdges($dir . '/' . $MapGlobals::EDGE_FILE);
-print STDERR "Loaded " . (keys(%$edges)) . " edges.\n";
-
-if($doEdges){
-	print "Traversing data structure:\n";
-
-	# loop through each edge key stored in the hashref $edges
-	foreach my $edgeID ( sort{ $a <=> $b }(keys(%$edges) ) ){
-		# print out the fields in this Edge
-		print "Edge ID: $edges->{$edgeID}{'ID'}\n";
-		print "\tStartPoint ID: $edges->{$edgeID}{'StartPoint'}\n";
-		print "\tEndPoint ID: $edges->{$edgeID}{'EndPoint'}\n";
-
-		# now print out the ordered pairs of all the points in this Edge's path
-		print "\tPath Points:\n";
-		foreach my $point ( @{$edges->{$edgeID}{'Path'}} ){
-			print "\t\t($point->{'x'}, $point->{'y'})\n";
-		}
-	}
-}
+# this is no longer applicable, because we don't load all the edges at once anymore.
+#print "\n\n==== Edges =====\n";
+#
+#my $edges = LoadData::loadEdges($dir . '/' . $MapGlobals::EDGE_FILE);
+#print STDERR "Loaded " . (keys(%$edges)) . " edges.\n";
+#
+#if($doEdges){
+#	print "Traversing data structure:\n";
+#
+#	# loop through each edge key stored in the hashref $edges
+#	foreach my $edgeID ( sort{ $a <=> $b }(keys(%$edges) ) ){
+#		# print out the fields in this Edge
+#		print "Edge ID: $edges->{$edgeID}{'ID'}\n";
+#		print "\tStartPoint ID: $edges->{$edgeID}{'StartPoint'}\n";
+#		print "\tEndPoint ID: $edges->{$edgeID}{'EndPoint'}\n";
+#
+#		# now print out the ordered pairs of all the points in this Edge's path
+#		print "\tPath Points:\n";
+#		foreach my $point ( @{$edges->{$edgeID}{'Path'}} ){
+#			print "\t\t($point->{'x'}, $point->{'y'})\n";
+#		}
+#	}
+#}

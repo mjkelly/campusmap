@@ -1287,11 +1287,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
 
 		// IO Errors occured in attempting to read
 		final String PATHS_IO_ERROR = 
-			"General Exception in \"" + pathFileName + "\"!";
+			"Exception reading \"" + pathFileName + "\"!";
 		final String LOCATION_IO_ERROR =
-			"General Exception in \"" + locFileName + "\"!";
+			"Exception reading \"" + locFileName + "\"!";
 		
-		final String ERROR_READING_DATA = "Error occured in reading data!";
+		final String ERROR_READING_DATA = "Error occured in reading data!"
+                                + " See stderr output.";
 		
 		final String INPUT_READ_SUCCESS = "Input read from file";
 		
@@ -1332,7 +1333,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
         catch(Exception e){
 			// Indicate that an IO error occured.  
-            System.err.println(PATHS_IO_ERROR);
+            System.err.println(PATHS_IO_ERROR + ": " + e + ": " + e.getMessage());
         }
 		
 		
@@ -1405,7 +1406,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 					+ LOC_FILE_NOT_FOUND);
 	    }
 	    catch(Exception e){
-	    	System.err.println(LOCATION_IO_ERROR);
+            System.err.println(LOCATION_IO_ERROR + ": " + e + ": " + e.getMessage());
 	    }
 
 		// If both reading of locations and paths was successful...

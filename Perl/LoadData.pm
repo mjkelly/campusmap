@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Wed Jun 22 13:31:31 PDT 2005
+# Mon Jun 27 00:06:44 PDT 2005
 # -----------------------------------------------------------------
 
 package LoadData;
@@ -182,7 +182,6 @@ sub loadLocations{
 		# read in the Location's name string, knowing that its length 
 		# is right in front of the actual character data
 		my $name = readJavaString(*INPUT);
-		$name =~ s/\0//g;
 		$locations->{$ID}{'Name'} = $name;
 		print STDERR "Name: $locations->{$ID}{'Name'}\n" if DEBUG;
 
@@ -338,10 +337,17 @@ sub readJavaString{
 	my $len = readInt($fh);
 
 	# now read in the rest of the string, according to its length
+	# (java chars are 2 bytes long)
 	read($fh, $buf, ($len*2));
 
-	# now unpack the string, using the length and data we read before
-	return unpack("n/a*", $len . $buf);
+	# unpack $buf as a series of ascii characters
+	my $str = unpack("a*", $buf);
+
+	# remove all the nulls: Java strings are two bytes, but ascii
+	# characters are only one, so we've got a null between each character.
+	$str =~ s/\0//g;
+
+	return $str;
 }
 
 ###################################################################

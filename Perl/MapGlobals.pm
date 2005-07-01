@@ -18,7 +18,7 @@ use constant{
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(TRUE FALSE INFINITY between max min @SIZES @SCALES);
+@EXPORT_OK = qw(TRUE FALSE INFINITY between max min asInt @SIZES @SCALES);
 @EXPORT = qw();
 
 # a list of scaling attributes
@@ -153,11 +153,8 @@ sub getGd2Filename{
 # 	- filename for a cache file of the two args.
 ###################################################################
 sub getCacheName{
-	my($from, $to) = (0, 0);
-	# grab the integer values fom the arguments
-	$from = $1 if(shift =~ /^(\d+)/);
-	$to = $1 if(shift =~ /^(\d+)/);
-	return $CACHE_DIR . '/' . int(min($from, $to)) . '-' . int(max($from, $to)) . '.cache';
+	my($from, $to) = (asInt(shift()), asInt(shift()));
+	return $CACHE_DIR . '/' . min($from, $to) . '-' . max($from, $to) . '.cache';
 }
 
 ###################################################################
@@ -184,7 +181,8 @@ sub reaper{
 
 		# kill it if it's too old
 		if($age > $max_age){
-			# untaint the filename before we delete
+			# make sure the filename is roughly of the correct format,
+			# to avoid deleting random stuff that somehow got in here
 			if($file =~ /^([-\w]+)$kill_suffix$/){
 				$file = $1 . $kill_suffix;
 				#warn "reaper @ $now: $file: chop, chop, chop!\n";
@@ -250,5 +248,28 @@ sub max{
 	}
 	else{
 		return $y;
+	}
+}
+
+###################################################################
+# This is really just int(), but it has a few important advantages for our
+# purposes:
+#	- it untaints the variable passed in (because that's the whole point of
+#	  running numeric input through int()!)
+#	- doesn't give warnings when it gets a string (strings == 0)
+#
+# Args:
+#	- any scalar
+# Returns:
+#	- the argument as an integer (this is 0 for most strings)
+###################################################################
+sub asInt{
+	my $str = shift;
+	my ($r) = ($str =~ /^(\d+)/);
+	if($r){
+		return $r;
+	}
+	else{
+		return 0;
 	}
 }

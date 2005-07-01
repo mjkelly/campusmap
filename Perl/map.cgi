@@ -1,16 +1,13 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 # -----------------------------------------------------------------
 # map.cgi -- The user interface for the UCSDMap.
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# TODO: Get script working with taint checks. Remember to check
-#       ALL paths of logic!
-#
 # TODO: Create some kind of 'viewport' object to avoid passing around
 # these huge, indecipherable (and frequently-changing!) lists.
 #
-# Wed Jun 15 23:54:08 PDT 2005
+# Thu Jun 30 21:59:27 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -27,7 +24,7 @@ use CGI;
 use File::Temp ();
 use HTML::Template;
 
-use MapGlobals qw(TRUE FALSE INFINITY between @SIZES @SCALES);
+use MapGlobals qw(TRUE FALSE INFINITY between asInt @SIZES @SCALES);
 use LoadData;
 use MapGraphics;
 use ShortestPath;
@@ -69,13 +66,13 @@ my $fromTxtLookup = LoadData::nameLookup($fromTxt);
 my $toTxtLookup = LoadData::nameLookup($toTxt);
 
 # x and y display offsets, from the upper left
-my $xoff   = int($q->param('xoff')   || 0);
-my $yoff   = int($q->param('yoff')   || 0);
+my $xoff   = asInt($q->param('xoff')   || 0);
+my $yoff   = asInt($q->param('yoff')   || 0);
 # the zoom level of the map; this is an index into the MapGlobals::SCALES
 # array, which contains the actual scale multipliers
-my $scale  = int($q->param('scale')) || undef;	# this generates a warning, but we don't care
+my $scale  = asInt($q->param('scale')) || undef;	# this generates a warning, but we don't care
 # the size of the map display;  this is an index into MapGlobals::SIZES
-my $size   = int(defined($q->param('size')) ? $q->param('size') : 1);
+my $size   = asInt(defined($q->param('size')) ? $q->param('size') : 1);
 
 # width and height of the viewing window (total image size is in MapGlobals)
 my $width  = $SIZES[$size][0];
@@ -83,15 +80,15 @@ my $height = $SIZES[$size][1];
 
 # how fast do you walk?
 # in minutes per mile.
-my $mpm    = int($q->param('mpm'))  || 15;
+my $mpm    = asInt($q->param('mpm'))  || 15;
 
 # click offsets from the map
-my $mapx = defined($q->param('map.x')) ? int($q->param('map.x')) : undef;
-my $mapy = defined($q->param('map.y')) ? int($q->param('map.y')) : undef;
+my $mapx = defined($q->param('map.x')) ? asInt($q->param('map.x')) : undef;
+my $mapy = defined($q->param('map.y')) ? asInt($q->param('map.y')) : undef;
 
 # click offsets from the thumbnail
-my $thumbx = defined($q->param('thumb.x')) ? int($q->param('thumb.x')) : undef;
-my $thumby = defined($q->param('thumb.y')) ? int($q->param('thumb.y')) : undef;
+my $thumbx = defined($q->param('thumb.x')) ? asInt($q->param('thumb.x')) : undef;
+my $thumby = defined($q->param('thumb.y')) ? asInt($q->param('thumb.y')) : undef;
 # one or the other (map or thumb click offsets) should be undef
 
 # kill old temporary files

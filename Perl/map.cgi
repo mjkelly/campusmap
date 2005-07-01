@@ -196,9 +196,16 @@ foreach (sort keys %$locations){
 			$trunc = substr($name, 0, $MapGlobals::MAX_NAME_LEN) . '...';
 		}
 
-		#XXX: clean up
-		$loc_opt_from .= '<option value="' . CGI::escapeHTML($name) . ($fromTxt eq $locations->{$_}{'Name'} ? 'selected="selected"' : '') . '">' . CGI::escapeHTML($trunc) . "</option>\n";
-		$loc_opt_to .= '<option value="' . CGI::escapeHTML($name) . ($toTxt eq $locations->{$_}{'Name'} ? 'selected="selected"' : '') . '">' . CGI::escapeHTML($trunc) . "</option>\n";
+		$loc_opt_from .= sprintf(qq{<option value="%s"%s>%s</option>\n},
+			CGI::escapeHTML($name),
+			($fromTxt eq $locations->{$_}{'Name'} ? ' selected="selected"' : ''),
+			CGI::escapeHTML($trunc)
+		);
+		$loc_opt_to .= sprintf(qq{<option value="%s"%s>%s</option>\n},
+			CGI::escapeHTML($name),
+			($toTxt eq $locations->{$_}{'Name'} ? ' selected="selected"' : ''),
+			CGI::escapeHTML($trunc)
+		);
 	}
 }
 

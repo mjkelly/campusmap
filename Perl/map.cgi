@@ -266,7 +266,7 @@ if($path){
 	}
 	else{
 		$path = FALSE;
-		$ERROR .= "<p>These two locations are not connected.</p>\n";
+		$ERROR .= "These two locations are not connected. ";
 	}
 
 	if(!$xoff && !$yoff){

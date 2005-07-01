@@ -80,10 +80,6 @@ body{
 	margin-top: 3px;
 }
 
-/* 
- * Buttons for controlling zoom and direction...position is absolutely
- * relative to map :)
- */
 #buttons{
 	float: left;
 	width: 70px;
@@ -112,5 +108,9 @@ body{
 	border-bottom: 2px solid #ff0000;
 	line-height: 18px;
 	display: inline;
+}
+
+#map{
+	border: 1px solid black;
 }
 

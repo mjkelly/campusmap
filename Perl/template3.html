@@ -90,16 +90,16 @@
 			<!-- status text -->
 
 			<TMPL_IF NAME=SRC_FOUND>
-				<p><div id="fromTxt">
+				<p><span id="fromTxt">
 					<b>From</b>: <TMPL_VAR NAME=TXT_SRC>
-				</div></p>
+				</span></p>
 			<TMPL_ELSE>
 				<p><TMPL_VAR NAME=SRC_HELP></p>
 			</TMPL_IF>
 			<TMPL_IF NAME=DST_FOUND>
-				<p><div id="toTxt">
+				<p><span id="toTxt">
 					<b>To</b>: <TMPL_VAR NAME=TXT_DST>
-				</div></p>
+				</span></p>
 			<TMPL_ELSE>
 				<p><TMPL_VAR NAME=DST_HELP></p>
 			</TMPL_IF>
@@ -126,7 +126,7 @@
 
 			</TMPL_IF>
 			<TMPL_IF NAME=TXT_ERROR>
-				<b><TMPL_VAR NAME=TXT_ERROR></b>
+				<p><b><TMPL_VAR NAME=TXT_ERROR></b></p>
 			</TMPL_IF>
 
 			<!-- end status text -->
@@ -190,7 +190,7 @@
 			<input type="hidden" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
 			<input type="hidden" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
 
-			<input type="image" name="map" id="map" border="1"
+			<input type="image" name="map" id="map"
 				src="<TMPL_VAR NAME=IMG_VIEW>" />
 			</form>
 			<!-- end main image -->

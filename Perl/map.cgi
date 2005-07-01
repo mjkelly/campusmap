@@ -70,7 +70,9 @@ my $xoff   = asInt($q->param('xoff')   || 0);
 my $yoff   = asInt($q->param('yoff')   || 0);
 # the zoom level of the map; this is an index into the MapGlobals::SCALES
 # array, which contains the actual scale multipliers
-my $scale  = asInt($q->param('scale')) || undef;	# this generates a warning, but we don't care
+# this is undefined if no parameter was given (we go through hell later on to
+# find a good default)
+my $scale  = defined($q->param('scale')) ? asInt($q->param('scale')) : undef;
 # the size of the map display;  this is an index into MapGlobals::SIZES
 my $size   = asInt(defined($q->param('size')) ? $q->param('size') : 1);
 
@@ -277,7 +279,6 @@ if($path){
 		my $h = $rect->{'ymax'} - $rect->{'ymin'};
 
 		# find the first level that encompasses the entire rectangle
-		$scale = -1; # we set a bogus scale so we can test for it later
 		for my $i (0..$#SCALES){
 			if($w < $width/$SCALES[$i] && $h < $height/$SCALES[$i]){
 				# we know it's big enough. now, make sure
@@ -317,7 +318,7 @@ if($path){
 		# if $scale is still a bogus value, we couldn't find ANY zoom level
 		# to accomodate the two locations! fall back to centering on the destination,
 		# and zooming in a bit
-		if($scale == -1){
+		if(!defined($scale)){
 			$scale = $MapGlobals::SINGLE_LOC_SCALE;
 			$xoff = $locations->{$to}{'x'};
 			$yoff = $locations->{$to}{'y'};

@@ -577,7 +577,7 @@ SEARCH:				foreach my $s_tok (@search_toks){
 						next LOC;
 					}
 					# substring search
-					elsif( $l_tok =~ /$s_tok/ ){
+					elsif( index($l_tok, $s_tok) != -1 ){
 						my $strength = length($s_tok) / length($l_tok);
 						$outstr .= " $s_tok [$strength SUB]";
 
@@ -586,7 +586,7 @@ SEARCH:				foreach my $s_tok (@search_toks){
 						next SEARCH;
 					}
 					# superstring search
-					elsif( $s_tok =~ /$l_tok/ ){
+					elsif( index($s_tok, $l_tok) != -1 ){
 						my $strength = length($l_tok) / length($s_tok);
 						$outstr .= " $s_tok [$strength SUPER]";
 

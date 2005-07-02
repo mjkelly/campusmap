@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Mon Jun 27 00:06:44 PDT 2005
+# Fri Jul  1 23:39:04 PDT 2005
 # -----------------------------------------------------------------
 
 package LoadData;
@@ -323,10 +323,6 @@ sub initEdgeFile{
 # 	- the string read
 ###################################################################
 sub readJavaString{
-	if(!@_){
-		warn "readJavaString() requires two arguments!\n";
-		return;
-	}
 	my($fh) = @_;
 	my $buf;
 
@@ -479,7 +475,7 @@ sub cacheReaper{
 			# format to delete
 			if($file =~ /(\d+)-(\d+).cache/){
 				$file = "$1-$2.cache";
-				warn "Cache reaper @ $now: $file: chop, chop, chop!\n";
+				#warn "Cache reaper @ $now: $file: chop, chop, chop!\n";
 				unlink("$MapGlobals::CACHE_DIR/$file");
 			}
 		}

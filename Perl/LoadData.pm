@@ -412,7 +412,14 @@ sub writeCache{
 sub loadCache{
 	my ($file) = @_;
 
+	my $now = time();
 	print STDERR "LOADING FROM CACHE...\n" if DEBUG;
+	# update the modification and access times. this is important, becuse
+	# cacheReaper() checks _modification_ time, not access time. this is a
+	# stupid hack to get around systems that may have 'noatime' set (such
+	# as Gentoo machines, by default).
+	utime($now, $now, $file);
+
 	open(CACHE, '<', $file) or die "Cannot open cache file $file for reading: $!\n";
 	# the distance of the path
 	my $dist = readInt(*CACHE);
@@ -464,12 +471,15 @@ sub loadCache{
 ###################################################################
 sub cacheReaper{
 	# Don't fear the reaper...
+	warn "Invoking cache reaper...\n";
 	my $now = time();
 	opendir(DIR, $MapGlobals::CACHE_DIR) or die "Cannot open directory $MapGlobals::CACHE_DIR\n";
 	while( defined(my $file = readdir(DIR)) ){
+		next if( substr($file, 0, 1) eq '.' );
 		# 8 is atime, 9 is mtime, 10 is ctime
-		my $time = (stat( "$MapGlobals::CACHE_DIR/$file"))[8];
+		my $time = (stat( "$MapGlobals::CACHE_DIR/$file"))[9];
 		# delete files if they're too old
+		warn "Cache reaper: $file: time differential: " . ($now - $time) . "s\n";
 		if( $now - $time > $MapGlobals::CACHE_EXPIRY ){
 			# make absolutely sure the file is of the right
 			# format to delete

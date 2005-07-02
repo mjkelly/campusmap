@@ -622,8 +622,8 @@ $tmpl->param( TXT_ERROR => $ERROR );
 
 # this is tells whether we're actually displaying a path between two separate locations
 $tmpl->param( GOT_PATH => $path );
-$tmpl->param( DISTANCE => sprintf("%.02f", $dist) );
-$tmpl->param( TIME => sprintf("%.02f", $dist*$mpm) );
+$tmpl->param( DISTANCE => sprintf("%.02f", $dist || 0) );
+$tmpl->param( TIME => sprintf("%.02f", ($dist || 0)*$mpm) );
 
 # a bunch of boolean values, for whatever strange logic we may need inside the template
 $tmpl->param( SRC_FOUND => $src_found );

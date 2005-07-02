@@ -471,7 +471,7 @@ sub loadCache{
 ###################################################################
 sub cacheReaper{
 	# Don't fear the reaper...
-	warn "Invoking cache reaper...\n";
+	#warn "Invoking cache reaper...\n";
 	my $now = time();
 	opendir(DIR, $MapGlobals::CACHE_DIR) or die "Cannot open directory $MapGlobals::CACHE_DIR\n";
 	while( defined(my $file = readdir(DIR)) ){
@@ -479,7 +479,7 @@ sub cacheReaper{
 		# 8 is atime, 9 is mtime, 10 is ctime
 		my $time = (stat( "$MapGlobals::CACHE_DIR/$file"))[9];
 		# delete files if they're too old
-		warn "Cache reaper: $file: time differential: " . ($now - $time) . "s\n";
+		#warn "Cache reaper: $file: time differential: " . ($now - $time) . "s\n";
 		if( $now - $time > $MapGlobals::CACHE_EXPIRY ){
 			# make absolutely sure the file is of the right
 			# format to delete

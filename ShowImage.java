@@ -2216,6 +2216,16 @@ class Location implements Serializable
      */
     public String name;
     
+    /**
+     * Building code for a location
+     */
+    private String buildingCode;
+    
+    /**
+     * Description of the a location
+     */
+    private String locDescription;
+    
     // Determines if we can use this point when linking together sets of
     // paths
     private boolean canPassThrough;
@@ -2309,4 +2319,32 @@ class Location implements Serializable
     {
         return(name + " @ (" + cord.x + ", " + cord.y + ")");
     }
+    /**
+     * Returns the building code the location
+     * @return The building code of the location
+     */
+	public String getBuildingCode() {
+		return buildingCode;
+	}
+	/**
+	 * Sets the building code of the location
+	 * @param buildingCode The building code of the location
+	 */
+	public void setBuildingCode(String buildingCode) {
+		this.buildingCode = buildingCode;
+	}
+	/**
+	 * Returns the location description (Location.locDescription)
+	 * @return The locationdescription The location description
+	 */
+	public String getLocDescription() {
+		return locDescription;
+	}
+	/**
+	 * Sets the location description
+	 * @param locDescription The location description
+	 */
+	public void setLocDescription(String locDescription) {
+		this.locDescription = locDescription;
+	}
 }

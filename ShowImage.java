@@ -275,7 +275,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                                                   MouseMotionListener{
 	//XXX: Here is the path and location version numbers.  
 	final static int PATH_VERSION_NUMBER = 1;
-	final static int LOCATION_VERSION_NUMBER = 1;
+	final static int LOCATION_VERSION_NUMBER = 2;
 	
     private int maxUnitIncrement = 5;
     private boolean missingPicture = false;
@@ -993,22 +993,47 @@ class ScrollablePicture extends JLabel implements Scrollable,
 			// Write out the locations version number
 			locout.writeInt(LOCATION_VERSION_NUMBER);
 			
-			// print out the size of the location Vector
-			locout.writeInt(locationsToWrite.size());
-			
-			// write out the static ID variable...IDcount
-			locout.writeInt(Location.IDcount);
-			
-			// For each location in the location Vector
-			for (Location loc : locationsToWrite) {
-				locout.writeBoolean(loc.isAllowIntersections());
-				locout.writeBoolean(loc.isCanPassThrough());
-				locout.writeObject(loc.cord);
-				locout.writeBoolean(loc.isDisplayName());
-				locout.writeInt(loc.ID);
-				locout.writeObject(loc.name);
+			if(LOCATION_VERSION_NUMBER == 1)
+			{
+				// print out the size of the location Vector
+				locout.writeInt(locationsToWrite.size());
+				
+				// write out the static ID variable...IDcount
+				locout.writeInt(Location.IDcount);
+				
+				// For each location in the location Vector
+				for (Location loc : locationsToWrite) {
+					locout.writeBoolean(loc.isAllowIntersections());
+					locout.writeBoolean(loc.isCanPassThrough());
+					locout.writeObject(loc.cord);
+					locout.writeBoolean(loc.isDisplayName());
+					locout.writeInt(loc.ID);
+					locout.writeObject(loc.name);
+				}
 			}
-            
+			if(LOCATION_VERSION_NUMBER == 2)
+			{
+				// print out the size of the location Vector
+				locout.writeInt(locationsToWrite.size());
+				
+				// write out the static ID variable...IDcount
+				locout.writeInt(Location.IDcount);
+				
+				// For each location in the location Vector
+				for (Location loc : locationsToWrite) {
+					locout.writeBoolean(loc.isAllowIntersections());
+					locout.writeBoolean(loc.isCanPassThrough());
+					locout.writeObject(loc.cord);
+					locout.writeBoolean(loc.isDisplayName());
+					locout.writeInt(loc.ID);
+					locout.writeObject(loc.name);
+					
+					// The following two lines are the difference between
+					// version 1 and version 2
+					locout.writeObject(loc.getBuildingCode());
+					locout.writeObject(loc.getLocDescription());
+				}
+			}
             // Close stream
             locout.close();
             
@@ -1464,22 +1489,38 @@ class ScrollablePicture extends JLabel implements Scrollable,
 			
 			int locVersionNumber = locin.readInt();
 			
+			// Version 1: nothing much to say here, it's what I started with
 			if(locVersionNumber == 1)
 			{
+				// Get the number of locations
 				int numLocations = locin.readInt();
 				
+				// Get the count on IDs
 				Location.IDcount = locin.readInt();
 
+				// Temporary Location pointer to store the location while
+				// it's properties are flowed in.
 				Location tempLocation;
+				
+				// Temporary boolean values for location variable
 				boolean tempIntersect;
 				boolean tempCanPass;
-				Point tempCord;
 				boolean tempDisplayName;
+
+				// temporary coordinate
+				Point tempCord;
+				
+				// Temporary ID number for binary files
 				int tempID;
+				
+				// Temporary name of location
 				String tempName;
+				
+				// Clean out the locations vector to store in the new info
 				locations.clear();
 				for(int locNum = 0; locNum < numLocations; locNum++)
 				{
+					// Read in the fields in the order that they were written
 					tempIntersect = locin.readBoolean();
 					tempCanPass = locin.readBoolean();
 					tempCord = (Point)locin.readObject();
@@ -1489,12 +1530,89 @@ class ScrollablePicture extends JLabel implements Scrollable,
 
 					//public Location(int x, int y, String passedName, 
 					// ShowImage parent)
+					// Create the new location with the passed in values
 					tempLocation = new Location(tempCord.x, tempCord.y, 
 							tempName, parent);
+					// Add the location into the locations vector
 					locations.add(locNum, tempLocation);
+					// Set the boolean values
 					tempLocation.setAllowIntersections(tempIntersect);
 					tempLocation.setCanPassThrough(tempCanPass);
 					tempLocation.setDisplayName(tempDisplayName);
+					// Set the binary file ID #
+					tempLocation.ID = tempID;
+				}
+			}
+			/**
+			 * Version 2:
+			 * Added two text field to location: buildingCode and locDescription
+			 */
+			else if(locVersionNumber == 2)
+			{
+				// Get the number of locations
+				int numLocations = locin.readInt();
+				
+				// Get the count on IDs
+				Location.IDcount = locin.readInt();
+
+				// Temporary Location pointer to store the location while
+				// it's properties are flowed in.
+				Location tempLocation;
+				
+				// Temporary boolean values for location variable
+				boolean tempIntersect;
+				boolean tempCanPass;
+				boolean tempDisplayName;
+
+				// temporary coordinate
+				Point tempCord;
+				
+				// Temporary ID number for binary files
+				int tempID;
+				
+				// Temporary name of location
+				String tempName;
+				
+				// Temporary buildingCode for location
+				String tempBuildingCode;
+				
+				// Temporary location description for location
+				String tempLocDescription;
+				
+				// Clean out the locations vector to store in the new info
+				locations.clear();
+				for(int locNum = 0; locNum < numLocations; locNum++)
+				{
+					// Read in the fields in the order that they were written
+					tempIntersect = locin.readBoolean();
+					tempCanPass = locin.readBoolean();
+					tempCord = (Point)locin.readObject();
+					tempDisplayName = locin.readBoolean();
+					tempID = locin.readInt();
+					tempName = (String)locin.readObject();
+					
+					tempBuildingCode = (String)locin.readObject();
+					tempLocDescription = (String)locin.readObject();
+					
+
+					//public Location(int x, int y, String passedName, 
+					// ShowImage parent)
+					// Create the new location with the passed in values
+					tempLocation = new Location(tempCord.x, tempCord.y, 
+							tempName, parent);
+					// Add the location into the locations vector
+					locations.add(locNum, tempLocation);
+					// Set the boolean values
+					tempLocation.setAllowIntersections(tempIntersect);
+					tempLocation.setCanPassThrough(tempCanPass);
+					tempLocation.setDisplayName(tempDisplayName);
+					
+					// Set the two strings: Building Code and 
+					// Location description
+					tempLocation.setBuildingCode(tempBuildingCode);
+					tempLocation.setLocDescription(tempLocDescription);
+					
+					// Set the binary file ID #
 					tempLocation.ID = tempID;
 				}
 			}

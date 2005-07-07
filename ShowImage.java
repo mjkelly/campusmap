@@ -1041,7 +1041,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	{
 		// The number of items (i.e. text boxes, submit buttons etc, 
 		// to be displayed per location
-		final int ITEMS_PER_LOC = 2;
+		// BE SURE TO UPDATE THIS IF YOU CHANGE THE DISPLAY!
+		final int ITEMS_PER_LOC = 7;
 		
 		// The overall dialog box, this contains everything need...
 		final JDialog dialog = new JDialog(parent, "Location Editor");
@@ -1076,29 +1077,63 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		index = 0;
 		
 		// Create an array of JTextAreas to contain the location names in
-		// Create an array of submit buttons
 		JTextArea [] locationNames = new JTextArea[locations.size()];
+
+		// Create an array of JTextAreas to contain the buildingCode strings
+		JTextArea [] buildingCodes = new JTextArea[locations.size()];
+		
+		// Create an array of JTextAreas to contain the Location Description strings
+		JTextArea [] locationDescriptions = new JTextArea[locations.size()];
+		
+		// Create an array of submit buttons
 		JButton [] submitButtons = new JButton[locations.size()];
 		
-		//Listeners for stuff...
-		ActionListener updateListener = 
-			new updateButtonListener(sortedLocs, locationNames, submitButtons);
-		KeyListener nameFieldListener = 
-			new textFieldListener(locationNames, sortedLocs);
+		//Create the action listeners!
+
+		// For the name field
+		KeyListener textListener = 
+			new textFieldListener(
+					locationNames, buildingCodes, 
+					locationDescriptions, sortedLocs);
+
 		
+		// For the update buttons
+		ActionListener updateButListener = 
+			new updateButtonListener(sortedLocs, locationNames, 
+					buildingCodes, locationDescriptions, submitButtons);
+		
+		// For every location in the sortedLocation array
 		for (Location loc : sortedLocs) {
-			// Create text area: 
-			// name = location's name, height = 1, columns = 70
-			locationNames[index] = new JTextArea(loc.name, 1, 60);
-			locationNames[index].addKeyListener(nameFieldListener);
+			// Label The Start of the new location
 			
-			// add button with defined name
+			// Create text area: 
+			// name = location's name, height = 1, columns = 60
+			locationNames[index] = new JTextArea(loc.name, 1, 60);
+			locationNames[index].addKeyListener(textListener);
+			
+			// Building code= location's building code, height = 1, columns = 60
+			buildingCodes[index] = new JTextArea(loc.getBuildingCode(), 1, 60);
+			buildingCodes[index].addKeyListener(textListener);
+			
+			// location description = loc description, height = 2, columns = 60
+			locationDescriptions[index] = 
+				new JTextArea(loc.getLocDescription(), 2, 60);
+			locationDescriptions[index].addKeyListener(textListener);
+			
+			// add button for submitting/updating
 			submitButtons[index] = new JButton(SUBMIT_NAME);
-			submitButtons[index].addActionListener(updateListener);
+			submitButtons[index].addActionListener(updateButListener);
 			submitButtons[index].setSize(
 					new Dimension(20,10));
-			// add to panel
+			// add the newly created components to the panel
+			// Total # of components/location = 7 
+			// (Update @ top of method if this changes)
+			panel.add(new JLabel("Location name:"));
 			panel.add(locationNames[index]);
+			panel.add(new JLabel("Building Code:"));
+			panel.add(buildingCodes[index]);
+			panel.add(new JLabel("Location description:"));
+			panel.add(locationDescriptions[index]);
 			panel.add(submitButtons[index]);
 			index++;
 		}
@@ -1136,6 +1171,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	class textFieldListener implements KeyListener
 	{
 		JTextArea [] locNameBoxes;
+		JTextArea [] locBuildingCodes;
+		JTextArea [] locDescriptions;
 		Location [] sortedLocs;
 		/**
 		 * Constructor, allows for the passing in of needed arrays
@@ -1143,10 +1180,14 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		 * names
 		 * @param sortedLocs Array of sorted Location pointers
 		 */
-		public textFieldListener(JTextArea [] locationNames, 
+		//locationNames, buildingCodes, locationDescriptions, 
+		public textFieldListener(JTextArea[] locationNames, 
+				JTextArea[] buildingCodes, JTextArea[] locationDescriptions,
 				Location[] sortedLocs)
 		{
 			this.locNameBoxes = locationNames;
+			this.locBuildingCodes = buildingCodes;
+			this.locDescriptions = locationDescriptions;
 			this.sortedLocs = sortedLocs;
 		}
 
@@ -1156,7 +1197,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		public void keyReleased(KeyEvent e)
 		{
 			for (int i = 0; i < sortedLocs.length; i++)
+			{	
 				// Find the index of the textBox that triggered the event
+				// Check the location name
 				if(e.getSource() == locNameBoxes[i])
 				{
 					// If the name in the box isn't the same as the text in the
@@ -1167,6 +1210,31 @@ class ScrollablePicture extends JLabel implements Scrollable,
 					else
 						locNameBoxes[i].setBackground(Color.WHITE);
 				}
+				// Check the building codes
+				if(e.getSource() == locBuildingCodes[i])
+				{
+					// If the name in the box isn't the same as the text in the 
+					//storage array
+					if(!locBuildingCodes[i].getText().equals(
+							sortedLocs[i].getBuildingCode()))
+						// Color the background of the box red.
+						locBuildingCodes[i].setBackground(Color.RED);
+					else
+						locBuildingCodes[i].setBackground(Color.WHITE);
+				}
+				// Check the location descriptions
+				if(e.getSource() == locDescriptions[i])
+				{
+					// If the name in the box isn't the same as the text in the
+					// storage array
+					if(!locDescriptions[i].getText().equals(
+							sortedLocs[i].getLocDescription()))
+						// Color the background of the box red
+						locDescriptions[i].setBackground(Color.RED);
+					else
+						locDescriptions[i].setBackground(Color.WHITE);
+				}
+			}
 		}
 		/**
 		 * Stub
@@ -1190,8 +1258,10 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	 */
 	class updateButtonListener implements ActionListener
 	{
-		Location [] locObjects;
+		Location  [] locObjects;
 		JTextArea [] locNameBoxes;
+		JTextArea [] locBuildingCodes;
+		JTextArea [] locDescriptions;
 		JButton [] submitButtons; 
 		/**
 		 * Constructor for the updateButtonListener, passes in needed fields
@@ -1201,12 +1271,16 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		 * @param submitButtons
 		 */
 		public updateButtonListener(Location [] locObjects, 
-				JTextArea [] locNameBoxes, JButton [] submitButtons)
+				JTextArea [] locNameBoxes, JTextArea[] locBuildingCodes,
+				JTextArea[] locDescriptions, JButton [] submitButtons)
 		{
 			this.locObjects = locObjects;
 			this.locNameBoxes = locNameBoxes;
+			this.locBuildingCodes = locBuildingCodes;
+			this.locDescriptions = locDescriptions;
 			this.submitButtons = submitButtons;
 		}
+		
 		/**
 		 * This method is called when an action occurs in a button/pane
 		 * that has the class listener applied to it.<br>
@@ -1218,15 +1292,49 @@ class ScrollablePicture extends JLabel implements Scrollable,
 			for (int index = 0; index < submitButtons.length; index++) {
 				if(e.getSource() == submitButtons[index])
 				{
-					// If there is no change in the names, just return
-					if(locNameBoxes[index].getText().equals(
+					// If the location name box changed...
+					if(!locNameBoxes[index].getText().equals(
 							locObjects[index].name))
-						return;
-					System.err.print("Changed location \"" + 
-							locObjects[index].name + "\" to: ");
-					locObjects[index].name = locNameBoxes[index].getText();
-					System.err.println(locObjects[index].name);
-					locNameBoxes[index].setBackground(Color.GREEN);
+					{
+						System.err.print("Changed loc name \"" + 
+								locObjects[index].name + "\" to: ");
+						// Set the location name
+						locObjects[index].name = locNameBoxes[index].getText();
+						System.err.println(locObjects[index].name);
+						
+						// Change the color of the box
+						locNameBoxes[index].setBackground(Color.GREEN);
+					}
+					// If the building code changed...
+					if(!locBuildingCodes[index].getText().equals(
+							locObjects[index].getBuildingCode()))
+					{
+						System.err.print("Changed loc building code \"" +
+								locObjects[index].getBuildingCode() +"\" to: ");
+						// Set the building code
+						locObjects[index].setBuildingCode(
+								locBuildingCodes[index].getText());
+						System.err.println(locObjects[index].getBuildingCode());
+						
+						// Change the color of the box
+						locBuildingCodes[index].setBackground(Color.GREEN);
+					}
+					// If the location's description changed...
+					if(!locDescriptions[index].getText().equals(
+							locObjects[index].getLocDescription()));
+					{
+						System.err.print("Changed location description \"" +
+								locObjects[index].getLocDescription() +
+								"\" to: ");
+						// Set the building code
+						locObjects[index].setLocDescription(
+								locDescriptions[index].getText());
+						System.err.println(
+								locObjects[index].getLocDescription());
+						
+						// Change the color of the box
+						locDescriptions[index].setBackground(Color.GREEN);
+					}
 				}
 			}
 		}
@@ -2219,12 +2327,12 @@ class Location implements Serializable
     /**
      * Building code for a location
      */
-    private String buildingCode;
+    private String buildingCode = "";
     
     /**
      * Description of the a location
      */
-    private String locDescription;
+    private String locDescription = "";
     
     // Determines if we can use this point when linking together sets of
     // paths

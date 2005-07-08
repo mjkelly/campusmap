@@ -29,6 +29,10 @@ use LoadData;
 use MapGraphics;
 use ShortestPath;
 
+# make sure nobody gives us an absurd amount of input
+$CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX        = 1024; # 1k ought to be enough for anybody... ;)
+
 my $q = new CGI();
 
 # the name of this script, for form actions, etc

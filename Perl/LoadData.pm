@@ -9,6 +9,12 @@
 
 package LoadData;
 
+require Exporter;
+@ISA = qw(Exporter);
+@EXPORT_OK = qw(nameNormalize);
+@EXPORT = qw();
+
+
 use strict;
 use warnings;
 use Text::WagnerFischer qw(distance);
@@ -137,8 +143,14 @@ sub loadPoints{
 
 ###################################################################
 # Load locations from a binary disk file.
-# Locations are hashed both by numeric ID and by name. Prepend "name:"
-# to the actual name of the location to look up.
+# Locations are hashed both by numeric ID, by normalized name, and possibly by building code.
+#
+# To get by ID: $locations->{'ByID'}{$ID}
+# To get by name: $locations->{'ByName'}{nameNormalize($name)}
+# To get by building code: $locations->{'ByCode'}{$bldngCode}
+#
+# Remember this when looping through all location keys.
+#
 # Args:
 #	- the name of the file to load from
 # Returns:
@@ -152,7 +164,7 @@ sub loadLocations{
 	my $unpacked;
 
 	# a hashref of locations to return
-	my $locations = {};
+	my $locations = { ByID => {}, ByName => {}, ByCode => {} };
 
 	open(INPUT, '<', $filename) or die "Cannot open $filename for reading: $!\n";
 
@@ -160,33 +172,51 @@ sub loadLocations{
 	while( defined(my $ID = readInt(*INPUT)) ){
 		print STDERR "Read Location ID: $ID\n" if DEBUG;
 
-		# create a sub-hash for this location
-		$locations->{$ID} = {};
+		# store this location by ID. this is the actual hash we use to
+		# store all the data -- the ByName and ByCode hashes refer to
+		# here.
+		$locations->{'ByID'}{$ID} = {};
+		my $thisLoc = $locations->{'ByID'}{$ID};
 
 		# set this location's ID
-		$locations->{$ID}{'ID'} = $ID;
+		$thisLoc->{'ID'} = $ID;
 
 		# get (x,y) coordinates
-		$locations->{$ID}{'x'} = readInt(*INPUT);
-		$locations->{$ID}{'y'} = readInt(*INPUT);
+		$thisLoc->{'x'} = readInt(*INPUT);
+		$thisLoc->{'y'} = readInt(*INPUT);
 		print STDERR "Location coords: "
-			. "($locations->{$ID}{'x'}, $locations->{$ID}{'y'})\n" if DEBUG;
+			. "($thisLoc->{'x'}, $thisLoc->{'y'})\n" if DEBUG;
 
 		# read the boolean flags
-		$locations->{$ID}{'DisplayName'} = readByte(*INPUT);
+		$thisLoc->{'DisplayName'} = readByte(*INPUT);
 
 		# get the associated GraphPoint's ID
-		$locations->{$ID}{'PointID'} = readInt(*INPUT);
-		print STDERR "Point ID: $locations->{$ID}{'PointID'}\n" if DEBUG;
+		$thisLoc->{'PointID'} = readInt(*INPUT);
+		print STDERR "Point ID: $thisLoc->{'PointID'}\n" if DEBUG;
 
 		# read in the Location's name string, knowing that its length 
 		# is right in front of the actual character data
 		my $name = readJavaString(*INPUT);
-		$locations->{$ID}{'Name'} = $name;
-		print STDERR "Name: $locations->{$ID}{'Name'}\n" if DEBUG;
+		$thisLoc->{'Name'} = $name;
+		print STDERR "Name: $thisLoc->{'Name'}\n" if DEBUG;
 
 		# now add the location under its name hash
-		$locations->{'name:' . nameNormalize($name)} = $locations->{$ID};
+		$locations->{'ByName'}{nameNormalize($name)} = $thisLoc;
+
+		# read the location's building code
+		my $code = readJavaString(*INPUT);
+		$thisLoc->{'BuildingCode'} = $code;
+		print STDERR "Building Code: $thisLoc->{'BuildingCode'}\n" if DEBUG;
+
+		# store the location under its building code as well
+		# (this means all building codes must be unique! ...obviously)
+		if( length($code) ){
+			$locations->{'ByCode'}{$code} = $thisLoc;
+		}
+		
+		# read the location's description
+		$thisLoc->{'Description'} = readJavaString(*INPUT);
+		print STDERR "Description: $thisLoc->{'Description'}\n" if DEBUG;
 
 		print STDERR "Storing under " . nameNormalize($name) . "\n" if DEBUG;
 		print STDERR "---end---\n" if DEBUG;
@@ -512,21 +542,6 @@ sub nameNormalize{
 }
 
 ###################################################################
-# Return the "lookup name" of a location, given a plaintext location name. This
-# "lookup name" constists of the string "name:" followed by the normalized
-# location name, and can be put into a locations hashref to get a location object
-# by plaintext name.
-# Args:
-#	- the string whose "lookup name" is needed
-# Returns:
-#	- the "lookup name" of the given string
-###################################################################
-sub nameLookup{
-	my $name = shift;
-	return 'name:' . nameNormalize($name);
-}
-
-###################################################################
 # Given user input, return the ID of the location that best matches, or -1 if
 # there's nothing reasonable.
 #
@@ -554,96 +569,94 @@ sub findName{
 
 	#print "SEACH STRING: $search_str -> (@search_toks) [$search_len]\n";
 
-	foreach ( keys %$locations ){
+	foreach ( keys %{$locations->{'ByID'}} ){
 		# there should be a better way to do this. maybe I should
 		# stop polluting the $locations hash with multiple keys for
 		# each ID.
 		my $outstr = '';
-		if( substr($_, 0, 5) ne 'name:' ){
-			my $loc_str = $locations->{$_}{'Name'};
-			my @loc_toks = tokenize($loc_str);
-			my $loc_len = scalar @loc_toks;
-			$outstr .= "LOCATION: $loc_str -> (@loc_toks) [$loc_len]\n";
+		my $loc_str = $locations->{'ByID'}{$_}{'Name'};
+		my @loc_toks = tokenize($loc_str);
+		my $loc_len = scalar @loc_toks;
+		$outstr .= "LOCATION: $loc_str -> (@loc_toks) [$loc_len]\n";
 
-			# aaaagh, nested loops...
-			my $matches = 0;
-			my $l_matched = 0;
+		# aaaagh, nested loops...
+		my $matches = 0;
+		my $l_matched = 0;
 LOC:			foreach my $l_tok (@loc_toks){
-				$outstr .= "\t$l_tok:";
+			$outstr .= "\t$l_tok:";
 SEARCH:				foreach my $s_tok (@search_toks){
-					# exact match
-					if($s_tok eq $l_tok){
-						my $strength = 1;
-						$outstr .= " $s_tok [$strength EXACT]\n";
+				# exact match
+				if($s_tok eq $l_tok){
+					my $strength = 1;
+					$outstr .= " $s_tok [$strength EXACT]\n";
 
+					$matches += $strength;
+					$l_matched++;
+					# we found a perfect match for this token.
+					# move on to the next token.
+					next LOC;
+				}
+				# substring search
+				elsif( index($l_tok, $s_tok) != -1 ){
+					my $strength = length($s_tok) / length($l_tok);
+					$outstr .= " $s_tok [$strength SUB]";
+
+					$matches += $strength;
+					$l_matched++;
+					next SEARCH;
+				}
+				# superstring search
+				elsif( index($s_tok, $l_tok) != -1 ){
+					my $strength = length($l_tok) / length($s_tok);
+					$outstr .= " $s_tok [$strength SUPER]";
+
+					$matches += $strength;
+					$l_matched++;
+					next SEARCH;
+				}
+				# fuzzy matching...
+				else{
+					my $dist = distance([0, 1, 1], $s_tok, $l_tok);
+					# the "weighted distance" is
+					# ($dist/ length($s_tok). the higher
+					# this is, the worse the match.
+					my $strength = 1 - ($dist/ length($s_tok));
+
+					# ignore the really bad matches
+					# this is critical, so long names
+					# don't accumulate match strength
+					# from a series of bad matches
+					if($strength > 0.5){
 						$matches += $strength;
 						$l_matched++;
-						# we found a perfect match for this token.
-						# move on to the next token.
-						next LOC;
-					}
-					# substring search
-					elsif( index($l_tok, $s_tok) != -1 ){
-						my $strength = length($s_tok) / length($l_tok);
-						$outstr .= " $s_tok [$strength SUB]";
-
-						$matches += $strength;
-						$l_matched++;
+						$outstr .= " $s_tok [$dist -> $strength FUZZY]";
 						next SEARCH;
 					}
-					# superstring search
-					elsif( index($s_tok, $l_tok) != -1 ){
-						my $strength = length($l_tok) / length($s_tok);
-						$outstr .= " $s_tok [$strength SUPER]";
-
-						$matches += $strength;
-						$l_matched++;
-						next SEARCH;
-					}
-					# fuzzy matching...
-					else{
-						my $dist = distance([0, 1, 1], $s_tok, $l_tok);
-						# the "weighted distance" is
-						# ($dist/ length($s_tok). the higher
-						# this is, the worse the match.
-						my $strength = 1 - ($dist/ length($s_tok));
-
-						# ignore the really bad matches
-						# this is critical, so long names
-						# don't accumulate match strength
-						# from a series of bad matches
-						if($strength > 0.5){
-							$matches += $strength;
-							$l_matched++;
-							$outstr .= " $s_tok [$dist -> $strength FUZZY]";
-							next SEARCH;
-						}
-					}
-				}
-				$outstr .= "\n";
-			}
-
-			# if we had any matches, keep track of this result
-			if($matches && $l_matched){
-				# we heavily weight in favor of multiple word matches,
-				# but lightly weight against longer matches.
-				# In other words, if you search for "foo bar",
-				# the following strings should match in the
-				# following order:
-				# 1. "foo bar"
-				# 2. "foo bar baz"
-				# 3. "foo baz"
-				# All of this is subject to change, of course. ;)
-				$matches = $matches**2 / ($loc_len);
-				if($matches >= 0.05){
-					push(@top_matches, { matches => $matches, id => $_});
 				}
 			}
+			$outstr .= "\n";
+		}
 
-			$outstr .= "\t$matches matches ($l_matched).\n";
-			if($l_matched){
-				#print $outstr;
+		# if we had any matches, keep track of this result
+		if($matches && $l_matched){
+			# we heavily weight in favor of multiple word matches,
+			# but lightly weight against longer matches.
+			# In other words, if you search for "foo bar",
+			# the following strings should match in the
+			# following order:
+			# 1. "foo bar"
+			# 2. "foo bar baz"
+			# 3. "foo baz"
+			# All of this is subject to change, of course. ;)
+			$matches = $matches**2 / ($loc_len);
+			if($matches >= 0.05){
+				push(@top_matches, { matches => $matches, id => $_});
 			}
+		}
+
+		$outstr .= "\t$matches matches ($l_matched).\n";
+		if($l_matched){
+			#print $outstr;
 		}
 	}
 
@@ -654,7 +667,7 @@ SEARCH:				foreach my $s_tok (@search_toks){
 	if(@top_matches){
 		@top_matches = sort { $b->{'matches'} <=> $a->{'matches'} } @top_matches;
 		#print "MATCHES:\n";
-		#print "\t$locations->{$_->{'id'}}{'Name'} [$_->{'matches'}]\n" for @top_matches;
+		#print "\t$locations->{'ByID'}{$_->{'id'}}{'Name'} [$_->{'matches'}]\n" for @top_matches;
 
 		# if it's a high enough score...
 		if( $top_matches[0]{'matches'} > 0.5 ){

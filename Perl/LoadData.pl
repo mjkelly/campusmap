@@ -85,21 +85,21 @@ print "\n\n===== Locations =====\n";
 my $locations = LoadData::loadLocations($dir . '/' . $MapGlobals::LOCATION_FILE);
 print STDERR "Loaded " . (keys(%$locations)) . " locations.\n";
 
-my @locIds = grep(!/name:/, keys %$locations);
-
 if($doLocations){
 	print "Traversing data structure:\n";
 
 	# loop through each location key stored in the hashref $locations
-	foreach my $locID ( sort{ $a <=> $b }( @locIds ) ){
+	foreach my $locID ( sort{ $a <=> $b }( keys %{$locations->{'ByID'}} ) ){
 		# each value in $locations is simply another hash, which has these fields:
 		# ID, x, y, PointID, Name
-		print "Location ID: $locations->{$locID}{'ID'} (from key: $locID)\n";
-		print "\tCoordinates: ($locations->{$locID}{'x'}, $locations->{$locID}{'y'})\n";
-		print "\tDisplayName: $locations->{$locID}{'DisplayName'}\n";
-		print "\tPoint ID: $locations->{$locID}{'PointID'}\n";
-		print "\tName: $locations->{$locID}{'Name'}\n";
-		print "\tNormalized Name: " . LoadData::nameNormalize($locations->{$locID}{'Name'}) . "\n";
+		print "Location ID: $locations->{'ByID'}{$locID}{'ID'} (from key: $locID)\n";
+		print "\tName: $locations->{'ByID'}{$locID}{'Name'}\n";
+		print "\tNormalized Name: " . LoadData::nameNormalize($locations->{'ByID'}{$locID}{'Name'}) . "\n";
+		print "\tBuilding Code: $locations->{'ByID'}{$locID}{'BuildingCode'}\n";
+		print "\tCoordinates: ($locations->{'ByID'}{$locID}{'x'}, $locations->{'ByID'}{$locID}{'y'})\n";
+		print "\tDisplayName: $locations->{'ByID'}{$locID}{'DisplayName'}\n";
+		print "\tPoint ID: $locations->{'ByID'}{$locID}{'PointID'}\n";
+		print "\tDescription: $locations->{'ByID'}{$locID}{'Description'}\n";
 	}
 }
 

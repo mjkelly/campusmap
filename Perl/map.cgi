@@ -25,7 +25,7 @@ use File::Temp ();
 use HTML::Template;
 
 use MapGlobals qw(TRUE FALSE INFINITY between asInt @SIZES @SCALES);
-use LoadData;
+use LoadData qw(nameNormalize);
 use MapGraphics;
 use ShortestPath;
 
@@ -64,10 +64,6 @@ my($points, $edgeFH, $edgeSize);
 # HTML-safe versions of the from and to text
 my $fromTxtSafe = CGI::escapeHTML($fromTxt);
 my $toTxtSafe = CGI::escapeHTML($toTxt);
-
-# normalized versions of the from and to text
-my $fromTxtLookup = LoadData::nameLookup($fromTxt);
-my $toTxtLookup = LoadData::nameLookup($toTxt);
 
 # x and y display offsets, from the upper left
 my $xoff   = asInt($q->param('xoff')   || 0);
@@ -122,20 +118,30 @@ if($fromTxt eq '' && $toTxt eq ''){
 # otherwise, attempt to look up both locations
 else{
 
-	if( exists($locations->{$toTxtLookup}) ){
-		$to = $locations->{$toTxtLookup}{'ID'};
+	# first check for an exact name match
+	if( exists($locations->{'ByName'}{nameNormalize($toTxt)}) ){
+		$to = $locations->{'ByName'}{nameNormalize($toTxt)}{'ID'};
+		warn "TO: Name match.\n";
 	}
+	# then check a building code match
+	elsif( exists($locations->{'ByCode'}{$toTxt}) ){
+		$to = $locations->{'ByCode'}{$toTxt}{'ID'};
+		# now we must change all the text referring to the location
+		$toTxt = $locations->{'ByID'}{$to}{'Name'};
+		$toTxtSafe = CGI::escapeHTML($toTxt);
+		warn "TO: Building code match.\n";
+	}
+	# otherwise, fall back to fuzzy matching
 	elsif($toTxt ne ''){
-		# fall back to fuzzy matching here
+		warn "TO: Fuzzy!\n";
 		@toids = LoadData::findName($toTxt, $locations);
 		# we found an exact match
 		if(@toids == 1){
 			# since we found a real location, we've got to reset all the text
 			# associated with the location
 			$to = $toids[0]{'id'};
-			$toTxt = $locations->{$to}{'Name'};
+			$toTxt = $locations->{'ByID'}{$to}{'Name'};
 			$toTxtSafe = CGI::escapeHTML($toTxt);
-			$toTxtLookup = LoadData::nameLookup($toTxt);
 		}
 		# we have multiple matches
 		elsif(@toids > 1){
@@ -153,10 +159,21 @@ else{
 		$dst_found = FALSE;
 	}
 
-	if( exists($locations->{$fromTxtLookup}) ){
-		$from = $locations->{$fromTxtLookup}{'ID'};
+	# first check for an exact name match
+	if( exists($locations->{'ByName'}{nameNormalize($fromTxt)}) ){
+		$from = $locations->{'ByName'}{nameNormalize($fromTxt)}{'ID'};
+		warn "FROM: Name match.\n";
+	}
+	# then check a building code match
+	elsif( exists($locations->{'ByCode'}{$fromTxt}) ){
+		$from = $locations->{'ByCode'}{$fromTxt}{'ID'};
+		# now we must change all the text referring to the location
+		$fromTxt = $locations->{'ByID'}{$from}{'Name'};
+		$fromTxtSafe = CGI::escapeHTML($fromTxt);
+		warn "FROM: Building code match.\n";
 	}
 	elsif($fromTxt ne ''){
+		warn "FROM: Fuzzy!\n";
 		# fall back to fuzzy matching here
 		@fromids = LoadData::findName($fromTxt, $locations);
 		# we found an exact match
@@ -164,9 +181,8 @@ else{
 			# since we found a real location, we've got to reset all the text
 			# associated with the location
 			$from = $fromids[0]{'id'};
-			$fromTxt = $locations->{$from}{'Name'};
+			$fromTxt = $locations->{'ByID'}{$from}{'Name'};
 			$fromTxtSafe = CGI::escapeHTML($fromTxt);
-			$fromTxtLookup = LoadData::nameLookup($fromTxt);
 		}
 		# we have multiple matches
 		elsif(@fromids > 1){
@@ -189,27 +205,25 @@ else{
 my @locParam;
 my($name, $trunc);
 my($loc_opt_from, $loc_opt_to);
-foreach (sort keys %$locations){
-	# add each unique name
-	if( substr($_, 0, 5) eq 'name:' ){
+foreach (sort keys %{$locations->{'ByName'}}){
 
-		# truncate the name if it's too long
-		$trunc = $name = $locations->{$_}{'Name'};
-		if(length($name) > $MapGlobals::MAX_NAME_LEN){
-			$trunc = substr($name, 0, $MapGlobals::MAX_NAME_LEN) . '...';
-		}
-
-		$loc_opt_from .= sprintf(qq{<option value="%s"%s>%s</option>\n},
-			CGI::escapeHTML($name),
-			($fromTxt eq $locations->{$_}{'Name'} ? ' selected="selected"' : ''),
-			CGI::escapeHTML($trunc)
-		);
-		$loc_opt_to .= sprintf(qq{<option value="%s"%s>%s</option>\n},
-			CGI::escapeHTML($name),
-			($toTxt eq $locations->{$_}{'Name'} ? ' selected="selected"' : ''),
-			CGI::escapeHTML($trunc)
-		);
+	$trunc = $name = $locations->{'ByName'}{$_}{'Name'};
+	# truncate the name if it's too long
+	if(length($name) > $MapGlobals::MAX_NAME_LEN){
+		$trunc = substr($name, 0, $MapGlobals::MAX_NAME_LEN) . '...';
 	}
+
+	$loc_opt_from .= sprintf(qq{<option value="%s"%s>%s</option>\n},
+		CGI::escapeHTML($name),
+		($fromTxt eq $name ? ' selected="selected"' : ''),
+		CGI::escapeHTML($trunc)
+	);
+	$loc_opt_to .= sprintf(qq{<option value="%s"%s>%s</option>\n},
+		CGI::escapeHTML($name),
+		($toTxt eq $name ? ' selected="selected"' : ''),
+		CGI::escapeHTML($trunc)
+	);
+
 }
 
 # we actually run the shortest-path algorithm only if we found both
@@ -231,8 +245,8 @@ if( $from == $to ){
 }
 # otherwise, assign the start and end IDs to meaningful values
 else{
-	$startID = $locations->{$fromTxtLookup}{'PointID'};
-	$endID = $locations->{$toTxtLookup}{'PointID'};
+	$startID = $locations->{'ByID'}{$from}{'PointID'};
+	$endID = $locations->{'ByID'}{$to}{'PointID'};
 }
 
 # do the shortest path stuff
@@ -295,17 +309,17 @@ if($path){
 
 				# if any of the locations are too close to any edge,
 				# reject this zoom level and move to the next one
-				if(abs($xoff - $locations->{$from}{'x'}) > $width/(2*$SCALES[$i]) - 5){
+				if(abs($xoff - $locations->{'ByID'}{$from}{'x'}) > $width/(2*$SCALES[$i]) - 5){
 					next;
 				}
-				if(abs($xoff - $locations->{$to}{'x'}) > $width/(2*$SCALES[$i]) - 5){
+				if(abs($xoff - $locations->{'ByID'}{$to}{'x'}) > $width/(2*$SCALES[$i]) - 5){
 					next;
 				}
 
-				if(abs($yoff - $locations->{$from}{'y'}) > $height/(2*$SCALES[$i]) - 5){
+				if(abs($yoff - $locations->{'ByID'}{$from}{'y'}) > $height/(2*$SCALES[$i]) - 5){
 					next;
 				}
-				if(abs($yoff - $locations->{$to}{'y'}) > $height/(2*$SCALES[$i]) - 5){
+				if(abs($yoff - $locations->{'ByID'}{$to}{'y'}) > $height/(2*$SCALES[$i]) - 5){
 					next;
 				}
 
@@ -324,8 +338,8 @@ if($path){
 		# and zooming in a bit
 		if(!defined($scale)){
 			$scale = $MapGlobals::SINGLE_LOC_SCALE;
-			$xoff = $locations->{$to}{'x'};
-			$yoff = $locations->{$to}{'y'};
+			$xoff = $locations->{'ByID'}{$to}{'x'};
+			$yoff = $locations->{'ByID'}{$to}{'y'};
 		}
 	}
 }
@@ -355,12 +369,12 @@ else{
 	}
 
 	if($src_found){
-		$xoff = $locations->{$from}{'x'};
-		$yoff = $locations->{$from}{'y'};
+		$xoff = $locations->{'ByID'}{$from}{'x'};
+		$yoff = $locations->{'ByID'}{$from}{'y'};
 	}
 	elsif($dst_found){
-		$xoff = $locations->{$to}{'x'};
-		$yoff = $locations->{$to}{'y'};
+		$xoff = $locations->{'ByID'}{$to}{'x'};
+		$yoff = $locations->{'ByID'}{$to}{'y'};
 	}
 
 	# use the default scale
@@ -447,11 +461,11 @@ if($path){
 
 # only draw the source and destination locations
 if($src_found){
-	MapGraphics::drawLocation($locations->{$from}, $im, $src_color, $src_color, $bg_color,
+	MapGraphics::drawLocation($locations->{'ByID'}{$from}, $im, $src_color, $src_color, $bg_color,
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 }
 if($dst_found){
-	MapGraphics::drawLocation($locations->{$to}, $im, $dst_color, $dst_color, $bg_color,
+	MapGraphics::drawLocation($locations->{'ByID'}{$to}, $im, $dst_color, $dst_color, $bg_color,
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 }
 
@@ -486,20 +500,20 @@ $thumb->rectangle(
 # dots for the start and end locations
 if($src_found){
 	$thumb->filledRectangle(
-		$locations->{$from}{'x'}*$MapGlobals::RATIO_X - 1,
-		$locations->{$from}{'y'}*$MapGlobals::RATIO_Y - 1,
-		$locations->{$from}{'x'}*$MapGlobals::RATIO_X + 1,
-		$locations->{$from}{'y'}*$MapGlobals::RATIO_Y + 1,
+		$locations->{'ByID'}{$from}{'x'}*$MapGlobals::RATIO_X - 1,
+		$locations->{'ByID'}{$from}{'y'}*$MapGlobals::RATIO_Y - 1,
+		$locations->{'ByID'}{$from}{'x'}*$MapGlobals::RATIO_X + 1,
+		$locations->{'ByID'}{$from}{'y'}*$MapGlobals::RATIO_Y + 1,
 		$thumb_src_color,
 	);
 }
 
 if($dst_found){
 	$thumb->filledRectangle(
-		$locations->{$to}{'x'}*$MapGlobals::RATIO_X - 1,
-		$locations->{$to}{'y'}*$MapGlobals::RATIO_Y - 1,
-		$locations->{$to}{'x'}*$MapGlobals::RATIO_X + 1,
-		$locations->{$to}{'y'}*$MapGlobals::RATIO_Y + 1,
+		$locations->{'ByID'}{$to}{'x'}*$MapGlobals::RATIO_X - 1,
+		$locations->{'ByID'}{$to}{'y'}*$MapGlobals::RATIO_Y - 1,
+		$locations->{'ByID'}{$to}{'x'}*$MapGlobals::RATIO_X + 1,
+		$locations->{'ByID'}{$to}{'y'}*$MapGlobals::RATIO_Y + 1,
 		$thumb_dst_color,
 	);
 }
@@ -735,7 +749,7 @@ sub buildHelpText{
 	foreach (@$ids){
 		my $dist_txt = '';
 		if( defined($points) ){
-			my $target = $points->{$locations->{$_->{'id'}}{'PointID'}};
+			my $target = $points->{$locations->{'ByID'}{$_->{'id'}}{'PointID'}};
 			if($target->{'Distance'} == INFINITY){
 				$dist_txt = ' (&#8734;)'; # this is the infinity symbol
 			}
@@ -751,15 +765,15 @@ sub buildHelpText{
 		# we need to avoid flipping the 'from' and 'to' locations here, so
 		# we're careful about which location we're actually searching for
 		if($helpfor eq 'from'){
-			$url = state(CGI::escape($locations->{$_->{'id'}}{'Name'}), $toTxt,
+			$url = state(CGI::escape($locations->{'ByID'}{$_->{'id'}}{'Name'}), $toTxt,
 				undef, undef, undef, undef, $mpm);
 		}
 		else{
-			$url = state($fromTxt, CGI::escape($locations->{$_->{'id'}}{'Name'}),
+			$url = state($fromTxt, CGI::escape($locations->{'ByID'}{$_->{'id'}}{'Name'}),
 				undef, undef, undef, undef, $mpm);
 		}
 		$str .= sprintf(qq|\t<li><a href="$self?%s">%s</a>%s</li>\n|,
-			$url, CGI::escapeHTML($locations->{$_->{'id'}}{'Name'}), $dist_txt);
+			$url, CGI::escapeHTML($locations->{'ByID'}{$_->{'id'}}{'Name'}), $dist_txt);
 	}
 	$str .= "</ol>\n";
 

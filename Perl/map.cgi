@@ -7,7 +7,7 @@
 # TODO: Create some kind of 'viewport' object to avoid passing around
 # these huge, indecipherable (and frequently-changing!) lists.
 #
-# Thu Jun 30 21:59:27 PDT 2005
+# Fri Jul  8 18:59:00 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -121,7 +121,6 @@ else{
 	# first check for an exact name match
 	if( exists($locations->{'ByName'}{nameNormalize($toTxt)}) ){
 		$to = $locations->{'ByName'}{nameNormalize($toTxt)}{'ID'};
-		warn "TO: Name match.\n";
 	}
 	# then check a building code match
 	elsif( exists($locations->{'ByCode'}{$toTxt}) ){
@@ -129,11 +128,9 @@ else{
 		# now we must change all the text referring to the location
 		$toTxt = $locations->{'ByID'}{$to}{'Name'};
 		$toTxtSafe = CGI::escapeHTML($toTxt);
-		warn "TO: Building code match.\n";
 	}
 	# otherwise, fall back to fuzzy matching
 	elsif($toTxt ne ''){
-		warn "TO: Fuzzy!\n";
 		@toids = LoadData::findName($toTxt, $locations);
 		# we found an exact match
 		if(@toids == 1){
@@ -162,7 +159,6 @@ else{
 	# first check for an exact name match
 	if( exists($locations->{'ByName'}{nameNormalize($fromTxt)}) ){
 		$from = $locations->{'ByName'}{nameNormalize($fromTxt)}{'ID'};
-		warn "FROM: Name match.\n";
 	}
 	# then check a building code match
 	elsif( exists($locations->{'ByCode'}{$fromTxt}) ){
@@ -170,10 +166,8 @@ else{
 		# now we must change all the text referring to the location
 		$fromTxt = $locations->{'ByID'}{$from}{'Name'};
 		$fromTxtSafe = CGI::escapeHTML($fromTxt);
-		warn "FROM: Building code match.\n";
 	}
 	elsif($fromTxt ne ''){
-		warn "FROM: Fuzzy!\n";
 		# fall back to fuzzy matching here
 		@fromids = LoadData::findName($fromTxt, $locations);
 		# we found an exact match

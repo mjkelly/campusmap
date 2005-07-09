@@ -1632,43 +1632,55 @@ class GraphPoint
 	public void binaryWriteLocation(DataOutputStream out)
 	{
 		// don't do anything if we don't have a label
-		if(locLabel == null)
+		if(this.locLabel == null)
 			return;
 	
 		try{
 			// output ID of Location
 			if(PathOptimize.debugBinaryLocations)
-				System.err.println("Location ID: " + locLabel.ID);
-			out.writeInt(locLabel.ID);
+				System.err.println("Location ID: " + this.locLabel.ID);
+			out.writeInt(this.locLabel.ID);
 	        
             // output (x,y) coordinates of Location
 			if(PathOptimize.debugBinaryLocations)
-				System.err.println("Location coords: (" + locLabel.cord.x +
-						", " + locLabel.cord.y + ")");
-			out.writeInt(locLabel.cord.x);
-			out.writeInt(locLabel.cord.y);
+				System.err.println("Location coords: (" + this.locLabel.cord.x +
+						", " + this.locLabel.cord.y + ")");
+			out.writeInt(this.locLabel.cord.x);
+			out.writeInt(this.locLabel.cord.y);
             
             // write out boolean flags as single bytes
 			if(PathOptimize.debugBinaryLocations)
-				System.err.println("DisplayName:" + locLabel.isDisplayName());
-            out.writeByte(locLabel.isDisplayName() ? 1 : 0);
+				System.err.println("DisplayName:" + this.locLabel.isDisplayName());
+            out.writeByte(this.locLabel.isDisplayName() ? 1 : 0);
 	        
             // output ID of associated GraphPoint
 			if(PathOptimize.debugBinaryLocations)
-				System.err.println("Associated GraphPoint: " + ID);
-			out.writeInt(ID);
+				System.err.println("Associated GraphPoint: " + this.ID);
+			out.writeInt(this.ID);
 	        
-            // output length of display name
-			if(PathOptimize.debugBinaryLocations)
-				System.err.println("Display name length: "
-					+ locLabel.name.length());
-			out.writeInt(locLabel.name.length());
-			
             // output display name
 			if(PathOptimize.debugBinaryLocations)
-				System.err.println("Display name: " + locLabel.name);
-			out.writeChars(locLabel.name);
-			
+				System.err.println("Display name: " + this.locLabel.name + "("
+                        + this.locLabel.name.length() + ")");
+            out.writeInt(this.locLabel.name.length());
+			out.writeChars(this.locLabel.name);
+            
+            // output building code
+            if(PathOptimize.debugBinaryLocations)
+                System.err.println("Building code: "
+                        + this.locLabel.getBuildingCode() + "("
+                        + this.locLabel.getBuildingCode().length() + ")");
+            out.writeInt(this.locLabel.getBuildingCode().length());
+            out.writeChars(this.locLabel.getBuildingCode());
+            
+            // output location description
+            if(PathOptimize.debugBinaryLocations)
+                System.err.println("Location description: "
+                        + this.locLabel.getLocDescription() + "("
+                        + this.locLabel.getLocDescription().length() + ")");
+            out.writeInt(this.locLabel.getLocDescription().length());
+            out.writeChars(this.locLabel.getLocDescription());
+            
 			if(PathOptimize.debugBinaryLocations)
 				System.err.println("---end---");
 		}

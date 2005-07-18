@@ -6,9 +6,8 @@
 # in general.
 #
 # Copyright 2005 Michael Kelly and David Lindquist
-# Adapted from Heap::Elem::Num.
 #
-# Mon Jun 20 12:34:17 PDT 2005
+# Sun Jul 17 19:55:38 PDT 2005
 # -----------------------------------------------------------------
 
 package Heap::Elem::GraphPoint;
@@ -36,16 +35,26 @@ sub cmp {
 	return shift()->{'Distance'} <=> shift()->{'Distance'};
 }
 
-# the 'value' of a GraphPoint is its distance from the source point
+# get or set the 'value' of a GraphPoint (its distance from the source point)
 sub val {
     my $self = shift;
-    @_ ? ($self->{'Distance'} = shift) : $self->{'Distance'};
+    if(@_){
+    	return $self->{'Distance'} = shift();
+    }
+    else{
+    	return $self->{'Distance'};
+    }
 }
 
 # get or set the internal value used by the heap
 sub heap {
     my $self = shift;
-    @_ ? ($self->{'heap'} = shift) : $self->{'heap'};
+    if(@_){
+    	return $self->{'heap'} = shift();
+    }
+    else{
+    	return $self->{'heap'};
+    }
 }
 
 1;

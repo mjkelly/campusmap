@@ -1,6 +1,6 @@
 body{
-	margin-top: 0pt;
-	margin-bottom: 0pt;
+	margin-top: 0px;
+	margin-bottom: 0px;
 	background: #339;
 	font-family: arial, helvetica, sans-serif;
 	font-size: 12pt;
@@ -13,7 +13,7 @@ body{
 }
 
 #container{
-	width: 760pt;
+	width: 760px;
 	margin: 0 auto;
 	background: white;
 	border: 5px solid white;
@@ -24,19 +24,19 @@ body{
 }
 
 #headerLeft{
-	width: 560pt;
+	width: 560px;
 	float: left;
 }
 
 #headerMiddleTop{
-	margin: 20pt;
+	margin: 20px;
 }
 
 /* this is the logo */
 #headerLeftTop{
-	margin-left: 10pt;
-	margin-bottom: 4pt;
-	margin-right: 20pt;
+	margin-left: 10px;
+	margin-bottom: 4px;
+	margin-right: 20px;
 	float: left;
 }
 
@@ -48,8 +48,8 @@ body{
 /* this is the 'start' field */
 #headerLeftBottomLeft{
 	float: left;
-	margin-left: 10pt;
-	margin-right: 20pt;
+	margin-left: 10px;
+	margin-right: 20px;
 }
 
 /* this is the submit button */
@@ -57,12 +57,12 @@ body{
 	float: right;
 	vertical-align: middle;
 	text-align: left;
-	margin-right: 5pt;
+	margin-right: 5px;
 }
 
 #headerRight{
 	float: right;
-	width: 150pt;
+	width: 150px;
 }
 
 #display{
@@ -72,19 +72,19 @@ body{
 
 #displayLeft{
 	float: left;
-	width: 180pt;
+	width: 180px;
 }
 
 #displayMap{
 	float: right;
-	margin-top: 3pt;
+	margin-top: 3px;
 }
 
 #buttons{
 	float: left;
-	width: 70pt;
-	margin-top: 20pt;
-	margin-left: 5pt;
+	width: 70px;
+	margin-top: 20px;
+	margin-left: 5px;
 	text-align: center;
 }
 
@@ -96,17 +96,17 @@ body{
 }
 
 #thumb{
-	width: 144pt;
-	height: 132pt;
+	width: 144px;
+	height: 132px;
 }
 #fromTxt{
 	border-bottom: 2px solid #00ff00;
-	line-height: 18pt;
+	line-height: 18px;
 	display: inline;
 }
 #toTxt{
 	border-bottom: 2px solid #ff0000;
-	line-height: 18pt;
+	line-height: 18px;
 	display: inline;
 }
 

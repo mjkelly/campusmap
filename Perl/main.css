@@ -3,13 +3,13 @@ body{
 	margin-bottom: 0px;
 	background: #339;
 	font-family: arial, helvetica, sans-serif;
-	font-size: 12pt;
+	font-size: 12px;
 }
 
 /* in opera, <input>s and <select>s don't take the font-size of <body>. feh. */
 .operaDoesNotInheritProperly{
 	font-family: arial, helvetica, sans-serif;
-	font-size: 12pt;
+	font-size: 12px;
 }
 
 #container{

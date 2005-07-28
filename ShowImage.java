@@ -730,7 +730,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         // Take a wild gusss :)
         else{
             parent.statusBar.setText("Key does not have an action associated" +
-                    "with it!");
+                    " with it!");
         }
     }
     

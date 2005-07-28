@@ -9,14 +9,7 @@
 <body>
 <div id="top">
 	<h1>About UCSDMap</h1>
-
-	<p>[
-		<a href="index.shtml">Abstract</a> |
-		<b>Editor Features</b> |
-		<a href="interface.shtml">Interface Features</a> |
-		<a href="plans.shtml">Plans</a> |
-		<a href="/cgi-bin/map.cgi">Implementation</a>
-	]</p>
+<!--#include virtual="/cgi-bin/menu.pl?editor"-->
 </div>
 
 <h2>Java Programs for creation of the map data used by the interface:</h2>

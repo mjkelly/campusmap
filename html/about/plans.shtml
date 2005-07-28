@@ -9,14 +9,7 @@
 <body>
 <div id="top">
 	<h1>About UCSDMap</h1>
-
-	<p>[
-		<a href="index.shtml">Abstract</a> |
-		<a href="editor.shtml">Editor Features</a> |
-		<a href="interface.shtml">Interface Features</a> |
-		<b>Plans</b> |
-		<a href="/cgi-bin/map.cgi">Implementation</a>
-	]</p>
+<!--#include virtual="/cgi-bin/menu.pl?plans"-->
 </div>
 
 <h2>Plans</h2>
@@ -28,12 +21,18 @@ the end of Summer Session I and the beginning of Fall 2005.)</p>
 <ul>
 	<li><b>A better base map.</b> The current map is just the visitor map
 	PDF. (It even still has the key in the upper right-hand corner!) We
-	plan on using the colored visitor map.</li>
+	plan on using the colored visitor map, such as is used by <a
+	href="http://maps.ucsd.edu/Viewer.htm?Zoom=2&Map=Visitor&O.x=88&O.y=73&Cmnd=Mgfy&View=Medium&P.x=206&P.y=154">maps.ucsd.edu</a>.</li>
 
 	<li><b>Complete path data.</b> The current path data is for
 	demonstration only and is in no way complete. Once we obtain a final
 	base map and create a scaled base image for use in the editor, we'll
 	enter in the complete path data.</li>
+
+	<li><b>Complete building codes.</b> The application supports
+	associating a building code with each location (i.e., &quot;PCYNH&quot;
+	with &quot;Pepper Canyon Hall&quot;), but they have not been
+	entered.</li>
 
 	<li><b>Google Maps-style scrolling.</b> Who can resist?</li>
 
@@ -44,6 +43,31 @@ the end of Summer Session I and the beginning of Fall 2005.)</p>
 </ul>
 
 <p>...plus anything else that comes up.</p>
+
+<h2>Extensibility</h2>
+
+<p>
+	These features are not specifically planned, but they are listed to
+	give an idea of how this project could expand:
+
+</p>
+
+
+<ul>
+	<li><b>Building maps.</b> Click on an individual building name to open
+	a sub-map (complete with all the features of the existing map --
+	locations, path finding, etc) of the inside of that building.</li>
+
+	<li><b>Maps of other locations.</b> With the editor, it is easy to add
+	path data to any map.</li>
+
+	<li><b>Integration with other applications.</b> Each location may have
+	an associated building code, so it is easy for external applications
+	that know building codes to build URLs for the map. I.e., to show the
+	path between CENTR and PCYNH, you simply add the following to the map
+	URL: &quot;?from=<b>CENTR</b>&amp;to=<b>PCYNH</b>&quot;.</li>
+
+</ul>
 
 </body>
 </html>

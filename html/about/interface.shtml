@@ -9,14 +9,7 @@
 <body>
 <div id="top">
 	<h1>About UCSDMap</h1>
-
-	<p>[
-		<a href="index.shtml">Abstract</a> |
-		<a href="editor.shtml">Editor Features</a> |
-		<b>Interface Features</b> |
-		<a href="plans.shtml">Plans</a> |
-		<a href="/cgi-bin/map.cgi">Implementation</a>
-	]</p>
+<!--#include virtual="/cgi-bin/menu.pl?interface"-->
 </div>
 
 <h2>Interface Features</h2>

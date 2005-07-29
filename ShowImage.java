@@ -492,6 +492,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         //When we find a location at the point.  
         if(locIndex >= 0){
             // if the text field is empty, delete the location
+        	// only if it is the only point there
             if(parent.locationNameEntry.getText().equals("")){
 				// Get the number of points connected to the location
 				int numPoints = 0;
@@ -508,8 +509,17 @@ class ScrollablePicture extends JLabel implements Scrollable,
 						}
 					}
 				}
+				// If there's only one point connecting to the point
 				if(numPoints == 1)
+					// remove the location
 					locations.remove(locIndex);
+				// otherwise
+				else
+				{
+					// move the location
+					Location toMove = locations.get(locIndex);
+					toMove.cord = new Point(x, y);
+				}
             }
             // otherwise, we replace the location at this point
             // with another that has the new (x,y) coordinate and 

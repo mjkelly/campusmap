@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>About UCSDMap: Why Not Google Maps?</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="top">
+	<h1>About UCSDMap</h1>
+<!--#include virtual="/cgi-bin/menu.pl?whynot"-->
+</div>
+
+<h2>Why Not Google Maps?</h2>
+
+<p>
+	The <a href="http://www.google.com/apis/maps/">Google Maps API</a>,
+	which allows developers to use Google Maps to power their own
+	applications, may seem to eliminate the need for a specialized
+	application like UCSDMap. However, largely because it focuses on city
+	roads and driving directions, and we do not believe it suits the needs
+	of UCSD.
+
+</p>
+
+<h3>Advantages of UCSDMap</h3>
+<ul>
+	<li><b>Access to detailed maps.</b> UCSD has detailed maps of campus
+	and high-resolution satellite images, which UCSDMap can readily use.
+	Google Maps is limited to Google's map, which is much less detailed,
+	and satellite images, which are lower-resolution.</li>
+
+	<li><b>Flexibility.</b> The editor we created to enter path data can be used to
+	enter path data for <i>any</i> base map, not just the UCSD campus. If
+	UCSD ever needs internal building maps, or other maps that Google would
+	not have, they can readily be created and used.</li>
+
+	<li><b>Visual consistency.</b> UCSDMap can (and in fact plans to) use
+	the maps that UCSD already has displayed on kiosks around campus.
+	Google Maps uses only the maps Google has created.</li>
+
+	<li><b>Future reliability.</b> UCSDMap does not rely on the goodwill of an external
+	company -- in the <a
+	href="http://www.google.com/apis/maps/terms.html">Google Maps API Terms
+	of Use</a> (section 1.5), Google explicitly reserves the right to include
+	advertisements.</li>
+
+	<li><b>General extensibility.</b> Should some unforeseen circumstance
+	require the map to possess a new feature, UCSD will have access to the
+	full code base of UCSDMap, so any necessary changes can be made. See
+	the Extensibility section of the <a href="plans.shtml#extend">plans</a>
+	page.</li>
+
+</ul>
+
+<h3>Advantages of Google Maps</h3>
+
+<p>...and how we can match (or beat) them.</p>
+
+<ul>
+	<li><b>Hybrid view.</b> This is the satellite image overlaid with road maps.
+		<ul>
+			<li>Because UCSD has both satellite images and detailed
+			maps of campus, it would not be difficult to create a
+			&quot;hybrid&quot; map like Google's by overlaying the
+			road layer of one of the visitor maps on the satellite
+			image. This would have the advantage of optionally
+			including foot paths, and anything else that appears on
+			UCSD's existing maps, instead of just public
+			roads.</li>
+
+			<li>In a nutshell, it is possible to create a hybrid
+			map that is more flexible than Google's.</li>
+		</ul>
+	</li>
+	<li><b>Live scrolling/dragging/zooming.</b>
+		<ul>
+			<li>This is a planned feature of UCSDMap. We plan on
+			implementing it, <i>at the latest</i>, before the
+			beginning of Fall quarter 2005.</li>
+		</ul>
+	</li>
+	<li><b>Looks.</b>
+		<ul>
+			<li>The appearance of UCSDMap is template-based, and
+			can be changed easily. Multiple looks are possible
+			simultaneously (such as a standard view and a printing
+			view).</li>
+
+		</ul>
+	</li>
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>About UCSDMap: About The Editor</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" href="/about/style.css" />
+</head>
+<body>
+<div id="top">
+	<h1>About UCSDMap</h1>
+<!--#include virtual="/cgi-bin/menu.pl"-->
+</div>
+
+<h2>About the Editor</h2>
+
+<p>
+	The editor is used to add paths (representing, appropriately enough,
+	foot paths or roads) and locations (representing buildings or
+	landmarks) to a base image.
+
+</p>
+
+<p>
+	This is a screenshot of the editor, centered around Geisel Library. The
+	base image is simply a greatly enlarged version of the parking map.
+	(The map used inside the editor is designed to be purely functional --
+	it's notably uglier than a different version of the same map that's
+	used in the interface.)
+	
+	Many of the foot paths in the area have been entered, and you can see
+	them going between locations, crossing each other, etc:
+
+</p>
+
+<img src="busy.png">
+
+<p>
+	Any base image may be used, so paths may be entered for any area (such
+	as the UCSD campus). The only limitation is that the area covered can't
+	be <i>too</i> large, or shortest-path calculations become too slow.
+
+</p>
+
+
+<h2>Optimization</h2>
+
+<p>
+	Data is entered as a series of &quot;paths&quot;, which are nothing
+	more than a series of points connected by lines. Each click adds
+	another point to the end of a path. Each path is independent they may
+	cross, but nothing special happens when they do. In order to do
+	anything useful with the paths, they must be transformed into a graph.
+
+</p>
+
+<p>A single path made up of four points (with a location &quot;Here&quot; attached to one point):</p>
+<img src="path.png">
+
+<p>A second path has been added (with a location &quot;There&quot; attached to a point), criss-crossing the first:</p>
+<img src="before.png">
+
+<p>
+	The same two paths have been run through PathOptimize (this is an
+	option when saving the data) and have been turned into a planar graph:
+	Each place two lines cross, a new point has been created to join the
+	two lines (this can be suppressed when necessary, such as for bridges).
+	The points are now nodes in a graph, connected by lines (vertices).
+	Also, extraneous points that led nowhere were deleted.
+
+</p>
+<img src="after.png">
+
+<p>
+	The data can now be exported to a format readable by the online
+	interface, which can calculate shortest paths, etc.
+
+</p>
+
+</body>
+</html>

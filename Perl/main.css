@@ -4,6 +4,7 @@ body{
 	background: #339;
 	font-family: arial, helvetica, sans-serif;
 	font-size: 12px;
+	color: black;
 }
 
 /* in opera, <input>s and <select>s don't take the font-size of <body>. feh. */
@@ -99,15 +100,20 @@ body{
 	width: 144px;
 	height: 132px;
 }
-#fromTxt{
+#fromTxt, #fromTxt a:link, #fromTxt a:visited, #fromTxt a:hover, #fromTxt a:active{ 
 	border-bottom: 2px solid #00ff00;
 	line-height: 18px;
 	display: inline;
+	text-decoration: none;
+	color: black;
 }
-#toTxt{
+
+#toTxt, #toTxt a:link, #toTxt a:visited, #toTxt a:hover, #toTxt a:active{ 
 	border-bottom: 2px solid #ff0000;
 	line-height: 18px;
 	display: inline;
+	text-decoration: none;
+	color: black;
 }
 
 #map{

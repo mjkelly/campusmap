@@ -625,6 +625,14 @@ $tmpl->param( ZOOM_OUT_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, 
 $tmpl->param( ZOOM_IN_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, $yoff,
 	($scale > 0) ? $scale - 1 : 0, $size, $mpm));
 
+# zooming to the start or end locations
+if($src_found){
+	$tmpl->param( GOTO_SRC_URL => "$self?" . state($fromTxtURL, $toTxtURL, $locations->{'ByID'}{$from}{'x'}, $locations->{'ByID'}{$from}{'y'}, $MapGlobals::SINGLE_LOC_SCALE, $size, $mpm));
+}
+if($dst_found){
+	$tmpl->param( GOTO_DST_URL => "$self?" . state($fromTxtURL, $toTxtURL, $locations->{'ByID'}{$to}{'x'}, $locations->{'ByID'}{$to}{'y'}, $MapGlobals::SINGLE_LOC_SCALE, $size, $mpm));
+}
+
 $tmpl->param( RECENTER_URL => 
 	"$self?" . state($fromTxtURL, $toTxtURL, undef, undef, undef, undef, $mpm));
 

@@ -91,14 +91,14 @@
 
 			<TMPL_IF NAME=SRC_FOUND>
 				<p><span id="fromTxt">
-					<b>From</b>: <TMPL_VAR NAME=TXT_SRC>
+					<a href="<TMPL_VAR NAME=GOTO_SRC_URL>"><b>From</b>: <TMPL_VAR NAME=TXT_SRC></a>
 				</span></p>
 			<TMPL_ELSE>
 				<p><TMPL_VAR NAME=SRC_HELP></p>
 			</TMPL_IF>
 			<TMPL_IF NAME=DST_FOUND>
 				<p><span id="toTxt">
-					<b>To</b>: <TMPL_VAR NAME=TXT_DST>
+					<a href="<TMPL_VAR NAME=GOTO_DST_URL>"><b>To</b>: <TMPL_VAR NAME=TXT_DST></a>
 				</span></p>
 			<TMPL_ELSE>
 				<p><TMPL_VAR NAME=DST_HELP></p>

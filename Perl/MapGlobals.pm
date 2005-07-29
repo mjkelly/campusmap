@@ -73,7 +73,8 @@ our @SRC_COLOR = (0, 255, 0);
 # color associated with 'to' location
 our @DST_COLOR = (255, 0, 0);
 # color paths are drawn in
-our @PATH_COLOR = (0, 0, 255);
+#our @PATH_COLOR = (0, 0, 255);
+our @PATH_COLOR = (51, 51, 204);
 # color the viewport outline rectangle (in the thumbnail) is drawn in
 our @RECT_COLOR = (0, 0, 255);
 # color location background text (@SRC_COLOR and @DST_COLOR) is drawn in
@@ -112,8 +113,8 @@ our $CACHE_DIR		= 'cache';
 our $CACHE_EXPIRY	= 60;
 
 # where static images (such as the button graphics) are stored
-our $STATIC_IMG_DIR	= '../../ucsdmap';
-##our $STATIC_IMG_DIR	= '../images';
+our $STATIC_IMG_DIR	= '../../ucsdmap/bluev2';
+##our $STATIC_IMG_DIR	= '../images/bluev2';
 # where dynamically-generated images (map views) are stored
 our $DYNAMIC_IMG_DIR	= '../../ucsdmap/dynamic';
 ##our $DYNAMIC_IMG_DIR	= '../images/dynamic';

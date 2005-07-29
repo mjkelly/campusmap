@@ -23,6 +23,7 @@ use lib qw(
 use CGI;
 use File::Temp ();
 use HTML::Template;
+use GD;
 
 use MapGlobals qw(TRUE FALSE INFINITY between asInt @SIZES @SCALES);
 use LoadData qw(nameNormalize);
@@ -439,7 +440,7 @@ my $bg_color = $im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
 # if we had a path to draw, now's the time to do it
 if($path){
 	foreach my $line (@$pathPoints){
-		MapGraphics::drawLines($line, $im, 2, $path_color, $rawxoff, $rawyoff,
+		MapGraphics::drawLines($line, $im, 4, $path_color, $rawxoff, $rawyoff,
 			$width, $height, $SCALES[$scale]);
 	}
 	# uncomment to draw bounding rectangle

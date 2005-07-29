@@ -149,17 +149,17 @@
 			<!-- this is the directional control pad -->
 			<tr>
 				<td>&nbsp;</td>
-				<td><a href="<TMPL_VAR NAME=UP_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/up-arr.png" width="20" height="20" border="0" alt="Up" /></a></td>
+				<td><a href="<TMPL_VAR NAME=UP_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/up.png" width="20" height="20" border="0" alt="Up" /></a></td>
 				<td>&nbsp;</td>
 			</tr>
 			<tr>
-				<td><a href="<TMPL_VAR NAME=LEFT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/left-arr.png" width="20" height="20" border="0" alt="Left" /></a></td>
-				<td><a href="<TMPL_VAR NAME=RECENTER_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/circle.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
-				<td><a href="<TMPL_VAR NAME=RIGHT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/right-arr.png" width="20" height="20" border="0" alt="Right" /></a></td>
+				<td><a href="<TMPL_VAR NAME=LEFT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/left.png" width="20" height="20" border="0" alt="Left" /></a></td>
+				<td><a href="<TMPL_VAR NAME=RECENTER_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/center.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
+				<td><a href="<TMPL_VAR NAME=RIGHT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/right.png" width="20" height="20" border="0" alt="Right" /></a></td>
 			</tr>
 			<tr>
 				<td>&nbsp;</td>
-				<td><a href="<TMPL_VAR NAME=DOWN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/down-arr.png" width="20" height="20" border="0" alt="Down" /></a></td>
+				<td><a href="<TMPL_VAR NAME=DOWN_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/down.png" width="20" height="20" border="0" alt="Down" /></a></td>
 				<td>&nbsp;</td>
 			</tr>
 			<tr>
@@ -175,7 +175,7 @@
 				whitespace messes up IE. expand it to make it
 				comprehensible. as it stands, you are not
 				expected to understand this ;) -->
-				<td colspan="3" align="center"><TMPL_LOOP NAME=ZOOM_WIDGET><a href="<TMPL_VAR NAME=URL>"><TMPL_IF NAME=SELECTED><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png" width="30" height="15" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL> (current)" /><TMPL_ELSE><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level.png" width="30" height="15" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL>" /></TMPL_IF></a><br /></TMPL_LOOP></td>
+				<td colspan="3" align="center"><TMPL_LOOP NAME=ZOOM_WIDGET><a href="<TMPL_VAR NAME=URL>"><TMPL_IF NAME=SELECTED><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png" width="30" height="20" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL> (current)" /><TMPL_ELSE><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-level.png" width="30" height="20" border="0" alt="Zoom level <TMPL_VAR NAME=LEVEL>" /></TMPL_IF></a><br /></TMPL_LOOP></td>
 			</tr>
 			<tr>
 				<td colspan="3" align="center"><a href="<TMPL_VAR NAME=ZOOM_OUT_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>

@@ -30,6 +30,10 @@ use LoadData qw(nameNormalize);
 use MapGraphics;
 use ShortestPath;
 
+# -----------------------------------------------------------------
+# Basic setup.
+# -----------------------------------------------------------------
+
 # make sure nobody gives us an absurd amount of input
 $CGI::DISABLE_UPLOADS = 1;
 $CGI::POST_MAX        = 1024; # 1k ought to be enough for anybody... ;)
@@ -43,28 +47,12 @@ our $self = 'map.cgi';
 # "down"
 my $pan = 100;
 
-# generate a temporary file on disk to store the map image
-my $tmpfile = new File::Temp(
-		TEMPLATE => 'ucsdmap-XXXXXX',
-		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
-		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
-		UNLINK => 0,
-	);
-chmod(0644, $tmpfile->filename);
-
+# -----------------------------------------------------------------
+# Get input parameters.
+# -----------------------------------------------------------------
 # source and destination location names
 my $fromTxt = $q->param('from') || shift(@ARGV) || '';
 my $toTxt   = $q->param('to')   || shift(@ARGV) || '';
-
-# we always need all the locations, so load them off disk
-my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
-
-# these may or may not be loaded later on
-my($points, $edgeFH, $edgeSize);
-
-# HTML-safe versions of the from and to text
-my $fromTxtSafe = CGI::escapeHTML($fromTxt);
-my $toTxtSafe = CGI::escapeHTML($toTxt);
 
 # x and y display offsets, from the upper left
 my $xoff   = asInt($q->param('xoff')   || 0);
@@ -76,10 +64,6 @@ my $yoff   = asInt($q->param('yoff')   || 0);
 my $scale  = defined($q->param('scale')) ? asInt($q->param('scale')) : undef;
 # the size of the map display;  this is an index into MapGlobals::SIZES
 my $size   = asInt(defined($q->param('size')) ? $q->param('size') : 1);
-
-# width and height of the viewing window (total image size is in MapGlobals)
-my $width  = $SIZES[$size][0];
-my $height = $SIZES[$size][1];
 
 # how fast do you walk?
 # in minutes per mile.
@@ -94,136 +78,110 @@ my $thumbx = defined($q->param('thumb.x')) ? asInt($q->param('thumb.x')) : undef
 my $thumby = defined($q->param('thumb.y')) ? asInt($q->param('thumb.y')) : undef;
 # one or the other (map or thumb click offsets) should be undef
 
+# -----------------------------------------------------------------
+# Do startup stuff: load data, convert some of the input data, initialize
+# variables, etc.
+# -----------------------------------------------------------------
+
+# we always need all the locations, so load them off disk
+my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
+
+# these may or may not be loaded later on
+my($points, $edgeFH, $edgeSize);
+
+# HTML-safe versions of the from and to text
+my $fromTxtSafe = CGI::escapeHTML($fromTxt);
+my $toTxtSafe = CGI::escapeHTML($toTxt);
+
+# width and height of the viewing window (total image size is in MapGlobals)
+my $width  = $SIZES[$size][0];
+my $height = $SIZES[$size][1];
+
 # kill old temporary files
 MapGlobals::reaper($MapGlobals::DYNAMIC_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
 
-# whether source and destination locations were found
+my $ERROR = '';
+
+# -----------------------------------------------------------------
+# Attempt to use the user-provided values $fromTxt and $toTxt to find
+# corresponding location IDs.
+# -----------------------------------------------------------------
+
+# keep track of whether source and destination locations were found
 my ($src_found, $dst_found) = (TRUE, TRUE);
 # any text associated with the operation of finding the source or destination
 # (this is "did you mean...?" stuff)
 my($src_help, $dst_help) = ('', '');
 
-# now convert $fromTxt and $toTxt to IDs
-my $ERROR = '';
 my ($from, $to) = (0, 0);
 my @fromids = ();
 my @toids = ();
 
 # if we got no input, put up an informative message
 if($fromTxt eq '' && $toTxt eq ''){
-	#$ERROR .= "Enter a start and destination location to find the shortest"
-	#	. " path between the two, or select only one to zoom to that location.";
 	($src_found, $dst_found) = (FALSE, FALSE);
-
 }
 # otherwise, attempt to look up both locations
 else{
 
-	# first check for an exact name match
-	if( exists($locations->{'ByName'}{nameNormalize($toTxt)}) ){
-		$to = $locations->{'ByName'}{nameNormalize($toTxt)}{'ID'};
-	}
-	# then check a building code match
-	elsif( exists($locations->{'ByCode'}{$toTxt}) ){
-		$to = $locations->{'ByCode'}{$toTxt}{'ID'};
-		# now we must change all the text referring to the location
+	##### this is for the destination location #####
+	@toids = findLocation($toTxt, $locations);
+	# we found an exact match
+	if(@toids == 1){
+		# since we found a real location, we've got to reset all the text
+		# associated with the location
+		$to = $toids[0]{'id'};
 		$toTxt = $locations->{'ByID'}{$to}{'Name'};
 		$toTxtSafe = CGI::escapeHTML($toTxt);
 	}
-	# otherwise, fall back to fuzzy matching
-	elsif($toTxt ne ''){
-		@toids = LoadData::findName($toTxt, $locations);
-		# we found an exact match
-		if(@toids == 1){
-			# since we found a real location, we've got to reset all the text
-			# associated with the location
-			$to = $toids[0]{'id'};
-			$toTxt = $locations->{'ByID'}{$to}{'Name'};
-			$toTxtSafe = CGI::escapeHTML($toTxt);
-		}
-		# we have multiple matches
-		elsif(@toids > 1){
-			$dst_found = FALSE;
-		}
-		# no matches
-		else{
-			# I've done all I can. He's dead, Jim.
-			$ERROR .= "<p>Destination location &quot;$toTxtSafe&quot; not found.</p>\n"
-				if($toTxt ne '');
-			$dst_found = FALSE;
-		}
+	# we have multiple matches
+	elsif(@toids > 1){
+		$dst_found = FALSE;
 	}
+	# no matches
 	else{
+		# I've done all I can. He's dead, Jim.
+		$ERROR .= "<p>Destination location &quot;$toTxtSafe&quot; not found.</p>\n"
+			if($toTxt ne '');
 		$dst_found = FALSE;
 	}
 
-	# first check for an exact name match
-	if( exists($locations->{'ByName'}{nameNormalize($fromTxt)}) ){
-		$from = $locations->{'ByName'}{nameNormalize($fromTxt)}{'ID'};
-	}
-	# then check a building code match
-	elsif( exists($locations->{'ByCode'}{$fromTxt}) ){
-		$from = $locations->{'ByCode'}{$fromTxt}{'ID'};
-		# now we must change all the text referring to the location
+	##### this is for the source location #####
+	@fromids = findLocation($fromTxt, $locations);
+	# we found an exact match
+	if(@fromids == 1){
+		# since we found a real location, we've got to reset all the text
+		# associated with the location
+		$from = $fromids[0]{'id'};
 		$fromTxt = $locations->{'ByID'}{$from}{'Name'};
 		$fromTxtSafe = CGI::escapeHTML($fromTxt);
 	}
-	elsif($fromTxt ne ''){
-		# fall back to fuzzy matching here
-		@fromids = LoadData::findName($fromTxt, $locations);
-		# we found an exact match
-		if(@fromids == 1){
-			# since we found a real location, we've got to reset all the text
-			# associated with the location
-			$from = $fromids[0]{'id'};
-			$fromTxt = $locations->{'ByID'}{$from}{'Name'};
-			$fromTxtSafe = CGI::escapeHTML($fromTxt);
-		}
-		# we have multiple matches
-		elsif(@fromids > 1){
-			$src_found = FALSE;
-		}
-		# no matches
-		else{
-			$ERROR .= "<p>Start location &quot;$fromTxtSafe&quot; not found.</p>\n"
-				if($fromTxt ne '');
-			$src_found = FALSE;
-		}
+	# we have multiple matches
+	elsif(@fromids > 1){
+		$src_found = FALSE;
 	}
+	# no matches
 	else{
+		$ERROR .= "<p>Start location &quot;$fromTxtSafe&quot; not found.</p>\n"
+			if($fromTxt ne '');
 		$src_found = FALSE;
 	}
 
 }
 
+# -----------------------------------------------------------------
+# Now that we have source and destination IDs, build up some more variables
+# based on that.
+# -----------------------------------------------------------------
+
 # build a list of printable location names
 my @locParam;
 my($name, $trunc);
-my($loc_opt_from, $loc_opt_to);
-foreach (sort keys %{$locations->{'ByName'}}){
-
-	$trunc = $name = $locations->{'ByName'}{$_}{'Name'};
-	# truncate the name if it's too long
-	if(length($name) > $MapGlobals::MAX_NAME_LEN){
-		$trunc = substr($name, 0, $MapGlobals::MAX_NAME_LEN) . '...';
-	}
-
-	$loc_opt_from .= sprintf(qq{<option value="%s"%s>%s</option>\n},
-		CGI::escapeHTML($name),
-		($fromTxt eq $name ? ' selected="selected"' : ''),
-		CGI::escapeHTML($trunc)
-	);
-	$loc_opt_to .= sprintf(qq{<option value="%s"%s>%s</option>\n},
-		CGI::escapeHTML($name),
-		($toTxt eq $name ? ' selected="selected"' : ''),
-		CGI::escapeHTML($trunc)
-	);
-
-}
+my($loc_opt_from, $loc_opt_to) = buildLocationList($locations);
 
 # we actually run the shortest-path algorithm only if we found both
 # the source and destination locations
-my $path = ($src_found && $dst_found);
+my $havePath = ($src_found && $dst_found);
 
 # URL-safe versions of the from and to text
 my $fromTxtURL = CGI::escape($fromTxt);
@@ -236,7 +194,7 @@ my $endID = 0;
 
 # if start and end locations are the same, don't draw
 if( $from == $to ){
-	$path = FALSE;
+	$havePath = FALSE;
 }
 # otherwise, assign the start and end IDs to meaningful values
 else{
@@ -244,11 +202,17 @@ else{
 	$endID = $locations->{'ByID'}{$to}{'PointID'};
 }
 
+# -----------------------------------------------------------------
+# Figure out the shortest path between the two locations, if applicable. This
+# is also where we handle the various cases such as when only one location is
+# found but the other has multiple fuzzy possibilities, etc.
+# -----------------------------------------------------------------
+
 # do the shortest path stuff
 my $dist = 0;
 my $rect;
 my $pathPoints;
-if($path){
+if($havePath){
 
 	# first, check if there's a cache file for the path we want
 	my $cachefile = MapGlobals::getCacheName($from, $to);
@@ -273,69 +237,22 @@ if($path){
 		LoadData::cacheReaper();
 	}
 	
+	# adjust the pixel distance to the unit we're using to display it (mi, ft, etc)
 	if(defined($dist)){
 		$dist /= $MapGlobals::PIXELS_PER_UNIT;
 	}
 	else{
-		$path = FALSE;
+		# if $dist is undefined, there's no path between the two
+		# locations.
+		$havePath = FALSE;
 		$ERROR .= "These two locations are not connected. ";
 	}
 
-	if(!$xoff && !$yoff){
-		$xoff = int(($rect->{'xmin'} + $rect->{'xmax'}) / 2);
-		$yoff = int(($rect->{'ymin'} + $rect->{'ymax'}) / 2);
-	}
-
 	# now pick a zoom level, if one hasn't already been specified
-	if(!defined($scale)){
-		my $w = $rect->{'xmax'} - $rect->{'xmin'};
-		my $h = $rect->{'ymax'} - $rect->{'ymin'};
-
-		# find the first level that encompasses the entire rectangle
-		for my $i (0..$#SCALES){
-			if($w < $width/$SCALES[$i] && $h < $height/$SCALES[$i]){
-				# we know it's big enough. now, make sure
-				# nothing's too close to the edges
-
-				# x pixels on the actual output image
-				# correspond to x/$SCALES[$i] pixels on the
-				# base image (to counteract the scale
-				# multiplier).
-
-				# if any of the locations are too close to any edge,
-				# reject this zoom level and move to the next one
-				if(abs($xoff - $locations->{'ByID'}{$from}{'x'}) > $width/(2*$SCALES[$i]) - 5){
-					next;
-				}
-				if(abs($xoff - $locations->{'ByID'}{$to}{'x'}) > $width/(2*$SCALES[$i]) - 5){
-					next;
-				}
-
-				if(abs($yoff - $locations->{'ByID'}{$from}{'y'}) > $height/(2*$SCALES[$i]) - 5){
-					next;
-				}
-				if(abs($yoff - $locations->{'ByID'}{$to}{'y'}) > $height/(2*$SCALES[$i]) - 5){
-					next;
-				}
-
-				# if location names would ordinarily go off the
-				# edge of the screen, drawLocation draws them
-				# to the left instead
-
-				# if we made it this far, this is a good scale!
-				$scale = $i;
-				last;
-			}
-		}
-
-		# if $scale is still a bogus value, we couldn't find ANY zoom level
-		# to accomodate the two locations! fall back to centering on the destination,
-		# and zooming in a bit
-		if(!defined($scale)){
-			$scale = $MapGlobals::SINGLE_LOC_SCALE;
-			$xoff = $locations->{'ByID'}{$to}{'x'};
-			$yoff = $locations->{'ByID'}{$to}{'y'};
-		}
+	if( !defined($scale) ){
+		($scale, $xoff, $yoff) = pickZoom(
+			$locations->{'ByID'}{$from}, $locations->{'ByID'}{$to},
+			$xoff, $yoff, $width, $height, $rect, \@SCALES);
 	}
 }
 # if we don't have a full path, check if we have a single location,
@@ -409,15 +326,32 @@ elsif( defined($thumbx) && defined($thumbx) ){
 
 # make sure the x/y offsets are in range, and correct them if they aren't
 # (but only AFTER we remember them for the links dependent on the current, unadjusted state)
-$xoff = between(($width/$SCALES[$scale])/2, $MapGlobals::IMAGE_X - ($width/$SCALES[$scale])/2, $xoff);
-$yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SCALES[$scale])/2, $yoff);
+$xoff = between(0, $MapGlobals::IMAGE_X, $xoff);
+$yoff = between(0, $MapGlobals::IMAGE_Y, $yoff);
 
-# adjust xoff/yoff so they point to the upper-left-hand corner, which is what
-# the low-level MapGraphics functions use. additionally, take scale into
-# account at the right time, so it doesn't offset scaled views.
-my $rawxoff = int($xoff*$SCALES[$scale] - $width/2);
-my $rawyoff = int($yoff*$SCALES[$scale] - $height/2);
+# these coordinates are the "visible" x/y offsets: that is, the center of what
+# you actually see on the map (which can't be _too_ close to the edges of the
+# map). e.g., even if the "real" center is at (0,0), these will be at (width/2,
+# height/2). these are used for the panning buttons.
+# the rule of thumb is: anything that MOVES the view should use the norm_*
+# offsets, anything that PRESERVES it should use the regular ones.
+my $norm_xoff = between(($width/$SCALES[$scale])/2, $MapGlobals::IMAGE_X - ($width/$SCALES[$scale])/2, $xoff);
+my $norm_yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SCALES[$scale])/2, $yoff);
 
+# these are coordinates of the upper-left-hand corner, used by low-level
+# drawing functions.
+my $rawxoff = int($norm_xoff*$SCALES[$scale] - $width/2);
+my $rawyoff = int($norm_yoff*$SCALES[$scale] - $height/2);
+
+# make sure the offsets don't go out of range
+$rawxoff = between(0, $MapGlobals::IMAGE_X - $width, $rawxoff);
+$rawyoff = between(0, $MapGlobals::IMAGE_Y - $height, $rawyoff);
+
+# -----------------------------------------------------------------
+# Open the map image and draw to it. Note that the draw statements are ordered
+# so that the various elements on the map will be layered correctly -- they are
+# NOT necesarily in a logical order.
+# -----------------------------------------------------------------
 
 # get the image of the appropriate scale from disk, and grab only
 # what we need by size and offset
@@ -430,31 +364,19 @@ my $dst_color = $im->colorAllocate(@MapGlobals::DST_COLOR);
 my $path_color = $im->colorAllocate(@MapGlobals::PATH_COLOR);
 my $bg_color = $im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
 
-# uncomment to draw ALL paths
-#MapGraphics::drawAllEdges($edges, $im, 1, $path_color, $rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
-
 # uncomment to draw ALL locations
 #MapGraphics::drawAllLocations($locations, $im, $src_color, $src_color, $bg_color, $rawxoff, $rawyoff,
 #				$width, $height, $SCALES[$scale]);
 
 # if we had a path to draw, now's the time to do it
-if($path){
+if($havePath){
 	foreach my $line (@$pathPoints){
 		MapGraphics::drawLines($line, $im, 4, $path_color, $rawxoff, $rawyoff,
 			$width, $height, $SCALES[$scale]);
 	}
-	# uncomment to draw bounding rectangle
-	#$im->setThickness(1);
-	#$im->rectangle(
-	#	$rect->{'xmin'}*$SCALES[$scale] - $rawxoff,
-	#	$rect->{'ymin'}*$SCALES[$scale] - $rawyoff,
-	#	$rect->{'xmax'}*$SCALES[$scale] - $rawxoff,
-	#	$rect->{'ymax'}*$SCALES[$scale] - $rawyoff,
-	#	$rect_color
-	#);
 }
 
-# only draw the source and destination locations
+# draw the source and destination locations, if they've been found
 if($src_found){
 	MapGraphics::drawLocation($locations->{'ByID'}{$from}, $im, $src_color, $src_color, $bg_color,
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
@@ -464,11 +386,25 @@ if($dst_found){
 		$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
 }
 
+
+# generate a temporary file on disk to store the map image
+my $tmpfile = new File::Temp(
+		TEMPLATE => 'ucsdmap-XXXXXX',
+		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
+		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
+		UNLINK => 0,
+	);
+chmod(0644, $tmpfile->filename);
+
 # print the data out to a temporary file
 binmode($tmpfile);
 print $tmpfile $im->png();
 close($tmpfile);
 
+
+# -----------------------------------------------------------------
+# Draw to the thumbnail.
+# -----------------------------------------------------------------
 
 # grab the thumbnail from disk
 my $thumb = GD::Image->newFromGd2($MapGlobals::THUMB_FILE);
@@ -485,10 +421,10 @@ my $thumb_rect_color = $thumb->colorAllocate(@MapGlobals::RECT_COLOR);
 
 # the outline of the current view
 $thumb->rectangle(
-	($xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
-	($yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
-	($xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X - 1,
-	($yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y - 1,
+	($norm_xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+	($norm_yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+	($norm_xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X - 1,
+	($norm_yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y - 1,
 	$thumb_rect_color
 );
 
@@ -535,31 +471,10 @@ if( defined($edgeFH) ){
 	close($edgeFH);
 }
 
-# states for the directions
-my $left  = state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm);
-my $right = state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm);
-my $up    = state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$SCALES[$scale], $scale, $size, $mpm);
-my $down  = state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $scale, $size, $mpm);
-
-# the diagonal buttons actually cheat: the total movement is about 141 pixels,
-# because we move 100 up AND 100 left, for instance. I don't think anyone cares.
-# XXX: unused at the moment -- not sure how to fit them into the display cleanly
-#my $upLeft    = state($fromTxtURL, $toTxtURL,
-#	$xoff - $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size, $mpm);
-#my $upRight   = state($fromTxtURL, $toTxtURL,
-#	$xoff + $pan/$SCALES[$scale], $yoff - $pan/$SCALES[$scale], $scale, $size, $mpm);
-#my $downLeft  = state($fromTxtURL, $toTxtURL,
-#	$xoff - $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size, $mpm);
-#my $downRight = state($fromTxtURL, $toTxtURL,
-#	$xoff + $pan/$SCALES[$scale], $yoff + $pan/$SCALES[$scale], $scale, $size, $mpm);
-
-# buttons to make the window bigger/smaller 
-my $bigger = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#SIZES) ? $size+1 : $size, $mpm);
-my $smaller = state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm);
-
-# make sure the offsets don't go out of range
-$rawxoff = between(0, $MapGlobals::IMAGE_X - $width, $rawxoff);
-$rawyoff = between(0, $MapGlobals::IMAGE_Y - $height, $rawyoff);
+# -----------------------------------------------------------------
+# Feed the values into the template.
+# (A LOT of these are commented-out because we don't use them right now.)
+# -----------------------------------------------------------------
 
 # now we slam everything into a template and print it out
 my $tmpl = HTML::Template->new(
@@ -571,19 +486,13 @@ my $tmpl = HTML::Template->new(
 # basic info: who we are, where to find images, etc
 $tmpl->param( SELF => $self ); # whoooooooooo are you?
 
-# a bunch of CVS tags
+# CVS tags
 #$tmpl->param( CVS_ID => '$Id$');
 $tmpl->param( CVS_REVISION => '$Revision$');
 #$tmpl->param( CVS_DATE => '$Date$');
 #$tmpl->param( CVS_AUTHOR => '$Author$');
 
-# URLS and pathnames to various important things
-# (Note: IMG_* tags are only used by the old template.)
-#$tmpl->param( IMG_UP => "$STATIC_IMG_DIR/up.png" );
-#$tmpl->param( IMG_DOWN => "$STATIC_IMG_DIR/down.png" );
-#$tmpl->param( IMG_LEFT => "$STATIC_IMG_DIR/left.png" );
-#$tmpl->param( IMG_RIGHT => "$STATIC_IMG_DIR/right.png" );
-
+# filenames for the temporary thumb and map files
 $tmpl->param( IMG_VIEW => $tmpfile->filename );
 $tmpl->param( IMG_THUMB => $tmpthumb->filename );
 $tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
@@ -608,17 +517,17 @@ $tmpl->param( LOCATION_OPT_TO =>  $loc_opt_to);
 
 # the strings representing the state of various buttons
 $tmpl->param( UP_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff - $pan/$SCALES[$scale], $scale, $size, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff - $pan/$SCALES[$scale], $scale, $size, $mpm));
 $tmpl->param( DOWN_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff + $pan/$SCALES[$scale], $scale, $size, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff + $pan/$SCALES[$scale], $scale, $size, $mpm));
 $tmpl->param( LEFT_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $xoff - $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff - $pan/$SCALES[$scale], $norm_yoff, $scale, $size, $mpm));
 $tmpl->param( RIGHT_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $xoff + $pan/$SCALES[$scale], $yoff, $scale, $size, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff + $pan/$SCALES[$scale], $norm_yoff, $scale, $size, $mpm));
 #$tmpl->param( SMALLER_URL => 
-#	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm));
+#	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm));
 #$tmpl->param( BIGGER_URL => 
-#	"$self?" . state($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, ($size < $#SIZES) ? $size+1 : $size, $mpm));
+#	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff, $scale, ($size < $#SIZES) ? $size+1 : $size, $mpm));
 
 $tmpl->param( ZOOM_OUT_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, $yoff,
 	($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size, $mpm));
@@ -634,7 +543,7 @@ if($dst_found){
 }
 
 $tmpl->param( RECENTER_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, undef, undef, undef, undef, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, undef, undef, undef, $size, $mpm));
 
 # text
 $tmpl->param( TXT_SRC => $fromTxtSafe );
@@ -642,7 +551,7 @@ $tmpl->param( TXT_DST => $toTxtSafe );
 $tmpl->param( TXT_ERROR => $ERROR );
 
 # this is tells whether we're actually displaying a path between two separate locations
-$tmpl->param( GOT_PATH => $path );
+$tmpl->param( GOT_PATH => $havePath );
 $tmpl->param( DISTANCE => sprintf("%.02f", $dist || 0) );
 $tmpl->param( TIME => sprintf("%.02f", ($dist || 0)*$mpm) );
 
@@ -664,7 +573,15 @@ $tmpl->param( DST_HELP => $dst_help );
 #$tmpl->param( BG_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::LOC_BG_COLOR));
 $tmpl->param( CSS_FILE => $MapGlobals::CSS_FILE );
 
+# -----------------------------------------------------------------
+# Everything is finally sent to the browser
+# -----------------------------------------------------------------
+
 print "Content-type: text/html\n\n" . $tmpl->output();
+
+# -----------------------------------------------------------------
+# Subroutines.
+# -----------------------------------------------------------------
 
 ###################################################################
 # Given information about the current map state, return a query string that
@@ -781,4 +698,145 @@ sub buildHelpText{
 	$str .= "</ol>\n";
 
 	return $str;
+}
+
+###################################################################
+# Builds two strings containing the <option> tags that list source and
+# destination locations. This is a very template-ish thing to do, but we do it
+# here for speed reasons.
+# 
+# Args:
+#	- location hashref
+###################################################################
+sub buildLocationList{
+	my($locations) = @_;
+	my ($loc_opt_from, $loc_opt_to) = ('', '');
+
+	foreach (sort keys %{$locations->{'ByName'}}){
+
+		$trunc = $name = $locations->{'ByName'}{$_}{'Name'};
+		# truncate the name if it's too long
+		if(length($name) > $MapGlobals::MAX_NAME_LEN){
+			$trunc = substr($name, 0, $MapGlobals::MAX_NAME_LEN) . '...';
+		}
+
+		$loc_opt_from .= sprintf(qq{<option value="%s"%s>%s</option>\n},
+			CGI::escapeHTML($name),
+			($fromTxt eq $name ? ' selected="selected"' : ''),
+			CGI::escapeHTML($trunc)
+		);
+		$loc_opt_to .= sprintf(qq{<option value="%s"%s>%s</option>\n},
+			CGI::escapeHTML($name),
+			($toTxt eq $name ? ' selected="selected"' : ''),
+			CGI::escapeHTML($trunc)
+		);
+
+	}
+
+	return($loc_opt_from, $loc_opt_to);
+}
+
+###################################################################
+# Given information about the path that's being drawn, pick a zoom level (and,
+# possibly, a set of x/y offsets) that will display the two locations as well
+# as possible.
+# Args:
+# 	- source location ref
+#	- destination location ref
+#	- current x offset
+#	- current y offset
+#	- viewport width
+#	- viewport height
+#	- a hashref containing the bounding rectangle for the path, such as
+#	  returned by LoadData::loadCache or ShortestPath::pathPoints
+#	- an arrayref of the available zoom levels. This should probably be
+#	  \@MapGlobals::SCALES.
+# Returns:
+#	- an index into the provided zoom level arrayref, specifying the
+#	  correct zoom level.
+#	- a new x offset
+#	- a new y offset
+###################################################################
+sub pickZoom{
+	my($fromLoc, $toLoc, $xoff, $yoff, $width, $height, $rect, $scales) = @_;
+
+	# if x/y offsets aren't set, use the center of the bounding rectangle
+	if( !$xoff && !$yoff ){
+		$xoff = int(($rect->{'xmin'} + $rect->{'xmax'}) / 2);
+		$yoff = int(($rect->{'ymin'} + $rect->{'ymax'}) / 2);
+	}
+
+	my $w = $rect->{'xmax'} - $rect->{'xmin'};
+	my $h = $rect->{'ymax'} - $rect->{'ymin'};
+
+	# find the first level that encompasses the entire rectangle
+	for my $i (0..$#{$scales}){
+		if($w < $width/$scales->[$i] && $h < $height/$scales->[$i]){
+			# we know it's big enough. now, make sure
+			# nothing's too close to the edges
+
+			# x pixels on the actual output image
+			# correspond to x/$scales->[$i] pixels on the
+			# base image (to counteract the scale
+			# multiplier).
+
+			# if any of the locations are too close to any edge,
+			# reject this zoom level and move to the next one
+			if(abs($xoff - $fromLoc->{'x'}) > $width/(2*$scales->[$i]) - 5){
+				next;
+			}
+			if(abs($xoff - $toLoc->{'x'}) > $width/(2*$scales->[$i]) - 5){
+				next;
+			}
+
+			if(abs($yoff - $fromLoc->{'y'}) > $height/(2*$scales->[$i]) - 5){
+				next;
+			}
+			if(abs($yoff - $toLoc->{'y'}) > $height/(2*$scales->[$i]) - 5){
+				next;
+			}
+
+			# if location names would ordinarily go off the
+			# edge of the screen, drawLocation draws them
+			# to the left instead
+
+			# if we made it this far, this is a good scale!
+			$scale = $i;
+			last;
+		}
+	}
+
+	# if $scale is still a bogus value, we couldn't find ANY zoom level
+	# to accomodate the two locations! fall back to centering on the destination,
+	# and zooming in a bit
+	if(!defined($scale)){
+		$scale = $MapGlobals::SINGLE_LOC_SCALE;
+		$xoff = $toLoc->{'x'};
+		$yoff = $toLoc->{'y'};
+	}
+
+	return ($scale, $xoff, $yoff);
+}
+
+
+sub findLocation{
+	my($text, $locations) = @_;
+
+	if($text eq ''){
+		return ();
+	}
+
+	# first check for an exact name match
+	if( exists($locations->{'ByName'}{nameNormalize($text)}) ){
+		return ( { id => $locations->{'ByName'}{nameNormalize($text)}{'ID'},
+			matches => 1.0 } );
+	}
+	# then check a building code match
+	elsif( exists($locations->{'ByCode'}{$text}) ){
+		return ( { id => $locations->{'ByCode'}{$text}{'ID'}, matches => 1.0 } );
+	}
+	# otherwise, fall back to fuzzy matching
+	elsif($text ne ''){
+		return LoadData::findName($text, $locations);
+	}
 }

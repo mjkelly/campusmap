@@ -1688,6 +1688,25 @@ class ScrollablePicture extends JLabel implements Scrollable,
         else
 		{
 			parent.statusBar.setText(ERROR_READING_DATA);
+			
+			/**
+			 * If the path data didn't load, but location did did...
+			 * Create a new path for each location and add the location's point
+			 * to that path.
+			 */
+			if(!pathLoadSuccess && locationLoadSuccess)
+			{
+				System.err.println("Path loading failed, " +
+						"location loading sucessful");
+				
+				// For every location entry
+				for (Location tempLoc : locations) {
+					// create a new path
+					createNewPath();
+					// Add the location's coordinate to that path
+					createNewPointInCurPath(tempLoc.cord.x, tempLoc.cord.y);
+				}
+			}
 		}
     }
 
@@ -2302,6 +2321,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
      * @param g The graphics component
      **/
     public void paintComponent(Graphics g){
+    	g.setFont(new Font("Times New Roman", 0, 10));
         // Constants for colors dependant on dot/line status
         final Color LASTPLACED_DOT = Color.BLUE;
         final Color IN_FOCUS_PATH = Color.GREEN;
@@ -2391,7 +2411,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         {
             int x = getLocation(locIndex).cord.x;
             int y = getLocation(locIndex).cord.y;
-            g.drawString( getLocation(locIndex).toString(), x, y);
+            g.drawString( getLocation(locIndex).name, x, y);
         }
         
     }

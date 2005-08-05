@@ -509,7 +509,7 @@ $tmpl->param( YOFF => $yoff );
 #$tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
 
 $tmpl->param( ZOOM_WIDGET =>
-	listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size));
+	listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size, $mpm));
 
 #$tmpl->param( LOCATIONS => \@locParam );
 $tmpl->param( LOCATION_OPT_FROM => $loc_opt_from);

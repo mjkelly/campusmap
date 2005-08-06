@@ -14,11 +14,10 @@ OUTSTANDING BUGS/TASKS:
 	- make it not slow!
 
 	- make handleMouseOut work correctly (correct window-mouse-out behavior)
+	- make image non-selectable in IE
 	- ???
 	- check in other browsers
-	- what's causing the "undefinedundefinedundefinedNaN..." text in #draggy?
 
-	- does it still work in Win IE? (changed event registration method)
 
 -->
 
@@ -125,6 +124,7 @@ OUTSTANDING BUGS/TASKS:
 		origXdraggy = parseInt(draggy.style.left+0);
 		origYdraggy = parseInt(draggy.style.top+0);
 
+		document.onmousemove = handleMouseMove;
 	}
 
 	function handleMouseUp(e){
@@ -133,6 +133,7 @@ OUTSTANDING BUGS/TASKS:
 		indicator.innerHTML = "Up";
 		mouseDown = false;
 
+		document.onmousemove = null;
 	}
 
 	function handleMouseOut(e){
@@ -160,8 +161,8 @@ OUTSTANDING BUGS/TASKS:
 			draggyStyle.top  = -curY + "px";
 			
 
-			//indicator.innerHTML = "Current @ (" + curX + ", " + curY + ")" + 
-			//                      "  Last Load @ (" + lastLoadX + ", " + lastLoadY + ")";
+			indicator.innerHTML = "Current @ (" + curX + ", " + curY + ")" + 
+			                      "  Last Load @ (" + lastLoadX + ", " + lastLoadY + ")";
 			
 			/*if(curX - lastLoadX > squareWidth)
 			{
@@ -186,7 +187,8 @@ OUTSTANDING BUGS/TASKS:
 				Math.abs(curY - lastLoadY) > squareHeight)
 			{
 				//setTimeout("loadView(" + curX + ", " + curY + ", " + viewPortWidth + ", " + viewPortHeight + ")", 1);
-				loadView(curX - (curX % squareWidth), curY - (curY % squareHeight), viewPortWidth, viewPortHeight);
+				//loadView(curX - (curX % squareWidth), curY - (curY % squareHeight), viewPortWidth, viewPortHeight);
+				loadView(curX,curY, viewPortWidth, viewPortHeight);
 			}
 		
 		}
@@ -225,9 +227,9 @@ OUTSTANDING BUGS/TASKS:
 		// Firefox doesn't care.
 		//if(!IE){
 			draggy.onmousedown = handleMouseDown;
-			document.onmouseup = handleMouseUp;
-			document.onmousemove = handleMouseMove;
 			document.getElementById("bgLayer").onmouseout = handleMouseOut;
+			document.onmouseup = handleMouseUp;
+			//document.onmousemove = handleMouseMove;
 		//}
 		loadView(startOffsetX, startOffsetY, viewPortWidth, viewPortHeight);
 
@@ -235,20 +237,20 @@ OUTSTANDING BUGS/TASKS:
 
 	function addImage(x, y){
 		// If the image is already loaded
-		if(LoadedImages[x*gridMaxX+y] || x < 0 || y < 0 || x > gridMaxX || y > gridMaxY)
-			return; //exit
+		if(/*LoadedImages[x*gridMaxX+y] ||*/ x < 0 || y < 0 || x > gridMaxX || y > gridMaxY)
+			return ""; //exit
 
 		var str = '<div class="mapBox" style="background: url(\''
 			+ urlForImage(mapName, mapZoom, x, y) + '\'); '
 			+ 'left: ' + x*(squareWidth) + 'px;top: ' + y*(squareHeight) + 'px;'
-			+ '"></div>';
+			+ '"></div>' + "\n";
 
 		//draggy.innerHTML += str;
 		//document.write(str);
 		//alert(str);
 		
 		// Record image as loaded
-		LoadedImages[x*gridMaxX + y] = 1;  
+		LoadedImages[x*gridMaxX + y] = 1;
 
 		return str;
 	}
@@ -267,18 +269,20 @@ OUTSTANDING BUGS/TASKS:
 
 		//alert("loadView(" + x + ", " + y + ")");
 
-		var str;
+		var str = "";
 
-		for(var numX = initialX -1; numX < (gridWidth + initialX); numX++)
-			for(var numY = initialY -1; numY < (gridHeight + initialY); numY++)
-				if(x > 0 && y > 0 && !LoadedImages[x*gridMaxX+y])
+		for(var numX = initialX -1; numX <= (gridWidth + initialX); numX++)
+			for(var numY = initialY -1; numY <= (gridHeight + initialY); numY++)
+				if(x > 0 && y > 0 /*&& !LoadedImages[x*gridMaxX+y]*/)
 					str += addImage(numX, numY);
 
-		draggy.innerHTML += str;
+		draggy.innerHTML = str;
+		indicator.innerHTML = "loadView Set";
 
 
 		lastLoadX = x;
 		lastLoadY = y;
+		//alert(draggy.innerHTML);
 	}
 
 </script>

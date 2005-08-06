@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Draggy draggy!</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" href="/css/main.css" />
+<link rel="SHORTCUT ICON" href="/favicon.ico" />
+</head>
+
+<!--
+
+OUTSTANDING BUGS/TASKS:
+	- make it not slow!
+
+	- make handleMouseOut work correctly (correct window-mouse-out behavior)
+	- ???
+	- check in other browsers
+	- what's causing the "undefinedundefinedundefinedNaN..." text in #draggy?
+
+	- does it still work in Win IE? (changed event registration method)
+
+-->
+
+<style type="text/css">
+	#draggy {
+		position: absolute;
+		background: #aac;
+		border: 1px solid #88a;
+		
+	}
+	#container {
+		width: 500px;
+		height: 375px;
+		overflow: hidden;
+		border: 1px solid black;
+		position: absolute;
+		background: magenta;
+	}
+	#indicator {
+		background: #ccc;
+		font-weight: bold;
+		float: left;
+	}
+
+	.mapBox {
+		width: 200px;
+		height: 200px;
+		position: absolute;
+		background: blue;
+		border: 1px solid teal;
+	}
+</style>
+
+<script language="javascript">
+	// globals dealing with properties of the base images
+	var mapZoom = 1;
+	var mapName = 'map';
+
+	var squareWidth = 200;
+	var squareHeight = 200;
+
+	var gridMaxX = 35;
+	var gridMaxY = 32;
+
+	// globals dealing with dragging
+	var mouseDown = false;
+	var origX = 0;
+	var origY = 0;
+	var origXdraggy = 0;
+	var origYdraggy = 0;
+	var draggy;
+	var indicator;
+	var IE = false;
+
+	// globals dealing with loading the base images
+	var LoadedImages = new Array(gridMaxX*gridMaxY);
+	
+	var curX = 0;
+	var curY = 0;
+
+	var lastLoadX = 0;
+	var lastLoadY = 0;
+
+	var startOffsetX = 100;
+	var startOffsetY = 100;
+
+	var viewPortWidth = 500;
+	var viewPortHeight = 375;
+
+	var draggyStyle;
+
+	function handleMouseDown(e){
+		if(!e) var e = window.event;
+
+		indicator.innerHTML = "Down @ (" + e.clientX + ", " + e.clientY + ")";
+
+		mouseDown = true;
+
+		// save the location of the click for later comparisons with move events
+		origX = e.clientX;
+		origY = e.clientY;
+
+		// also save the current position of the draggable object.
+		origXdraggy = parseInt(draggy.style.left+0);
+		origYdraggy = parseInt(draggy.style.top+0);
+
+	}
+
+	function handleMouseUp(e){
+		if(!e) var e = window.event;
+
+		indicator.innerHTML = "Up";
+		mouseDown = false;
+
+	}
+
+	function handleMouseOut(e){
+		if(!e) var e = window.event;
+
+		if(e.target == document.getElementById("theBody"))
+			handleMouseUp(e);
+
+	}
+
+	function handleMouseMove(e){
+		if(!e) var e = window.event;
+
+		// if the mouse is down, we're dragging
+		if(mouseDown){
+
+			// calculate how far the mouse has moved from its
+			// initial click position, and add that to the
+			// draggable object's initial position
+			curX = -(origXdraggy + (e.clientX - origX));
+			curY = -(origYdraggy + (e.clientY - origY));
+			draggyStyle.left = -curX + "px";
+			draggyStyle.top  = -curY + "px";
+			
+
+			//indicator.innerHTML = "Current @ (" + curX + ", " + curY + ")" + 
+			//                      "  Last Load @ (" + lastLoadX + ", " + lastLoadY + ")";
+			
+			/*if(curX - lastLoadX > squareWidth)
+			{
+				//optimize possible
+				var gridHeight = parseInt(viewPortHeight/squareHeight + 1);
+				var gridWidth = parseInt(viewPortWidth/squareWidth + 1);
+
+
+				var initialX = parseInt(curX/squareWidth);
+				var initialY = parseInt(curY/squareHeight);
+
+				for(var y = initialY; y < (initialY + gridHeight); y++)
+					addImage(initialX + gridWidth, y);
+				lastLoadX = curX - (curX % squareWidth);
+			}
+			if(curX - lastLoadX < -squareWidth)
+			{
+				//load left
+			}*/
+
+			if(Math.abs(curX - lastLoadX) > squareWidth ||
+				Math.abs(curY - lastLoadY) > squareHeight)
+			{
+				//setTimeout("loadView(" + curX + ", " + curY + ", " + viewPortWidth + ", " + viewPortHeight + ")", 1);
+				loadView(curX - (curX % squareWidth), curY - (curY % squareHeight), viewPortWidth, viewPortHeight);
+			}
+		
+		}
+		// if the mouse is up, we're just moving, and we don't care
+		else{
+			//indicator.innerHTML = "Move";
+		}
+	}
+
+	function dragInit(){
+
+		draggy = document.getElementById("draggy");
+		draggyStyle = draggy.style;
+		indicator = document.getElementById("indicator");
+
+		// Check if this is IE. This screens out Opera, because Opera
+		// is NOT IE, despite what it says. Sheesh. (Is this a kluge or
+		// what?!)
+		IE = document.all && (navigator.userAgent.indexOf("Opera") == -1);
+
+		// move the draggable element to the default location
+		draggy.style.left = "0px"
+		draggy.style.top = "0px"
+
+		/*
+		if(IE)
+			alert("this is IE");
+		else
+			alert("this is NOT IE");
+		*/
+
+
+		// Opera and Safari don't recognize the handlers when set
+		// inside the <body> tag, so this block must run. In IE,
+		// however, the <body> statements are the only ones that work.
+		// Firefox doesn't care.
+		//if(!IE){
+			draggy.onmousedown = handleMouseDown;
+			document.onmouseup = handleMouseUp;
+			document.onmousemove = handleMouseMove;
+			document.getElementById("theBody").onmouseout = handleMouseOut;
+		//}
+		loadView(startOffsetX, startOffsetY, viewPortWidth, viewPortHeight);
+
+	}
+
+	function addImage(x, y){
+		// If the image is already loaded
+		if(LoadedImages[x*gridMaxX+y] || x < 0 || y < 0 || x > gridMaxX || y > gridMaxY)
+			return; //exit
+
+		var str = '<div class="mapBox" style="background: url(\''
+			+ urlForImage(mapName, mapZoom, x, y) + '\'); '
+			+ 'left: ' + x*(squareWidth) + 'px;top: ' + y*(squareHeight) + 'px;'
+			+ '"></div>';
+
+		//draggy.innerHTML += str;
+		//document.write(str);
+		//alert(str);
+		
+		// Record image as loaded
+		LoadedImages[x*gridMaxX + y] = 1;  
+
+		return str;
+	}
+
+	function urlForImage(name, zoom, x, y){
+		return 'grid/' + name + '-' + zoom + '[' + y + '][' + x + '].png';
+	}
+
+	function loadView(x, y, width, height){
+
+		var initialX = parseInt(x/squareWidth);
+		var initialY = parseInt(y/squareHeight);
+
+		var gridWidth = parseInt(width/squareWidth + 2);
+		var gridHeight = parseInt(height/squareHeight + 2);
+
+		//alert("loadView(" + x + ", " + y + ")");
+
+		var str;
+
+		for(var numX = initialX -1; numX < (gridWidth + initialX); numX++)
+			for(var numY = initialY -1; numY < (gridHeight + initialY); numY++)
+				if(x > 0 && y > 0 && !LoadedImages[x*gridMaxX+y])
+					str += addImage(numX, numY);
+
+		draggy.innerHTML += str;
+
+
+		lastLoadX = x;
+		lastLoadY = y;
+	}
+
+</script>
+
+<body id="theBody">
+
+<span id="indicator">Up</span>
+
+<br clear="all" />
+
+<div id="container">
+
+	<div id="draggy">
+
+	</div>
+
+</div>
+
+
+<script language="javascript">
+	dragInit();	
+</script>
+
+</body>
+</html>

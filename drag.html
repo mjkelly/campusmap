@@ -23,12 +23,14 @@ OUTSTANDING BUGS/TASKS:
 -->
 
 <style type="text/css">
+
 	#draggy {
 		position: absolute;
 		background: #aac;
 		border: 1px solid #88a;
 		
 	}
+
 	#container {
 		width: 500px;
 		height: 375px;
@@ -36,11 +38,28 @@ OUTSTANDING BUGS/TASKS:
 		border: 1px solid black;
 		position: absolute;
 		background: magenta;
+		/*
+		left: 10px
+		top: 20px
+		*/
 	}
+
 	#indicator {
 		background: #ccc;
 		font-weight: bold;
 		float: left;
+		z-index: 1;
+		position: absolute;
+	}
+
+	#bgLayer {
+		top: 0px;
+		left: 0px;
+		right: 0px;
+		bottom: 0px;
+		background: blue;
+		position: absolute;
+		z-index: 0;
 	}
 
 	.mapBox {
@@ -50,6 +69,7 @@ OUTSTANDING BUGS/TASKS:
 		background: blue;
 		border: 1px solid teal;
 	}
+
 </style>
 
 <script language="javascript">
@@ -118,8 +138,10 @@ OUTSTANDING BUGS/TASKS:
 	function handleMouseOut(e){
 		if(!e) var e = window.event;
 
-		if(e.target == document.getElementById("theBody"))
+		//alert(e.relatedTarget);
+		if(!e.relatedTarget)
 			handleMouseUp(e);
+
 
 	}
 
@@ -205,7 +227,7 @@ OUTSTANDING BUGS/TASKS:
 			draggy.onmousedown = handleMouseDown;
 			document.onmouseup = handleMouseUp;
 			document.onmousemove = handleMouseMove;
-			document.getElementById("theBody").onmouseout = handleMouseOut;
+			document.getElementById("bgLayer").onmouseout = handleMouseOut;
 		//}
 		loadView(startOffsetX, startOffsetY, viewPortWidth, viewPortHeight);
 
@@ -267,13 +289,17 @@ OUTSTANDING BUGS/TASKS:
 
 <br clear="all" />
 
-<div id="container">
+<layer id="bgLayer">
 
-	<div id="draggy">
+	<div id="container">
+
+		<div id="draggy">
+
+		</div>
 
 	</div>
 
-</div>
+</layer>
 
 
 <script language="javascript">

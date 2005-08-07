@@ -31,16 +31,10 @@ OUTSTANDING BUGS/TASKS:
 	}
 
 	#container {
-		width: 500px;
-		height: 375px;
 		overflow: hidden;
 		border: 1px solid black;
 		position: absolute;
-		background: magenta;
-		/*
-		left: 10px
-		top: 20px
-		*/
+		background: transparent;
 	}
 
 	#indicator {
@@ -56,9 +50,16 @@ OUTSTANDING BUGS/TASKS:
 		left: 0px;
 		right: 0px;
 		bottom: 0px;
-		background: blue;
+		background: transparent;
 		position: absolute;
 		z-index: 0;
+		text-align: left;
+	}
+
+	#buttons {
+		float: left;
+		z-index: 1;
+		position: relative;
 	}
 
 	.mapBox {
@@ -66,226 +67,12 @@ OUTSTANDING BUGS/TASKS:
 		height: 200px;
 		position: absolute;
 		background: blue;
-		border: 1px solid teal;
+		/*border: 1px solid teal;*/
 	}
 
 </style>
 
-<script language="javascript">
-	// globals dealing with properties of the base images
-	var mapZoom = 1;
-	var mapName = 'map';
-
-	var squareWidth = 200;
-	var squareHeight = 200;
-
-	var gridMaxX = 35;
-	var gridMaxY = 32;
-
-	// globals dealing with dragging
-	var mouseDown = false;
-	var origX = 0;
-	var origY = 0;
-	var origXdraggy = 0;
-	var origYdraggy = 0;
-	var draggy;
-	var indicator;
-	var IE = false;
-
-	// globals dealing with loading the base images
-	var LoadedImages = new Array(gridMaxX*gridMaxY);
-	
-	var curX = 0;
-	var curY = 0;
-
-	var lastLoadX = 0;
-	var lastLoadY = 0;
-
-	var startOffsetX = 100;
-	var startOffsetY = 100;
-
-	var viewPortWidth = 500;
-	var viewPortHeight = 375;
-
-	var draggyStyle;
-
-	function handleMouseDown(e){
-		if(!e) var e = window.event;
-
-		indicator.innerHTML = "Down @ (" + e.clientX + ", " + e.clientY + ")";
-
-		mouseDown = true;
-
-		// save the location of the click for later comparisons with move events
-		origX = e.clientX;
-		origY = e.clientY;
-
-		// also save the current position of the draggable object.
-		origXdraggy = parseInt(draggy.style.left+0);
-		origYdraggy = parseInt(draggy.style.top+0);
-
-		document.onmousemove = handleMouseMove;
-	}
-
-	function handleMouseUp(e){
-		if(!e) var e = window.event;
-
-		indicator.innerHTML = "Up";
-		mouseDown = false;
-
-		document.onmousemove = null;
-	}
-
-	function handleMouseOut(e){
-		if(!e) var e = window.event;
-
-		//alert(e.relatedTarget);
-		if(!e.relatedTarget)
-			handleMouseUp(e);
-
-
-	}
-
-	function handleMouseMove(e){
-		if(!e) var e = window.event;
-
-		// if the mouse is down, we're dragging
-		if(mouseDown){
-
-			// calculate how far the mouse has moved from its
-			// initial click position, and add that to the
-			// draggable object's initial position
-			curX = -(origXdraggy + (e.clientX - origX));
-			curY = -(origYdraggy + (e.clientY - origY));
-			draggyStyle.left = -curX + "px";
-			draggyStyle.top  = -curY + "px";
-			
-
-			indicator.innerHTML = "Current @ (" + curX + ", " + curY + ")" + 
-			                      "  Last Load @ (" + lastLoadX + ", " + lastLoadY + ")";
-			
-			/*if(curX - lastLoadX > squareWidth)
-			{
-				//optimize possible
-				var gridHeight = parseInt(viewPortHeight/squareHeight + 1);
-				var gridWidth = parseInt(viewPortWidth/squareWidth + 1);
-
-
-				var initialX = parseInt(curX/squareWidth);
-				var initialY = parseInt(curY/squareHeight);
-
-				for(var y = initialY; y < (initialY + gridHeight); y++)
-					addImage(initialX + gridWidth, y);
-				lastLoadX = curX - (curX % squareWidth);
-			}
-			if(curX - lastLoadX < -squareWidth)
-			{
-				//load left
-			}*/
-
-			if(Math.abs(curX - lastLoadX) > squareWidth ||
-				Math.abs(curY - lastLoadY) > squareHeight)
-			{
-				//setTimeout("loadView(" + curX + ", " + curY + ", " + viewPortWidth + ", " + viewPortHeight + ")", 1);
-				//loadView(curX - (curX % squareWidth), curY - (curY % squareHeight), viewPortWidth, viewPortHeight);
-				loadView(curX,curY, viewPortWidth, viewPortHeight);
-			}
-		
-		}
-		// if the mouse is up, we're just moving, and we don't care
-		else{
-			//indicator.innerHTML = "Move";
-		}
-	}
-
-	function dragInit(){
-
-		draggy = document.getElementById("draggy");
-		draggyStyle = draggy.style;
-		indicator = document.getElementById("indicator");
-
-		// Check if this is IE. This screens out Opera, because Opera
-		// is NOT IE, despite what it says. Sheesh. (Is this a kluge or
-		// what?!)
-		IE = document.all && (navigator.userAgent.indexOf("Opera") == -1);
-
-		// move the draggable element to the default location
-		draggy.style.left = "0px"
-		draggy.style.top = "0px"
-
-		/*
-		if(IE)
-			alert("this is IE");
-		else
-			alert("this is NOT IE");
-		*/
-
-
-		// Opera and Safari don't recognize the handlers when set
-		// inside the <body> tag, so this block must run. In IE,
-		// however, the <body> statements are the only ones that work.
-		// Firefox doesn't care.
-		//if(!IE){
-			draggy.onmousedown = handleMouseDown;
-			document.getElementById("bgLayer").onmouseout = handleMouseOut;
-			document.onmouseup = handleMouseUp;
-			//document.onmousemove = handleMouseMove;
-		//}
-		loadView(startOffsetX, startOffsetY, viewPortWidth, viewPortHeight);
-
-	}
-
-	function addImage(x, y){
-		// If the image is already loaded
-		if(/*LoadedImages[x*gridMaxX+y] ||*/ x < 0 || y < 0 || x > gridMaxX || y > gridMaxY)
-			return ""; //exit
-
-		var str = '<div class="mapBox" style="background: url(\''
-			+ urlForImage(mapName, mapZoom, x, y) + '\'); '
-			+ 'left: ' + x*(squareWidth) + 'px;top: ' + y*(squareHeight) + 'px;'
-			+ '"></div>' + "\n";
-
-		//draggy.innerHTML += str;
-		//document.write(str);
-		//alert(str);
-		
-		// Record image as loaded
-		LoadedImages[x*gridMaxX + y] = 1;
-
-		return str;
-	}
-
-	function urlForImage(name, zoom, x, y){
-		return 'grid/' + name + '-' + zoom + '[' + y + '][' + x + '].png';
-	}
-
-	function loadView(x, y, width, height){
-
-		var initialX = parseInt(x/squareWidth);
-		var initialY = parseInt(y/squareHeight);
-
-		var gridWidth = parseInt(width/squareWidth + 2);
-		var gridHeight = parseInt(height/squareHeight + 2);
-
-		//alert("loadView(" + x + ", " + y + ")");
-
-		var str = "";
-
-		for(var numX = initialX -1; numX <= (gridWidth + initialX); numX++)
-			for(var numY = initialY -1; numY <= (gridHeight + initialY); numY++)
-				if(x > 0 && y > 0 /*&& !LoadedImages[x*gridMaxX+y]*/)
-					str += addImage(numX, numY);
-
-		draggy.innerHTML = str;
-		indicator.innerHTML = "loadView Set";
-
-
-		lastLoadX = x;
-		lastLoadY = y;
-		//alert(draggy.innerHTML);
-	}
-
-</script>
+<script language="javascript" src="drag.js"></script>
 
 <body id="theBody">
 
@@ -295,8 +82,58 @@ OUTSTANDING BUGS/TASKS:
 
 <layer id="bgLayer">
 
+
+	<div id="buttons">
+		<table border="0" cellspacing="0" cellpadding="0" align="center">
+		<!-- this is the directional control pad -->
+		<tr>
+
+			<td>&nbsp;</td>
+			<td><a href="#" id="buttonUp"><img src="buttons/up.png" width="20" height="20" border="0" alt="Up" /></a></td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><a href="#" id="buttonLeft"><img src="buttons/left.png" width="20" height="20" border="0" alt="Left" /></a></td>
+			<td><a href="#" id="buttonCenter"><img src="buttons/center.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
+			<td><a href="#" id="buttonRight"><img src="buttons/right.png" width="20" height="20" border="0" alt="Right" /></a></td>
+		</tr>
+
+		<tr>
+			<td>&nbsp;</td>
+			<td><a href="#" id="buttonDown"><img src="buttons/down.png" width="20" height="20" border="0" alt="Down" /></a></td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="3">&nbsp;</td>
+		</tr>
+
+		<!-- this is the zoom widget -->
+		<tr>
+			<td colspan="3" align="center"><a href="#" id="buttonZoomIn"><img src="buttons/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
+		</tr>
+		<tr>
+			<!-- this is compressed to one line because
+			whitespace messes up IE. expand it to make it
+			comprehensible. as it stands, you are not
+			expected to understand this ;) -->
+			<td colspan="3" align="center">
+				<a href="#"><img src="buttons/zoom-level-selected.png" width="30" height="20" border="0" /></a><br />
+				<a href="#"><img src="buttons/zoom-level.png" width="30" height="20" border="0" /></a><br />
+				<a href="#"><img src="buttons/zoom-level.png" width="30" height="20" border="0" /></a><br />
+				<a href="#"><img src="buttons/zoom-level.png" width="30" height="20" border="0" /></a><br />
+			</td>
+		</tr>
+		<tr>
+
+			<td colspan="3" align="center"><a href="#" id="buttonZoomOut"><img src="buttons/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
+		</tr>
+		</table>
+		<!-- end div buttons -->
+	</div>
+
 	<div id="container">
 
+		<!-- NOTE: IE can't handle draggy being a layer -->
 		<div id="draggy">
 
 		</div>

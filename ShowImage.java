@@ -68,7 +68,6 @@ public class ShowImage extends JFrame{
         
         // Prompt for a reading option
         s.ipanel.selectRead();
-        
     }
 
     /**
@@ -519,6 +518,21 @@ class ScrollablePicture extends JLabel implements Scrollable,
 					// move the location
 					Location toMove = locations.get(locIndex);
 					toMove.cord = new Point(x, y);
+					// For all paths
+					for(Vector<Point> path: paths)
+					{
+						// For each path, loop through all points
+						for(Point ptInPath: path)
+						{
+							// If a point is equal to the old point
+							if(ptInPath.equals(oldPoint))
+							{
+								// Set the point equal to the old point to new
+								// new coordinates
+								ptInPath.setLocation(x,y);
+							}
+						}
+					}
 				}
             }
             // otherwise, we replace the location at this point
@@ -737,6 +751,11 @@ class ScrollablePicture extends JLabel implements Scrollable,
         {
             createNewPath();
         }
+        //else if(c == KeyEvent.VK_CONTROL)
+        //{
+        //	System.err.println("Keychar = " + k.getKeyChar());
+        //}
+        
         // Take a wild gusss :)
         else{
             parent.statusBar.setText("Key does not have an action associated" +
@@ -2076,7 +2095,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
                 // return the path index if a match is found
                 if(getPointInPath(i,j).equals(pointToCompare))
                     numPathsConnected++;
-        return(numPathsConnected);    
+        return(numPathsConnected);
     }
     
     /**

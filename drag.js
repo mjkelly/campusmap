@@ -36,8 +36,8 @@ var buttonDone = 0;
 var buttonScrollCount = 0;
 var buttonDelay = 15;
 
-var curZoom = 0;
-var zoomLevels = new Array(4);
+var curZoom = 2;
+var zoomLevels;
 var scales = new Array(1, 0.5, 0.25, 0.125);
 
 function handleMouseDown(e){
@@ -161,6 +161,45 @@ function buttonTrack(direction)
 	}
 }
 
+function handleButtonZoomOut(e){
+	if(curZoom < zoomLevels.length - 1){
+		curZoom++;
+		var zoomFactor = scales[curZoom] / scales[curZoom - 1];
+
+		curX += (viewPortWidth * (1 - zoomFactor))/2;
+		curY += (viewPortHeight * (1 - zoomFactor))/2;
+		//curX += (viewPortWidth * (1/zoomFactor - 1))/2;
+		//curY += (viewPortHeight * (1/zoomFactor - 1))/2;
+
+		curX *= zoomFactor;
+		curY *= zoomFactor;
+
+		loadView(curX, curY, viewPortWidth, viewPortHeight);
+		updateMapLocation();
+	}
+
+	//alert("Current: (" + curX + ", " + curY + "), zoom: " + curZoom);
+}
+
+function handleButtonZoomIn(e){
+	if(curZoom > 0){
+		curZoom--;
+		var zoomFactor = scales[curZoom] / scales[curZoom + 1];
+		curX += (viewPortWidth * (1 - zoomFactor))/2;
+		curY += (viewPortHeight * (1 - zoomFactor))/2;
+		//curX += (viewPortWidth * (1/zoomFactor - 1))/2;
+		//curY += (viewPortHeight * (1/zoomFactor - 1))/2;
+
+		curX *= zoomFactor;
+		curY *= zoomFactor;
+
+		loadView(curX, curY, viewPortWidth, viewPortHeight);
+		updateMapLocation();
+	}
+
+	//alert("Current: (" + curX + ", " + curY + "), zoom: " + curZoom);
+}
+
 function updateMapLocation(){
 	// Map bounds checking
 	if(curX < 0){ curX = 0; }
@@ -213,9 +252,15 @@ function dragInit(){
 	document.getElementById("buttonLeft").onclick = handleButtonLeft;
 	document.getElementById("buttonRight").onclick = handleButtonRight;
 
+	document.getElementById("buttonZoomIn").onclick = handleButtonZoomIn;
+	document.getElementById("buttonZoomOut").onclick = handleButtonZoomOut;
+
 
 	zoomLevels = new Array(
-		new ZoomLevel('map', 1, 36, 33)
+		new ZoomLevel('map', 1,     36, 33, 7200, 6600),
+		new ZoomLevel('map', 0.5,   18, 17, 3600, 3300),
+		new ZoomLevel('map', 0.25,  9,  9,  1800, 1650),
+		new ZoomLevel('map', 0.125, 5,  5,  900,  825 )
 	);
 
 	loadView(curX, curY, viewPortWidth, viewPortHeight);
@@ -342,7 +387,7 @@ function loadView(x, y, width, height){
 			if( numX >= 0 && numY >= 0 && numX < zoomLevels[curZoom].gridMaxX && numY < zoomLevels[curZoom].gridMaxY) {
 
 				str += '<div class="mapBox" style="background: url(\''
-					+ 'grid/' + zoomLevels[curZoom].mapName + '-' + zoomLevels[curZoom].mapZoom + '[' + numY + '][' + numX + '].png\'); '
+					+ 'grid/' + zoomLevels[curZoom].mapName + '-' + curZoom + '[' + numY + '][' + numX + '].png\'); '
 					+ 'left: ' + numX*(squareWidth) + 'px; top: ' + numY*(squareHeight) + 'px;'
 					+ '" ondrag="return false;"></div>' + "\n";
 					//    ^^^^^<-- little-known trick! (for IE, as always) :)
@@ -363,14 +408,14 @@ function loadView(x, y, width, height){
 
 
 // This is the ZoomLevel class.
-function ZoomLevel(name, zoom, x, y){
+function ZoomLevel(name, zoom, gridX, gridY, pixX, pixY){
 	this.mapZoom = zoom;
 	this.mapName = name;
 
-	this.gridMaxX = x;
-	this.gridMaxY = y;
+	this.gridMaxX = gridX;
+	this.gridMaxY = gridY;
 		
-	// square* and viewPort* are globals
-	this.mapMaxX = squareWidth*this.gridMaxX - viewPortWidth;
-	this.mapMaxY = squareHeight*this.gridMaxY - viewPortHeight;
+	this.mapMaxX = pixX - viewPortWidth;
+	this.mapMaxY = pixY - viewPortHeight;
+	//alert("New ZoomLevel: (" + this.mapMaxX + ", " + this.mapMaxY + ")");
 }

@@ -40,11 +40,17 @@ var curZoom = 2;
 var zoomLevels;
 var scales = new Array(1, 0.5, 0.25, 0.125);
 
+// Mark the location of the depress for later use
+// Start monitoring mouse movements
 function handleMouseDown(e){
-	if(!e) var e = window.event;
+	// For compatability with IE (other browsers use parameter)
+	if(!e) { var e = window.event; }
 
+	// Debugging
 	indicator.innerHTML = "Down @ (" + e.clientX + ", " + e.clientY + ")";
 
+	// XXX: Necessary?  We set document.onmousemove.
+	// Mark the mouse as being down for later checking
 	mouseDown = true;
 
 	// save the location of the click for later comparisons with move events
@@ -55,30 +61,38 @@ function handleMouseDown(e){
 	origXdraggy = parseInt(draggy.style.left+0);
 	origYdraggy = parseInt(draggy.style.top+0);
 
+	// Start monitoring mouse movement
 	document.onmousemove = handleMouseMove;
 }
 
+// Stop monitoring mousemovements
 function handleMouseUp(e){
-	if(!e) var e = window.event;
+	// For compatability with IE (other browsers use parameter)
+	if(!e) var e = window.event;  // unused!
 
 	indicator.innerHTML = "Up";
 	mouseDown = false;
-
+	
+	// Stop monitoring mouse movement
 	document.onmousemove = null;
 }
 
+// Decides if mouse has gotten out of the browser window...if so, 
+// do the same thing as if the mouse button was depressed
 function handleMouseOut(e){
 	if(!e) var e = window.event;
 
 	//alert(e.relatedTarget);
 	if(!e.relatedTarget)
-		handleMouseUp(e);
+		handleMouseUp(e);  // no need to pass e
 
 }
 
 function handleMouseMove(e){
 	if(!e) var e = window.event;
 
+	// XXX: is this boolean check needed anymore?  handleMouseMove function
+	// is only available when mouseDown
 	// if the mouse is down, we're dragging
 	if(mouseDown){
 
@@ -96,7 +110,6 @@ function handleMouseMove(e){
 		indicator.innerHTML = "Current @ (" + curX + ", " + curY + ")" + 
 				      "  Last Load @ (" + lastLoadX + ", " + lastLoadY + ")";
 		
-	
 		checkForLoad();
 	}
 }
@@ -151,6 +164,8 @@ function buttonTrack(direction)
 	}
 	buttonScrollCount++;
 	updateMapLocation();
+	// Hackish way to check for load halfway through 
+	// and when we're done
 	if(buttonScrollCount%15 == 0)
 		checkForLoad();
 	if(buttonScrollCount > 30)
@@ -203,17 +218,24 @@ function handleButtonZoomIn(e){
 	//alert("Current: (" + curX + ", " + curY + "), zoom: " + curZoom);
 }
 
+// Apply the current X and Y to draggy.  This causes the map to move.
+// If curX or Y goes past the boundary, map is set to boundary.
 function updateMapLocation(){
-	// Map bounds checking
+	// Map bound checking
 	if(curX < 0){ curX = 0; }
 	if(curY < 0){ curY = 0; }
 	if(curX > zoomLevels[curZoom].mapMaxX){ curX = zoomLevels[curZoom].mapMaxX; }
 	if(curY > zoomLevels[curZoom].mapMaxY){ curY = zoomLevels[curZoom].mapMaxY; }
 
+	// Set to negatives to preserve our sanity in other places
+	// e.g: move map right==> set to the negative change to cause
+	// draggy to move to the left
 	draggyStyle.left = -curX + "px";
 	draggyStyle.top  = -curY + "px";
 }
 
+// Checks to see if curX or curY has changed by a threshold
+// from the last point that the map view was completely loaded
 function checkForLoad(){
 	if(Math.abs(curX - lastLoadX) > viewPortWidth/2 ||
 		Math.abs(curY - lastLoadY) > viewPortHeight/2)
@@ -241,12 +263,15 @@ function dragInit(){
 	document.getElementById("container").style.width = viewPortWidth + "px";
 	document.getElementById("container").style.height = viewPortHeight + "px";
 
-	// Opera and Safari don't recognize the handlers when set
-	// inside the <body> tag, so this block must run. In IE,
-	// however, the <body> statements are the only ones that work.
-	// Firefox doesn't care.
+	/**
+	 * Set the handelers
+	 *
+	 **/
+
+	// We use onkeydown and onkeyup due to browser incompatabilities with onkeypress
 	document.onkeydown = handleKeyDown;
 	document.onkeyup = handleKeyUp;
+
 	draggy.onmousedown = handleMouseDown;
 	document.getElementById("bgLayer").onmouseout = handleMouseOut;
 	document.onmouseup = handleMouseUp;
@@ -258,15 +283,17 @@ function dragInit(){
 	document.getElementById("buttonZoomIn").onclick = handleButtonZoomIn;
 	document.getElementById("buttonZoomOut").onclick = handleButtonZoomOut;
 
-
+	// Create the zoomLevel objects.  
+	// Setup for the zoom levels
 	zoomLevels = new Array(
 		new ZoomLevel('map', 1,     36, 33, 7200, 6600),
 		new ZoomLevel('map', 0.5,   18, 17, 3600, 3300),
 		new ZoomLevel('map', 0.25,  9,  9,  1800, 1650),
 		new ZoomLevel('map', 0.125, 5,  5,  900,  825 )
 	);
-
-	loadView(curX, curY, viewPortWidth, viewPortHeight);
+	
+	// Load the initial view
+	loadView(curX + viewPortWidth/2, curY + viewPortHeight/2, viewPortWidth, viewPortHeight);
 
 }
 
@@ -334,11 +361,13 @@ function keyRepeater(){
 		cont = true;
 	}
 	updateMapLocation();
+
 	checkForLoad();
 
+	// if non of the arrows are down...
 	if(!cont){
-		clearInterval(tid);
-		tid = 0;
+		clearInterval(tid);  // Stop repeating
+		tid = 0;  // stop the tid from being double set in handleKeyDown
 	}
 
 }
@@ -346,8 +375,10 @@ function keyRepeater(){
 function handleKeyUp(e){
 	if(!e) var e = window.event;
 	var code;
+	// For most browsers
 	if (e.keyCode)
 		code = e.keyCode;
+	// Netscape?
 	else if (e.which)
 		code = e.which;
 
@@ -412,12 +443,17 @@ function loadView(x, y, width, height){
 
 // This is the ZoomLevel class.
 function ZoomLevel(name, zoom, gridX, gridY, pixX, pixY){
+	// The zoom scale of the map (e.g. 1, .5, .25, .125)
 	this.mapZoom = zoom;
+
+	// The name of the map (e.g. "map")
 	this.mapName = name;
 
+	// # of grid squares on the map (e.g. 36x33)
 	this.gridMaxX = gridX;
 	this.gridMaxY = gridY;
 		
+	// Resolution of the map (7200x6600)
 	this.mapMaxX = pixX - viewPortWidth;
 	this.mapMaxY = pixY - viewPortHeight;
 	//alert("New ZoomLevel: (" + this.mapMaxX + ", " + this.mapMaxY + ")");

@@ -166,13 +166,14 @@ function handleButtonZoomOut(e){
 		curZoom++;
 		var zoomFactor = scales[curZoom] / scales[curZoom - 1];
 
-		curX += (viewPortWidth * (1 - zoomFactor))/2;
-		curY += (viewPortHeight * (1 - zoomFactor))/2;
-		//curX += (viewPortWidth * (1/zoomFactor - 1))/2;
-		//curY += (viewPortHeight * (1/zoomFactor - 1))/2;
+		curX += viewPortWidth/2;
+		curY += viewPortHeight/2;
 
 		curX *= zoomFactor;
 		curY *= zoomFactor;
+
+		curX -= viewPortWidth/2;
+		curY -= viewPortHeight/2;
 
 		loadView(curX, curY, viewPortWidth, viewPortHeight);
 		updateMapLocation();
@@ -185,13 +186,15 @@ function handleButtonZoomIn(e){
 	if(curZoom > 0){
 		curZoom--;
 		var zoomFactor = scales[curZoom] / scales[curZoom + 1];
-		curX += (viewPortWidth * (1 - zoomFactor))/2;
-		curY += (viewPortHeight * (1 - zoomFactor))/2;
-		//curX += (viewPortWidth * (1/zoomFactor - 1))/2;
-		//curY += (viewPortHeight * (1/zoomFactor - 1))/2;
+
+		curX += viewPortWidth/2;
+		curY += viewPortHeight/2;
 
 		curX *= zoomFactor;
 		curY *= zoomFactor;
+
+		curX -= viewPortWidth/2;
+		curY -= viewPortHeight/2;
 
 		loadView(curX, curY, viewPortWidth, viewPortHeight);
 		updateMapLocation();

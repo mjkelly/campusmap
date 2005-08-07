@@ -16,7 +16,6 @@ var viewPortWidth = 500;
 var viewPortHeight = 375;
 
 // variables for doing dragging
-var mouseDown = false;
 var origX = 0;
 var origY = 0;
 var origXdraggy = 0;
@@ -129,10 +128,6 @@ function handleMouseDown(e){
 	// Debugging
 	indicator.innerHTML = "Down @ (" + e.clientX + ", " + e.clientY + ")";
 
-	// XXX: Necessary?  We set document.onmousemove.
-	// Mark the mouse as being down for later checking
-	mouseDown = true;
-
 	// save the location of the click for later comparisons with move events
 	origX = e.clientX;
 	origY = e.clientY;
@@ -153,7 +148,6 @@ function handleMouseUp(e){
 	if(!e) var e = window.event;  // unused!
 
 	indicator.innerHTML = "Up";
-	mouseDown = false;
 	
 	// Stop monitoring mouse movement
 	document.onmousemove = null;
@@ -179,31 +173,25 @@ function handleMouseOut(e){
 function handleMouseMove(e){
 	if(!e) var e = window.event;
 
-	// XXX: is this boolean check needed anymore?  handleMouseMove function
-	// is only available when mouseDown
-	// if the mouse is down, we're dragging
-	if(mouseDown){
+	// calculate how far the mouse has moved from its
+	// initial click position, and add that to the
+	// draggable object's initial position
+	curX = -(origXdraggy + (e.clientX - origX));
+	curY = -(origYdraggy + (e.clientY - origY));
+	
+	updateMapLocation();
 
-		// calculate how far the mouse has moved from its
-		// initial click position, and add that to the
-		// draggable object's initial position
-		curX = -(origXdraggy + (e.clientX - origX));
-		curY = -(origYdraggy + (e.clientY - origY));
-		
-		updateMapLocation();
-
-		//draggy.moveTo(-curX, -curY);
-		//document.layers["draggy"].moveTo(-curX, -curY);
-		
-		indicator.innerHTML = "Current @ (" + curX + ", " + curY + ")" + 
-				      "  Last Load @ (" + lastLoadX + ", " + lastLoadY + ")";
-		
-		checkForLoad();
-	}
+	//draggy.moveTo(-curX, -curY);
+	//document.layers["draggy"].moveTo(-curX, -curY);
+	
+	indicator.innerHTML = "Current @ (" + curX + ", " + curY + ")" + 
+			      "  Last Load @ (" + lastLoadX + ", " + lastLoadY + ")";
+	
+	checkForLoad();
 }
 
 /******************************************************************
-* KeyDown event handler. Fakes key repeteating by setting flags for
+* KeyDown event handler. Fakes key repeating by setting flags for
 * the different movement keys.
 ******************************************************************/
 function handleKeyDown(e){

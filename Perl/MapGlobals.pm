@@ -41,7 +41,11 @@ our $BASE_IMAGE		= 'UCSDmap.png';
 our $_BASE_GD2_IMAGE	= 'UCSDmap';
 our $BASE_GD2_IMAGE	= $_BASE_GD2_IMAGE . 'gd2';
 
-our $TEMPLATE		= 'template3.html';
+our %TEMPLATES = (
+	plain => 'template3.html',
+	print => 'print_tmpl.html',
+	js => 'js_tmpl.html',
+);
 
 # size of the base image, in pixels
 our $IMAGE_X = 7200;
@@ -65,6 +69,9 @@ our $FONT_HEIGHT = 13;
 # maximum number of characters of a location's name to display in the
 # drop-down menu
 our $MAX_NAME_LEN = 30;
+
+# how thick are the paths we draw between locations? (in pixels)
+our $PATH_THICKNESS = 4;
 
 # colors!
 # these are triplets of values between 0 and 255 (inclusive)
@@ -113,11 +120,13 @@ our $CACHE_DIR		= 'cache';
 our $CACHE_EXPIRY	= 60;
 
 # where static images (such as the button graphics) are stored
-our $STATIC_IMG_DIR	= '../../ucsdmap/bluev2';
+our $STATIC_IMG_DIR	= '../../ucsdmap';
 ##our $STATIC_IMG_DIR	= '../images/bluev2';
 # where dynamically-generated images (map views) are stored
 our $DYNAMIC_IMG_DIR	= '../../ucsdmap/dynamic';
 ##our $DYNAMIC_IMG_DIR	= '../images/dynamic';
+our $PATH_IMG_DIR = $DYNAMIC_IMG_DIR . '/paths';
+our $GRID_IMG_DIR = $STATIC_IMG_DIR . '/grid';
 # the suffix of all dynamically-generated images; used for matching for
 # deletion
 our $DYNAMIC_IMG_SUFFIX	= '.png';
@@ -156,6 +165,27 @@ sub getGd2Filename{
 sub getCacheName{
 	my($from, $to) = (asInt(shift()), asInt(shift()));
 	return $CACHE_DIR . '/' . min($from, $to) . '-' . max($from, $to) . '.cache';
+}
+
+
+###################################################################
+# Get the filename for a path image between the given locations, at the given
+# zoom level.
+# Args:
+# 	- source location ID
+#	- destination location ID
+#	- zoom level, as index (not multiplier)
+# Returns:
+# 	- filename of path file for given arguments
+###################################################################
+sub getPathFilename{
+	my($src, $dst, $zoom) = @_;
+	# untaint
+	$src = asInt($src);
+	$dst = asInt($dst);
+	$zoom = asInt($zoom);
+	return $PATH_IMG_DIR
+		. '/im-' . min($src, $dst) . '-' . max($src, $dst) . '-' . $zoom . '.png';
 }
 
 ###################################################################

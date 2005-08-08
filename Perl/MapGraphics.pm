@@ -233,4 +233,38 @@ sub drawLines{
 	}
 }
 
+###################################################################
+# A version of drawLines that handles offsets differently: xoff and yoff are
+# adjusted for scale.
+# Args:
+#	- same as drawLines
+###################################################################
+sub drawLinesRaw{
+	my($points, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
+
+	# draw all the Edge lines
+	my $curpt;
+	my $prevpt;
+
+	$im->setThickness($thickness);
+
+	warn "drawLinesRaw: offsets: ($xoff, $yoff), size: ($w, $h)\n";
+
+	# cycle through each point in this Edge
+	foreach $curpt ( @$points ){
+		if( defined($prevpt) ){
+			# take the scale into account for each set of points
+			$im->line(
+				$scale*($prevpt->{'x'} - $xoff),
+				$scale*($prevpt->{'y'} - $yoff),
+				$scale*($curpt->{'x'} - $xoff),
+				$scale*($curpt->{'y'} - $yoff),
+				$color
+			);
+		}
+		warn "drawing: (" . ($curpt->{'x'} - $xoff) . ", " . ($curpt->{'y'} - $yoff) . ")\n";
+		$prevpt = $curpt;
+	}
+}
+
 1;

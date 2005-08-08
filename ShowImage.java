@@ -1021,6 +1021,27 @@ class ScrollablePicture extends JLabel implements Scrollable,
         }
     }
     
+    /**
+     * Go to the passed in path number
+     * @param pathNum path number to go to.
+     */
+    public void goToPathNumber(int pathNum)
+    {
+    	// if number passed is in range
+    	if(pathNum > 0 && pathNum <= paths.size() - 1)
+    	{	
+    		pathNumIndex = pathNum;
+    		lines = paths.get(pathNum);
+	    	//autofocus
+	    	setPointNumIndex(true);
+	    	// statusBar
+	    	parent.statusBar.setText( statusBarText());
+	    	repaint();
+    	}
+    	else
+    		parent.statusBar.setText( "PathNumber out of range!" );
+    }
+    
     
     
     /**
@@ -1336,7 +1357,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		// sort the array
 		Arrays.sort(sortedLocs, new Comparator<Location>(){
 			public int compare(Location o1, Location o2)
-			{  return(o1.name.compareTo(o2.name));  }
+				{  return(o1.name.compareTo(o2.name));  }
 		});
 		// reset counter
 		index = 0;

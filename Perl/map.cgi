@@ -78,6 +78,13 @@ my $thumbx = defined($q->param('thumb.x')) ? asInt($q->param('thumb.x')) : undef
 my $thumby = defined($q->param('thumb.y')) ? asInt($q->param('thumb.y')) : undef;
 # one or the other (map or thumb click offsets) should be undef
 
+# which template to use for output
+my $template = $q->param('mode');
+# we only care about the word characters in the template name (this is for taint mode)
+$template =~ /^(\w+)/;
+$template = $1;
+$template = 'plain' if(!length($template) || !exists($MapGlobals::TEMPLATES{$template}));
+
 # -----------------------------------------------------------------
 # Do startup stuff: load data, convert some of the input data, initialize
 # variables, etc.
@@ -267,7 +274,7 @@ else{
 			ShortestPath::find($endID, $points);
 		}
 		$src_help = "<p><b>Start location &quot;$fromTxtSafe&quot; not found.</b></p>"
-			. buildHelpText(undef, $toTxtURL, $mpm, $locations, $points, \@fromids);
+			. buildHelpText(undef, $toTxtURL, $mpm, $template, $locations, $points, \@fromids);
 	}
 	if(@toids > 1){
 		# if we found a good 'to' location, run shortest path stuff
@@ -277,7 +284,7 @@ else{
 			ShortestPath::find($startID, $points);
 		}
 		$dst_help = "<p><b>Destination location &quot;$toTxtSafe&quot; not found.</b></p>"
-			. buildHelpText($fromTxtURL, undef, $mpm, $locations, $points, \@toids);
+			. buildHelpText($fromTxtURL, undef, $mpm, $template, $locations, $points, \@toids);
 	}
 
 	if($src_found){
@@ -478,7 +485,7 @@ if( defined($edgeFH) ){
 
 # now we slam everything into a template and print it out
 my $tmpl = HTML::Template->new(
-	filename => $MapGlobals::TEMPLATE,
+	filename => $MapGlobals::TEMPLATES{$template},
 	die_on_bad_params => 0,
 	global_vars => 1
 );
@@ -501,6 +508,7 @@ $tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
 $tmpl->param( SCALE => $scale );
 $tmpl->param( SIZE => $size );
 $tmpl->param( MPM => $mpm );
+$tmpl->param( MODE => $template );
 $tmpl->param( XOFF => $xoff );
 $tmpl->param( YOFF => $yoff );
 #$tmpl->param( VIEW_WIDTH => $width );
@@ -509,7 +517,7 @@ $tmpl->param( YOFF => $yoff );
 #$tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
 
 $tmpl->param( ZOOM_WIDGET =>
-	listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size, $mpm));
+	listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size, $mpm, $template));
 
 #$tmpl->param( LOCATIONS => \@locParam );
 $tmpl->param( LOCATION_OPT_FROM => $loc_opt_from);
@@ -517,33 +525,33 @@ $tmpl->param( LOCATION_OPT_TO =>  $loc_opt_to);
 
 # the strings representing the state of various buttons
 $tmpl->param( UP_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff - $pan/$SCALES[$scale], $scale, $size, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff - $pan/$SCALES[$scale], $scale, $size, $mpm, $template));
 $tmpl->param( DOWN_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff + $pan/$SCALES[$scale], $scale, $size, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff + $pan/$SCALES[$scale], $scale, $size, $mpm, $template));
 $tmpl->param( LEFT_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff - $pan/$SCALES[$scale], $norm_yoff, $scale, $size, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff - $pan/$SCALES[$scale], $norm_yoff, $scale, $size, $mpm, $template));
 $tmpl->param( RIGHT_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff + $pan/$SCALES[$scale], $norm_yoff, $scale, $size, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff + $pan/$SCALES[$scale], $norm_yoff, $scale, $size, $mpm, $template));
 #$tmpl->param( SMALLER_URL => 
-#	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm));
+#	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff, $scale, ($size > 0) ? $size-1 : $size, $mpm, $template));
 #$tmpl->param( BIGGER_URL => 
-#	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff, $scale, ($size < $#SIZES) ? $size+1 : $size, $mpm));
+#	"$self?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff, $scale, ($size < $#SIZES) ? $size+1 : $size, $mpm, $template));
 
 $tmpl->param( ZOOM_OUT_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, $yoff,
-	($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size, $mpm));
+	($scale < $#MapGlobals::SCALES) ? $scale + 1 : $#MapGlobals::SCALES, $size, $mpm, $template));
 $tmpl->param( ZOOM_IN_URL => "$self?" . state($fromTxtSafe, $toTxtSafe, $xoff, $yoff,
-	($scale > 0) ? $scale - 1 : 0, $size, $mpm));
+	($scale > 0) ? $scale - 1 : 0, $size, $mpm, $template));
 
 # zooming to the start or end locations
 if($src_found){
-	$tmpl->param( GOTO_SRC_URL => "$self?" . state($fromTxtURL, $toTxtURL, $locations->{'ByID'}{$from}{'x'}, $locations->{'ByID'}{$from}{'y'}, $MapGlobals::SINGLE_LOC_SCALE, $size, $mpm));
+	$tmpl->param( GOTO_SRC_URL => "$self?" . state($fromTxtURL, $toTxtURL, $locations->{'ByID'}{$from}{'x'}, $locations->{'ByID'}{$from}{'y'}, $MapGlobals::SINGLE_LOC_SCALE, $size, $mpm, $template));
 }
 if($dst_found){
-	$tmpl->param( GOTO_DST_URL => "$self?" . state($fromTxtURL, $toTxtURL, $locations->{'ByID'}{$to}{'x'}, $locations->{'ByID'}{$to}{'y'}, $MapGlobals::SINGLE_LOC_SCALE, $size, $mpm));
+	$tmpl->param( GOTO_DST_URL => "$self?" . state($fromTxtURL, $toTxtURL, $locations->{'ByID'}{$to}{'x'}, $locations->{'ByID'}{$to}{'y'}, $MapGlobals::SINGLE_LOC_SCALE, $size, $mpm, $template));
 }
 
 $tmpl->param( RECENTER_URL => 
-	"$self?" . state($fromTxtURL, $toTxtURL, undef, undef, undef, $size, $mpm));
+	"$self?" . state($fromTxtURL, $toTxtURL, undef, undef, undef, $size, $mpm, $template));
 
 # text
 $tmpl->param( TXT_SRC => $fromTxtSafe );
@@ -594,12 +602,13 @@ print "Content-type: text/html\n\n" . $tmpl->output();
 #	- map scale
 #	- viewing window size
 #	- minutes it takes the user to walk one mile
+#	- template name ("mode")
 # Returns:
 #	- query string
 ###################################################################
 sub state{
-	my ($from, $to, $x, $y, $scale, $size, $mpm) = (@_);
-	my @keys = qw(from to xoff yoff scale size mpm);
+	my ($from, $to, $x, $y, $scale, $size, $mpm, $mode) = (@_);
+	my @keys = qw(from to xoff yoff scale size mpm mode);
 	my $str;
 	for my $i (0..$#_){
 		if(defined($_[$i])){
@@ -619,12 +628,12 @@ sub state{
 #	- an array of hashrefs containing info for each zoom level
 ###################################################################
 sub listZoomLevels{
-	my ($from, $to, $x, $y, $scale, $size, $mpm) = (@_);
+	my ($from, $to, $x, $y, $scale, $size, $mpm, $mode) = (@_);
 
 	my @ret;
 	for my $i (0..$#MapGlobals::SCALES){
 		push(@ret, {
-			URL => $self . '?' . state($from, $to, $x, $y, $i, $size, $mpm),
+			URL => $self . '?' . state($from, $to, $x, $y, $i, $size, $mpm, $mode),
 			SELECTED => ($i == $scale),
 			LEVEL => $i,
 		});
@@ -650,13 +659,14 @@ sub listZoomLevels{
 #	- 'from' search text (or undef)
 #	- 'to' search text (or undef)
 #	- miles per minute (to perserve state)
+#	- template mode (to perserve state)
 #	- hashref of locations
 #	- hashref of GraphPoints (optional, to list distances)
 #	- arrayref of location IDs (ints) that are possible matches to the
 #	  search term
 ###################################################################
 sub buildHelpText{
-	my ($fromTxt, $toTxt, $mpm, $locations, $points, $ids) = (@_);
+	my ($fromTxt, $toTxt, $mpm, $mode, $locations, $points, $ids) = (@_);
 
 	# figure out which kind of help we're giving
 	# one of $fromTxt and $toTxt will be undef. whichever one is,
@@ -686,11 +696,11 @@ sub buildHelpText{
 		# we're careful about which location we're actually searching for
 		if($helpfor eq 'from'){
 			$url = state(CGI::escape($locations->{'ByID'}{$_->{'id'}}{'Name'}), $toTxt,
-				undef, undef, undef, undef, $mpm);
+				undef, undef, undef, undef, $mpm, $mode);
 		}
 		else{
 			$url = state($fromTxt, CGI::escape($locations->{'ByID'}{$_->{'id'}}{'Name'}),
-				undef, undef, undef, undef, $mpm);
+				undef, undef, undef, undef, $mpm, $mode);
 		}
 		$str .= sprintf(qq|\t<li><a href="$self?%s">%s</a>%s</li>\n|,
 			$url, CGI::escapeHTML($locations->{'ByID'}{$_->{'id'}}{'Name'}), $dist_txt);

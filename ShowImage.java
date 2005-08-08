@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+import java.beans.*;
 
 /**
  * Class ShowImage
@@ -47,6 +48,11 @@ public class ShowImage extends JFrame{
     JCheckBox passBox;
     JCheckBox displayBox;
     
+    JMenuItem 	prevPath, nextPath, newPath,// path manipulation
+    			undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
+    			read, write, createLocationFile, changeImage,//IO
+    			locationEditor;
+    
     // For accessing the locationName text field
 
     /**
@@ -70,13 +76,214 @@ public class ShowImage extends JFrame{
         s.ipanel.selectRead();
     }
 
+
+    class MenuListener implements ActionListener
+    {
+    	public void actionPerformed(ActionEvent e)
+    	{
+    		if(e.getSource() == read)
+    			ipanel.selectRead();
+    		
+    		if(e.getSource() == write)
+    			ipanel.selectWrite();
+    		
+    		if(e.getSource() == prevPath)
+    			ipanel.goToPreviousPath();
+    		
+    		if(e.getSource() == nextPath)
+    			ipanel.goToNextPath();
+    		
+    		if(e.getSource() == undoConnection)
+    			ipanel.undoConnection();
+    		
+    		if(e.getSource() == nextElement)
+    			ipanel.goToNextElement();
+    		
+    		if(e.getSource() == prevElement)
+    			ipanel.goToPreviousElement();
+    		
+    		if(e.getSource() == centerOnElement)
+    			ipanel.centerOnSelectedPoint();
+    		
+    		if(e.getSource() == createLocationFile)
+    			ipanel.printLocationsToFile();
+    		
+    		if(e.getSource() == manualPlace)
+    			ipanel.manualPlaceDialog();
+    		
+    		if(e.getSource() == locationEditor)
+    			ipanel.locationEditor();
+    		
+    		if(e.getSource() == newPath)
+    			ipanel.createNewPath();
+    		
+    		if(e.getSource() == changeImage)
+    			changeImage();//Do change image stuff here
+    	}
+    }
+    
+    public void changeImage()
+    {
+    	JFileChooser chooser = new JFileChooser();
+    	//wtf!
+//    	FileFilter f = new ImageFilter();
+//    	chooser.setFileFilter(f);
+    	int returnVal = chooser.showOpenDialog(this);
+    	System.err.println("Returnval = " + returnVal);
+    	if(returnVal == JFileChooser.APPROVE_OPTION)
+    	       System.out.println("You chose to open this file: " +
+    	    		   chooser.getSelectedFile().getName());
+    	ImageIcon icon = ShowImage.createImageIcon(chooser.getSelectedFile().getName()); 
+    	ipanel.setIcon(icon);
+    }
+    
+    class ImageFilter implements FileFilter
+    {
+    	public String getDescription() { return "Images and directories";}
+    	
+    	public boolean accept(File f) {
+    	    if (f.isDirectory()) {
+    	    	return true;
+    	    }
+
+    	    String extension = fileExtension(f);
+    	    if (extension == null)
+    	    	return false;
+    	    if(extension.equals("gif") || extension.equals("jpeg") ||
+    		    extension.equals("jpg") || extension.equals("png") ) 
+    		{
+    	    	return true;
+    		} 
+    	    else
+    		    return false;
+    	}
+    	
+        /**
+         * Parse the filename and return the filename's extension
+         **/  
+        public String fileExtension(File f) {
+            String extension = null;
+            String fileName = f.getName();
+            int index = fileName.lastIndexOf('.');
+
+            if (index < fileName.length() - 1 && index > 0)
+                extension = fileName.substring(index+1).toLowerCase();
+            return extension;
+        }
+    }
+    
+    
+    public JMenuItem makeJMenuItem(String name, ActionListener listener, 
+    		int keyCode)
+    {
+    	return makeJMenuItem(name, listener, keyCode, keyCode, 
+    			KeyEvent.CTRL_MASK);
+    }
+    
+    public JMenuItem makeJMenuItem(String name, ActionListener listener, 
+    		int keyEvent, int accel, int accel_mod)
+    {
+    	JMenuItem tempMenu = new JMenuItem(name, keyEvent);
+    	tempMenu.addActionListener(listener);
+    	if(accel > 0 && accel_mod > 0)
+    		tempMenu.setAccelerator(KeyStroke.getKeyStroke(accel, accel_mod));
+    	return(tempMenu);
+    }
+    
     /**
      * Create a new window holding the specified image.
      * @param filename filename of image to open
      */
     public ShowImage(String filename){
 
-        super(filename);  // JFrame
+    	super("UCSDMap Editor: " + filename);  // JFrame
+
+    	// USED:
+    	// A B C D E F G H I J K L M N O P Q R S T U V W X Y Z + -
+    	//   Y Y   Y Y     Y     Y Y Y Y       Y             Y Y Y
+    	// IO
+    	final int FORWARD_KEY			= KeyEvent.VK_PLUS;
+    	final int BACKWARDS_KEY			= KeyEvent.VK_MINUS;
+    	
+    	final int READ_KEY 				= KeyEvent.VK_O;
+    	final int WRITE_KEY 			= KeyEvent.VK_S;
+    	final int LOCATION_FILE_KEY 	= KeyEvent.VK_L;
+    	
+    	final int NEXT_PATH_KEY 		= FORWARD_KEY;   // Done in handleKey
+    	final int PREV_PATH_KEY 		= BACKWARDS_KEY; // Done in handleKey
+    	final int NEW_PATH_KEY 			= KeyEvent.VK_N;
+    	
+    	final int NEXT_ELEMENT_KEY 		= KeyEvent.VK_F;
+    	final int PREV_ELEMENT_KEY 		= KeyEvent.VK_B;
+    	final int UNDO_CONNECTION_KEY 	= KeyEvent.VK_Z;
+    	final int CENTER_KEY 			= KeyEvent.VK_C;
+    	final int MANUAL_PLACE_KEY		= KeyEvent.VK_M;
+    	
+    	final int LOC_EDITOR_KEY 		= KeyEvent.VK_E;
+
+    	
+        /** Setup the pretty menu bar!  **/
+        MenuListener listener = new MenuListener();
+        JMenuBar bar = new JMenuBar();
+        
+        
+        /** Menu associated with file I/O options **/
+        JMenu file = new JMenu("File I/O");
+        
+        read = file.add(makeJMenuItem("Open files", listener, READ_KEY));
+        write = file.add(makeJMenuItem("Save files", listener, WRITE_KEY));
+        file.addSeparator();
+        createLocationFile = file.add(makeJMenuItem(
+        		"Write Location List", listener, LOCATION_FILE_KEY));
+        changeImage = file.add(makeJMenuItem("Change Image", listener, 0));
+        
+        
+        /** Menu associated with path options **/
+        JMenu path = new JMenu("Path Editing");
+        // Path Manipulation path
+        newPath = path.add(makeJMenuItem("Create New Path", 
+        		listener, NEW_PATH_KEY));
+        path.addSeparator();
+        prevPath = path.add(makeJMenuItem("Previous Path (-)", 
+        		listener, PREV_PATH_KEY, 0, 0));
+        nextPath = path.add(makeJMenuItem("Next Path (+)", 
+        		listener, NEXT_PATH_KEY, 0, 0));
+        
+        // inside of paths
+        JMenu element = new JMenu("Element Editing");
+        
+        // choosing an element
+        prevElement = element.add(makeJMenuItem("Previous Element in path", 
+        		listener, PREV_ELEMENT_KEY));
+        nextElement = element.add(makeJMenuItem("Next Element in path", 
+        		listener, NEXT_ELEMENT_KEY));
+        centerOnElement = element.add(
+        		makeJMenuItem("(C)enter on selected element", 
+        				listener, CENTER_KEY));
+        element.addSeparator();
+        undoConnection = element.add(makeJMenuItem("Undo last created connection", 
+        		listener, UNDO_CONNECTION_KEY));
+        manualPlace = element.add(makeJMenuItem("Manually Place Element", 
+        		listener, MANUAL_PLACE_KEY));
+
+        JMenu location = new JMenu();
+        locationEditor = location.add(makeJMenuItem("Location Editor", 
+        		listener, LOC_EDITOR_KEY));
+//      JMenuItem 	prevPath, nextPath, newPath,// path manipulation
+//      undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
+//      read, write, createLocationFile, //IO
+//      locationEditor;
+
+        
+        /** Add the menus **/
+        bar.add(file);
+        bar.add(path);
+        bar.add(element);
+        bar.add(location);
+        
+        /** Add the bar **/
+        setJMenuBar(bar);
+        
         
         // Set background color
         this.setBackground(Color.LIGHT_GRAY);
@@ -96,6 +303,8 @@ public class ShowImage extends JFrame{
                dispose();
            }
         });
+        
+
         
         // use a SpringLayout
         SpringLayout spring = new SpringLayout();
@@ -355,6 +564,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
         addKeyListener(new KeyAdapter(){
             public void keyPressed(KeyEvent e){ handleKey(e); }
         });
+        
         
         // ...but also need to make sure we can receive (key?) focus
         setFocusable(true);
@@ -692,6 +902,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
     private void handleKey(KeyEvent k){
         
         int c = k.getKeyCode();
+        
         // F1: Erase current point (and location, if applicable)
         if(c ==  KeyEvent.VK_F1)
         {
@@ -699,13 +910,13 @@ class ScrollablePicture extends JLabel implements Scrollable,
             undoConnection();
         }
         // F2: Go to previous path option
-        else if(c == KeyEvent.VK_F2)
+        else if(c == KeyEvent.VK_F2 || c == KeyEvent.VK_MINUS)
         {
             // Call method to go to previous path
             goToPreviousPath();
         }
         // F3: Go to the next path (if exists)
-        else if(c == KeyEvent.VK_F3)
+        else if(c == KeyEvent.VK_F3 || c == KeyEvent.VK_EQUALS)
         {
             goToNextPath();
         }
@@ -758,8 +969,8 @@ class ScrollablePicture extends JLabel implements Scrollable,
         
         // Take a wild gusss :)
         else{
-            parent.statusBar.setText("Key does not have an action associated" +
-                    " with it!");
+//            parent.statusBar.setText("Key does not have an action associated" +
+//                    " with it!");
         }
     }
     

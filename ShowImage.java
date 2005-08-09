@@ -78,6 +78,18 @@ public class ShowImage extends JFrame{
 		s.ipanel.selectRead();
 	}
 	
+	public void changeImage()
+	{
+		JFileChooser chooser = new JFileChooser();
+		int returnVal = chooser.showOpenDialog(this);
+		System.err.println("Returnval = " + returnVal);
+		if(returnVal == JFileChooser.APPROVE_OPTION)
+			System.out.println("You chose to open this file: " +
+					chooser.getSelectedFile().getName());
+		ImageIcon icon = ShowImage.createImageIcon(chooser.getSelectedFile().getName()); 
+		ipanel.setIcon(icon);
+	}
+	
 	
 	class MenuListener implements ActionListener
 	{
@@ -120,60 +132,9 @@ public class ShowImage extends JFrame{
 				ipanel.createNewPath();
 			
 			if(e.getSource() == changeImage)
-				changeImage();//Do change image stuff here
+				changeImage(); //Do change image stuff here
 		}
 	}
-	
-	public void changeImage()
-	{
-		JFileChooser chooser = new JFileChooser();
-		//wtf!
-//		FileFilter f = new ImageFilter();
-//		chooser.setFileFilter(f);
-		int returnVal = chooser.showOpenDialog(this);
-		System.err.println("Returnval = " + returnVal);
-		if(returnVal == JFileChooser.APPROVE_OPTION)
-			System.out.println("You chose to open this file: " +
-					chooser.getSelectedFile().getName());
-		ImageIcon icon = ShowImage.createImageIcon(chooser.getSelectedFile().getName()); 
-		ipanel.setIcon(icon);
-	}
-	
-	class ImageFilter implements FileFilter
-	{
-		public String getDescription() { return "Images and directories";}
-		
-		public boolean accept(File f) {
-			if (f.isDirectory()) {
-				return true;
-			}
-			
-			String extension = fileExtension(f);
-			if (extension == null)
-				return false;
-			if(extension.equals("gif") || extension.equals("jpeg") ||
-					extension.equals("jpg") || extension.equals("png") ) 
-			{
-				return true;
-			} 
-			else
-				return false;
-		}
-		
-		/**
-		 * Parse the filename and return the filename's extension
-		 **/  
-		public String fileExtension(File f) {
-			String extension = null;
-			String fileName = f.getName();
-			int index = fileName.lastIndexOf('.');
-			
-			if (index < fileName.length() - 1 && index > 0)
-				extension = fileName.substring(index+1).toLowerCase();
-			return extension;
-		}
-	}
-	
 	
 	public JMenuItem makeJMenuItem(String name, ActionListener listener, 
 			int keyCode)
@@ -202,14 +163,14 @@ public class ShowImage extends JFrame{
 		
 		// USED:
 		// A B C D E F G H I J K L M N O P Q R S T U V W X Y Z + -
-		//   Y Y   Y Y     Y     Y Y Y Y       Y             Y Y Y
+		//   Y Y   Y Y     Y       Y Y Y P     Y             Y Y Y
 		// IO
 		final int FORWARD_KEY			= KeyEvent.VK_PLUS;
 		final int BACKWARDS_KEY			= KeyEvent.VK_MINUS;
 		
 		final int READ_KEY 				= KeyEvent.VK_O;
 		final int WRITE_KEY 			= KeyEvent.VK_S;
-		final int LOCATION_FILE_KEY 	= KeyEvent.VK_L;
+		final int LOCATION_FILE_KEY 	= KeyEvent.VK_P;
 		
 		final int NEXT_PATH_KEY 		= FORWARD_KEY;   // Done in handleKey
 		final int PREV_PATH_KEY 		= BACKWARDS_KEY; // Done in handleKey
@@ -236,7 +197,7 @@ public class ShowImage extends JFrame{
 		write = file.add(makeJMenuItem("Save files", listener, WRITE_KEY));
 		file.addSeparator();
 		createLocationFile = file.add(makeJMenuItem(
-				"Write Location List", listener, LOCATION_FILE_KEY));
+				"Print Location List", listener, LOCATION_FILE_KEY));
 		changeImage = file.add(makeJMenuItem("Change Image", listener, 0));
 		
 		
@@ -530,7 +491,7 @@ MouseMotionListener{
 	final String binaryEdges = "data/binEdgeData.dat";
 	
 	// List of all locations mapped
-	final String locationsTextFile = "Locations.txt";
+	final String LOCATIONS_TXT_FILE = "Locations.txt";
 	
 	/**
 	 * 
@@ -1083,30 +1044,19 @@ MouseMotionListener{
 	
 	/**
 	 * Prints out the listing of all locations on the map to a text file
-	 * 
 	 */
 	public void printLocationsToFile()
 	{
 		final String locTextHeader = "Locations:";
-		final String locStatusBar = "Locations listing created";
+		final String locStatusBar = "Locations written to txt file: " + 
+			LOCATIONS_TXT_FILE;
 		FileOutputStream textOutput;
 		PrintStream outStream;
 		
-		Location [] sortedLocs = new Location [locations.size()];
-		for(int i = 0; i < locations.size(); i++)
-		{
-			sortedLocs[i] = getLocation(i);
-		}
-		
-		Arrays.sort(sortedLocs, new Comparator<Location>(){
-			public int compare(Location o1, Location o2)
-			{
-				return(o1.getName().compareTo(o2.getName()));
-			}
-		});
+		Location [] sortedLocs = this.getSortedLocationArray();
 		
 		try{
-			textOutput =  new FileOutputStream(locationsTextFile);
+			textOutput =  new FileOutputStream(LOCATIONS_TXT_FILE);
 			outStream = new PrintStream( new BufferedOutputStream(textOutput));
 			
 			outStream.println(locTextHeader);
@@ -1123,7 +1073,7 @@ MouseMotionListener{
 			outStream.close();
 		}
 		catch(Exception e){
-			System.err.println("Error writing to file" + locationsTextFile);
+			System.err.println("Error writing to file" + LOCATIONS_TXT_FILE);
 		}
 	}
 	
@@ -1337,24 +1287,9 @@ MouseMotionListener{
 		// To list all of the locations in rows (with submit buttons)
 		panel.setLayout( new GridLayout(locations.size()*2, 1));
 		
-		// General purpose index variable, reset after loops
-		int index = 0;
-		
-		// Create an array for sorted locations, slam in all of the locations
-		// in the locations vector
-		Location [] sortedLocs = new Location[locations.size()];
-		for (Location loc : locations) {
-			sortedLocs[index] = loc;
-			index++;
-		}
-		// sort the array
-		Arrays.sort(sortedLocs, new Comparator<Location>(){
-			public int compare(Location l1, Location l2)
-			{  return(l1.getName().compareTo(l2.getName()));  }
-		});
-		index = 0;
-		
+
 		//Create the action listeners!
+		Location[] sortedLocs = getSortedLocationArray();
 		
 		// For every location in the sortedLocation array
 		for (Location loc : sortedLocs) {
@@ -2462,6 +2397,26 @@ MouseMotionListener{
 	public void connectTheDots(Graphics g, Point start, Point end){
 		g.drawLine( (int)start.getX(), (int)start.getY(),
 				(int)end.getX(), (int)end.getY() );
+	}
+	
+	public Location [] getSortedLocationArray()
+	{
+		
+		// Create an array for sorted locations, slam in all of the locations
+		// in the locations vector
+		Location [] sortedLocs = new Location[locations.size()];
+		int index = 0;
+		for (Location loc : locations) {
+			sortedLocs[index] = loc;
+			index++;
+		}
+		// sort the array
+		Arrays.sort(sortedLocs, new Comparator<Location>(){
+			public int compare(Location l1, Location l2)
+			{  return(l1.getName().compareTo(l2.getName()));  }
+		});
+		// return the sorted Array
+		return sortedLocs;
 	}
 }
 

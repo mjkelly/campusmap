@@ -326,7 +326,8 @@ public class PathOptimize
     		{
 				if(debugPPtoGP)
 		    		System.err.println("Adding location: " + 
-							thisGP.locLabel.cord + ", " + thisGP.locLabel.name);
+							thisGP.locLabel.cord + ", " + 
+							thisGP.locLabel.getName());
 	    		outLocations.add( thisGP.locLabel );
     		}
     	}
@@ -350,7 +351,7 @@ public class PathOptimize
     		if(thisPoint.location != null)
     		{
 	    		System.err.println("Adding location: " + thisPoint.location.cord +
-	    				", " + thisPoint.location.name);
+	    				", " + thisPoint.location.getName());
 	    		outLocations.add( thisPoint.location );
     		}
     		
@@ -1404,7 +1405,7 @@ class PathPoint
 	public String toString(){
 		String outStr = "(" + point.x + ", " + point.y + ") ";
 		if(location != null)
-			outStr += " [" + location.name + "]";
+			outStr += " [" + location.getName() + "]";
 		for(int i = 0; i < numConnectedPoints(); i++){
 			outStr += "\n\t --> (" + getConnectedPoint(i).x + ", " +
 				getConnectedPoint(i).y + ")";
@@ -1445,9 +1446,8 @@ class GraphPoint
 		point = new Point(pp.point);
 		pp.setGraphPoint(this);
 	
-		// Second part of condition was for discarding an old version of
-		// intersection...does not harm
-		if(pp.location != null && !pp.location.name.equals("<nolink>"))			
+		// Previous location of checking for "<nolink>" in the tag
+		if(pp.location != null)			
 			locLabel = pp.location;
 
 		edges = new Vector<Edge>();
@@ -1660,10 +1660,10 @@ class GraphPoint
 	        
             // output display name
 			if(PathOptimize.debugBinaryLocations)
-				System.err.println("Display name: " + this.locLabel.name + "("
-                        + this.locLabel.name.length() + ")");
-            out.writeInt(this.locLabel.name.length());
-			out.writeChars(this.locLabel.name);
+				System.err.println("Display name: " + this.locLabel.getName() 
+						+ "(" + this.locLabel.getName().length() + ")");
+            out.writeInt(this.locLabel.getName().length());
+			out.writeChars(this.locLabel.getName());
             
             // output building code
             if(PathOptimize.debugBinaryLocations)
@@ -1698,7 +1698,7 @@ class GraphPoint
 	public String getLocationName()
 	{
 		if(locLabel != null)
-			return(locLabel.name + "\n");
+			return(locLabel.getName() + "\n");
 		return("");
 	}
 	

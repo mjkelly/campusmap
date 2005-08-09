@@ -829,7 +829,7 @@ MouseMotionListener{
 		{
 			// stick the location's name in the array
 			locationNames[index] = 
-				((Location)locations.get(index)).name;
+				((Location)locations.get(index)).getName();
 		}
 		
 		//Create the JList, passing the array of location names
@@ -1101,7 +1101,7 @@ MouseMotionListener{
 		Arrays.sort(sortedLocs, new Comparator<Location>(){
 			public int compare(Location o1, Location o2)
 			{
-				return(o1.name.compareTo(o2.name));
+				return(o1.getName().compareTo(o2.getName()));
 			}
 		});
 		
@@ -1266,7 +1266,7 @@ MouseMotionListener{
 					locout.writeObject(loc.cord);
 					locout.writeBoolean(loc.isDisplayName());
 					locout.writeInt(loc.ID);
-					locout.writeObject(loc.name);
+					locout.writeObject(loc.getName());
 				}
 			}
 			if(LOCATION_VERSION_NUMBER == 2)
@@ -1284,7 +1284,7 @@ MouseMotionListener{
 					locout.writeObject(loc.cord);
 					locout.writeBoolean(loc.isDisplayName());
 					locout.writeInt(loc.ID);
-					locout.writeObject(loc.name);
+					locout.writeObject(loc.getName());
 					
 					// The following two lines are the difference between
 					// version 1 and version 2
@@ -1332,8 +1332,8 @@ MouseMotionListener{
 		dialog.getContentPane().setLayout( new FlowLayout() );
 		
 		// JPannel to contain the scroll
+		//JPanel panel = new JPanel();
 		JPanel panel = new JPanel();
-		
 		// To list all of the locations in rows (with submit buttons)
 		panel.setLayout( new GridLayout(locations.size()*2, 1));
 		
@@ -1349,8 +1349,8 @@ MouseMotionListener{
 		}
 		// sort the array
 		Arrays.sort(sortedLocs, new Comparator<Location>(){
-			public int compare(Location o1, Location o2)
-			{  return(o1.name.compareTo(o2.name));  }
+			public int compare(Location l1, Location l2)
+			{  return(l1.getName().compareTo(l2.getName()));  }
 		});
 		index = 0;
 		
@@ -1359,7 +1359,6 @@ MouseMotionListener{
 		// For every location in the sortedLocation array
 		for (Location loc : sortedLocs) {
 			JPanel locPanel = new ComponentEditor(loc);
-			panel.add(new JLabel("Location:"));
 			panel.add(locPanel);
 		}
 		
@@ -2002,7 +2001,7 @@ MouseMotionListener{
 				stringToReturn = ", Locations: ";
 				Location locToPrint = getLocation(locIndex);
 				
-				stringToReturn += locToPrint.name;
+				stringToReturn += locToPrint.getName();
 				
 				if(locToPrint.isAllowIntersections())
 				{
@@ -2167,7 +2166,7 @@ MouseMotionListener{
 		// Set the status bar to the successful completion message
 		// Message to display on successful completion
 		String success = "Path #" + (pathNumIndex + 1) +
-		" intersects with location \"" + locFound.name + "\"";
+		" intersects with location \"" + locFound.getName() + "\"";
 		parent.statusBar.setText(success);
 	}
 	
@@ -2219,8 +2218,10 @@ MouseMotionListener{
 	public int findLocationWithName (String locationName)
 	{
 		for(int i = 0; i < locations.size(); i++)
-			if( ((Location)locations.get(i)).name.indexOf(locationName) >= 0 )
+			if(((Location)locations.get(i)).getName().indexOf(
+					locationName) >= 0 ){
 				return(i);
+			}
 		parent.statusBar.setText("Corresponding location could" +
 		" not be found!");
 		return(-1);
@@ -2423,7 +2424,7 @@ MouseMotionListener{
 		{
 			int x = getLocation(locIndex).cord.x;
 			int y = getLocation(locIndex).cord.y;
-			g.drawString( getLocation(locIndex).name, x, y);
+			g.drawString( getLocation(locIndex).getName(), x, y);
 		}
 		
 	}
@@ -2476,7 +2477,7 @@ interface ComponentElement
 	 * @param value modification to string
 	 * @param index index to place modification
 	 */
-	void setElementValue(String value, int index);
+	String setElementValue(String value, int index);
 	/**
 	 * Gets the value of an element @ index
 	 * @param index Index to get element from
@@ -2487,7 +2488,7 @@ interface ComponentElement
 	 * Gets descriptions of each component element
 	 * @return Associated with each element by common index
 	 */
-	String[] getDescriptions();
+	String[] getComponentDescriptions();
 }
 
 /**
@@ -2508,7 +2509,7 @@ class Location implements Serializable, ComponentElement
 	/**
 	 * The name associated with the location
 	 */
-	public String name;
+	private String name;
 	
 	/**
 	 * Building code for a location
@@ -2612,6 +2613,23 @@ class Location implements Serializable, ComponentElement
 	{
 		return(name + " @ (" + cord.x + ", " + cord.y + ")");
 	}
+	
+	/**
+	 * Gets the name field
+	 * @return Returns the name.
+	 */
+	public String getName() {
+		return name;
+	}
+	
+	/**
+	 * Sets the name field
+	 * @param name The name to set.
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+	
 	/**
 	 * Returns the building code the location
 	 * @return The building code of the location
@@ -2646,10 +2664,10 @@ class Location implements Serializable, ComponentElement
 	 * Returns an array of descriptions describing
 	 * the elements to be modified by the ComponentEditor
 	 */
-	public String[] getDescriptions()
+	public String[] getComponentDescriptions()
 	{
 		String [] descriptions 
-		= {"(" + this.cord.x + ", " + this.cord.y + ")" //Name
+		= {"Name of Location @ (" + this.cord.x + ", " + this.cord.y + ")" //Name
 				, "ID"
 				, "Description"};
 		return (descriptions);
@@ -2665,7 +2683,7 @@ class Location implements Serializable, ComponentElement
 		switch (index)
 		{
 		case 0:
-			return name;
+			return getName();
 		case 1:
 			return getBuildingCode();
 		case 2:
@@ -2680,12 +2698,17 @@ class Location implements Serializable, ComponentElement
 	 * @param value The value to set
 	 * @param index the index to set at
 	 */
-	public void setElementValue(String value, int index)
+	public String setElementValue(String value, int index)
 	{
 		switch (index)
 		{
 		case 0:
-			name = value;
+			// Errror condition: setting name to empty string
+			if(value.equals(""))
+			{
+				return "Error: Name string is empty!";
+			}
+			setName(value);
 			break;
 		case 1:
 			setBuildingCode(value);
@@ -2694,6 +2717,7 @@ class Location implements Serializable, ComponentElement
 			setLocDescription(value);
 			break;
 		}
+		return null;
 	}
 }
 
@@ -2713,8 +2737,9 @@ class ComponentEditor extends JPanel
 {
 	final static long serialVersionUID = 1;
 	final Color DEFAULT_COLOR = Color.WHITE;
-	final Color HIGHLIGHT_COLOR = Color.GREEN;
-	final Color CHANGE_COLOR = Color.RED;
+	final Color HIGHLIGHT_COLOR = Color.BLUE;
+	final Color CHANGE_COLOR = Color.GREEN;
+	final Color ERROR_COLOR = Color.RED;
 	private StringEditorBox [] boxes;
 	private ComponentElement element;
 	
@@ -2731,7 +2756,7 @@ class ComponentEditor extends JPanel
 	{
 		super();
 		this.element = passedElement;
-		String [] descriptions = element.getDescriptions();
+		String [] descriptions = element.getComponentDescriptions();
 		int numElements = descriptions.length;
 		
 		// Set boxes array to size
@@ -2742,7 +2767,7 @@ class ComponentEditor extends JPanel
 		{
 			// instantiate the StringEditorBoxes
 			boxes[i] = new StringEditorBox(this, element.getElementValue(i), 
-					i, HIGHLIGHT_COLOR, CHANGE_COLOR, DEFAULT_COLOR);
+				i, HIGHLIGHT_COLOR, CHANGE_COLOR, DEFAULT_COLOR, ERROR_COLOR);
 		}
 		
 		// create the submitButton
@@ -2761,6 +2786,8 @@ class ComponentEditor extends JPanel
 			this.add(new JLabel(descriptions[i]));  // add description
 			this.add(boxes[i]);  // add the JTextBox
 		}
+		// Add the submit button
+		this.add(submit);
 	}
 	
 	/**
@@ -2770,11 +2797,9 @@ class ComponentEditor extends JPanel
 	 */
 	public String setVariableValue(String newVal, int id)
 	{
-		// save old value
-		String oldVal = element.getElementValue(id);
 		// update value
-		element.setElementValue(newVal, id);
-		return oldVal;
+		String possibleError = element.setElementValue(newVal, id);
+		return possibleError;
 	}
 	
 	/**
@@ -2783,9 +2808,7 @@ class ComponentEditor extends JPanel
 	 * @return Content of variable
 	 */
 	public String getVariableValue(int id)
-	{
-		return element.getElementValue(id);
-	}
+	{	return element.getElementValue(id); }
 	
 	/**
 	 * Saves all of the variables in the boxes.
@@ -2794,10 +2817,9 @@ class ComponentEditor extends JPanel
 	{
 		String result = "";
 		for(StringEditorBox box : boxes)
-		{
 			result += box.saveChange();
-		}
-		System.err.println(result);
+		if(result != "")
+			System.err.println(result);
 	}
 	
 	/**
@@ -2830,7 +2852,7 @@ class StringEditorBox extends JTextArea
 {
 	final static long serialVersionUID = 1;
 	private ComponentEditor parent;  // parent for sending messages
-	private Color changeColor, defaultColor;
+	private Color submitColor, defaultColor, errorColor;
 	int id; // The ID of the string element that the box is storing
 	
 	/**
@@ -2838,14 +2860,16 @@ class StringEditorBox extends JTextArea
 	 * Does the super call
 	 */
 	public StringEditorBox(ComponentEditor parent, String var, int id, 
-			Color highlightColor, Color changeColor, Color defaultColor)
+			Color highlightColor, Color submitColor, Color defaultColor, 
+			Color errorColor)
 	{
 		// Create the JText area: height = 1, width = 60
 		super(var, 1, 80);
 		this.addKeyListener(new StringEditorListener(this, highlightColor));
 		// Set the default color
-		this.changeColor = changeColor;
+		this.submitColor = submitColor;
 		this.defaultColor = defaultColor;
+		this.errorColor = errorColor;
 		this.parent = parent;
 		this.id = id;
 	}
@@ -2858,14 +2882,22 @@ class StringEditorBox extends JTextArea
 	public String saveChange()
 	{
 		// Status string describing change
-		String status = "";
+		String error = "";
 		String displayedVar;
 		if((displayedVar = changeInBox()) != "")
-		{	status = "Changed \"" + parent.setVariableValue(displayedVar,id) + 
-			"\" to \"" + displayedVar;
-		this.setBackground(changeColor);
+		{	error = parent.setVariableValue(displayedVar,id);
+			if(error == null || error.equals(""))  // no errors occured
+			{
+				this.setBackground(submitColor);				
+			}
+			else
+			{	
+				this.setText(parent.getVariableValue(id));
+				this.setBackground(errorColor);
+				return error + "\n";
+			}
 		}
-		return status;
+		return "";
 	}
 	
 	/**
@@ -2896,7 +2928,7 @@ class StringEditorBox extends JTextArea
 	/**
 	 * This is a listener for the when the user changes on the input boxes
 	 * in the pannel.  This will result in a highight change
-	 * @author David Lindquist
+	 * @author David Lindquist and Michael Kelly
 	 *
 	 */
 	class StringEditorListener implements KeyListener

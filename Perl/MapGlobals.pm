@@ -121,6 +121,7 @@ our $CACHE_EXPIRY	= 60;
 
 # where static content is stored
 our $HTML_BASE		= '../../ucsdmap';
+##our $HTML_BASE		= '..';
 
 our $CSS_DIR		= "$HTML_BASE/css";
 our $STATIC_IMG_DIR	= "$HTML_BASE/images";

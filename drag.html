@@ -18,10 +18,17 @@ OUTSTANDING BUGS/TASKS:
 <style type="text/css">
 
 	#draggy {
-		position: absolute;
-		background: #aac;
+		background: transparent;
 		border: 1px solid #88a;
-		
+		position: absolute;
+		top: 0px;
+		left: 0px;
+	}
+
+	#locations, #map, #path {
+		position: absolute;
+		top: 0px;
+		left: 0px;
 	}
 
 	#container {
@@ -29,6 +36,8 @@ OUTSTANDING BUGS/TASKS:
 		border: 1px solid black;
 		position: absolute;
 		background: black;
+		top: 30px;
+		left: 0px;
 	}
 
 	#indicator {
@@ -52,7 +61,7 @@ OUTSTANDING BUGS/TASKS:
 
 	#buttons {
 		float: left;
-		z-index: 2;
+		z-index: 3;
 		position: relative;
 		width: 70px;
 	}
@@ -62,7 +71,21 @@ OUTSTANDING BUGS/TASKS:
 		height: 200px;
 		position: absolute;
 		background: blue;
+		z-index: 1;
 		/*border: 1px solid teal;*/
+	}
+
+	.location {
+		color: blue;
+		background: red;
+		z-index: 3;
+		position: relative;
+	}
+
+	.path {
+		z-index: 2;
+		position: relative;
+		background: blue;
 	}
 
 </style>
@@ -111,11 +134,7 @@ OUTSTANDING BUGS/TASKS:
 			whitespace messes up IE. expand it to make it
 			comprehensible. as it stands, you are not
 			expected to understand this ;) -->
-			<td colspan="3" align="center">
-				<a href="#"><img src="buttons/zoom-level-selected.png" width="30" height="20" border="0" /></a><br />
-				<a href="#"><img src="buttons/zoom-level.png" width="30" height="20" border="0" /></a><br />
-				<a href="#"><img src="buttons/zoom-level.png" width="30" height="20" border="0" /></a><br />
-				<a href="#"><img src="buttons/zoom-level.png" width="30" height="20" border="0" /></a><br />
+			<td colspan="3" align="center" id="zoomSelect">
 			</td>
 		</tr>
 		<tr>
@@ -130,7 +149,9 @@ OUTSTANDING BUGS/TASKS:
 
 		<!-- NOTE: IE can't handle draggy being a layer -->
 		<div id="draggy">
-
+			<div id="locations"></div>
+			<div id="map"></div>
+			<div id="path"></div>
 		</div>
 
 	</div>
@@ -139,7 +160,10 @@ OUTSTANDING BUGS/TASKS:
 
 
 <script language="javascript">
-	dragInit();	
+	new Location("Location Name", 1000, 1000);
+	new Path(100, 100, 200, 200);
+	pathObj.loadPath(20, 4162);
+	new Viewport(0, 0, 500, 375, 2);
 </script>
 
 </body>

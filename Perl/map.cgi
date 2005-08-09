@@ -79,7 +79,7 @@ my $thumby = defined($q->param('thumb.y')) ? asInt($q->param('thumb.y')) : undef
 # one or the other (map or thumb click offsets) should be undef
 
 # which template to use for output
-my $template = $q->param('mode');
+my $template = $q->param('mode') || '';
 # we only care about the word characters in the template name (this is for taint mode)
 $template =~ /^(\w+)/;
 $template = $1;
@@ -650,6 +650,7 @@ elsif ($template eq 'js'){
 	#$tmpl->param( CVS_DATE => '$Date$');
 	#$tmpl->param( CVS_AUTHOR => '$Author$');
 
+	$tmpl->param( HTML_DIR => $MapGlobals::HTML_BASE );
 	$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
 	$tmpl->param( PATHS_DIR => $MapGlobals::PATH_IMG_DIR );
 	$tmpl->param( GRID_DIR => $MapGlobals::GRID_IMG_DIR );
@@ -680,14 +681,14 @@ elsif ($template eq 'js'){
 		$tmpl->param( SRC_NAME => $locations->{'ByID'}{$from}{'Name'} );
 		$tmpl->param( SRC_X => $locations->{'ByID'}{$from}{'x'} );
 		$tmpl->param( SRC_Y => $locations->{'ByID'}{$from}{'y'} );
-		$tmpl->param( GOTO_SRC_URL => "javascript:centerOnLocation('src');" );
+		#$tmpl->param( GOTO_SRC_URL => "javascript:centerOnLocation('src');" );
 	}
 	$tmpl->param( DST_FOUND => $dst_found );
 	if($dst_found){
 		$tmpl->param( DST_NAME => $locations->{'ByID'}{$to}{'Name'} );
 		$tmpl->param( DST_X => $locations->{'ByID'}{$to}{'x'} );
 		$tmpl->param( DST_Y => $locations->{'ByID'}{$to}{'y'} );
-		$tmpl->param( GOTO_DST_URL => "javascript:centerOnLocation('dst');" );
+		#$tmpl->param( GOTO_DST_URL => "javascript:centerOnLocation('dst');" );
 	}
 
 	$tmpl->param( PATH_FOUND => $havePath );

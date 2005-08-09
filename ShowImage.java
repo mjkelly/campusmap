@@ -11,6 +11,9 @@
  -----------------------------------------------------------------*/
 
 import javax.swing.*;
+
+import com.sun.org.apache.bcel.internal.generic.RETURN;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -249,10 +252,9 @@ public class ShowImage extends JFrame{
         nextPath = path.add(makeJMenuItem("Next Path (+)", 
         		listener, NEXT_PATH_KEY, 0, 0));
         
-        // inside of paths
+        /** Menu associated with element options **/
         JMenu element = new JMenu("Element Editing");
         
-        // choosing an element
         prevElement = element.add(makeJMenuItem("Previous Element in path", 
         		listener, PREV_ELEMENT_KEY));
         nextElement = element.add(makeJMenuItem("Next Element in path", 
@@ -266,14 +268,10 @@ public class ShowImage extends JFrame{
         manualPlace = element.add(makeJMenuItem("Manually Place Element", 
         		listener, MANUAL_PLACE_KEY));
 
-        JMenu location = new JMenu();
+        /** Menu associated with locations **/
+        JMenu location = new JMenu("Locations");
         locationEditor = location.add(makeJMenuItem("Location Editor", 
         		listener, LOC_EDITOR_KEY));
-//      JMenuItem 	prevPath, nextPath, newPath,// path manipulation
-//      undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
-//      read, write, createLocationFile, //IO
-//      locationEditor;
-
         
         /** Add the menus **/
         bar.add(file);
@@ -1327,13 +1325,9 @@ class ScrollablePicture extends JLabel implements Scrollable,
 	{
 		// The number of items (i.e. text boxes, submit buttons etc, 
 		// to be displayed per location
-		// BE SURE TO UPDATE THIS IF YOU CHANGE THE DISPLAY!
-		final int ITEMS_PER_LOC = 7;
 		
 		// The overall dialog box, this contains everything need...
 		final JDialog dialog = new JDialog(parent, "Location Editor");
-		
-		final String SUBMIT_NAME = "Submit";
 		
 		// Set layout of the dialog box
 		dialog.getContentPane().setLayout( new FlowLayout() );
@@ -1342,7 +1336,7 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		JPanel panel = new JPanel();
 		
 		// To list all of the locations in rows (with submit buttons)
-		panel.setLayout( new GridLayout(locations.size()*ITEMS_PER_LOC, 1) );
+		panel.setLayout( new GridLayout(locations.size()*2, 1));
 		
 		// General purpose index variable, reset after loops
 		int index = 0;
@@ -1359,72 +1353,16 @@ class ScrollablePicture extends JLabel implements Scrollable,
 			public int compare(Location o1, Location o2)
 				{  return(o1.name.compareTo(o2.name));  }
 		});
-		// reset counter
 		index = 0;
 		
-		// Create an array of JTextAreas to contain the location names in
-		JTextArea [] locationNames = new JTextArea[locations.size()];
-
-		// Create an array of JTextAreas to contain the buildingCode strings
-		JTextArea [] buildingCodes = new JTextArea[locations.size()];
-		
-		// Create an array of JTextAreas to contain the Location Description strings
-		JTextArea [] locationDescriptions = new JTextArea[locations.size()];
-		
-		// Create an array of submit buttons
-		JButton [] submitButtons = new JButton[locations.size()];
-		
 		//Create the action listeners!
-
-		// For the name field
-		KeyListener textListener = 
-			new textFieldListener(
-					locationNames, buildingCodes, 
-					locationDescriptions, sortedLocs);
-
-		
-		// For the update buttons
-		ActionListener updateButListener = 
-			new updateButtonListener(sortedLocs, locationNames, 
-					buildingCodes, locationDescriptions, submitButtons);
 		
 		// For every location in the sortedLocation array
 		for (Location loc : sortedLocs) {
-			// Label The Start of the new location
-			
-			// Create text area: 
-			// name = location's name, height = 1, columns = 60
-			locationNames[index] = new JTextArea(loc.name, 1, 60);
-			locationNames[index].addKeyListener(textListener);
-			
-			// Building code= location's building code, height = 1, columns = 60
-			buildingCodes[index] = new JTextArea(loc.getBuildingCode(), 1, 60);
-			buildingCodes[index].addKeyListener(textListener);
-			
-			// location description = loc description, height = 2, columns = 60
-			locationDescriptions[index] = 
-				new JTextArea(loc.getLocDescription(), 2, 60);
-			locationDescriptions[index].addKeyListener(textListener);
-			
-			// add button for submitting/updating
-			submitButtons[index] = new JButton(SUBMIT_NAME);
-			submitButtons[index].addActionListener(updateButListener);
-			submitButtons[index].setSize(
-					new Dimension(20,10));
-			// add the newly created components to the panel
-			// Total # of components/location = 7 
-			// (Update @ top of method if this changes)
-			panel.add(new JLabel("Location name:"));
-			panel.add(locationNames[index]);
-			panel.add(new JLabel("Building Code:"));
-			panel.add(buildingCodes[index]);
-			panel.add(new JLabel("Location description:"));
-			panel.add(locationDescriptions[index]);
-			panel.add(submitButtons[index]);
-			index++;
+			JPanel locPanel = new ComponentEditor(loc);
+			panel.add(new JLabel("Location:"));
+			panel.add(locPanel);
 		}
-		// reset counter
-		index = 0;
 		
 		// create a new scroll over the panel
 		JScrollPane scroll = new JScrollPane(panel);
@@ -1443,188 +1381,12 @@ class ScrollablePicture extends JLabel implements Scrollable,
 		
 		close.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
-			{
+			{	
 				dialog.dispose();
 				dialog.setVisible(false);
 			}
 		});
-	}
-	
-	/**
-	 * KeyListener class for the textField...turns the backgrounds 
-	 * red if they are edited.
-	 */
-	class textFieldListener implements KeyListener
-	{
-		JTextArea [] locNameBoxes;
-		JTextArea [] locBuildingCodes;
-		JTextArea [] locDescriptions;
-		Location [] sortedLocs;
-		/**
-		 * Constructor, allows for the passing in of needed arrays
-		 * @param locationNames Array of JTextArea boxes that hold location 
-		 * names
-		 * @param sortedLocs Array of sorted Location pointers
-		 */
-		//locationNames, buildingCodes, locationDescriptions, 
-		public textFieldListener(JTextArea[] locationNames, 
-				JTextArea[] buildingCodes, JTextArea[] locationDescriptions,
-				Location[] sortedLocs)
-		{
-			this.locNameBoxes = locationNames;
-			this.locBuildingCodes = buildingCodes;
-			this.locDescriptions = locationDescriptions;
-			this.sortedLocs = sortedLocs;
-		}
-
-		/**
-		 * @param e The event that triggered the call to this method
-		 */
-		public void keyReleased(KeyEvent e)
-		{
-			for (int i = 0; i < sortedLocs.length; i++)
-			{	
-				// Find the index of the textBox that triggered the event
-				// Check the location name
-				if(e.getSource() == locNameBoxes[i])
-				{
-					// If the name in the box isn't the same as the text in the
-					// storage array
-					if(!locNameBoxes[i].getText().equals(sortedLocs[i].name))
-						// color the background of the box red.  
-						locNameBoxes[i].setBackground(Color.RED);
-					else
-						locNameBoxes[i].setBackground(Color.WHITE);
-				}
-				// Check the building codes
-				if(e.getSource() == locBuildingCodes[i])
-				{
-					// If the name in the box isn't the same as the text in the 
-					//storage array
-					if(!locBuildingCodes[i].getText().equals(
-							sortedLocs[i].getBuildingCode()))
-						// Color the background of the box red.
-						locBuildingCodes[i].setBackground(Color.RED);
-					else
-						locBuildingCodes[i].setBackground(Color.WHITE);
-				}
-				// Check the location descriptions
-				if(e.getSource() == locDescriptions[i])
-				{
-					// If the name in the box isn't the same as the text in the
-					// storage array
-					if(!locDescriptions[i].getText().equals(
-							sortedLocs[i].getLocDescription()))
-						// Color the background of the box red
-						locDescriptions[i].setBackground(Color.RED);
-					else
-						locDescriptions[i].setBackground(Color.WHITE);
-				}
-			}
-		}
-		/**
-		 * Stub
-		 * @param e null
-		 */
-		public void keyPressed (KeyEvent e)
-		{ }
-		/**
-		 * Stub
-		 * @param e null
-		 */
-		public void keyTyped (KeyEvent e)
-		{ }
-	}
-
-
-	/**
-	 * This class implements actionlistener for the Location editor's submit
-	 * button.  
-	 * @author David Lindquist
-	 */
-	class updateButtonListener implements ActionListener
-	{
-		Location  [] locObjects;
-		JTextArea [] locNameBoxes;
-		JTextArea [] locBuildingCodes;
-		JTextArea [] locDescriptions;
-		JButton [] submitButtons; 
-		/**
-		 * Constructor for the updateButtonListener, passes in needed fields
-		 * @param locObjects Array of location pointers, in sorted order
-		 * @param locNameBoxes Array of location name JTextAreas (to
-		 * get user input from)
-		 * @param submitButtons
-		 */
-		public updateButtonListener(Location [] locObjects, 
-				JTextArea [] locNameBoxes, JTextArea[] locBuildingCodes,
-				JTextArea[] locDescriptions, JButton [] submitButtons)
-		{
-			this.locObjects = locObjects;
-			this.locNameBoxes = locNameBoxes;
-			this.locBuildingCodes = locBuildingCodes;
-			this.locDescriptions = locDescriptions;
-			this.submitButtons = submitButtons;
-		}
-		
-		/**
-		 * This method is called when an action occurs in a button/pane
-		 * that has the class listener applied to it.<br>
-		 * 
-		 * @param e the ActionEvent that triggered the method.
-		 */
-		public void actionPerformed(ActionEvent e)
-		{
-			for (int index = 0; index < submitButtons.length; index++) {
-				if(e.getSource() == submitButtons[index])
-				{
-					// If the location name box changed...
-					if(!locNameBoxes[index].getText().equals(
-							locObjects[index].name))
-					{
-						System.err.print("Changed loc name \"" + 
-								locObjects[index].name + "\" to: ");
-						// Set the location name
-						locObjects[index].name = locNameBoxes[index].getText();
-						System.err.println(locObjects[index].name);
-						
-						// Change the color of the box
-						locNameBoxes[index].setBackground(Color.GREEN);
-					}
-					// If the building code changed...
-					if(!locBuildingCodes[index].getText().equals(
-							locObjects[index].getBuildingCode()))
-					{
-						System.err.print("Changed loc building code \"" +
-								locObjects[index].getBuildingCode() +"\" to: ");
-						// Set the building code
-						locObjects[index].setBuildingCode(
-								locBuildingCodes[index].getText());
-						System.err.println(locObjects[index].getBuildingCode());
-						
-						// Change the color of the box
-						locBuildingCodes[index].setBackground(Color.GREEN);
-					}
-					// If the location's description changed...
-					if(!locDescriptions[index].getText().equals(
-							locObjects[index].getLocDescription()));
-					{
-						System.err.print("Changed location description \"" +
-								locObjects[index].getLocDescription() +
-								"\" to: ");
-						// Set the building code
-						locObjects[index].setLocDescription(
-								locDescriptions[index].getText());
-						System.err.println(
-								locObjects[index].getLocDescription());
-						
-						// Change the color of the box
-						locDescriptions[index].setBackground(Color.GREEN);
-					}
-				}
-			}
-		}
-	}
+	}	
 	
     /**
      * This method deletes the current link.
@@ -2704,12 +2466,38 @@ class ScrollablePicture extends JLabel implements Scrollable,
 }
 
 /**
+ * Interface: Used for the ComponentEditor class
+ * Note: Indexes between get and set MUST match
+ *       The number of values must match the # of descriptions
+ */
+interface ComponentElement
+{
+	/**
+	 * Sets the passed element at passed index
+	 * @param value modification to string
+	 * @param index index to place modification
+	 */
+	void setElementValue(String value, int index);
+	/**
+	 * Gets the value of an element @ index
+	 * @param index Index to get element from
+	 * @return value of element
+	 */
+	String getElementValue(int index);
+	/**
+	 * Gets descriptions of each component element
+	 * @return Associated with each element by common index
+	 */
+	String[] getDescriptions();
+}
+
+/**
  * Location class.  Simply an object contatining a point (Point cord) and 
  * a description of the point (String name)
  **/
-
-class Location implements Serializable
+class Location implements Serializable, ComponentElement
 {
+	final static long serialVersionUID = 1; // beats me
     /**
      * ID number of the location object, used for binary file output
      */
@@ -2813,7 +2601,6 @@ class Location implements Serializable
             displayName = true;
         else
             displayName = false;
-    
     }
     
     /**
@@ -2854,4 +2641,298 @@ class Location implements Serializable
 	public void setLocDescription(String locDescription) {
 		this.locDescription = locDescription;
 	}
+	
+	/**
+	 * Required by interface ComponentElement
+	 * Returns an array of descriptions describing
+	 * the elements to be modified by the ComponentEditor
+	 */
+	public String[] getDescriptions()
+	{
+		String [] descriptions 
+			= {"(" + this.cord.x + ", " + this.cord.y + ")" //Name
+				, "ID"
+				, "Description"};
+		return (descriptions);
+	}
+	
+	/**
+	 * Required by interface ComponentElement
+	 * @param index The index to set at
+	 * @retun String describing element at index
+	 */
+	public String getElementValue(int index)
+	{
+		switch (index)
+		{
+		case 0:
+			return name;
+		case 1:
+			return getBuildingCode();
+		case 2:
+			return getLocDescription();
+		default:
+			return "ERROR!";
+		}
+	}
+	
+	/**
+	 * Required by interface ComponentElement
+	 * @param value The value to set
+	 * @param index the index to set at
+	 */
+	public void setElementValue(String value, int index)
+	{
+		switch (index)
+		{
+		case 0:
+			name = value;
+			break;
+		case 1:
+			setBuildingCode(value);
+			break;
+		case 2:
+			setLocDescription(value);
+			break;
+		}
+	}
+}
+
+/**
+ * This class aids in the editing of the string fields of objects using an
+ * editor.  It is extended from JPanel, allowing for the instantiation of
+ * a JPanel object that contains the fields of an objects in JTextAreas.
+ * Labels describing the boxes are also provided.
+ * Any changes to the fields cause the field to be highlighted.
+ * A submit button is provided for saving the fields of the object back 
+ * into the object.  (which causes a second level of highlighting).  
+ * 
+ * 
+ * @author David Lindquist
+ */
+class ComponentEditor extends JPanel
+{
+	 final static long serialVersionUID = 1;
+	 final Color DEFAULT_COLOR = Color.WHITE;
+	 final Color HIGHLIGHT_COLOR = Color.GREEN;
+	 final Color CHANGE_COLOR = Color.RED;
+	 private StringEditorBox [] boxes;
+	 private ComponentElement element;
+
+	 JButton submitButton;
+
+	 /**
+	  * Initializes the Component Editor
+	  * Takes a ComponentElement that is guaranteed to have methods
+	  * that allow for the getting and setting of elements (and getting
+	  * their descriptions).  
+	  * @param passedElement The obedient object.
+	  */
+	 public ComponentEditor(ComponentElement passedElement)
+	 {
+		 super();
+		 this.element = passedElement;
+		 String [] descriptions = element.getDescriptions();
+		 int numElements = descriptions.length;
+
+		 // Set boxes array to size
+		 boxes = new StringEditorBox[numElements];
+		 
+		 // Create the StringEditorBoxes
+		 for(int i = 0; i < numElements; i++)
+		 {
+			 // instantiate the StringEditorBoxes
+			 boxes[i] = new StringEditorBox(this, element.getElementValue(i), 
+						 i, HIGHLIGHT_COLOR, CHANGE_COLOR, DEFAULT_COLOR);
+		 }
+		 
+		 // create the submitButton
+		 JButton submit = new JButton("Submit");
+		 
+		 // Add listener to submit button
+		 submit.addActionListener(new SubmitButtonListener(this));
+		 
+		 // Set the layout type...all columns...description/element + submit
+		 // button
+		 this.setLayout(new GridLayout(numElements*2 + 1, 1));
+		 
+		 // Assign the elements into the panel
+		 for(int i = 0; i < numElements; i++)
+		 {
+			 this.add(new JLabel(descriptions[i]));  // add description
+			 this.add(boxes[i]);  // add the JTextBox
+		 }
+	 }
+	 
+	 /**
+	  * Updates a value
+	  * @param newVal The value to change to
+	  * @param id The value to change to.
+	  */
+	 public String setVariableValue(String newVal, int id)
+	 {
+		 // save old value
+		 String oldVal = element.getElementValue(id);
+		 // update value
+		 element.setElementValue(newVal, id);
+		 return oldVal;
+	 }
+	 
+	 /**
+	  * Gets value of at given index/id
+	  * @param id The index/id
+	  * @return Content of variable
+	  */
+	 public String getVariableValue(int id)
+	 {
+		 return element.getElementValue(id);
+	 }
+	 
+	 /**
+	  * Saves all of the variables in the boxes.
+	  */
+	 public void saveVariables()
+	 {
+		 String result = "";
+		 for(StringEditorBox box : boxes)
+		 {
+			 result += box.saveChange();
+		 }
+		 System.err.println(result);
+	 }
+	 
+	 /**
+	  * Response for the submit button
+	  * Responds by sending a saveVariables request to it's initializing
+	  * ComponentEditor.
+	  */
+	 class SubmitButtonListener implements ActionListener
+	 {
+		 private ComponentEditor elementToListen;
+		 public SubmitButtonListener(ComponentEditor elementToListen)
+		 {
+			 this.elementToListen = elementToListen;
+		 }
+		 public void actionPerformed(ActionEvent e)
+		 {
+			 // send save changes request up
+			 elementToListen.saveVariables();
+		 }
+	 }
+}
+
+/**
+ * This class provides a customized JTextArea that has methods to detect
+ * if it's content has changed from a value identified by the box's ID.
+ * Has the ability to save request a save on the value if it's different.
+ * Also contains a method to reset it's color to a default value.  
+ */
+class StringEditorBox extends JTextArea
+{
+	final static long serialVersionUID = 1;
+	private ComponentEditor parent;  // parent for sending messages
+	private Color changeColor, defaultColor;
+	int id; // The ID of the string element that the box is storing
+	
+	/**
+	 * Constructor: adds a StringEditorListenered to the listener
+	 * Does the super call
+	 */
+	public StringEditorBox(ComponentEditor parent, String var, int id, 
+			Color highlightColor, Color changeColor, Color defaultColor)
+	{
+		// Create the JText area: height = 1, width = 60
+		super(var, 1, 80);
+		this.addKeyListener(new StringEditorListener(this, highlightColor));
+		// Set the default color
+		this.changeColor = changeColor;
+		this.defaultColor = defaultColor;
+		this.parent = parent;
+		this.id = id;
+	}
+	
+	/**
+	 * Checks between the variable to store and stores the current contents of 
+	 * the text area box into the variable if there are changes.  
+	 * @return String describing the change: (if any)
+	 */
+	public String saveChange()
+	{
+		// Status string describing change
+		String status = "";
+		String displayedVar;
+		if((displayedVar = changeInBox()) != "")
+		{	status = "Changed \"" + parent.setVariableValue(displayedVar,id) + 
+				"\" to \"" + displayedVar;
+			this.setBackground(changeColor);
+		}
+		return status;
+	}
+	
+	/**
+	 * Check for change between the text area and the stored variable
+	 * @return true if there is a change in the box
+	 */
+	public String changeInBox()
+	{
+		String status = "";
+		// Get the stored variable value
+		String storedVal = parent.getVariableValue(id);
+		// Get the displayed variable value
+		String displayedVal = this.getText();
+		// If they're not the same
+		if(!storedVal.equals(displayedVal))
+		{
+			status = displayedVal;
+		}
+		return status;
+	}
+	
+	/**
+	 * Reset the color of the Text box
+	 */
+	public void resetColor()
+	{ this.setBackground(defaultColor); }
+
+	 /**
+	  * This is a listener for the when the user changes on the input boxes
+	  * in the pannel.  This will result in a highight change
+	  * @author David Lindquist
+	  *
+	  */
+	 class StringEditorListener implements KeyListener
+	 {
+		 private StringEditorBox boxListened;
+		 private Color hightlightColor;
+		 StringEditorListener(StringEditorBox boxListened, 
+				 Color passedHighlightColor)
+		 {
+			 this.boxListened = boxListened;
+			 this.hightlightColor = passedHighlightColor;
+		 }
+
+		 /**
+		  * Stub
+		  */
+		 public void keyPressed(KeyEvent e)
+		 { }
+		 
+		 /**
+		  * Handle the event that a key is pressed...
+		  * If there is a difference, highlight the color, otherwise keep it
+		  * white
+		  * @param e The key event -- unused.
+		  */
+		 public void keyReleased(KeyEvent e){ 
+			 if(boxListened.changeInBox() != "")  // if not the same
+				 boxListened.setBackground(hightlightColor); //highlight
+			 else
+				 boxListened.resetColor(); //same, so remove highlight
+		 }
+		 /**
+		  * Stub
+		  */
+		 public void keyTyped(KeyEvent e)
+		 { }
+	 }
 }

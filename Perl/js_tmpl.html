@@ -2,95 +2,137 @@
         "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Draggy draggy!</title>
+<title>UCSDMap</title>
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
-<link rel="stylesheet" href="/css/main.css" />
-<link rel="SHORTCUT ICON" href="/favicon.ico" />
+<link rel="stylesheet" href="<TMPL_VAR NAME=CSS_FILE>" />
 </head>
-
-<!--
-
-OUTSTANDING BUGS/TASKS:
-	- check in other browsers (Safari)
-
--->
+<body id="theBody">
 
 <style type="text/css">
 
 	#draggy {
-		background: transparent;
+		/*background: blue;*/
 		/*border: 1px solid #88a;*/
 		position: absolute;
 		top: 0px;
 		left: 0px;
+		right: 0px;
+		bottom: 0px;
 	}
 
 	#locations, #map, #path {
 		position: absolute;
 		top: 0px;
 		left: 0px;
+		right: 0px;
+		bottom: 0px;
 	}
 
-	#container {
+	#mapContainer {
 		overflow: hidden;
-		/*border: 1px solid black;*/
-		position: absolute;
+		position: relative;
 		background: black;
-		top: 30px;
-		left: 0px;
+		border: 1px solid black;
 	}
 
 	#indicator {
 		background: #ccc;
 		font-weight: bold;
 		float: left;
-		z-index: 1;
+		z-index: 5;
 		position: absolute;
 	}
 
+	/*
 	#bgLayer {
 		top: 0px;
 		left: 0px;
 		right: 0px;
 		bottom: 0px;
-		background: transparent;
+		background: yellow;
 		position: absolute;
 		z-index: 0;
 		text-align: left;
 	}
+	*/
 
 	#buttons {
 		float: left;
+		/*
 		z-index: 4;
 		position: relative;
+		*/
 		width: 70px;
+	}
+
+	#displayMap {
+		/*width: <TMPL_VAR NAME=WIDTH>px;
+		height: <TMPL_VAR NAME=HEIGHT>px;*/
 	}
 
 	.mapBox {
 		width: 200px;
 		height: 200px;
 		position: absolute;
-		background: blue;
+		background-color: black;
 		z-index: 1;
 		/*border: 1px solid teal;*/
 	}
 
 	.location {
-		color: blue;
-		background: gray;
 		z-index: 3;
+		position: absolute;
+		display: inline;
+	}
+
+	.locationLabel {
 		position: relative;
+		left: 8px;
+		z-index: 4;
+		color: white;
+		background: #666;
+		border: 1px solid #555;
+		text-align: left;
+		font-weight: bold;
+		white-space: nowrap;
+		opacity: 0.85;
+	}
+
+	#location_src {
+		border-bottom: 2px solid #0f0;
+	}
+	#location_dst {
+		border-bottom: 2px solid #f00;
+	}
+
+	#locButton_src, #locButton_dst {
+		position: absolute;
+		top: -5px;
+		left: -5px;
+		height: 10px;
+		width: 10px;
+		z-index: 4;
+		background-repeat: no-repeat;
+	}
+
+	#locButton_src {
+		background-image: url('<TMPL_VAR NAME=IMG_DIR>/green-dot-simple.png');
+	}
+	#locButton_dst {
+		background-image: url('<TMPL_VAR NAME=IMG_DIR>/red-dot-simple.png');
 	}
 
 	.path {
 		z-index: 2;
 		position: relative;
 		background-color: transparent;
-		/*background-repeat: no-repeat;*/
+		background-repeat: no-repeat;
+		/*opacity: 0.85;*/
 		/*border: 1px solid red;*/
 	}
 
 </style>
+
 
 <script language="javascript" src="../../ucsdmap/drag.js"></script>
 <script language="javascript">
@@ -99,92 +141,223 @@ OUTSTANDING BUGS/TASKS:
 	var zoomButtonSelectedURL	= "<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png";
 	var pathsDir			= "<TMPL_VAR NAME=PATHS_DIR>";
 	var gridDir			= "<TMPL_VAR NAME=GRID_DIR>";
+	var imageDir			= "<TMPL_VAR NAME=IMG_DIR>";
 </script>
 
-<body id="theBody">
+<div id="container">
+	<div id="header">
+		<div id="headerLeft">
 
-<span id="indicator">Up</span>
+			<div id="headerLeftTop">
+				<img src="<TMPL_VAR NAME=IMG_DIR>/ucsdmaplogo_small.png"
+					width="151" height="77" alt="ucsdmapLogo" />
+			</div>
 
-<br clear="all" />
+			<div id="headerMiddleTop">
+				Enter a start and destination location to find the shortest path between the two, or select only one to zoom to that location.
+			</div>
 
-<layer id="bgLayer">
+			<div id="headerLeftBottom">
 
+				<!-- for input forms -->
+				<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self" name="main">
+				<!-- remember zoom level and window size when searching --> 
+				<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
+				<input type="hidden" name="mpm" value="<TMPL_VAR NAME=MPM>" />
+				<input type="hidden" name="mode" value="<TMPL_VAR NAME=MODE>" />
 
-	<div id="buttons">
-		<table border="0" cellspacing="0" cellpadding="0" align="center">
-		<!-- this is the directional control pad -->
-		<tr>
+				<div id="headerLeftBottomLeft">
+					<!-- 'start' location input -->
+					<label for="from">Start:</label>
+					<input id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+					<br />
+					<select name="from_selector" class="operaDoesNotInheritProperly"
+						onchange="main.from.value = this.form.from_selector.value">
+						<option value="">(None)</option>
+						<TMPL_VAR NAME=LOCATION_OPT_FROM>
+					</select>
+				</div>
+				<div id="headerLeftBottomRight">
+					<!-- a lonely submit button, all by its lonesome -->
+					<input type="submit" name="submit" value="Submit" />
+				</div>
 
-			<td>&nbsp;</td>
-			<td><a href="#" id="buttonUp"><img src="<TMPL_VAR NAME=IMG_DIR>/up.png" width="20" height="20" border="0" alt="Up" /></a></td>
-			<td>&nbsp;</td>
-		</tr>
-		<tr>
-			<td><a href="#" id="buttonLeft"><img src="<TMPL_VAR NAME=IMG_DIR>/left.png" width="20" height="20" border="0" alt="Left" /></a></td>
-			<td><a href="#" id="buttonCenter"><img src="<TMPL_VAR NAME=IMG_DIR>/center.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
-			<td><a href="#" id="buttonRight"><img src="<TMPL_VAR NAME=IMG_DIR>/right.png" width="20" height="20" border="0" alt="Right" /></a></td>
-		</tr>
+				<!-- 'end' location input -->
+				<label for="to">End:</label>
+				<input id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+				<br />
+				<select name="to_selector" class="operaDoesNotInheritProperly"
+					onchange="main.to.value = this.form.to_selector.value">
+					<option value="">(None)</option>
+					<TMPL_VAR NAME=LOCATION_OPT_TO>
+				</select>
 
-		<tr>
-			<td>&nbsp;</td>
-			<td><a href="#" id="buttonDown"><img src="<TMPL_VAR NAME=IMG_DIR>/down.png" width="20" height="20" border="0" alt="Down" /></a></td>
-			<td>&nbsp;</td>
-		</tr>
-		<tr>
-			<td colspan="3">&nbsp;</td>
-		</tr>
+				</form>
+				<!-- this ends the main input form -->
 
-		<!-- this is the zoom widget -->
-		<tr>
-			<td colspan="3" align="center"><a href="#" id="buttonZoomIn"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
-		</tr>
-		<tr>
-			<!-- this is compressed to one line because
-			whitespace messes up IE. expand it to make it
-			comprehensible. as it stands, you are not
-			expected to understand this ;) -->
-			<td colspan="3" align="center" id="zoomSelect">
-			</td>
-		</tr>
-		<tr>
+			</div>
 
-			<td colspan="3" align="center"><a href="#" id="buttonZoomOut"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
-		</tr>
-		</table>
-		<!-- end div buttons -->
-	</div>
+		</div>
 
-	<div id="container">
-
-		<!-- NOTE: IE can't handle draggy being a layer -->
-		<div id="draggy">
-			<div id="locations"></div>
-			<div id="map"></div>
-			<div id="path"></div>
+		<div id="headerRight">
 		</div>
 
 	</div>
 
-</layer>
+	<div id="display">
+
+		<div id="displayLeft">
+			<!-- status text -->
+
+			<TMPL_IF NAME=SRC_FOUND>
+				<p><span id="fromTxt">
+					<a href="<TMPL_VAR NAME=GOTO_SRC_URL>"><b>From</b>: <TMPL_VAR NAME=TXT_SRC></a>
+				</span></p>
+			<TMPL_ELSE>
+				<p><TMPL_VAR NAME=SRC_HELP></p>
+			</TMPL_IF>
+			<TMPL_IF NAME=DST_FOUND>
+				<p><span id="toTxt">
+					<a href="<TMPL_VAR NAME=GOTO_DST_URL>"><b>To</b>: <TMPL_VAR NAME=TXT_DST></a>
+				</span></p>
+			<TMPL_ELSE>
+				<p><TMPL_VAR NAME=DST_HELP></p>
+			</TMPL_IF>
+
+			<TMPL_IF NAME=PATH_FOUND>
+				<p><b>Distance</b>: <TMPL_VAR NAME=DISTANCE> mi</p>
+				<p><b>Time</b>: <span id="time"><TMPL_VAR NAME=TIME></span> min</p>
+
+					It takes me
+					<input id="howFast" type="text" size="3" name="mpm" value="<TMPL_VAR NAME=MPM>" />
+					minutes to walk one mile.
+
+					<button onClick="calcTime('<TMPL_VAR NAME=DISTANCE_HIGHRES>', document.getElementById('howFast').value)">Recalculate</button>
+
+			</TMPL_IF>
+			<TMPL_IF NAME=TXT_ERROR>
+				<p><b><TMPL_VAR NAME=TXT_ERROR></b></p>
+			</TMPL_IF>
+
+			<p>
+				<b>Note:</b>
+				The current path data is incomplete. Therefore,
+				paths between locations may not be optimal, and
+				many locations are disconnected. (See also the
+				<a href="/about/plans.shtml">Plans</a> page.)
+			</p>
+
+			<!-- end status text -->
+
+			<!-- if this is blank, don't screw up
+			alignment...non-breaking space -->
+			&nbsp;
+		</div>
 
 
-<script language="javascript">
+		<div id="buttons">
+			<table border="0" cellspacing="0" cellpadding="0" align="center">
+			<!-- this is the directional control pad -->
+			<tr>
 
-	<TMPL_IF NAME=SRC_FOUND>
-		new Location("<TMPL_VAR NAME=SRC_NAME>", <TMPL_VAR NAME=SRC_X>, <TMPL_VAR NAME=SRC_Y>);
-	</TMPL_IF>
-	<TMPL_IF NAME=DST_FOUND>
-		new Location("<TMPL_VAR NAME=DST_NAME>", <TMPL_VAR NAME=DST_X>, <TMPL_VAR NAME=DST_Y>);
-	</TMPL_IF>
-	new Viewport(<TMPL_VAR NAME=XOFF>, <TMPL_VAR NAME=YOFF>,
-		<TMPL_VAR NAME=WIDTH>, <TMPL_VAR NAME=HEIGHT>, <TMPL_VAR NAME=SCALE>);
-	<TMPL_IF NAME=PATH_FOUND>
-		new Path(<TMPL_VAR NAME=PATH_X>, <TMPL_VAR NAME=PATH_Y>,
-			<TMPL_VAR NAME=PATH_W>, <TMPL_VAR NAME=PATH_H>,
-			<TMPL_VAR NAME=PATH_DIST>,
-			<TMPL_VAR NAME=PATH_SRC>, <TMPL_VAR NAME=PATH_DST>);
-	</TMPL_IF>
-</script>
+				<td>&nbsp;</td>
+				<td><a href="#" id="buttonUp"><img src="<TMPL_VAR NAME=IMG_DIR>/up.png" width="20" height="20" border="0" alt="Up" /></a></td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td><a href="#" id="buttonLeft"><img src="<TMPL_VAR NAME=IMG_DIR>/left.png" width="20" height="20" border="0" alt="Left" /></a></td>
+				<td><a href="#" id="buttonCenter"><img src="<TMPL_VAR NAME=IMG_DIR>/center.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
+				<td><a href="#" id="buttonRight"><img src="<TMPL_VAR NAME=IMG_DIR>/right.png" width="20" height="20" border="0" alt="Right" /></a></td>
+			</tr>
+
+			<tr>
+				<td>&nbsp;</td>
+				<td><a href="#" id="buttonDown"><img src="<TMPL_VAR NAME=IMG_DIR>/down.png" width="20" height="20" border="0" alt="Down" /></a></td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td colspan="3">&nbsp;</td>
+			</tr>
+
+			<!-- this is the zoom widget -->
+			<tr>
+				<td colspan="3" align="center"><a href="#" id="buttonZoomIn"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
+			</tr>
+			<tr>
+				<!-- this is filled in by JS -->
+				<td colspan="3" align="center" id="zoomSelect">
+				</td>
+			</tr>
+			<tr>
+
+				<td colspan="3" align="center"><a href="#" id="buttonZoomOut"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
+			</tr>
+			</table>
+			<!-- end div buttons -->
+		</div>
+
+		<div id="displayMap">
+			<!-- <span id="indicator">Up</span> -->
+
+			<!-- <br clear="all" /> -->
+
+			<!--
+			<layer id="bgLayer">
+			</layer>
+			-->
+
+				<div id="mapContainer">
+
+					<!-- don't change this ordering. in IE,
+					ordering is significant (last on top)
+					-->
+					<div id="draggy">
+						<div id="map">
+						</div>
+						<div id="path">
+						</div>
+						<div id="locations">
+						</div>
+					</div>
+
+				</div>
+
+
+
+			<script language="javascript">
+				basicInit();
+
+				<TMPL_IF NAME=SRC_FOUND>
+					new Location("<TMPL_VAR NAME=SRC_NAME>", <TMPL_VAR NAME=SRC_X>, <TMPL_VAR NAME=SRC_Y>, 'src');
+				</TMPL_IF>
+				<TMPL_IF NAME=DST_FOUND>
+					new Location("<TMPL_VAR NAME=DST_NAME>", <TMPL_VAR NAME=DST_X>, <TMPL_VAR NAME=DST_Y>, 'dst');
+				</TMPL_IF>
+				new Viewport(<TMPL_VAR NAME=XOFF>, <TMPL_VAR NAME=YOFF>,
+					<TMPL_VAR NAME=WIDTH>, <TMPL_VAR NAME=HEIGHT>, <TMPL_VAR NAME=SCALE>);
+				<TMPL_IF NAME=PATH_FOUND>
+					new Path(<TMPL_VAR NAME=PATH_X>, <TMPL_VAR NAME=PATH_Y>,
+						<TMPL_VAR NAME=PATH_W>, <TMPL_VAR NAME=PATH_H>,
+						<TMPL_VAR NAME=PATH_DIST>,
+						<TMPL_VAR NAME=PATH_SRC>, <TMPL_VAR NAME=PATH_DST>);
+				</TMPL_IF>
+			</script>
+
+		</div>
+
+	</div>
+
+	<div id="footer">
+		<p>
+			&copy; 2005
+			<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Michael Kelly</a> and
+			<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#100;&#108;&#105;&#110;&#100;&#113;&#117;&#105;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">David Lindquist</a>,
+			<code><TMPL_VAR NAME=CVS_REVISION></code>. This is the fancy JS version.
+			<a href="/about/">Abstract.</a>
+		</p>
+	</div>
+</div>
 
 </body>
 </html>
+

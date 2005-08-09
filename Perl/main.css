@@ -116,10 +116,9 @@ body{
 	color: black;
 }
 
-#map{
+#mapImage {
 	border: 1px solid black;
-	width: 500px;
-	height: 375px;
 	overflow: hidden;
+	/* we set the width and height later with template variables */
 }
 

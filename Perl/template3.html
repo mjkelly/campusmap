@@ -8,6 +8,13 @@
 </head>
 <body>
 
+<style type="text/css">
+#mapImage {
+	width: <TMPL_VAR NAME=WIDTH>px;
+	height: <TMPL_VAR NAME=HEIGHT>px;
+}
+</style>
+
 <div id="container">
 	<div id="header">
 		<div id="headerLeft">
@@ -202,7 +209,7 @@
 			<input type="hidden" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
 			<input type="hidden" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
 
-			<input type="image" name="map" id="map"
+			<input type="image" name="map" id="mapImage"
 				src="<TMPL_VAR NAME=IMG_VIEW>" />
 			</form>
 			<!-- end main image -->

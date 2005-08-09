@@ -505,7 +505,7 @@ elsif ($template eq 'js'){
 			if(! -e MapGlobals::getPathFilename($from, $to, $i) ){
 				#print "generating scale $i: $curScale\n";
 				
-				my $im = GD::Image->newTrueColor($pathWidth*$curScale, $pathHeight*$curScale);
+				my $im = GD::Image->new($pathWidth*$curScale, $pathHeight*$curScale);
 				my $bg_color = $im->colorAllocate(0, 0, 0);
 				$im->transparent($bg_color);
 				my $path_color = $im->colorAllocate(@MapGlobals::PATH_COLOR);
@@ -564,8 +564,8 @@ if($template eq 'plain'){
 	$tmpl->param( MODE => $template );
 	$tmpl->param( XOFF => $xoff );
 	$tmpl->param( YOFF => $yoff );
-	#$tmpl->param( VIEW_WIDTH => $width );
-	#$tmpl->param( VIEW_HEIGHT => $height );
+	$tmpl->param( WIDTH => $width );
+	$tmpl->param( HEIGHT => $height );
 	#$tmpl->param( THUMB_WIDTH => $MapGlobals::THUMB_X );
 	#$tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
 
@@ -637,32 +637,56 @@ if($template eq 'plain'){
 }
 # output variables for the javascript template
 elsif ($template eq 'js'){
+
+	# basic info: who we are, where to find images, etc
+	$tmpl->param( SELF => $self ); # whoooooooooo are you?
+
+	# CVS tags
+	#$tmpl->param( CVS_ID => '$Id$');
+	$tmpl->param( CVS_REVISION => '$Revision$');
+	#$tmpl->param( CVS_DATE => '$Date$');
+	#$tmpl->param( CVS_AUTHOR => '$Author$');
+
 	$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
 	$tmpl->param( PATHS_DIR => $MapGlobals::PATH_IMG_DIR );
 	$tmpl->param( GRID_DIR => $MapGlobals::GRID_IMG_DIR );
 
 	$tmpl->param( SCALE => $scale );
-	#$tmpl->param( SIZE => $size );
+	$tmpl->param( SIZE => $size );
 	$tmpl->param( WIDTH => $width );
 	$tmpl->param( HEIGHT => $height );
-	#$tmpl->param( MPM => $mpm );
-	#$tmpl->param( MODE => $template );
+	$tmpl->param( MPM => $mpm );
+	$tmpl->param( MODE => $template );
 	$tmpl->param( XOFF => $xoff );
 	$tmpl->param( YOFF => $yoff );
+
+	# text
+	$tmpl->param( TXT_SRC => $fromTxtSafe );
+	$tmpl->param( TXT_DST => $toTxtSafe );
+	$tmpl->param( TXT_ERROR => $ERROR );
+	# helper text for searching
+	$tmpl->param( SRC_HELP => $src_help );
+	$tmpl->param( DST_HELP => $dst_help );
+
+	$tmpl->param( LOCATION_OPT_FROM => $loc_opt_from);
+	$tmpl->param( LOCATION_OPT_TO =>  $loc_opt_to);
 
 	$tmpl->param( SRC_FOUND => $src_found );
 	if($src_found){
 		$tmpl->param( SRC_NAME => $locations->{'ByID'}{$from}{'Name'} );
 		$tmpl->param( SRC_X => $locations->{'ByID'}{$from}{'x'} );
 		$tmpl->param( SRC_Y => $locations->{'ByID'}{$from}{'y'} );
+		$tmpl->param( GOTO_SRC_URL => "javascript:centerOnLocation('src');" );
 	}
 	$tmpl->param( DST_FOUND => $dst_found );
 	if($dst_found){
 		$tmpl->param( DST_NAME => $locations->{'ByID'}{$to}{'Name'} );
 		$tmpl->param( DST_X => $locations->{'ByID'}{$to}{'x'} );
 		$tmpl->param( DST_Y => $locations->{'ByID'}{$to}{'y'} );
+		$tmpl->param( GOTO_DST_URL => "javascript:centerOnLocation('dst');" );
 	}
-	$tmpl->param( PATH_FOUND => $dst_found );
+
+	$tmpl->param( PATH_FOUND => $havePath );
 	if($havePath){
 		$tmpl->param( PATH_X => $pathImgRect->{'xmin'} );
 		$tmpl->param( PATH_Y => $pathImgRect->{'ymin'} );
@@ -672,6 +696,30 @@ elsif ($template eq 'js'){
 		$tmpl->param( PATH_SRC => $from );
 		$tmpl->param( PATH_DST => $to );
 	}
+
+	# this is tells whether we're actually displaying a path between two separate locations
+	$tmpl->param( DISTANCE => sprintf("%.02f", $dist || 0) );
+	$tmpl->param( DISTANCE_HIGHRES =>  ($dist || 0) );
+	$tmpl->param( TIME => sprintf("%.02f", ($dist || 0)*$mpm) );
+
+	# a bunch of boolean values, for whatever strange logic we may need inside the template
+	$tmpl->param( SRC_FOUND => $src_found );
+	$tmpl->param( DST_FOUND => $dst_found );
+
+	# helper text for searching
+	$tmpl->param( SRC_HELP => $src_help );
+	$tmpl->param( DST_HELP => $dst_help );
+	#$tmpl->param( SRC_OR_DST_FOUND => ($src_found || $dst_found) );
+	#$tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
+	#$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
+
+	# hex triplets representing the colors for the source and destination locations
+	#$tmpl->param( SRC_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::SRC_COLOR));
+	#$tmpl->param( DST_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::DST_COLOR));
+	#$tmpl->param( PATH_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::PATH_COLOR));
+	#$tmpl->param( BG_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::LOC_BG_COLOR));
+	$tmpl->param( CSS_FILE => $MapGlobals::CSS_FILE );
+
 }
 # XXX: theoretical print view?
 #elsif ($template eq 'print'){

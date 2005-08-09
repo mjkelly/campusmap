@@ -119,20 +119,20 @@ our $CACHE_DIR		= 'cache';
 # how long cache files hang around for, in seconds
 our $CACHE_EXPIRY	= 60;
 
-# where static images (such as the button graphics) are stored
-our $STATIC_IMG_DIR	= '../../ucsdmap';
-##our $STATIC_IMG_DIR	= '../images/bluev2';
-# where dynamically-generated images (map views) are stored
-our $DYNAMIC_IMG_DIR	= '../../ucsdmap/dynamic';
-##our $DYNAMIC_IMG_DIR	= '../images/dynamic';
-our $PATH_IMG_DIR = $DYNAMIC_IMG_DIR . '/paths';
-our $GRID_IMG_DIR = $STATIC_IMG_DIR . '/grid';
+# where static content is stored
+our $HTML_BASE		= '../../ucsdmap';
+
+our $CSS_DIR		= "$HTML_BASE/css";
+our $STATIC_IMG_DIR	= "$HTML_BASE/images";
+our $DYNAMIC_IMG_DIR	= "$HTML_BASE/dynamic";
+our $PATH_IMG_DIR	= $DYNAMIC_IMG_DIR . '/paths';
+our $GRID_IMG_DIR	= $STATIC_IMG_DIR . '/grid';
+
 # the suffix of all dynamically-generated images; used for matching for
 # deletion
 our $DYNAMIC_IMG_SUFFIX	= '.png';
 # maximum age, in seconds, of dynamically generated images
 our $DYNAMIC_MAX_AGE	= 300;
-
 
 # we also have some basic utility functions in here, that any part
 # of the script may want to use

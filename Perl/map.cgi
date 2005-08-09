@@ -555,7 +555,10 @@ if($template eq 'plain'){
 	# filenames for the temporary thumb and map files
 	$tmpl->param( IMG_VIEW => $tmpfile->filename );
 	$tmpl->param( IMG_THUMB => $tmpthumb->filename );
+
+	# static content directories
 	$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
+	$tmpl->param( CSS_DIR => $MapGlobals::CSS_DIR );
 
 	# add info about current state
 	$tmpl->param( SCALE => $scale );
@@ -650,6 +653,7 @@ elsif ($template eq 'js'){
 	$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
 	$tmpl->param( PATHS_DIR => $MapGlobals::PATH_IMG_DIR );
 	$tmpl->param( GRID_DIR => $MapGlobals::GRID_IMG_DIR );
+	$tmpl->param( CSS_DIR => $MapGlobals::CSS_DIR );
 
 	$tmpl->param( SCALE => $scale );
 	$tmpl->param( SIZE => $size );
@@ -699,7 +703,6 @@ elsif ($template eq 'js'){
 
 	# this is tells whether we're actually displaying a path between two separate locations
 	$tmpl->param( DISTANCE => sprintf("%.02f", $dist || 0) );
-	$tmpl->param( DISTANCE_HIGHRES =>  ($dist || 0) );
 	$tmpl->param( TIME => sprintf("%.02f", ($dist || 0)*$mpm) );
 
 	# a bunch of boolean values, for whatever strange logic we may need inside the template
@@ -718,7 +721,6 @@ elsif ($template eq 'js'){
 	#$tmpl->param( DST_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::DST_COLOR));
 	#$tmpl->param( PATH_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::PATH_COLOR));
 	#$tmpl->param( BG_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::LOC_BG_COLOR));
-	$tmpl->param( CSS_FILE => $MapGlobals::CSS_FILE );
 
 }
 # XXX: theoretical print view?

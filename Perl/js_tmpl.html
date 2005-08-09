@@ -4,135 +4,21 @@
 <head>
 <title>UCSDMap</title>
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
-<link rel="stylesheet" href="<TMPL_VAR NAME=CSS_FILE>" />
+<link rel="stylesheet" href="<TMPL_VAR NAME=CSS_DIR>/main.css" />
+<link rel="stylesheet" href="<TMPL_VAR NAME=CSS_DIR>/js.css" />
 </head>
-<body id="theBody">
 
 <style type="text/css">
-
-	#draggy {
-		/*background: blue;*/
-		/*border: 1px solid #88a;*/
-		position: absolute;
-		top: 0px;
-		left: 0px;
-		right: 0px;
-		bottom: 0px;
-	}
-
-	#locations, #map, #path {
-		position: absolute;
-		top: 0px;
-		left: 0px;
-		right: 0px;
-		bottom: 0px;
-	}
-
-	#mapContainer {
-		overflow: hidden;
-		position: relative;
-		background: black;
-		border: 1px solid black;
-	}
-
-	#indicator {
-		background: #ccc;
-		font-weight: bold;
-		float: left;
-		z-index: 5;
-		position: absolute;
-	}
-
-	/*
-	#bgLayer {
-		top: 0px;
-		left: 0px;
-		right: 0px;
-		bottom: 0px;
-		background: yellow;
-		position: absolute;
-		z-index: 0;
-		text-align: left;
-	}
-	*/
-
-	#buttons {
-		float: left;
-		/*
-		z-index: 4;
-		position: relative;
-		*/
-		width: 70px;
-	}
-
-	#displayMap {
-		/*width: <TMPL_VAR NAME=WIDTH>px;
-		height: <TMPL_VAR NAME=HEIGHT>px;*/
-	}
-
-	.mapBox {
-		width: 200px;
-		height: 200px;
-		position: absolute;
-		background-color: black;
-		z-index: 1;
-		/*border: 1px solid teal;*/
-	}
-
-	.location {
-		z-index: 3;
-		position: absolute;
-		display: inline;
-	}
-
-	.locationLabel {
-		position: relative;
-		left: 8px;
-		z-index: 4;
-		color: white;
-		background: #666;
-		border: 1px solid #555;
-		text-align: left;
-		font-weight: bold;
-		white-space: nowrap;
-		opacity: 0.85;
-	}
-
-	#location_src {
-		border-bottom: 2px solid #0f0;
-	}
-	#location_dst {
-		border-bottom: 2px solid #f00;
-	}
-
-	#locButton_src, #locButton_dst {
-		position: absolute;
-		top: -5px;
-		left: -5px;
-		height: 10px;
-		width: 10px;
-		z-index: 4;
-		background-repeat: no-repeat;
-	}
-
+	/* CSS set by the template */
 	#locButton_src {
 		background-image: url('<TMPL_VAR NAME=IMG_DIR>/green-dot-simple.png');
 	}
 	#locButton_dst {
 		background-image: url('<TMPL_VAR NAME=IMG_DIR>/red-dot-simple.png');
 	}
-
-	.path {
-		z-index: 2;
-		position: relative;
-		background-color: transparent;
-		background-repeat: no-repeat;
-		/*opacity: 0.85;*/
-		/*border: 1px solid red;*/
-	}
-
 </style>
 
+<body id="theBody">
 
 <script language="javascript" src="../../ucsdmap/drag.js"></script>
 <script language="javascript">
@@ -229,10 +115,10 @@
 				<p><b>Time</b>: <span id="time"><TMPL_VAR NAME=TIME></span> min</p>
 
 					It takes me
-					<input id="howFast" type="text" size="3" name="mpm" value="<TMPL_VAR NAME=MPM>" />
+					<input id="howFast" class="operaDoesNotInheritProperly" type="text" size="3" name="mpm" value="<TMPL_VAR NAME=MPM>" />
 					minutes to walk one mile.
 
-					<button onClick="calcTime('<TMPL_VAR NAME=DISTANCE_HIGHRES>', document.getElementById('howFast').value)">Recalculate</button>
+					<button class="operaDoesNotInheritProperly" onClick="calcTime('<TMPL_VAR NAME=PATH_DIST>', document.getElementById('howFast').value)">Recalculate</button>
 
 			</TMPL_IF>
 			<TMPL_IF NAME=TXT_ERROR>
@@ -333,8 +219,10 @@
 				<TMPL_IF NAME=DST_FOUND>
 					new Location("<TMPL_VAR NAME=DST_NAME>", <TMPL_VAR NAME=DST_X>, <TMPL_VAR NAME=DST_Y>, 'dst');
 				</TMPL_IF>
+
 				new Viewport(<TMPL_VAR NAME=XOFF>, <TMPL_VAR NAME=YOFF>,
 					<TMPL_VAR NAME=WIDTH>, <TMPL_VAR NAME=HEIGHT>, <TMPL_VAR NAME=SCALE>);
+
 				<TMPL_IF NAME=PATH_FOUND>
 					new Path(<TMPL_VAR NAME=PATH_X>, <TMPL_VAR NAME=PATH_Y>,
 						<TMPL_VAR NAME=PATH_W>, <TMPL_VAR NAME=PATH_H>,

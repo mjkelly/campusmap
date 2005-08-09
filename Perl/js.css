@@ -1,0 +1,119 @@
+/*
+	CSS settings for the Javascript template only.
+	main.css should still be included before this.
+*/
+
+#draggy {
+	/*background: blue;*/
+	/*border: 1px solid #88a;*/
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+}
+
+#locations, #map, #path {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+}
+
+#mapContainer {
+	overflow: hidden;
+	position: relative;
+	background: black;
+	border: 1px solid black;
+}
+
+#indicator {
+	background: #ccc;
+	font-weight: bold;
+	float: left;
+	z-index: 5;
+	position: absolute;
+}
+
+/*
+#bgLayer {
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	background: yellow;
+	position: absolute;
+	z-index: 0;
+	text-align: left;
+}
+*/
+
+#buttons {
+	float: left;
+	/*
+	z-index: 4;
+	position: relative;
+	*/
+	width: 70px;
+}
+
+#displayMap {
+	/*width: <TMPL_VAR NAME=WIDTH>px;
+	height: <TMPL_VAR NAME=HEIGHT>px;*/
+}
+
+.mapBox {
+	width: 200px;
+	height: 200px;
+	position: absolute;
+	background-color: black;
+	z-index: 1;
+	/*border: 1px solid teal;*/
+}
+
+.location {
+	z-index: 3;
+	position: absolute;
+	display: inline;
+}
+
+.locationLabel {
+	position: relative;
+	left: 8px;
+	z-index: 4;
+	color: white;
+	background: #666;
+	border: 1px solid #555;
+	text-align: left;
+	font-weight: bold;
+	white-space: nowrap;
+	opacity: 0.85;
+}
+
+#location_src {
+	border-bottom: 2px solid #0f0;
+}
+#location_dst {
+	border-bottom: 2px solid #f00;
+}
+
+#locButton_src, #locButton_dst {
+	position: absolute;
+	top: -5px;
+	left: -5px;
+	height: 10px;
+	width: 10px;
+	z-index: 4;
+	background-repeat: no-repeat;
+}
+
+.path {
+	z-index: 2;
+	position: relative;
+	background-color: transparent;
+	background-repeat: no-repeat;
+	/*opacity: 0.85;*/
+	/*border: 1px solid red;*/
+}
+

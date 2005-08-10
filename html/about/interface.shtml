@@ -12,7 +12,12 @@
 <!--#include virtual="/cgi-bin/menu.pl?interface"-->
 </div>
 
-<h2>Interface Features</h2>
+<h2>Interface Features (non-JavaScript)</h2>
+
+
+<p><b>Note:</b> This page discusses the older, non-JavaScript interface. Some
+interface details are therefore different. (Users who do not have JavaScript
+enabled, are redirected to this interface.)</p>
 
 <h3>Location name labels:</h3>
 	<ul>

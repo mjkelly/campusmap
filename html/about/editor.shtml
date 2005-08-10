@@ -12,7 +12,12 @@
 <!--#include virtual="/cgi-bin/menu.pl?editor"-->
 </div>
 
-<p>There are two descriptions of the editor:</p>
+<p>
+	The editor is used to create the data that the interface uses to
+	display shortest paths and locations.
+</p>
+
+<p>Here are two descriptions of the editor:</p>
 <ol>
 	<li><a href="editor_info/index.shtml">A description of how it's used</a>, and its role in creating the data that the interface displays.</li>
 	<li><a href="editor_info/features.shtml">A technical feature list</a>, like that for the interface.</li>

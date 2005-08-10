@@ -11,3 +11,14 @@ h2{
 h3{
 	color: #333;
 }
+
+/* for the browser compatibility table */
+.full {
+	border: 2px solid green;
+}
+.part {
+	border: 2px solid #fc3;
+}
+.none {
+	border: 2px solid red;
+}

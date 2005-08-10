@@ -15,7 +15,7 @@ use warnings;
 my %menu = (
 	abstract =>		{ name => "Abstract",		url => "/about/index.shtml" },
 	editor =>		{ name => "About the Editor",	url => "/about/editor.shtml" },
-	interface =>		{ name => "Interface Features",	url => "/about/interface.shtml" },
+	interface =>		{ name => "Plain Interface",	url => "/about/interface.shtml" },
 	js =>			{ name => "JavaScript Interface", url => "/about/js.shtml" },
 	plans =>		{ name => "Plans",		url => "/about/plans.shtml" },
 	whynot =>		{ name => "Vs. Google Maps",	url => "/about/whyNotGoogleMaps.shtml" },

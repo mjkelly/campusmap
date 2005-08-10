@@ -14,15 +14,15 @@
 
 <h2>Plans</h2>
 
-<p>Many parts of the application are not yet complete. This is a very brief
+<p>Some parts of the application are not yet complete. This is a very brief
 outline of what we still plan to do. (This will all probably get done between
 the end of Summer Session I and the beginning of Fall 2005.) Crossed-off items
 have been completed.</p>
 
 <ul>
-	<li><b>A better base map.</b> The current map is just the visitor map
+	<li><b>A better base map.</b> The current map is the visitor map
 	PDF. (It even still has the key in the upper right-hand corner!) We
-	plan on using the colored visitor map, such as is used by <a
+	would like to use the colored visitor map, such as the one that is used by <a
 	href="http://maps.ucsd.edu/Viewer.htm?Zoom=2&Map=Visitor&O.x=88&O.y=73&Cmnd=Mgfy&View=Medium&P.x=206&P.y=154">maps.ucsd.edu</a>.</li>
 
 	<li><b>Complete path data.</b> The current path data is for
@@ -32,18 +32,12 @@ have been completed.</p>
 
 	<li><b>Complete building codes.</b> The application supports
 	associating a building code with each location (i.e., &quot;PCYNH&quot;
-	with &quot;Pepper Canyon Hall&quot;), but they have not been
+	with &quot;Pepper Canyon Hall&quot;), and many, but not all, have been
 	entered.</li>
 
 	<li><strike><b>Google Maps-style scrolling.</b> Who can resist?</strike></li>
 
-	<li><b>Other interface improvements.</b> We'll get rid of some of the
-	existing rough edges in the interface to make it easier and quicker to
-	use.</li>
-
 </ul>
-
-<p>...plus anything else that comes up.</p>
 
 <a name="extend"></a>
 <h2>Extensibility</h2>

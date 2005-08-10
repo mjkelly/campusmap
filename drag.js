@@ -26,8 +26,6 @@ COSMETIC DEFECTS:
 	- Firefox: Periodic flashes when scrolling via arrow keys.
 	- Firefox: Path image repeats if path layer is too big
 	  (background-repeat: no-repeat; doesn't work?).
-	- Firefox: location names and path jiggle when panning over very small
-	  distances.
 
 */
 
@@ -642,8 +640,8 @@ function updatePathObjects(){
 
 	// update all locations
 	for(var i in locationList){
-		str += '<div class="location" style="left: ' + locationList[i].x*scales[view.curZoom] + 'px;'
-			+ 'top: ' + locationList[i].y*scales[view.curZoom] + 'px;">'
+		str += '<div class="location" style="left: ' + Math.round(locationList[i].x*scales[view.curZoom]) + 'px;'
+			+ 'top: ' + Math.round(locationList[i].y*scales[view.curZoom]) + 'px;">'
 			+ '<span id="locButton_' + i + '"></span>'
 			+ '<div class="locationLabel" id="location_' + i + '">'
 				+ locationList[i].name
@@ -667,10 +665,10 @@ function updatePathObjects(){
 			max = pathObj.destination;
 		}
 
-		str = '<div class="path" style="left: ' + pathObj.x*scales[view.curZoom] + 'px;'
-			+ 'top: ' + pathObj.y*scales[view.curZoom] + 'px; width: '
-			+ pathObj.width*scales[view.curZoom] + 'px; height: '
-			+ pathObj.height*scales[view.curZoom] + 'px; background: transparent url(\''
+		str = '<div class="path" style="left: ' + Math.round(pathObj.x*scales[view.curZoom]) + 'px;'
+			+ 'top: ' + Math.round(pathObj.y*scales[view.curZoom]) + 'px; width: '
+			+ Math.ceil(pathObj.width*scales[view.curZoom]) + 'px; height: '
+			+ Math.ceil(pathObj.height*scales[view.curZoom]) + 'px; background: transparent url(\''
 			+ pathObj.images[view.curZoom].src + '\');"></div>';
 		path.innerHTML = str;
 		//alert(str);

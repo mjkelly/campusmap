@@ -70,6 +70,7 @@
 	position: absolute;
 	background-color: black;
 	z-index: 1;
+	cursor: move;
 	/*border: 1px solid teal;*/
 }
 
@@ -77,6 +78,7 @@
 	z-index: 3;
 	position: absolute;
 	display: inline;
+	cursor: move;
 }
 
 .locationLabel {
@@ -122,7 +124,9 @@
 	position: relative;
 	background-color: transparent;
 	background-repeat: no-repeat;
+	cursor: move;
 	/*opacity: 0.85;*/
 	/*border: 1px solid red;*/
 }
+
 

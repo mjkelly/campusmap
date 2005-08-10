@@ -74,11 +74,11 @@
 			map that is more flexible than Google's.</li>
 		</ul>
 	</li>
-	<li><b>Live scrolling/dragging/zooming.</b>
+	<li><strike><b>Live scrolling/dragging/zooming.</b></strike>
 		<ul>
-			<li>This is a planned feature of UCSDMap. We plan on
+			<li><strike>This is a planned feature of UCSDMap. We plan on
 			implementing it, <i>at the latest</i>, before the
-			beginning of Fall quarter 2005.</li>
+			beginning of Fall quarter 2005.</strike> This has been implemented.</li>
 		</ul>
 	</li>
 </ul>

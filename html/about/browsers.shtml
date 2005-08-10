@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>About UCSDMap: Browser Compatibility Table</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="top">
+	<h1>About UCSDMap</h1>
+<!--#include virtual="/cgi-bin/menu.pl"-->
+</div>
+
+<h2>Browser Compatibility Table</h2>
+
+<table border="0" cellpadding="0" cellspacing="10">
+	<tr align="left">
+		<th>Browser</th>
+		<th>Dragging</th>
+		<th>Key Commands</th>
+	</tr>
+	<tr>
+		<td><a href="http://www.mozilla.org/products/firefox/">Firefox</a> 1.0 (Linux, MacOS, Windows)</td>
+		<td class="full">Full functionality</td>
+		<td class="part">Minus key does not work on MacOS</td>
+	</tr>
+	<tr>
+		<td><a href="http://www.microsoft.com/windows/ie/">Internet Explorer</a> 6 (Windows)</td>
+		<td class="full">Full functionality</td>
+		<td class="full">Full functionality</td>
+	</tr>
+	<tr>
+		<td><a href="http://www.apple.com/macosx/features/safari/">Safari</a> 2.0 (MacOS)</td>
+		<td class="full">Full functionality</td>
+		<td class="full">Full functionality</td>
+	</tr>
+	<tr>
+		<td><a href="http://opera.com/">Opera</a> 8 (Linux, MacOS)</td>
+		<td class="part">Arrow keys also scroll browser window</td>
+		<td class="part">Minus key conflicts with built-in command on Linux</td>
+	</tr>
+	<tr>
+		<td><a href="http://www.mozilla.org/products/mozilla1.x/">Mozilla</a> 1.7 (Linux, MacOS)</td>
+		<td class="full">Full functionality</td>
+		<td class="part">Minus key does not work on MacOS</td>
+	</tr>
+	<tr>
+		<td><a href="http://www.omnigroup.com/applications/omniweb/">OmniWeb</a> 5 (MacOS)</td>
+		<td class="full">Full functionality</td>
+		<td class="full">Full functionality</td>
+	</tr>
+	<tr>
+		<td><a href="http://galeon.sourceforge.net/">Galeon</a> 1.3 (Linux)</td>
+		<td class="full">Full functionality</td>
+		<td class="full">Full functionality</td>
+	</tr>
+	<tr>
+		<td><a href="http://www.konqueror.org/features/browser.php">Konqueror</a> - KDE 3.4 (Linux)</td>
+		<td class="full">Full functionality</td>
+		<td class="none">No functionality</td>
+	</tr>
+	<!-- Lynx has no functionality ;-)
+	<tr>
+		<td><a href="http://lynx.browser.org/">Lynx</a></td>
+		<td class="none">No functionality <tt>:-)</tt></td>
+		<td class="none">No functionality <tt>:-)</tt></td>
+	</tr>
+	-->
+</table>
+
+<p>
+	<b>Windows</b> refers to Windows XP SP2,
+	<b>MacOS</b> refers to MacOS 10.4, and
+	<b>Linux</b> refers to any GNU/Linux distribution running the listed browser versions.
+</p>
+
+<p>This list is <em>not</em> exhaustive: it only lists those browsers we have
+personally tested. Any modern browser with JavaScript and CSS support and
+without bizarre quirks should work.</p>
+
+</body>
+</html>

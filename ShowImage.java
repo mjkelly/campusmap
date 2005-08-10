@@ -183,30 +183,27 @@ public class ShowImage extends JFrame{
 		
 		// USED:
 		// A B C D E F G H I J K L M N O P Q R S T U V W X Y Z + -
-		//   Y Y   Y Y Y   Y     Y Y Y Y P     Y Y           Y Y Y
+		//   Y Y   Y Y Y   Y   Y Y Y Y Y Y     Y Y             Y Y
 		// IO
-		final int FORWARD_KEY			= KeyEvent.VK_PLUS;
-		final int BACKWARDS_KEY			= KeyEvent.VK_MINUS;
-		
-		final int READ_KEY 				= KeyEvent.VK_O;
+		final int READ_KEY 				= KeyEvent.VK_O; 
 		final int WRITE_KEY 			= KeyEvent.VK_S;
 		final int LOCATION_FILE_KEY 	= KeyEvent.VK_P;
-		
-		final int NEXT_PATH_KEY 		= FORWARD_KEY;   // Done in handleKey
-		final int PREV_PATH_KEY 		= BACKWARDS_KEY; // Done in handleKey
+		// Path
+		final int NEXT_PATH_KEY 		= KeyEvent.VK_PLUS; // Done in handleKey
+		final int PREV_PATH_KEY 		= KeyEvent.VK_MINUS;// Done in handleKey
 		final int NEW_PATH_KEY 			= KeyEvent.VK_N;
-		
+		// Element
 		final int NEXT_ELEMENT_KEY 		= KeyEvent.VK_F;
 		final int PREV_ELEMENT_KEY 		= KeyEvent.VK_B;
-		final int UNDO_CONNECTION_KEY 	= KeyEvent.VK_Z;
+		final int UNDO_CONNECTION_KEY 	= KeyEvent.VK_K;
 		final int CENTER_KEY 			= KeyEvent.VK_C;
 		final int MANUAL_PLACE_KEY		= KeyEvent.VK_M;
-		
+		// Locations
 		final int LOC_EDITOR_KEY 		= KeyEvent.VK_E;
 		final int EDIT_LOCATION			= KeyEvent.VK_T;
 		final int CREATE_LOCATION		= KeyEvent.VK_L;
 		final int SELECT_EDIT_LOCATION	= KeyEvent.VK_G;
-		final int ITERATE_PATHS			= KeyEvent.VK_Q;
+		final int ITERATE_PATHS			= KeyEvent.VK_I;
 		
 		/** Setup the pretty menu bar!  **/
 		MenuListener listener = new MenuListener();
@@ -468,7 +465,7 @@ public class ShowImage extends JFrame{
  */
 class ScrollablePicture extends JLabel implements Scrollable, 
 MouseMotionListener{
-	//XXX: Here is the path and location version numbers.  
+	//XXX: Here are the path and location version numbers.  
 	final static int PATH_VERSION_NUMBER = 1;
 	final static int LOCATION_VERSION_NUMBER = 2;
 	
@@ -1357,12 +1354,73 @@ MouseMotionListener{
 		}
 		Location locToEdit = getLocation(locationIndex);
 		editLocation(locToEdit);
-
 	}
-	
+
+	public void editLocation(Location locToEdit)
+	{
+		// Create the dialog box (parent == ShowImage object)
+		final JDialog dialog = new JDialog(parent, "Edit Location");
+		
+		// Set the layout
+		dialog.getContentPane().setLayout( new FlowLayout() );
+		// Create the JPanel for the location
+		JPanel componentPanel = new ComponentEditor(locToEdit);
+		
+		JButton close = new JButton("close");
+		JButton delete = new JButton("Delete Location");
+		// Add JPanel
+		dialog.add(componentPanel);
+		// add button
+		dialog.add(close);
+		dialog.add(delete);
+		dialog.pack();
+		//Ugh...why isn't pack() working?  Setting manually...
+		dialog.setSize(925,275);
+		dialog.setVisible(true);
+		
+		// Hack to pass down the location
+		final Location passLocDown = locToEdit;
+		/**
+		 * Action listener for deleting the location button
+		 */
+		delete.addActionListener(new ActionListener(){
+			/**
+			 * On press of the delete button in the edit location window,
+			 * call delete locations and dispose of the main dialog box.
+			 */
+			public void actionPerformed(ActionEvent e)
+			{
+				// Call the deleteLocation function to display a confirm dialog
+				// box...if yes is clicked, the location is deleted
+				deleteLocation(passLocDown);
+				dialog.dispose();
+				dialog.setVisible(false);
+			}
+		});
+		
+		/**
+		 * Action listener that closes the dialog box
+		 */
+		close.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{	
+				dialog.dispose();
+				dialog.setVisible(false);
+			}
+		});
+	}
+
+	/**
+	 * Displays a confirmation dialog box on deleting a location.
+	 * If the user clicks yes, the location will be deleted (removed from
+	 * Vector locations).
+	 * If the user clicks no, no change is made.  
+	 * @param locToDelete The location to delete
+	 */
 	public void deleteLocation(Location locToDelete)
 	{
 		final JDialog confirmDialog = new JDialog(parent, "Confirm");
+		confirmDialog.setLayout(new FlowLayout());
 		final JLabel prompt = new JLabel(
 			"Are you sure you want to delete this location?");
 		JButton yes = new JButton("Yes");
@@ -1373,7 +1431,7 @@ MouseMotionListener{
 		confirmDialog.add(no);
 		
 		confirmDialog.pack();
-		confirmDialog.setVisible(false);
+		confirmDialog.setVisible(true);
 		
 		final Location passedLocationToDelete = locToDelete;
 		yes.addActionListener(new ActionListener(){
@@ -1397,50 +1455,6 @@ MouseMotionListener{
 		});
 	}
 	
-	public void editLocation(Location locToEdit)
-	{
-		// Create the dialog box (parent == ShowImage object)
-		final JDialog dialog = new JDialog(parent, "Edit Location");
-		
-		// Set the layout
-		dialog.getContentPane().setLayout( new FlowLayout() );
-		// Create the JPanel for the location
-		JPanel componentPanel = new ComponentEditor(locToEdit);
-		
-		JButton close = new JButton("close");
-		JButton delete = new JButton("Delete Location");
-		// Add JPanel
-		dialog.add(componentPanel);
-		// add button
-		dialog.add(close);
-		dialog.add(delete);
-		dialog.pack();
-		dialog.setVisible(true);
-		
-		// Hack to pass down the location
-		final Location passLocDown = locToEdit;
-		/**
-		 * Action listener for deleting the location button
-		 */
-		delete.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				deleteLocation(passLocDown);
-				dialog.dispose();
-				dialog.setVisible(false);
-			}
-		});
-		/**
-		 * Action listener that closes the dialog box
-		 */
-		close.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{	
-				dialog.dispose();
-				dialog.setVisible(false);
-			}
-		});
-	}
 	
 	/**
 	 * This method launches a dialog box hereby known as the locationEditor
@@ -2230,14 +2244,12 @@ MouseMotionListener{
 		if(!p.equals(previouslySearchedPoint))
 		{
 			previouslySearchedPoint = p;
-			System.err.println("New Point...reseting vertex");
 			lastVertex = 0;
 		}
 		
 		// Get the next path in the search
 		lastVertex = getNextPathInSearch(++lastVertex, p);
-		System.err.println("Last Vertex == " + lastVertex);
-		
+
 		// If no path could be found...
 		if(lastVertex < 0)
 		{
@@ -2255,7 +2267,6 @@ MouseMotionListener{
 
 		// Set current path & number
 		lines = paths.get(pathNumIndex = lastVertex);
-		System.err.println("pathNumIndex = " + pathNumIndex);
 		
 		for(int index = 0; index < lines.size(); index++)
 		{

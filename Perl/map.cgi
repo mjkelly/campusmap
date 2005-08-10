@@ -488,7 +488,7 @@ elsif ($template eq 'js'){
 
 	if($havePath){
 		# a little padding 
-		my $padding = 4;
+		my $padding = 8;
 		# if we have a path between two locations, write the path images
 		my $curScale;
 		

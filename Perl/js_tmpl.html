@@ -40,7 +40,7 @@
 			</div>
 
 			<div id="headerMiddleTop">
-				Enter a start and destination location to find the shortest path between the two, or select only one to zoom to that location.
+				Enter a start and destination location to find the shortest path between the two, or select only one to zoom to that location. <a href="/about/js.shtml">About the JavaScript interface</a>.
 			</div>
 
 			<div id="headerLeftBottom">
@@ -55,9 +55,9 @@
 				<div id="headerLeftBottomLeft">
 					<!-- 'start' location input -->
 					<label for="from">Start:</label>
-					<input id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+					<input tabindex="1" id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
 					<br />
-					<select name="from_selector" class="operaDoesNotInheritProperly"
+					<select tabindex="3" name="from_selector" class="operaDoesNotInheritProperly"
 						onchange="main.from.value = this.form.from_selector.value">
 						<option value="">(None)</option>
 						<TMPL_VAR NAME=LOCATION_OPT_FROM>
@@ -70,9 +70,9 @@
 
 				<!-- 'end' location input -->
 				<label for="to">End:</label>
-				<input id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+				<input tabindex="2" id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
 				<br />
-				<select name="to_selector" class="operaDoesNotInheritProperly"
+				<select tabindex="4" name="to_selector" class="operaDoesNotInheritProperly"
 					onchange="main.to.value = this.form.to_selector.value">
 					<option value="">(None)</option>
 					<TMPL_VAR NAME=LOCATION_OPT_TO>
@@ -184,6 +184,11 @@
 		</div>
 
 		<div id="displayMap">
+			<noscript>
+				<div id="noscript">
+					It appears you do not have JavaScript enabled. In order to use the Fancy JavaScript Interface&trade;, you must enable JavaScript. If you cannot or do not wish to do this, you can always use the <a href="<TMPL_VAR NAME=SELF>?mode=plain">plain CGI interface</a>.
+				</div>
+			</noscript>
 			<!--
 			<layer id="bgLayer">
 			</layer>
@@ -209,7 +214,6 @@
 
 			<script language="javascript">
 				basicInit();
-
 				<TMPL_IF NAME=SRC_FOUND>
 					new Location("<TMPL_VAR NAME=SRC_NAME>", <TMPL_VAR NAME=SRC_X>, <TMPL_VAR NAME=SRC_Y>, 'src');
 				</TMPL_IF>
@@ -237,7 +241,7 @@
 			&copy; 2005
 			<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Michael Kelly</a> and
 			<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#100;&#108;&#105;&#110;&#100;&#113;&#117;&#105;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">David Lindquist</a>,
-			<code><TMPL_VAR NAME=CVS_REVISION></code>. This is the fancy JS version.
+			<code><TMPL_VAR NAME=CVS_REVISION></code>. JavaScript interface.
 			<a href="/about/">Abstract.</a>
 		</p>
 	</div>

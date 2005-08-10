@@ -40,9 +40,9 @@
 				<div id="headerLeftBottomLeft">
 					<!-- 'start' location input -->
 					<label for="from">Start:</label>
-					<input id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+					<input tabindex="1" id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
 					<br />
-					<select name="from_selector" class="operaDoesNotInheritProperly"
+					<select tabindex="3" name="from_selector" class="operaDoesNotInheritProperly"
 						onchange="main.from.value = this.form.from_selector.value">
 						<option value="">(None)</option>
 						<TMPL_VAR NAME=LOCATION_OPT_FROM>
@@ -55,9 +55,9 @@
 
 				<!-- 'end' location input -->
 				<label for="to">End:</label>
-				<input id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+				<input tabindex="2" id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
 				<br />
-				<select name="to_selector" class="operaDoesNotInheritProperly"
+				<select tabindex="4" name="to_selector" class="operaDoesNotInheritProperly"
 					onchange="main.to.value = this.form.to_selector.value">
 					<option value="">(None)</option>
 					<TMPL_VAR NAME=LOCATION_OPT_TO>
@@ -145,6 +145,9 @@
 				paths between locations may not be optimal, and
 				many locations are disconnected. (See also the
 				<a href="/about/plans.shtml">Plans</a> page.)
+				If you have JavaScript enabled, you may also
+				wish to try the <a href="<TMPL_VAR
+				NAME=SELF>?mode=js">JavaScript interface</a>.
 			</p>
 
 			<!-- end status text -->

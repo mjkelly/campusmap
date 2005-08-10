@@ -10,19 +10,24 @@
 
 /*
 TODO:
-	- reinstage bgLayer, or some method of aborting drags that go beyond
+	- reinstate bgLayer, or some method of aborting drags that go beyond
 	  the window.
 	- write Perl function to remove old path images
 
 BUGS:
-	- Firefox: location backgrounds sometimes do not appear until the map is dragged
-
-COSMETIC DEFECTS:
 	- Opera: Opera counts obscured layers in page sizing. This makes the scroll
 	  bar jump around, and scrolling via arrow keys a strange experience.
+	- Firefox: location backgrounds sometimes do not appear until the map is dragged
+	- Opera: Keypresses ('-', arrows) conflict with default browser
+	  actions. User confusion may result.
+	- Firefox (Mac only): '-' key doesn't work. No key code!
+
+COSMETIC DEFECTS:
 	- Firefox: Periodic flashes when scrolling via arrow keys.
 	- Firefox: Path image repeats if path layer is too big
 	  (background-repeat: no-repeat; doesn't work?).
+	- Firefox: location names and path jiggle when panning over very small
+	  distances.
 
 */
 
@@ -49,6 +54,8 @@ var path;
 
 // is this IE?
 var IE = false;
+// is this Safari?
+var Safari = false;
 
 // current X/Y offset of the viewport, in pixels against the current map
 var view;
@@ -59,6 +66,9 @@ var arrowLeft = false;
 var arrowUp = false;
 var arrowRight = false;
 var arrowDown = false;
+
+// are we soaking up all key events?
+var keyListen = true;
 
 // used to track the function that handles key repepetition
 var repeatID = 0;
@@ -92,23 +102,58 @@ function basicInit(){
 	path = document.getElementById("path");
 	//indicator = document.getElementById("indicator");
 
+	// make sure the control buttons are visible
+	// (they're hidden in case Javascript isn't enabled)
+	document.getElementById("buttons").style.visibility = "visible";
+
 	// Check if this is IE. This screens out Opera, because Opera
 	// is NOT IE, despite what it says. Sheesh. (Is this a kluge or
 	// what?!)
-	IE = document.all && (navigator.userAgent.indexOf("Opera") == -1);
+	IE = (document.all && (navigator.userAgent.toLowerCase().indexOf("opera") == -1));
+	Safari = (navigator.userAgent.toLowerCase().indexOf("safari") != -1);
+
+	//alert("IE = " + IE + "; Safari = " + Safari);
 
 	/**
 	 * Set the handelers
 	 *
 	 **/
 
-	// We use onkeydown and onkeyup due to browser incompatabilities with onkeypress
-	document.onkeydown = handleKeyDown;
-	document.onkeyup = handleKeyUp;
+	// We use onkeydown and onkeyup to do actualy work, due to browser
+	// incompatabilities with onkeypress
+	if(IE || Safari){
+		// not all browsers use the W3C event model
+		document.onkeydown = handleKeyDown;
+		document.onkeyup = handleKeyUp;
+		document.onkeypress = nullKeyHandler;
+	}
+	else{
+		document.captureEvents(Event.KEYDOWN);
+		document.captureEvents(Event.KEYUP);
+		document.captureEvents(Event.KEYPRESS);
+
+		document.onkeydown = nullKeyHandler;
+		document.onkeyup = nullKeyHandler;
+		document.onkeypress = nullKeyHandler;
+
+		/* IE can't handle this */
+		addEventListener('keydown', handleKeyDown, true);
+		addEventListener('keyup', handleKeyUp, true);
+		addEventListener('keypress', nullKeyHandler, true);
+	}
 
 	draggy.onmousedown = handleMouseDown;
 	//document.getElementById("bgLayer").onmouseout = handleMouseOut;
 	document.onmouseup = handleMouseUp;
+
+
+	// any text fields must be registered with the key listeners so our key
+	// events don't trample the default ones while the user is in a text
+	// field
+	registerTextInput("howFast");
+	registerTextInput("from");
+	registerTextInput("to");
+	startListen();
 
 	// Create the zoomLevel objects.  
 	// Setup for the zoom levels
@@ -198,6 +243,9 @@ function handleMouseMove(e){
 * the different movement keys.
 ******************************************************************/
 function handleKeyDown(e){
+	if(!listening())
+		return true;
+
 	if(!e) var e = window.event;
 	// get the key code, no matter which browser we're in
 	// (thanks to QuirksMode.com)
@@ -206,6 +254,8 @@ function handleKeyDown(e){
 		code = e.keyCode;
 	else if (e.which)
 		code = e.which;
+
+	//alert("got keyDown: keyCode = " + e.keyCode + ", which = " + e.which + ", keyListen = " + keyListen);
 
 	// if an arrow key is pressed, set that key's flag, and set launchRepeater
 	// (which says to launch the key-repeat function)
@@ -243,8 +293,36 @@ function handleKeyDown(e){
 			//indicator.innerHTML =  "Down Arrow DOWN";
 			launchRepeater = true;
 			break;
+
+
+		// various minus keys
+		case 45: // Opera '-'
+		case 95: // Opera '-'
+		case 109: // Firefox '-'
+		case 189: // Safari '-'
+			if(listening()){
+				zoomOut();
+				//e.stopPropagation();
+				//e.preventDefault();
+				return false;
+			}
+			break;
+
+		// various plus keys
+		case 61: // Firefox '+', Opera '+'
+		case 43: // Opera '+'
+		case 187: // Safari '+'
+		case 107: // Firefox KP '+'
+			if(listening()){
+				zoomIn();
+				//e.stopPropagation();
+				//e.preventDefault();
+				return false;
+			}
+			break;
 			
 		default:
+			//alert("other key: " + code);
 			//indicator.innerHTML =  "Other DOWN";
 			
 	}
@@ -262,6 +340,9 @@ function handleKeyDown(e){
 * keyRepeater() handles its own demise.
 ******************************************************************/
 function handleKeyUp(e){
+	if(!listening())
+		return true;
+
 	if(!e) var e = window.event;
 	var code;
 	// For most browsers
@@ -292,7 +373,24 @@ function handleKeyUp(e){
 			arrowDown = false;
 			//indicator.innerHTML =  "Down Arrow UP";
 			break;
-			
+
+		/* wtf mate?
+		// plus/minus keys
+		case 45:
+		case 95:
+		case 109:
+		case 189:
+		case 61:
+		case 43:
+		case 187:
+			if(listening()){
+				//e.stopPropagation();
+				//e.preventDefault();
+				return false;
+			}
+			break;
+		*/
+
 		default:
 			//indicator.innerHTML =  "Other UP";
 			
@@ -307,6 +405,55 @@ function handleKeyUp(e){
 	return true;
 }
 
+/******************************************************************
+* Handle a keypress. We don't actually do actions when this happens, but rather
+* use it to suppress default actions.
+******************************************************************/
+function handleKeyPress(e){
+	nullKeyHandler(e);
+}
+
+/******************************************************************
+* Conditiontally suppress key events.
+******************************************************************/
+function nullKeyHandler(e){
+	if(!listening())
+		return true;
+
+	if(!e) var e = window.event;
+	var code;
+	// For most browsers
+	if (e.keyCode)
+		code = e.keyCode;
+	// Netscape?
+	else if (e.which)
+		code = e.which;
+
+	switch( code ){
+		// arrow keys
+		case 37:
+		case 38:
+		case 39:
+		case 40:
+		// plus/minus keys
+		case 45:
+		case 95:
+		case 109:
+		case 189:
+		case 61:
+		case 43:
+		case 187:
+			if(listening()){
+				//alert("nullKeyHandler suppressing event...");
+				e.stopPropagation();
+				e.preventDefault();
+				return false;
+			}
+			break;
+	}
+	// if nothing got caught by the above switch, let the event keep going
+	return true;
+}
 
 /******************************************************************
 * The "scroll left" button was pressed. Left = 0.
@@ -577,6 +724,41 @@ function Location(name, x, y, index){
 ******************************************************************/
 function centerOnLocation(index){
 	view.slideTo(locationList[index].x, locationList[index].y);
+}
+
+/******************************************************************
+* Enable a text input box to work smoothly with the application by integrating
+* it with the keyListen variable (this lets us listen for key events and still
+* play nice with text inputs).
+******************************************************************/
+function registerTextInput(id){
+	if(document.getElementById(id)){
+		document.getElementById(id).onfocus = stopListen;
+		document.getElementById(id).onblur = startListen;
+	}
+}
+
+/******************************************************************
+* Start listening for key events.
+******************************************************************/
+function startListen(){
+	//alert("starting listening");
+	keyListen = true;
+}
+
+/******************************************************************
+* Stop listening for key events.
+******************************************************************/
+function stopListen(){
+	//alert("stopping listening");
+	keyListen = false;
+}
+
+/******************************************************************
+* Are we listening for key events?
+******************************************************************/
+function listening(){
+	return keyListen;
 }
 
 /******************************************************************

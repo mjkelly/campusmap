@@ -83,7 +83,7 @@ my $template = $q->param('mode') || '';
 # we only care about the word characters in the template name (this is for taint mode)
 $template =~ /^(\w+)/;
 $template = $1;
-$template = 'plain' if(!length($template) || !exists($MapGlobals::TEMPLATES{$template}));
+$template = 'js' if(!length($template) || !exists($MapGlobals::TEMPLATES{$template}));
 
 # -----------------------------------------------------------------
 # Do startup stuff: load data, convert some of the input data, initialize

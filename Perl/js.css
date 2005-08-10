@@ -56,6 +56,7 @@
 	position: relative;
 	*/
 	width: 70px;
+	visibility: hidden; /* JS unhides this later */
 }
 
 #displayMap {
@@ -106,6 +107,14 @@
 	width: 10px;
 	z-index: 4;
 	background-repeat: no-repeat;
+}
+
+#noscript {
+	padding: 10px;
+	position: absolute;
+	width: 20em;
+	background: #fc0;
+	border: 1px solid #c60;
 }
 
 .path {

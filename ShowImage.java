@@ -1257,7 +1257,7 @@ MouseMotionListener{
 		// Create the JPanel for the location
 		ComponentEditor componentPanel = new ComponentEditor(newLoc);
 		
-		//buttons...
+		//buttons...ComponentEditor
 		JButton save = new JButton("Save");
 		JButton cancel = new JButton("Cancel");
 		
@@ -1404,6 +1404,7 @@ MouseMotionListener{
 		close.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{	
+				repaint();
 				dialog.dispose();
 				dialog.setVisible(false);
 			}
@@ -1507,6 +1508,7 @@ MouseMotionListener{
 		close.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{	
+				repaint();
 				dialog.dispose();
 				dialog.setVisible(false);
 			}
@@ -2874,8 +2876,6 @@ class Location implements Serializable, ComponentElement
  * Any changes to the fields cause the field to be highlighted.
  * A submit button is provided for saving the fields of the object back 
  * into the object.  (which causes a second level of highlighting).  
- * 
- * 
  * @author David Lindquist
  */
 class ComponentEditor extends JPanel
@@ -2936,9 +2936,10 @@ class ComponentEditor extends JPanel
 	}
 	
 	/**
-	 * Updates a value
+	 * Set the value of a variable (choosing the variable using the passed id
 	 * @param newVal The value to change to
 	 * @param id The value to change to.
+	 * @return error string if an error occured, else returns the empty string
 	 */
 	public String setVariableValue(String newVal, int id)
 	{
@@ -2957,31 +2958,42 @@ class ComponentEditor extends JPanel
 	
 	/**
 	 * Saves all of the variables in the boxes.
+	 * Loops through all boxes, sending saveChange requests
 	 */
 	public void saveVariables()
 	{
 		String result = "";
 		for(StringEditorBox box : boxes)
 			result += box.saveChange();
-		if(result != "")
+		if(!result.equals(""))
 			System.err.println(result);
 	}
 	
 	/**
 	 * Response for the submit button
-	 * Responds by sending a saveVariables request to it's initializing
-	 * ComponentEditor.
+	 * Responds to an action by sending a saveVariables request to it's 
+	 * initializing ComponentEditor.
 	 */
 	class SubmitButtonListener implements ActionListener
 	{
+		// The component to listen to
 		private ComponentEditor elementToListen;
+		/**
+		 * Constructor for SubmitButtonListener...sets the component to listen
+		 * to
+		 * @param elementToListen The component to listen to.
+		 */
 		public SubmitButtonListener(ComponentEditor elementToListen)
 		{
 			this.elementToListen = elementToListen;
 		}
+		/**
+		 * On action performed, send a saveVariables request.
+		 * @param ActionEvent e An action
+		 */
 		public void actionPerformed(ActionEvent e)
 		{
-			// send save changes request up
+			// send request to save all variables in the panel
 			elementToListen.saveVariables();
 		}
 	}
@@ -2997,12 +3009,20 @@ class StringEditorBox extends JTextArea
 {
 	final static long serialVersionUID = 1;
 	private ComponentEditor parent;  // parent for sending messages
-	private Color submitColor, defaultColor, errorColor;
+	//for background colors
+	private Color submitColor, defaultColor, errorColor;  
 	int id; // The ID of the string element that the box is storing
 	
 	/**
-	 * Constructor: adds a StringEditorListenered to the listener
-	 * Does the super call
+	 * This is the constructor for the component box.
+	 * @param parent Allows for calls to set/get Variable values
+	 * @param var The initial text in the edit field: the initially stored value
+	 * @param id integer ID: the array index of the passed variable, used to 
+	 * determine what variable to get/set in calls to the parent.
+	 * @param highlightColor The color to highlight in a change.
+	 * @param submitColor The color to highlight on a submit
+	 * @param defaultColor The default color of the box
+	 * @param errorColor The color to highlight if an error occured.  
 	 */
 	public StringEditorBox(ComponentEditor parent, String var, int id, 
 			Color highlightColor, Color submitColor, Color defaultColor, 
@@ -3020,9 +3040,15 @@ class StringEditorBox extends JTextArea
 	}
 	
 	/**
-	 * Checks between the variable to store and stores the current contents of 
-	 * the text area box into the variable if there are changes.  
-	 * @return String describing the change: (if any)
+	 * Checks to see if there are changes between the stored value and
+	 * the displayed value.  (uses changeInBox()) If there are changes, 
+	 * this method calls the it's setVariableValue() using it's id and
+	 * performs the proper operation based on whether or not an error occured.
+	 * The box will be highlighted by the submitColor if there was no error.
+	 * The box will be highlighted by the errorColor if there was an error and
+	 * the error string will be returned.  
+	 * @return String passes back an error if one occured while  setting the 
+	 * value
 	 */
 	public String saveChange()
 	{
@@ -3031,27 +3057,32 @@ class StringEditorBox extends JTextArea
         // String currently displayed in text box
 		String displayedVar;
         displayedVar = changeInBox();
-        error = parent.setVariableValue(displayedVar,id);
-		if(error == null || error.equals(""))  // no errors occured
-		{
-			this.setBackground(submitColor);				
-		}
-		else
-		{	
-			this.setText(parent.getVariableValue(id));
-			this.setBackground(errorColor);
-			return error + "\n";
-		}
-		return "";
+        if(displayedVar != null)
+        {
+        	// Use setVariableValue() javadoc for info
+        	error = parent.setVariableValue(displayedVar,id);
+        	if(error == null)
+        	{
+        		this.setBackground(submitColor);
+        	}
+        	else // error occured
+        	{
+        		if(error.equals(""))
+        			error = "Error was an empty string!";
+        		this.setText(parent.getVariableValue(id));
+        		this.setBackground(errorColor);
+        		return error + "\n";
+        	}
+        }
+    	return "";
 	}
 	
 	/**
 	 * Check for change between the text area and the stored variable
-	 * @return true if there is a change in the box
+	 * @return The displayed string if there is a different, else returns null.
 	 */
 	public String changeInBox()
 	{
-		String status = "";
 		// Get the stored variable value (this is the old value)
 		String storedVal = parent.getVariableValue(id);
 		// Get the displayed variable value (this is the new value)
@@ -3059,9 +3090,11 @@ class StringEditorBox extends JTextArea
 		// If they're not the same
 		if(!storedVal.equals(displayedVal))
 		{
-			status = displayedVal;
+			// Return the displayed value
+			return(displayedVal);
 		}
-		return status;
+		// Otherwise: return null
+		return null;
 	}
 	
 	/**
@@ -3080,12 +3113,22 @@ class StringEditorBox extends JTextArea
 	{
 		private StringEditorBox boxListened;
 		private Color hightlightColor;
+		
+		/**
+		 * Constructor for StingEditorListener
+		 * Sets the field values for this class.
+		 * @param boxListened The box to listen for changes to
+		 * @param passedHighlightColor The color to highlight if there is a 
+		 * change in the box.
+		 */
 		StringEditorListener(StringEditorBox boxListened, 
 				Color passedHighlightColor)
-				{
+		{
+			// The box to listen to for changes
 			this.boxListened = boxListened;
+			// The color to highlight if there was a change.
 			this.hightlightColor = passedHighlightColor;
-				}
+		}
 		
 		/**
 		 * Stub
@@ -3094,13 +3137,13 @@ class StringEditorBox extends JTextArea
 		{ }
 		
 		/**
-		 * Handle the event that a key is pressed...
-		 * If there is a difference, highlight the color, otherwise keep it
-		 * white
+		 * When a key is pressed...
+		 * If there is a difference, highlight the color, set it back
+		 * to it's default color.
 		 * @param e The key event -- unused.
 		 */
 		public void keyReleased(KeyEvent e){ 
-			if(boxListened.changeInBox() != "")  // if not the same
+			if(boxListened.changeInBox() != null)  // if not the same
 				boxListened.setBackground(hightlightColor); //highlight
 			else
 				boxListened.resetColor(); //same, so remove highlight

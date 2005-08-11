@@ -45,6 +45,8 @@ var draggy;
 var draggyStyle;
 // a <div> we use to for miscelleneous debug output
 //var indicator;
+// the <div> that contains the map view
+var container;
 
 var locations;
 var map;
@@ -98,6 +100,7 @@ function basicInit(){
 	map = document.getElementById("map");
 	locations = document.getElementById("locations");
 	path = document.getElementById("path");
+	container = document.getElementById("mapContainer");
 	//indicator = document.getElementById("indicator");
 
 	// make sure the control buttons are visible
@@ -174,8 +177,7 @@ function basicInit(){
 }
 
 /******************************************************************
-* Mark the location of the depress for later use.
-* Start monitoring mouse movements.
+* Save the location of a mouse click, and start monitoring mouse movements.
 ******************************************************************/
 function handleMouseDown(e){
 	// For compatability with IE (other browsers use parameter)
@@ -197,18 +199,13 @@ function handleMouseDown(e){
 * Stop monitoring mouse movements
 ******************************************************************/
 function handleMouseUp(e){
-	// For compatability with IE (other browsers use parameter)
-	if(!e) var e = window.event;  // unused!
-
-	//indicator.innerHTML = "Up";
-	
 	// Stop monitoring mouse movement
 	document.onmousemove = null;
 }
 
 /******************************************************************
-* Decides if mouse has gotten out of the browser window...if so, 
-* do the same thing as if the mouse button was released
+* Check if the mouse has left the browser window. If so, consider it a mouseUp
+* event.
 ******************************************************************/
 function handleMouseOut(e){
 	if(!e) var e = window.event;
@@ -237,8 +234,8 @@ function handleMouseMove(e){
 }
 
 /******************************************************************
-* KeyDown event handler. Fakes key repeating by setting flags for
-* the different movement keys.
+* KeyDown event handler. Fakes key repetition for arrow keys (by setting
+* key-down flags), and handles any other keyboard shortcuts.
 ******************************************************************/
 function handleKeyDown(e){
 	if(!listening())
@@ -264,7 +261,6 @@ function handleKeyDown(e){
 			if(arrowLeft)
 				return;
 			arrowLeft = true;
-			//indicator.innerHTML =  "Left Arrow DOWN";
 			launchRepeater = true;
 			break;
 			
@@ -272,7 +268,6 @@ function handleKeyDown(e){
 			if(arrowUp)
 				return;
 			arrowUp = true;
-			//indicator.innerHTML =  "Up Arrow DOWN";
 			launchRepeater = true;
 			break;
 			
@@ -280,7 +275,6 @@ function handleKeyDown(e){
 			if(arrowRight)
 				return;
 			arrowRight = true;
-			//indicator.innerHTML =  "Right Arrow DOWN";
 			launchRepeater = true;
 			break;
 			
@@ -288,7 +282,6 @@ function handleKeyDown(e){
 			if(arrowDown)
 				return;
 			arrowDown = true;
-			//indicator.innerHTML =  "Down Arrow DOWN";
 			launchRepeater = true;
 			break;
 
@@ -334,7 +327,7 @@ function handleKeyDown(e){
 }
 
 /******************************************************************
-* KeyUp event handler. Clears arrow flags when arrow keys are released.
+* KeyUp event handler. Clears key-down flags when arrow keys are released.
 * keyRepeater() handles its own demise.
 ******************************************************************/
 function handleKeyUp(e){
@@ -354,44 +347,20 @@ function handleKeyUp(e){
 	
 		case 37: // left
 			arrowLeft = false;
-			//indicator.innerHTML =  "Left Arrow UP";
 			break;
 			
 		case 38: // up
 			arrowUp = false;
-			//indicator.innerHTML =  "Up Arrow UP";
 			break;
 			
 		case 39: // right
 			arrowRight = false;
-			//indicator.innerHTML =  "Right Arrow UP";
 			break;
 			
 		case 40: // down
 			arrowDown = false;
-			//indicator.innerHTML =  "Down Arrow UP";
 			break;
 
-		/* wtf mate?
-		// plus/minus keys
-		case 45:
-		case 95:
-		case 109:
-		case 189:
-		case 61:
-		case 43:
-		case 187:
-			if(listening()){
-				//e.stopPropagation();
-				//e.preventDefault();
-				return false;
-			}
-			break;
-		*/
-
-		default:
-			//indicator.innerHTML =  "Other UP";
-			
 	}
 	
 	// stop the key repeater if no arrow keys still down
@@ -454,7 +423,7 @@ function nullKeyHandler(e){
 }
 
 /******************************************************************
-* The "scroll left" button was pressed. Left = 0.
+* The "scroll left" button was pressed.
 ******************************************************************/
 function panLeft ()
 {
@@ -466,7 +435,7 @@ function panLeft ()
 }
 
 /******************************************************************
-* The "scroll up" button was pressed. Up = 1.
+* The "scroll up" button was pressed.
 ******************************************************************/
 function panUp ()
 {
@@ -478,7 +447,7 @@ function panUp ()
 }
 
 /******************************************************************
-* The "scroll right" button was pressed. Right = 2.
+* The "scroll right" button was pressed.
 ******************************************************************/
 function panRight ()
 {
@@ -490,7 +459,7 @@ function panRight ()
 }
 
 /******************************************************************
-* The "scroll down" button was pressed. Down = 3.
+* The "scroll down" button was pressed.
 ******************************************************************/
 function panDown ()
 {
@@ -502,18 +471,23 @@ function panDown ()
 }
 
 /******************************************************************
-* Repeatedly move the viewport the given amounts.
+* Repeatedly move the viewport the given amounts. Used by the pan buttons, and
+* Viewport.slideTo(). This function is designed to be called from a
+* setInterval(). The global variable buttonScrollCount must be set beforehand
+* to specify how many times the function will run, and the result of the
+* setInterval should be assigned to buttonID. Once buttonScrollCount == 0, this
+* function clears itself from the interval.
 ******************************************************************/
 function scrollRepeater(dx, dy)
 {
+	// move the map layer
 	view.curX += dx;
 	view.curY += dy;
 	
 	buttonScrollCount--;
 	updateMapLocation();
 	
-	// Hackish way to check for load halfway through 
-	// and when we're done
+	// periodically check if new grid squares need loading (hackish, yes)
 	if(buttonScrollCount%15 == 0)
 		view.checkForLoad();
 		
@@ -554,27 +528,6 @@ function centerView(){
 }
 
 /******************************************************************
-* One of the specific zoom level buttons was pressed.
-* DEPRECATED.
-******************************************************************/
-function handleSetZoom(e){
-	if(!e) var e = window.event;
-
-	var target;
-	if (e.target)
-		target = e.target; // Netscape
-	else if (e.srcElement)
-		target = e.srcElement; // IE
-	if (target.nodeType == 3) // defeat Safari bug
-		target = target.parentNode;
-
-
-	var id = parseInt(target.id.substr(target.id.length - 1, 1));
-
-	view.setZoomLevel(id);
-}
-
-/******************************************************************
 * Set the zoom level of the main view. This is a wrapper, accessed directly
 * from the buttons.
 ******************************************************************/
@@ -590,7 +543,10 @@ function setZoom(i){
 * stopping this function.
 ******************************************************************/
 function keyRepeater(){
-	
+
+	// we don't allow the key-down flags for two opposite directions to be
+	// set at the same time (we give arbitrary precedence to left and up)
+
 	if(arrowLeft){
 		view.curX -= arrowPan;
 		arrowRight = false;
@@ -619,10 +575,14 @@ function keyRepeater(){
 ******************************************************************/
 function updateMapLocation(){
 	// Map bound checking
-	if(view.curX < 0){ view.curX = 0; }
-	if(view.curY < 0){ view.curY = 0; }
-	if(view.curX > zoomLevels[view.curZoom].getMaxX()){ view.curX = zoomLevels[view.curZoom].getMaxX(); }
-	if(view.curY > zoomLevels[view.curZoom].getMaxY()){ view.curY = zoomLevels[view.curZoom].getMaxY(); }
+	if(view.curX < 0)
+		view.curX = 0;
+	if(view.curY < 0)
+		view.curY = 0;
+	if(view.curX > zoomLevels[view.curZoom].getMaxX())
+		view.curX = zoomLevels[view.curZoom].getMaxX();
+	if(view.curY > zoomLevels[view.curZoom].getMaxY())
+		view.curY = zoomLevels[view.curZoom].getMaxY();
 
 	// Set to negatives to preserve our sanity in other places
 	// e.g: move map right==> set to the negative change to cause
@@ -632,8 +592,8 @@ function updateMapLocation(){
 }
 
 /******************************************************************
-* This function updates path objects -- that is, the main path object and its
-* two terminal locations -- on the screen. Needed when changing zoom levels.
+* Update path objects -- that is, the main path object and its two terminal
+* locations -- on the screen. Needed when changing zoom levels.
 ******************************************************************/
 function updatePathObjects(){
 	var str = "";
@@ -654,17 +614,6 @@ function updatePathObjects(){
 
 	// update the path
 	if( pathObj && pathObj.distance != 0 ){
-		var min;
-		var max;
-		if(pathObj.source > pathObj.destination){
-			min = pathObj.destination;
-			max = pathObj.source;
-		}
-		else{
-			min = pathObj.source;
-			max = pathObj.destination;
-		}
-
 		str = '<div class="path" style="left: ' + Math.round(pathObj.x*scales[view.curZoom]) + 'px;'
 			+ 'top: ' + Math.round(pathObj.y*scales[view.curZoom]) + 'px; width: '
 			+ Math.ceil(pathObj.width*scales[view.curZoom]) + 'px; height: '
@@ -697,6 +646,7 @@ function ZoomLevel(name, zoom, gridX, gridY, pixX, pixY){
 	this.mapMaxY = pixY;
 	//alert("New ZoomLevel: (" + this.mapMaxX + ", " + this.mapMaxY + ")");
 
+	/* accessors to adjust map width/height to maximum upper-left offsets */
 	this.getMaxX = function() {
 		return this.mapMaxX - view.width;
 	}
@@ -713,7 +663,7 @@ function Location(name, x, y, index){
 	this.x = x;
 	this.y = y;
 
-	//caller is responsible for getting the key right
+	// caller is responsible for getting the key right
 	locationList[index] = this;
 }
 
@@ -725,9 +675,9 @@ function centerOnLocation(index){
 }
 
 /******************************************************************
-* Enable a text input box to work smoothly with the application by integrating
-* it with the keyListen variable (this lets us listen for key events and still
-* play nice with text inputs).
+* Enable a text input box to work smoothly with the application by turning off
+* our own key listeners when focus is inside this text box. (This should be
+* called on all text fields.)
 ******************************************************************/
 function registerTextInput(id){
 	if(document.getElementById(id)){
@@ -785,7 +735,7 @@ function Path(x, y, width, height, dist, src, dst){
 	if(pathObj.source > pathObj.destination){ min = this.destination; max = this.source; }
 	else{ min = this.source; max = this.destination; }
 
-	// preload all the images at this zoom level
+	// preload the path images at all zoom levels
 	this.images = new Array(zoomLevels.length);
 	for(var i = 0; i < zoomLevels.length; i++){
 		this.images[i] = new Image(width * zoomLevels[i].mapZoom, height * zoomLevels[i].mapZoom);
@@ -824,8 +774,8 @@ function Viewport(x, y, width, height, curZoom){
 	view = this;
 
 	// initialize the sizes of viewport's container
-	document.getElementById("mapContainer").style.width = view.width + "px";
-	document.getElementById("mapContainer").style.height = view.height + "px";
+	container.style.width = view.width + "px";
+	container.style.height = view.height + "px";
 
 	/******************************************************************
 	* Snap to the given absolute coordinates.
@@ -839,7 +789,8 @@ function Viewport(x, y, width, height, curZoom){
 	}
 
 	/******************************************************************
-	* Slide smoothly to the given absolute coordinates.
+	* Slide smoothly to the given absolute coordinates if they're close
+	* enough. Otherwise, just snap.
 	******************************************************************/
 	this.slideTo = function(x, y){
 		var targX = x*scales[this.curZoom] - view.width/2;
@@ -856,10 +807,12 @@ function Viewport(x, y, width, height, curZoom){
 			var dx = diffX / 30;
 			var dy = diffY / 30;
 
+			// no scroll is in progress
 			if(!buttonID){
 				buttonScrollCount = 30;
 				buttonID = setInterval("scrollRepeater(" + dx + ", " + dy + ")", buttonDelay);
 			}
+			// someone's already scrolling (this could be another slideTo() or a button pan)
 			else{
 				// XXX: eventually, here, we should slide smoothly into
 				// our own scroll
@@ -1010,6 +963,7 @@ function Viewport(x, y, width, height, curZoom){
 		}
 	}
 
+	// ...and a little more constructor stuff, now that all the methods are defined.
 	this.curZoom = 0;
 	this.setZoomLevelNoRedraw(curZoom);
 	this.centerOn(x, y);

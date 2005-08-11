@@ -1443,7 +1443,7 @@ MouseMotionListener{
 				locations.remove(passedLocationToDelete);
 				confirmDialog.dispose();
 				confirmDialog.setVisible(false);
-				setStatusBarText("Location: " + deletedLocName + "deleted!");
+				setStatusBarText("Location: " + deletedLocName + " deleted!");
 				repaint();
 			}
 		});
@@ -2613,13 +2613,13 @@ interface ComponentElement
 	 * @param value modification to string
 	 * @param index index to place modification
 	 */
-	String setElementValue(String value, int index);
+	String setElementValue(Object value, int index);
 	/**
 	 * Gets the value of an element @ index
 	 * @param index Index to get element from
 	 * @return value of element
 	 */
-	String getElementValue(int index);
+	Object getElementValue(int index);
 	/**
 	 * Gets descriptions of each component element
 	 * @return Associated with each element by common index
@@ -2816,8 +2816,8 @@ class Location implements Serializable, ComponentElement
 	{
 		String [] descriptions 
 		= {"Name of Location @ (" + this.cord.x + ", " + this.cord.y + ")" //Name
-				, "ID"
-				, "Description"};
+				, "ID", "Description", "canPassThrough", 
+				"allowIntersections", "displayName"};
 		return (descriptions);
 	}
 	
@@ -2826,7 +2826,7 @@ class Location implements Serializable, ComponentElement
 	 * @param index The index to set at
 	 * @retun String describing element at index
 	 */
-	public String getElementValue(int index)
+	public Object getElementValue(int index)
 	{
 		switch (index)
 		{
@@ -2836,6 +2836,12 @@ class Location implements Serializable, ComponentElement
 			return getBuildingCode();
 		case 2:
 			return getLocDescription();
+		case 3:
+			return new Boolean(isCanPassThrough());
+		case 4:
+			return new Boolean(isAllowIntersections());
+		case 5:
+			return new Boolean(isDisplayName());
 		default:
 			return "ERROR!";
 		}
@@ -2846,7 +2852,7 @@ class Location implements Serializable, ComponentElement
 	 * @param value The value to set
 	 * @param index the index to set at
 	 */
-	public String setElementValue(String value, int index)
+	public String setElementValue(Object value, int index)
 	{
 		switch (index)
 		{
@@ -2856,13 +2862,22 @@ class Location implements Serializable, ComponentElement
 			{
 				return "Error: Name string is empty!";
 			}
-			setName(value);
+			setName((String)value);
 			break;
 		case 1:
-			setBuildingCode(value);
+			setBuildingCode((String)value);
 			break;
 		case 2:
-			setLocDescription(value);
+			setLocDescription((String)value);
+			break;
+		case 3:
+			setCanPassThrough(((Boolean)value).booleanValue());
+			break;
+		case 4:
+			setAllowIntersections(((Boolean)value).booleanValue());
+			break;
+		case 5:
+			setDisplayName(((Boolean)value).booleanValue());
 			break;
 		}
 		return null;
@@ -2882,7 +2897,7 @@ class Location implements Serializable, ComponentElement
 class ComponentEditor extends JPanel
 {
 	final static long serialVersionUID = 1;
-	private StringEditorBox [] boxes;
+	private EditorBox [] boxes;
 	private ComponentElement element;
 	
 	JButton submitButton;
@@ -2902,13 +2917,21 @@ class ComponentEditor extends JPanel
 		int numElements = descriptions.length;
 		
 		// Set boxes array to size
-		boxes = new StringEditorBox[numElements];
+		boxes = new EditorBox[numElements];
 		
 		// Create the StringEditorBoxes
 		for(int i = 0; i < numElements; i++)
 		{
-			// instantiate the StringEditorBoxes
-			boxes[i] = new StringEditorBox();
+			if(element.getElementValue(i) instanceof String)
+			{
+				// instantiate the StringEditorBoxes
+				boxes[i] = new StringEditorBox();
+			}
+			else if(element.getElementValue(i) instanceof Boolean)
+			{
+				// Instantiate the BooleanEditorBoxes
+				boxes[i] = new BooleanEditorBox();
+			}
 			boxes[i].linkToVariable(this, i);
 		}
 		
@@ -2925,8 +2948,19 @@ class ComponentEditor extends JPanel
 		// Assign the elements into the panel
 		for(int i = 0; i < numElements; i++)
 		{
-			this.add(new JLabel(descriptions[i]));  // add description
-			this.add(boxes[i]);  // add the JTextBox
+			add(new JLabel(descriptions[i]));  // add description
+			
+			try
+			{
+				JComponent c = (JComponent)boxes[i];
+				this.add(c);  // add the JTextBox
+			}
+			catch(ClassCastException e)
+			{
+				System.err.println("Class implementing EditorBox must be a " +
+						"JComponent!  (But Java does not support multiple " +
+						"inheritance)");
+			}
 		}
 		// Add the submit button
 		this.add(submit);
@@ -2938,7 +2972,7 @@ class ComponentEditor extends JPanel
 	 * @param id The value to change to.
 	 * @return error string if an error occured, else returns the empty string
 	 */
-	public String setVariableValue(String newVal, int id)
+	public String setVariableValue(Object newVal, int id)
 	{
 		// update value
 		String possibleError = element.setElementValue(newVal, id);
@@ -2950,7 +2984,7 @@ class ComponentEditor extends JPanel
 	 * @param id The index/id
 	 * @return Content of variable
 	 */
-	public String getVariableValue(int id)
+	public Object getVariableValue(int id)
 	{	return element.getElementValue(id); }
 	
 	/**
@@ -2960,7 +2994,7 @@ class ComponentEditor extends JPanel
 	public void saveVariables()
 	{
 		String result = "";
-		for(StringEditorBox box : boxes)
+		for(EditorBox box : boxes)
 			result += box.saveChange();
 		if(!result.equals(""))
 			System.err.println(result);
@@ -3002,6 +3036,9 @@ class ComponentEditor extends JPanel
  */
 interface EditorBox
 {
+	final static Color SUBMIT_COLOR = Color.GREEN, 
+	ERROR_COLOR  = Color.RED,
+	CHANGE_COLOR = Color.LIGHT_GRAY;
 	/**
 	 * Links the EditorBox to a specific variable of the ComponentEditor.
 	 * @param parent The ComponentEditor to link to
@@ -3017,6 +3054,72 @@ interface EditorBox
 	public String saveChange();
 }
 
+class BooleanEditorBox extends JCheckBox implements EditorBox
+{
+	final static long serialVersionUID = 5;
+	ComponentEditor parent;
+	int id;
+	private Color defaultBackgroundColor;
+	public BooleanEditorBox()
+	{
+		super();
+		defaultBackgroundColor = getBackground();
+	}
+	public void linkToVariable(ComponentEditor parent, int id)
+	{
+		this.parent = parent;
+		this.id = id;
+		setSelected(parentValue());
+		this.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{	if(changeInElement())
+					setBackground(EditorBox.CHANGE_COLOR);
+				else
+					setBackground(defaultBackgroundColor);
+			}
+		});
+	}
+
+	/**
+	 * Gets the value of the variable
+	 * @return The value of the variable.
+	 */
+	public boolean parentValue()
+	{
+		return ((Boolean)parent.getVariableValue(id)).booleanValue();
+	}
+	
+	/**
+	 * Saves changes to the variable.
+	 * @return String passes back an error if one occured while setting the 
+	 * value
+	 */
+	public String saveChange()
+	{
+		String error = "";
+		if(changeInElement())
+		{
+			error =  parent.setVariableValue(isSelected(), id);
+			if(error != null)  // if there is an error message
+			{
+				setBackground(EditorBox.ERROR_COLOR);
+				return error;
+			}
+			else
+				setBackground(EditorBox.SUBMIT_COLOR);
+		}
+		return "";
+	}
+	/**
+	 * Determins if there is a change in the box.
+	 * @return True if changed, else false.  
+	 */
+	public boolean changeInElement()
+	{
+		return(parentValue() != isSelected());
+	}
+}
+
 /**
  * This class provides a customized JTextArea that has methods to detect
  * if it's content has changed from a value identified by the box's ID.
@@ -3028,11 +3131,8 @@ class StringEditorBox extends JTextArea implements EditorBox
 	final static long serialVersionUID = 1;
 	private ComponentEditor parent;  // parent for sending messages
 	//for background colors
-	final private Color submitColor = Color.GREEN, 
-						defaultColor= Color.WHITE, 
-						errorColor  = Color.RED,
-						changeColor = Color.LIGHT_GRAY;
 	private int id; // The ID of the string element that the box is storing
+	private Color defaultBackgroundColor;
 	
 	/**
 	 * This is the constructor for the component box.
@@ -3042,7 +3142,25 @@ class StringEditorBox extends JTextArea implements EditorBox
 	{
 		// Create the JText area: height = 1, width = 60
 		super(1, 80);
-		this.addKeyListener(new StringEditorListener(this, changeColor));
+		defaultBackgroundColor = getBackground();
+		this.addKeyListener(new KeyListener(){
+			/** Stub */
+			public void keyPressed(KeyEvent e){}
+			/**
+			 * When a key is pressed...
+			 * If there is a difference, highlight the color, else set it back
+			 * to it's default color.
+			 * @param e The key event -- unused.
+			 */
+			public void keyReleased(KeyEvent e){
+				if(changeInElement() != null)  // if not the same
+					setBackground(EditorBox.CHANGE_COLOR); //highlight
+				else
+					resetColor(); //same, so remove highlight
+			}
+			/**  Stub */
+			public void keyTyped(KeyEvent e){}
+		});
 	}
 	
 	/**
@@ -3054,7 +3172,8 @@ class StringEditorBox extends JTextArea implements EditorBox
 	 */
 	public void linkToVariable(ComponentEditor parent, int id)
 	{
-		this.setText(parent.getVariableValue(id));  // Set the default text
+		// Set the default text
+		this.setText((String)parent.getVariableValue(id));
 		this.parent = parent;
 		this.id = id;
 	}
@@ -3083,14 +3202,14 @@ class StringEditorBox extends JTextArea implements EditorBox
         	error = parent.setVariableValue(displayedVar,id);
         	if(error == null)
         	{
-        		this.setBackground(submitColor);
+        		this.setBackground(EditorBox.SUBMIT_COLOR);
         	}
         	else // error occured
         	{
         		if(error.equals(""))
         			error = "Error was an empty string!";
-        		this.setText(parent.getVariableValue(id));
-        		this.setBackground(errorColor);
+        		this.setText((String)parent.getVariableValue(id));
+        		this.setBackground(EditorBox.ERROR_COLOR);
         		return error + "\n";
         	}
         }
@@ -3104,7 +3223,7 @@ class StringEditorBox extends JTextArea implements EditorBox
 	public String changeInElement()
 	{
 		// Get the stored variable value (this is the old value)
-		String storedVal = parent.getVariableValue(id);
+		String storedVal = (String)parent.getVariableValue(id);
 		// Get the displayed variable value (this is the new value)
 		String displayedVal = this.getText();
 		// If they're not the same
@@ -3121,57 +3240,5 @@ class StringEditorBox extends JTextArea implements EditorBox
 	 * Reset the color of the Text box
 	 */
 	public void resetColor()
-	{ this.setBackground(defaultColor); }
-	
-	/**
-	 * This is a listener for the when the user changes on the input boxes
-	 * in the pannel.  This will result in a highight change
-	 * @author David Lindquist and Michael Kelly
-	 *
-	 */
-	class StringEditorListener implements KeyListener
-	{
-		private StringEditorBox boxListened;
-		private Color hightlightColor;
-		
-		/**
-		 * Constructor for StingEditorListener
-		 * Sets the field values for this class.
-		 * @param boxListened The box to listen for changes to
-		 * @param passedHighlightColor The color to highlight if there is a 
-		 * change in the box.
-		 */
-		StringEditorListener(StringEditorBox boxListened, 
-				Color passedHighlightColor)
-		{
-			// The box to listen to for changes
-			this.boxListened = boxListened;
-			// The color to highlight if there was a change.
-			this.hightlightColor = passedHighlightColor;
-		}
-		
-		/**
-		 * Stub
-		 */
-		public void keyPressed(KeyEvent e)
-		{ }
-		
-		/**
-		 * When a key is pressed...
-		 * If there is a difference, highlight the color, set it back
-		 * to it's default color.
-		 * @param e The key event -- unused.
-		 */
-		public void keyReleased(KeyEvent e){ 
-			if(boxListened.changeInElement() != null)  // if not the same
-				boxListened.setBackground(hightlightColor); //highlight
-			else
-				boxListened.resetColor(); //same, so remove highlight
-		}
-		/**
-		 * Stub
-		 */
-		public void keyTyped(KeyEvent e)
-		{ }
-	}
+	{ this.setBackground(defaultBackgroundColor); }
 }

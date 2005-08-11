@@ -1444,6 +1444,7 @@ MouseMotionListener{
 				confirmDialog.dispose();
 				confirmDialog.setVisible(false);
 				setStatusBarText("Location: " + deletedLocName + "deleted!");
+				repaint();
 			}
 		});
 		no.addActionListener(new ActionListener(){
@@ -2907,7 +2908,8 @@ class ComponentEditor extends JPanel
 		for(int i = 0; i < numElements; i++)
 		{
 			// instantiate the StringEditorBoxes
-			boxes[i] = new StringEditorBox(this, element.getElementValue(i), i);
+			boxes[i] = new StringEditorBox();
+			boxes[i].linkToVariable(this, i);
 		}
 		
 		// create the submitButton
@@ -2995,12 +2997,33 @@ class ComponentEditor extends JPanel
 }
 
 /**
+ * Interface that defines what a EditorBox has in order to connect
+ * to the EditorComponent.
+ */
+interface EditorBox
+{
+	/**
+	 * Links the EditorBox to a specific variable of the ComponentEditor.
+	 * @param parent The ComponentEditor to link to
+	 * @param id for identification of the variable that can be used
+	 * to get and set the variable in calls to parent.
+	 */
+	public void linkToVariable(ComponentEditor parent, int id);
+	/**
+	 * This method should save changes to the variable that the editor box
+	 * controls.
+	 * @return String of errors if any exits, empty string otherwise.
+	 */
+	public String saveChange();
+}
+
+/**
  * This class provides a customized JTextArea that has methods to detect
  * if it's content has changed from a value identified by the box's ID.
  * Has the ability to save request a save on the value if it's different.
  * Also contains a method to reset it's color to a default value.  
  */
-class StringEditorBox extends JTextArea
+class StringEditorBox extends JTextArea implements EditorBox
 {
 	final static long serialVersionUID = 1;
 	private ComponentEditor parent;  // parent for sending messages
@@ -3009,25 +3032,29 @@ class StringEditorBox extends JTextArea
 						defaultColor= Color.WHITE, 
 						errorColor  = Color.RED,
 						changeColor = Color.LIGHT_GRAY;
-	int id; // The ID of the string element that the box is storing
+	private int id; // The ID of the string element that the box is storing
 	
 	/**
 	 * This is the constructor for the component box.
-	 * @param parent Allows for calls to set/get Variable values
-	 * @param var The initial text in the edit field: the initially stored value
-	 * @param id integer ID: the array index of the passed variable, used to 
-	 * determine what variable to get/set in calls to the parent.
-	 * @param highlightColor The color to highlight in a change.
-	 * @param submitColor The color to highlight on a submit
-	 * @param defaultColor The default color of the box
-	 * @param errorColor The color to highlight if an error occured.  
+	 * Sets the size of the text box and adds it's actionListener.
 	 */
-	public StringEditorBox(ComponentEditor parent, String var, int id)
+	public StringEditorBox()
 	{
 		// Create the JText area: height = 1, width = 60
-		super(var, 1, 80);
+		super(1, 80);
 		this.addKeyListener(new StringEditorListener(this, changeColor));
-		// Set the default color
+	}
+	
+	/**
+	 * Links the textbook to a certain variable (and it's parent
+	 * to do method calls on the variable.  
+	 * @param parent Allows for calls to set/get Variable values
+	 * @param id integer ID: the array index of the passed variable, used to 
+	 * determine what variable to get/set in calls to the parent.
+	 */
+	public void linkToVariable(ComponentEditor parent, int id)
+	{
+		this.setText(parent.getVariableValue(id));  // Set the default text
 		this.parent = parent;
 		this.id = id;
 	}

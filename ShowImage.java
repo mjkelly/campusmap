@@ -3028,19 +3028,19 @@ class StringEditorBox extends JTextArea
 	{
 		// Status string describing change
 		String error = "";
+        // String currently displayed in text box
 		String displayedVar;
-		if((displayedVar = changeInBox()) != "")
-		{	error = parent.setVariableValue(displayedVar,id);
-			if(error == null || error.equals(""))  // no errors occured
-			{
-				this.setBackground(submitColor);				
-			}
-			else
-			{	
-				this.setText(parent.getVariableValue(id));
-				this.setBackground(errorColor);
-				return error + "\n";
-			}
+        displayedVar = changeInBox();
+        error = parent.setVariableValue(displayedVar,id);
+		if(error == null || error.equals(""))  // no errors occured
+		{
+			this.setBackground(submitColor);				
+		}
+		else
+		{	
+			this.setText(parent.getVariableValue(id));
+			this.setBackground(errorColor);
+			return error + "\n";
 		}
 		return "";
 	}
@@ -3052,9 +3052,9 @@ class StringEditorBox extends JTextArea
 	public String changeInBox()
 	{
 		String status = "";
-		// Get the stored variable value
+		// Get the stored variable value (this is the old value)
 		String storedVal = parent.getVariableValue(id);
-		// Get the displayed variable value
+		// Get the displayed variable value (this is the new value)
 		String displayedVal = this.getText();
 		// If they're not the same
 		if(!storedVal.equals(displayedVal))

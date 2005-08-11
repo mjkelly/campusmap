@@ -2881,10 +2881,6 @@ class Location implements Serializable, ComponentElement
 class ComponentEditor extends JPanel
 {
 	final static long serialVersionUID = 1;
-	final Color DEFAULT_COLOR = Color.WHITE;
-	final Color HIGHLIGHT_COLOR = Color.BLUE;
-	final Color CHANGE_COLOR = Color.GREEN;
-	final Color ERROR_COLOR = Color.RED;
 	private StringEditorBox [] boxes;
 	private ComponentElement element;
 	
@@ -2911,8 +2907,7 @@ class ComponentEditor extends JPanel
 		for(int i = 0; i < numElements; i++)
 		{
 			// instantiate the StringEditorBoxes
-			boxes[i] = new StringEditorBox(this, element.getElementValue(i), 
-				i, HIGHLIGHT_COLOR, CHANGE_COLOR, DEFAULT_COLOR, ERROR_COLOR);
+			boxes[i] = new StringEditorBox(this, element.getElementValue(i), i);
 		}
 		
 		// create the submitButton
@@ -3010,7 +3005,10 @@ class StringEditorBox extends JTextArea
 	final static long serialVersionUID = 1;
 	private ComponentEditor parent;  // parent for sending messages
 	//for background colors
-	private Color submitColor, defaultColor, errorColor;  
+	final private Color submitColor = Color.GREEN, 
+						defaultColor= Color.WHITE, 
+						errorColor  = Color.RED,
+						changeColor = Color.LIGHT_GRAY;
 	int id; // The ID of the string element that the box is storing
 	
 	/**
@@ -3024,17 +3022,12 @@ class StringEditorBox extends JTextArea
 	 * @param defaultColor The default color of the box
 	 * @param errorColor The color to highlight if an error occured.  
 	 */
-	public StringEditorBox(ComponentEditor parent, String var, int id, 
-			Color highlightColor, Color submitColor, Color defaultColor, 
-			Color errorColor)
+	public StringEditorBox(ComponentEditor parent, String var, int id)
 	{
 		// Create the JText area: height = 1, width = 60
 		super(var, 1, 80);
-		this.addKeyListener(new StringEditorListener(this, highlightColor));
+		this.addKeyListener(new StringEditorListener(this, changeColor));
 		// Set the default color
-		this.submitColor = submitColor;
-		this.defaultColor = defaultColor;
-		this.errorColor = errorColor;
 		this.parent = parent;
 		this.id = id;
 	}
@@ -3056,7 +3049,7 @@ class StringEditorBox extends JTextArea
 		String error = "";
         // String currently displayed in text box
 		String displayedVar;
-        displayedVar = changeInBox();
+        displayedVar = changeInElement();
         if(displayedVar != null)
         {
         	// Use setVariableValue() javadoc for info
@@ -3081,7 +3074,7 @@ class StringEditorBox extends JTextArea
 	 * Check for change between the text area and the stored variable
 	 * @return The displayed string if there is a different, else returns null.
 	 */
-	public String changeInBox()
+	public String changeInElement()
 	{
 		// Get the stored variable value (this is the old value)
 		String storedVal = parent.getVariableValue(id);
@@ -3143,7 +3136,7 @@ class StringEditorBox extends JTextArea
 		 * @param e The key event -- unused.
 		 */
 		public void keyReleased(KeyEvent e){ 
-			if(boxListened.changeInBox() != null)  // if not the same
+			if(boxListened.changeInElement() != null)  // if not the same
 				boxListened.setBackground(hightlightColor); //highlight
 			else
 				boxListened.resetColor(); //same, so remove highlight

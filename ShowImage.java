@@ -11,11 +11,6 @@
  -----------------------------------------------------------------*/
 
 import javax.swing.*;
-
-import sun.security.krb5.internal.ktab.l;
-
-import com.sun.org.apache.bcel.internal.generic.RETURN;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -41,7 +36,7 @@ public class ShowImage extends JFrame{
 	 */
 	public ScrollablePicture ipanel;
 	
-	JMenuItem 	prevPath, nextPath, newPath, iteratePaths,// path manipulation
+	private JMenuItem prevPath, nextPath, newPath, iteratePaths,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
 	read, write, createLocationFile, changeImage,//IO
 	locationEditor, editLocation, createLocation, selectEditLocation;

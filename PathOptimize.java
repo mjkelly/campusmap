@@ -414,11 +414,11 @@ public class PathOptimize
 			if(debugBinaryGraphPoints)
 				System.err.println("===== GraphPoints =====");
             // for each GraphPoint
-            for(int i = 0; i < graphPoints.size(); i++)
-            {
-            	((GraphPoint)graphPoints.get(i)).binaryWrite(pointOut);
-            }
-            
+			for(GraphPoint gp : graphPoints)
+			{
+				gp.binaryWrite(pointOut);
+			}
+			
             //close stream
             pointOut.close();
 			if(debugBinaryGraphPoints)
@@ -438,12 +438,12 @@ public class PathOptimize
             
 			if(debugBinaryLocations)
 				System.err.println("===== Locations =====");
-            // for each Location
-            for(int i = 0; i < graphPoints.size(); i++)
-            {
-            	// if this point has no associated location, nothing is written
-            	((GraphPoint)graphPoints.get(i)).binaryWriteLocation(locOut);
-            }
+            // for each Graphpoint that may contain a location
+			for(GraphPoint gp : graphPoints)
+			{
+				gp.binaryWriteLocation(locOut);
+			}
+			
             //close stream
             locOut.close();
 			if(debugBinaryLocations)

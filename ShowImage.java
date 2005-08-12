@@ -1993,12 +1993,7 @@ MouseMotionListener{
 	 **/
 	public String statusBarText (){
 		int elementNumber = pointNumIndex + 1;
-		// Check bounds on the elementNumber
-		if(elementNumber < 0)
-			elementNumber = 0;
-		if(elementNumber >= curPath.size())
-			elementNumber = curPath.size();
-		
+
 		return ( "Path Number: " + (pathNumIndex + 1) + " of " + paths.size()+
 				",  Element: " + (elementNumber) + " of " + curPath.size() +
 				printCurrentPoint() + printCurrentLocation() );

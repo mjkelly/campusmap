@@ -29,13 +29,7 @@ import java.util.*;
 public class ShowImage extends JFrame{
 	
 	// CONSTANTS
-	private final int LOCATION_FIELD_WIDTH = 30;
-	
 	private ImageIcon img;
-	/**
-	 * Text field to enter in the name of a location
-	 */
-	public JTextField locationNameEntry;
 	/**
 	 * For writing status text descriptions on current point and 
 	 * error/success messages.
@@ -46,11 +40,6 @@ public class ShowImage extends JFrame{
 	 * that we will operate on.  
 	 */
 	public ScrollablePicture ipanel;
-	
-	//JCheckboxes for locations
-	JCheckBox intersectBox;
-	JCheckBox passBox;
-	JCheckBox displayBox;
 	
 	JMenuItem 	prevPath, nextPath, newPath, iteratePaths,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
@@ -301,7 +290,6 @@ public class ShowImage extends JFrame{
 		img = createImageIcon(filename);
 		
 		// create the other objects in the main window
-		locationNameEntry = new JTextField("", LOCATION_FIELD_WIDTH);
 		// this text is overridden in the ScrollablePicture constructor
 		statusBar = new JLabel("Status Text");
 		
@@ -311,42 +299,12 @@ public class ShowImage extends JFrame{
 		
 		// Create the main window: a scroll pane with the new image panel
 		JScrollPane scroll = new JScrollPane(ipanel);
-		scroll.setPreferredSize(new Dimension(1000, 600));
+		scroll.setPreferredSize(new Dimension(1000, 650));
 		scroll.setWheelScrollingEnabled(false);
-		
-		// a button to remove focus from the text field, so
-		// we can use hotkeys
-		JButton clearButton = new JButton("Unfocus");
-		clearButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				ipanel.requestFocus();
-			}
-		});
-		
-		/**
-		 * For searching for a particular location
-		 */
-		JButton searchLocation = new JButton("search");
-		searchLocation.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				System.err.println("Bloody freaking erased!");
-			}
-		});
-		
-		// Checkboxes that determine properties of a location, default=true
-		intersectBox = new JCheckBox("Intersect", true);
-		passBox = new JCheckBox("pass through", true);
-		displayBox = new JCheckBox("Display name", true);
 		
 		// Add all the objects to the main window's content pane
 		pane.add(scroll);
-		pane.add(locationNameEntry);
 		pane.add(statusBar);
-		pane.add(clearButton);
-		pane.add(searchLocation);
-		pane.add(intersectBox);
-		pane.add(passBox);
-		pane.add(displayBox);
 		
 		// Everything that follows is layout/alignment stuff, 
 		// with illustrations
@@ -360,75 +318,17 @@ public class ShowImage extends JFrame{
 		spring.putConstraint(SpringLayout.NORTH, scroll, 0, 
 				SpringLayout.NORTH, pane);
 		
-		// | (scroll)
-		// +-------------
-		// |     ^^^
-		// | <<< locationName
-		spring.putConstraint(SpringLayout.WEST, locationNameEntry, 5, 
-				SpringLayout.WEST, pane);
-		spring.putConstraint(SpringLayout.NORTH, locationNameEntry, 5, 
-				SpringLayout.SOUTH, scroll);
-		
-		// |                 (scroll)
-		// +---------------------
-		//                |      ^^^
-		// (locationName) | <<< clearButton
-		spring.putConstraint(SpringLayout.WEST, clearButton, 5, 
-				SpringLayout.EAST, locationNameEntry);
-		spring.putConstraint(SpringLayout.NORTH, clearButton, 5, 
-				SpringLayout.SOUTH, scroll);
-		
-		// |                  (scroll)
-		// +-------------------------------
-		//                                     ^^^
-		// (locationName) | clearButton | <<< searchLocation
-		
-		spring.putConstraint(SpringLayout.WEST, searchLocation, 5,
-				SpringLayout.EAST, clearButton);
-		spring.putConstraint(SpringLayout.NORTH, searchLocation, 5,
-				SpringLayout.SOUTH, scroll);
-		
-		
-		// |                  (scroll)
-		// +-------------------------------
-		//                                     
-		// ...  searchLocation <<< intersectBox
-		
-		spring.putConstraint(SpringLayout.WEST, intersectBox, 5,
-				SpringLayout.EAST, searchLocation);
-		spring.putConstraint(SpringLayout.NORTH, intersectBox, 5,
-				SpringLayout.SOUTH, scroll);
-		
-		// |                  (scroll)
-		// +-------------------------------
-		//                                     
-		// ...  intersectBox <<< passBox
-		
-		spring.putConstraint(SpringLayout.WEST, passBox, 5,
-				SpringLayout.EAST, intersectBox);
-		spring.putConstraint(SpringLayout.NORTH, passBox, 5,
-				SpringLayout.SOUTH, scroll);
-		
-		// |                  (scroll)
-		// +-------------------------------
-		//                                     
-		// ...  passBox <<< displayBox
-		
-		spring.putConstraint(SpringLayout.WEST, displayBox, 5,
-				SpringLayout.EAST, passBox);
-		spring.putConstraint(SpringLayout.NORTH, displayBox, 5,
-				SpringLayout.SOUTH, scroll);
 		
 		
 		
-		// | (locationName) | (clearButton)
+		// |  scroll
 		// +--------------------------
 		// |                   ^^^
 		// | <<< statusBar
 		spring.putConstraint(SpringLayout.WEST, statusBar, 5, 
 				SpringLayout.WEST, pane);
 		spring.putConstraint(SpringLayout.NORTH, statusBar, 5, 
-				SpringLayout.SOUTH, clearButton);
+				SpringLayout.SOUTH, scroll);
 		
 		//           scroll | <<<
 		// statusBar        |
@@ -473,7 +373,7 @@ MouseMotionListener{
 	private boolean missingPicture = false;
 	
 	// The current path that we're focusing on
-	private Vector <Point>lines;
+	private Vector <Point>curPath;
 	
 	// Vector of paths -- a vector where each element is a
 	// vector of points (vector of points == path)
@@ -491,9 +391,6 @@ MouseMotionListener{
 	// This should be a pointer to ShowImage to allow us to modify
 	// fields such as the statusBar.
 	private static ShowImage parent;
-	
-	// The name of the location that was last searched
-	private String lastLocationSearched;
 	
 	// Prviously Searched Point
 	private Point previouslySearchedPoint;
@@ -526,8 +423,9 @@ MouseMotionListener{
 	 * 
 	 * @param i The image to display
 	 * @param maxUnitPassed 
-	 * @param newParent
+	 * @param newParent ?
 	 */
+	
 	public ScrollablePicture(ImageIcon i, int maxUnitPassed,
 			ShowImage newParent) {
 		super(i);
@@ -552,7 +450,6 @@ MouseMotionListener{
 			public void keyPressed(KeyEvent e){ handleKey(e); }
 		});
 		
-		
 		// ...but also need to make sure we can receive (key?) focus
 		setFocusable(true);
 		
@@ -560,38 +457,24 @@ MouseMotionListener{
 		locations = new Vector<Location>(128);
 		
 		paths.add( new Vector<Point>() );
-		lines = paths.get(pathNumIndex);
+		curPath = paths.get(pathNumIndex);
 		setDefaultStatusBar();
-		
-		// save the curent 'this' for the inner class
-		final ScrollablePicture thisParent = this;
 		
 		/* add the mouse-click handler */
 		addMouseListener(new MouseAdapter(){
-			
 			public void mouseClicked(MouseEvent e){
-				int x = e.getX();
-				int y = e.getY();
-				
-				// Left click ==> create new point in the current path
 				if(SwingUtilities.isLeftMouseButton(e)) {
-					createNewPointInCurPath(new Point(x, y));
+					createNewPointInCurPath(e.getPoint());
 				}
-				// Right click.
 				else if(SwingUtilities.isRightMouseButton(e)) {
-					// Change the coordinates of the currently selected
-					// point
-					changeCurSelectedPointCord(x, y);
-					
+					// Change current point's coordinates
+					changeCurSelectedPointCord(e.getPoint());					
 				}
 				// If you use any other buttton on your mouse...
-				else
-				{
-					// Open menu that allows you to select a location to go
-					// to.  
+				else{
+					// Use a menu to select a location 
 					middleClickGoToLocation();
 				}
-				
 			}
 		});
 		
@@ -610,14 +493,14 @@ MouseMotionListener{
 		// If the new point is going to be the first element in the current 
 		// path, allocate a vector for the path before adding 
 		// the Point to the path.  
-		if(lines == null)
+		if(curPath == null)
 		{
 			// Allocate new vector
-			lines = new Vector<Point>();
+			curPath = new Vector<Point>();
 		}
 		
 		//add the point to the current path
-		lines.add(pointToAdd);
+		curPath.add(pointToAdd);
 		
 		// Set the element focus to the last element (the one just created)
 		setPointNumIndex(true);
@@ -636,9 +519,9 @@ MouseMotionListener{
 	{
 		if(pointNumIndex < 0)
 			System.err.println("pointNumIndex < 0 in getCurrentPoint()!");
-		if(pointNumIndex > lines.size() - 1)
+		if(pointNumIndex > curPath.size() - 1)
 			System.err.println("pointNumIndex too large in getCurrentPoint()!");
-		return(lines.get(pointNumIndex));
+		return(curPath.get(pointNumIndex));
 	}
 	
 	/**
@@ -656,15 +539,14 @@ MouseMotionListener{
 	 * @param x -- The x coordinate to change to.
 	 * @param y -- The y coordinate to change to.
 	 */
-	public void changeCurSelectedPointCord(int x, int y)
+	public void changeCurSelectedPointCord(Point pointToMoveTo)
 	{
 		// Get the old point -- The point before the move...
 		Point oldPoint = new Point(getCurrentPoint());
 		
 		// check if there's an existing point
 		// findLocationAtPoint returns an index if found, -1 if not found.
-		int locIndex = findLocationAtPoint(
-				(Point)lines.get(pointNumIndex));
+		int locIndex = findLocationAtPoint(getCurrentPoint()); 
 		
 		//When we find a location at the point.  
 		if(locIndex >= 0){
@@ -688,7 +570,7 @@ MouseMotionListener{
 			}
 			// move the location
 			Location toMove = locations.get(locIndex);
-			toMove.cord = new Point(x, y);
+			toMove.cord = pointToMoveTo;
 			// For all paths
 			for(Vector<Point> path: paths)
 			{
@@ -700,7 +582,7 @@ MouseMotionListener{
 					{
 						// Set the point equal to the old point to new
 						// new coordinates
-						ptInPath.setLocation(x,y);
+						ptInPath.setLocation(pointToMoveTo);
 					}
 				}
 			}
@@ -708,7 +590,7 @@ MouseMotionListener{
 		else  // no location...just move the point
 		{
 			// move the point
-			getCurrentPoint().setLocation(x,y);
+			getCurrentPoint().setLocation(pointToMoveTo);
 		}
 		// set statusbar text
 		setDefaultStatusBar();
@@ -768,6 +650,7 @@ MouseMotionListener{
 		
 		//final ScrollablePicture thisElement = this;?
 		final int jobID = passedJobId;
+		
 	
 		// Can you hear the cricket's chirping?
 		locBox.addMouseListener( new MouseAdapter(){
@@ -793,7 +676,6 @@ MouseMotionListener{
 					System.err.println("Bad jobID in SelectLocation!");
 					break;
 				}
-					
 
 				// Do the repaint dance!
 				repaint();
@@ -813,6 +695,7 @@ MouseMotionListener{
 				"Location pasting canceled!");
 			}
 		});
+		
 		// Make the dialog box visible (show it).
 		dialog.setVisible(true);
 	}
@@ -914,7 +797,7 @@ MouseMotionListener{
 		// Only go back if a paths exists
 		if(pathNumIndex >= 1){
 			// Set focus
-			lines = paths.get(--pathNumIndex);
+			curPath = paths.get(--pathNumIndex);
 			// Automatically focus on the last element
 			setPointNumIndex(true);
 			// Set statusbar
@@ -938,7 +821,7 @@ MouseMotionListener{
 		if(pathNumIndex < paths.size() - 1)
 		{
 			// Advance
-			lines = paths.get(++pathNumIndex);
+			curPath = paths.get(++pathNumIndex);
 			// Automatically focus on the last element
 			setPointNumIndex(true);
 			// Set statusBar
@@ -957,7 +840,7 @@ MouseMotionListener{
 		if(pathNum > 0 && pathNum <= paths.size() - 1)
 		{	
 			pathNumIndex = pathNum;
-			lines = paths.get(pathNum);
+			curPath = paths.get(pathNum);
 			//autofocus
 			setPointNumIndex(true);
 			// statusBar
@@ -965,7 +848,8 @@ MouseMotionListener{
 			repaint();
 		}
 		else
-			parent.statusBar.setText( "PathNumber out of range!" );
+			parent.statusBar.setText( "PathNumber out of range!  " +
+					"Please enter a path between: 0 and " + (paths.size() -1));
 	}
 	
 	
@@ -1000,7 +884,7 @@ MouseMotionListener{
 	public void goToNextElement()
 	{
 		// only if pointNumIndex < max possible size
-		if(pointNumIndex < lines.size() - 1)
+		if(pointNumIndex < curPath.size() - 1)
 		{
 			// Increment
 			pointNumIndex++;
@@ -1057,7 +941,7 @@ MouseMotionListener{
 		// Create the space for the new path.
 		paths.add( new Vector<Point>() );
 		// Set focus
-		lines = paths.get(pathNumIndex);
+		curPath = paths.get(pathNumIndex);
 		
 		//Start at the 0th point.  
 		pointNumIndex = 0;
@@ -1073,10 +957,10 @@ MouseMotionListener{
 	public void centerOnSelectedPoint()
 	{
 		// Only center if pointNumIndex in range
-		if(pointNumIndex <= lines.size() - 1)
+		if(pointNumIndex <= curPath.size() - 1)
 		{
 			//Get a pointer to the Point that we want to center too
-			Point center = ((Point)lines.get(pointNumIndex));
+			Point center = getCurrentPoint();
 			/*
 			 * Calculate the rectangle we want to center to
 			 * Use the getVisibleRect() function to get the size of the
@@ -1241,12 +1125,12 @@ MouseMotionListener{
 		System.err.println("pointNUmIndex = " + pointNumIndex);
 		final String DEFAULT_NAME = "<Enter name here>";
 		final String NO_POINT_SELECTED = "Please select a point first!"; 
-		if(lines == null || lines.size() < pointNumIndex + 1)
+		if(curPath == null || curPath.size() < pointNumIndex + 1)
 		{
 			parent.statusBar.setText(NO_POINT_SELECTED);
 			return;
 		}
-		Point curPoint = (Point)lines.get( pointNumIndex );
+		Point curPoint = (Point)curPath.get( pointNumIndex );
 		Location newLoc = new Location(curPoint, DEFAULT_NAME);
 		
 		// Create the dialog box (parent == ShowImage object)
@@ -1268,7 +1152,7 @@ MouseMotionListener{
 		
 		// Create actionlistener for registering choice
 		ActionListener changeListener 
-			= new ChoiceListener(newLoc, dialog, componentPanel, save, cancel);
+			= new LocationCreationChoiceListener(newLoc, dialog, componentPanel, save, cancel);
 		
 		save.addActionListener(changeListener);
 		cancel.addActionListener(changeListener);
@@ -1283,7 +1167,7 @@ MouseMotionListener{
 	/**
 	 * Listner for save of cancel used by createLocation()
 	 */
-	class ChoiceListener implements ActionListener
+	class LocationCreationChoiceListener implements ActionListener
 	{
 		// The location to potentially add
 		private Location locationToAdd;
@@ -1293,7 +1177,7 @@ MouseMotionListener{
 		private JButton save;
 		private JButton cancel;
 		ComponentEditor cpannel;
-		public ChoiceListener(Location locToAdd, JDialog caller, 
+		public LocationCreationChoiceListener(Location locToAdd, JDialog caller, 
 				ComponentEditor cpannel, JButton save, JButton cancel)
 		{	
 			this.locationToAdd = locToAdd;
@@ -1333,13 +1217,13 @@ MouseMotionListener{
 	{
 		final String NO_LOCATION_SELECTED = "Please select a location first!"; 
 		System.err.println("editLocation call received...");
-		if(lines == null || lines.size() < pointNumIndex + 1)
+		if(curPath == null || curPath.size() < pointNumIndex + 1)
 		{
 			parent.statusBar.setText(NO_LOCATION_SELECTED);
 			return;
 		}
 		System.err.println("Verification of lines complete...getting point...");
-		Point curPoint = (Point)lines.get( pointNumIndex );
+		Point curPoint = (Point)curPath.get( pointNumIndex );
 		if(curPoint == null)
 		{
 			parent.statusBar.setText(NO_LOCATION_SELECTED);
@@ -1522,10 +1406,10 @@ MouseMotionListener{
 	public void undoConnection ()
 	{
 		// Only go back if there is a point to go to
-		if(lines.size() >= 1)
+		if(curPath.size() > 0)
 		{
 			// Get a pointer to the point that we want to undo
-			Point undoPoint = (Point)lines.get(pointNumIndex);
+			Point undoPoint = getCurrentPoint();
 			
 			
 			// Returns -1 if no index was found.
@@ -1539,14 +1423,19 @@ MouseMotionListener{
 				locations.remove(locIndex);
 			
 			// remove the current node, decrement pointNumIndex
-			lines.remove(pointNumIndex--);
+			curPath.remove(pointNumIndex--);
 			
-			// Do checking of bounds on pointNumIndex
-			setPointNumIndex(false);
+			// Ensure a valid pointNumIndex;
+			setValidPointNumIndex();
 			
 			setDefaultStatusBar();
 			repaint();
 		}
+		else
+		{
+			setStatusBarText("Error: Attempted to remove non-existing point");
+		}
+		
 	}
 	
 	
@@ -1620,18 +1509,6 @@ MouseMotionListener{
 			System.err.println(PATHS_IO_ERROR + ": " + e + ": " + e.getMessage());
 		}
 		
-		
-		
-		/*
-		 // print out the size of the location Vector
-		  locout.writeInt(locations.size());
-		  
-		  // write out the static ID variable...IDcount
-		   locout.writeInt(Location.IDcount);
-		   
-		   
-		   */
-		
 		//Get the locations vector
 		try{
 			// Open stream
@@ -1683,7 +1560,7 @@ MouseMotionListener{
 					// ShowImage parent)
 					// Create the new location with the passed in values
 					tempLocation = new Location(tempCord.x, tempCord.y, 
-							tempName, parent);
+							tempName);
 					// Add the location into the locations vector
 					locations.add(locNum, tempLocation);
 					// Set the boolean values
@@ -1750,7 +1627,7 @@ MouseMotionListener{
 					// ShowImage parent)
 					// Create the new location with the passed in values
 					tempLocation = new Location(tempCord.x, tempCord.y, 
-							tempName, parent);
+							tempName);
 					// Add the location into the locations vector
 					locations.add(locNum, tempLocation);
 					// Set the boolean values
@@ -1821,7 +1698,9 @@ MouseMotionListener{
 				pathNumIndex = paths.size();
 			
 			//Set lines
-			lines = paths.get(pathNumIndex);
+			curPath = paths.get(pathNumIndex);
+			// Set the point
+			pointNumIndex = curPath.size() - 1;
 			
 			// Do the repaint dance...woooo!
 			repaint();
@@ -1853,34 +1732,28 @@ MouseMotionListener{
 	
 	
 	/**
-	 * Set the pointNumber index.  <p>
-	 * 
-	 * If true is passed in, the function will set the pointNumIndex
-	 * to the last element in the currently selected path.  <br>
-	 * If false is pass in, the function will ensure that the
-	 * point is either at the first element or the last element in the 
-	 * currently selected path.
-	 * @param setAtEndPoint Determination of job to do.  
-	 *
+	 * Set the pointNumIndex to the last element in the currently selected path.
 	 */
 	public void setPointNumIndex (boolean setAtEndPoint)
 	{
-		if(setAtEndPoint == true){
-			//If empty, set to 0
-			if(lines.size() == 0)
-				pointNumIndex = 0;
-			//Otherwise set to it's size.  
-			else
-				pointNumIndex = lines.size() - 1;
-		}
-		else{
-			// make sure pointNumIndex is in-bounds
-			if(pointNumIndex < 0)
-				pointNumIndex = 0;
-			if(pointNumIndex >= lines.size())
-				pointNumIndex = lines.size() - 1;
-		}
-		
+		//If empty, set to 0
+		if(curPath.size() == 0)
+			pointNumIndex = 0;
+		//Otherwise set to it's size.  
+		else
+			pointNumIndex = curPath.size() - 1;
+	}
+	
+	/**
+	 * Ensure that the pointNumIndex is either at the first element or the 
+	 * last element in the currently selected path.
+	 */
+	public void setValidPointNumIndex()
+	{
+		if(pointNumIndex < 0)
+			pointNumIndex = 0;
+		if(pointNumIndex >= curPath.size())
+			pointNumIndex = curPath.size() - 1;
 	}
 	
 	/**
@@ -2067,7 +1940,9 @@ MouseMotionListener{
 				// if we can't, use the current value
 				catch(NumberFormatException numException)
 				{
-					newX = lines.get(pointNumIndex).x;
+					System.err.println("Could not parse X value, " +
+							"using current point's x value.");
+					newX = getCurrentPoint().x;
 				}
 				
 				// try to set the Y value to what the user entered.
@@ -2078,12 +1953,14 @@ MouseMotionListener{
 				// if we can't, use the current value
 				catch(NumberFormatException numException)
 				{
-					newY = lines.get(pointNumIndex).y;
+					System.err.println("Could not parse Y value, " +
+					"using current point's y value.");
+					newY = getCurrentPoint().y;
 				}
 				
 				// change the location of the current point, and do all the
 				// associated mangling of locations, and whatnot
-				changeCurSelectedPointCord(newX, newY);
+				changeCurSelectedPointCord(new Point(newX, newY));
 			}
 		});
 		
@@ -2119,11 +1996,11 @@ MouseMotionListener{
 		// Check bounds on the elementNumber
 		if(elementNumber < 0)
 			elementNumber = 0;
-		if(elementNumber >= lines.size())
-			elementNumber = lines.size();
+		if(elementNumber >= curPath.size())
+			elementNumber = curPath.size();
 		
 		return ( "Path Number: " + (pathNumIndex + 1) + " of " + paths.size()+
-				",  Element: " + (elementNumber) + " of " + lines.size() +
+				",  Element: " + (elementNumber) + " of " + curPath.size() +
 				printCurrentPoint() + printCurrentLocation() );
 	}
 	
@@ -2138,9 +2015,9 @@ MouseMotionListener{
 		// Only print if locations exists and there are points
 		// on the currently selected path.  (Null exception guards)
 		String stringToReturn = "";
-		if( locations.size() > 0 && lines.size() > 0)
+		if( locations.size() > 0 && curPath.size() > 0)
 		{
-			int locIndex=findLocationAtPoint((Point)lines.get(pointNumIndex));
+			int locIndex=findLocationAtPoint(getCurrentPoint());
 			// If a valid index was found for in the locations array...
 			if (locIndex >= 0)
 			{
@@ -2152,45 +2029,31 @@ MouseMotionListener{
 				if(locToPrint.isAllowIntersections())
 				{
 					stringToReturn += "--> intersect: true, ";
-					parent.intersectBox.setSelected(true);
 				}
 				else
 				{
 					stringToReturn += "--> intersect: false, ";
-					parent.intersectBox.setSelected(false);
 				}
 				
 				if(locToPrint.isCanPassThrough())
 				{
 					stringToReturn += "pass: true, ";
-					parent.passBox.setSelected(true);
 				}
 				else
 				{
 					stringToReturn += "pass: false, ";
-					parent.passBox.setSelected(false);
 				}
 				
 				if(locToPrint.isDisplayName())
 				{
 					stringToReturn += " displayable: true.";
-					parent.displayBox.setSelected(true);
 				}
 				else
 				{
 					stringToReturn += " displayable: false.";
-					parent.displayBox.setSelected(false);
 				}
 				
 				return(stringToReturn);
-			}
-			// The status we are attempting to refresh is not a location
-			else
-			{
-				// Set select boxes to default values
-				parent.intersectBox.setSelected(true);
-				parent.displayBox.setSelected(true);
-				parent.passBox.setSelected(true);
 			}
 		}
 		
@@ -2256,7 +2119,7 @@ MouseMotionListener{
 		// If no path could be found...
 		if(lastVertex < 0)
 		{
-			System.err.println("No path found...starting again");
+			//System.err.println("No path found...starting again");
 			lastVertex = 0;  // start at beginning again
 			iterateThroughPathsAtPoint(p);  // search
 		}
@@ -2269,11 +2132,11 @@ MouseMotionListener{
 		}
 
 		// Set current path & number
-		lines = paths.get(pathNumIndex = lastVertex);
+		curPath = paths.get(pathNumIndex = lastVertex);
 		
-		for(int index = 0; index < lines.size(); index++)
+		for(int index = 0; index < curPath.size(); index++)
 		{
-			if(p.equals(lines.get(index)))
+			if(p.equals(curPath.get(index)))
 			{
 				pointNumIndex = index;  //Set the pointNumIndex to point p
 				repaint();
@@ -2353,10 +2216,10 @@ MouseMotionListener{
 	public String printCurrentPoint (){
 		// Print out point only if the size is greater than 0 &
 		// The pointNumIndex is greater than zero.  
-		if( lines.size() > 0)
+		if( curPath.size() > 0)
 		{
-			return(",  @ (" + ((Point)lines.get( pointNumIndex )).x + 
-					", " + ((Point)lines.get( pointNumIndex )).y + ")");
+			return(",  @ (" + ((Point)curPath.get( pointNumIndex )).x + 
+					", " + ((Point)curPath.get( pointNumIndex )).y + ")");
 		}
 		return("");
 	}
@@ -2488,7 +2351,7 @@ MouseMotionListener{
 				
 				
 				// If the path that we're drawing is the current one in
-				if(lines == (Vector)paths.get(pathsIndex))
+				if(curPath == (Vector)paths.get(pathsIndex))
 				{
 					if(pointInPath == pointNumIndex)
 					{
@@ -2725,30 +2588,11 @@ class Location implements Serializable, ComponentElement
 	 * @param passedName The name of the location
 	 * @param parent Allows for access to checkboxes.  
 	 */
-	public Location(int x, int y, String passedName, ShowImage parent)
+	public Location(int x, int y, String passedName)
 	{
 		cord = new Point(x,y);  // Create coordinate based on passed in values
 		name = passedName;      // Copy name string (Strings are constants!)
 		ID = IDcount++;         // Get the current ID and increment
-		
-		// Determines if we can use this point when linking together sets of
-		// paths
-		if(parent.passBox.isSelected())
-			canPassThrough = true;
-		else
-			canPassThrough = false;
-		
-		// Determines if we can allow intersections.
-		if(parent.intersectBox.isSelected())
-			allowIntersections = true;
-		else
-			allowIntersections = false;
-		
-		// Determines if we should display the name of the location
-		if(parent.displayBox.isSelected())
-			displayName = true;
-		else
-			displayName = false;
 	}
 	
 	/**
@@ -2885,6 +2729,30 @@ class Location implements Serializable, ComponentElement
 }
 
 /**
+ * Interface that defines what a EditorBox has in order to connect
+ * to the EditorComponent.
+ */
+interface EditorBox
+{
+	final static Color SUBMIT_COLOR = Color.GREEN, 
+	ERROR_COLOR  = Color.RED,
+	CHANGE_COLOR = Color.LIGHT_GRAY;
+	/**
+	 * Links the EditorBox to a specific variable of the ComponentEditor.
+	 * @param parent The ComponentEditor to link to
+	 * @param id for identification of the variable that can be used
+	 * to get and set the variable in calls to parent.
+	 */
+	public void linkToVariable(ComponentEditor parent, int id);
+	/**
+	 * This method should save changes to the variable that the editor box
+	 * controls.
+	 * @return String of errors if any exits, empty string otherwise.
+	 */
+	public String saveChange();
+}
+
+/**
  * This class aids in the editing of the string fields of objects using an
  * editor.  It is extended from JPanel, allowing for the instantiation of
  * a JPanel object that contains the fields of an objects in JTextAreas.
@@ -3000,6 +2868,8 @@ class ComponentEditor extends JPanel
 			System.err.println(result);
 	}
 	
+
+	
 	/**
 	 * Response for the submit button
 	 * Responds to an action by sending a saveVariables request to it's 
@@ -3028,30 +2898,6 @@ class ComponentEditor extends JPanel
 			elementToListen.saveVariables();
 		}
 	}
-}
-
-/**
- * Interface that defines what a EditorBox has in order to connect
- * to the EditorComponent.
- */
-interface EditorBox
-{
-	final static Color SUBMIT_COLOR = Color.GREEN, 
-	ERROR_COLOR  = Color.RED,
-	CHANGE_COLOR = Color.LIGHT_GRAY;
-	/**
-	 * Links the EditorBox to a specific variable of the ComponentEditor.
-	 * @param parent The ComponentEditor to link to
-	 * @param id for identification of the variable that can be used
-	 * to get and set the variable in calls to parent.
-	 */
-	public void linkToVariable(ComponentEditor parent, int id);
-	/**
-	 * This method should save changes to the variable that the editor box
-	 * controls.
-	 * @return String of errors if any exits, empty string otherwise.
-	 */
-	public String saveChange();
 }
 
 class BooleanEditorBox extends JCheckBox implements EditorBox

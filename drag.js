@@ -974,54 +974,45 @@ function Viewport(x, y, width, height, curZoom){
 * Recalculate how long it takes a person to walk The Path.
 * Bonus feature: Reimplements part of printf.
 ******************************************************************/
-function calcTime(oldDist, mpm){
+function calcTime(prevDist, mpm){
 	// this is really what we're here to do:
-	var dist = oldDist*mpm;
-	var distStr = String(dist);
+	var dist = prevDist*mpm;
 	var precision = 2;
 
 	// change the mpm value in the main input form, so subsequent submits
 	// use the new value
 	document.main.mpm.value = mpm;
 
-	// It _should_ be as easy as an sprintf call here, but does Javascript have that? No.
-	// Instead, we go through a whole song and dance to get "%.02f" formatting.
-	var parts = distStr.split(".");
+	// round the new value
+	dist = round(dist, precision);
 
-	// first part as an int
-	var high = (+parts[0]);
+	// now we need to do some formatting. ugh.
 
-	// if we have digits below the decimal point...
-	if(parts.length > 1){
-		// I have the feeling I'm re-implementing part of printf...
-		//alert(parts[1]);
+	var parts = String(dist).split(".");
+	// the digits after the decimal point, or the empty string
+	var low = parts[1] || '';
+	// the digits before the decimal point
+	var high = parts[0];
 
-		// cut it down to a 2-digit number with decimal places
-		var small = (+parts[1]) / Math.pow(10, parts[1].length - precision);
+	// add zeroes until we reach the target length
+	while( low.length < precision )
+		low += '0';
 
-		// round off the decimal places
-		small = Math.round(small);
-
-		// convert back to a string
-		var smallStr = String(small);
-
-		// pad with 0s
-		if(smallStr.length < 2)
-			smallStr = '0' + smallStr;
-		// if we rounded up to 100, cut off the leading 1, and
-		// increment the high place-value part
-		else if(smallStr.length > 2){
-			high += (+smallStr.substr(0, 1));
-			smallStr = smallStr.substr(1, 2);
-		}
-			
-
-		document.getElementById("time").innerHTML = high + '.' + smallStr;
-	}
-	else{
-		document.getElementById("time").innerHTML = distStr;
-	}
+	// put it all together
+	document.getElementById("time").innerHTML = high + '.' + low;
 
 	// if this was called from an onsubmit event, don't submit!
 	return false;
 }
+
+/******************************************************************
+* Round the given number to the given number of decimal places.
+******************************************************************/
+function round(n, precision){
+	// this is the multiplier we need so that all the significant digits
+	// come before the decimal point
+	var m = Math.pow(10, precision);
+	alert("Round: " + n + " --> " + (Math.round(n * m) / m));
+	return Math.round(n * m) / m;
+}
+

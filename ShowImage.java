@@ -550,27 +550,10 @@ MouseMotionListener{
 		
 		//When we find a location at the point.  
 		if(locIndex >= 0){
-			// if the text field is empty, delete the location
-			// only if it is the only point there
-
-			// Get the number of points connected to the location
-			int numPoints = 0;
-			// For all paths
-			for(Vector<Point> path: paths)
-			{
-				// For each path, loop through all points
-				for(Point ptInPath: path)
-				{
-					// If a point is equal to the old point
-					if(ptInPath.equals(oldPoint))
-					{
-						numPoints++;
-					}
-				}
-			}
 			// move the location
 			Location toMove = locations.get(locIndex);
 			toMove.cord = pointToMoveTo;
+			// Move all points connected to the location
 			// For all paths
 			for(Vector<Point> path: paths)
 			{
@@ -844,11 +827,11 @@ MouseMotionListener{
 			//autofocus
 			setPointNumIndex(true);
 			// statusBar
-			parent.statusBar.setText( statusBarText());
+			setDefaultStatusBar();
 			repaint();
 		}
 		else
-			parent.statusBar.setText( "PathNumber out of range!  " +
+			setStatusBarText( "PathNumber out of range!  " +
 					"Please enter a path between: 0 and " + (paths.size() -1));
 	}
 	
@@ -868,9 +851,8 @@ MouseMotionListener{
 		{
 			// Decrement index
 			pointNumIndex--;
-			repaint();
-			// Show status bar
 			setDefaultStatusBar();
+			repaint();
 		}
 	}
 	
@@ -883,7 +865,7 @@ MouseMotionListener{
 	 */
 	public void goToNextElement()
 	{
-		// only if pointNumIndex < max possible size
+		// If we can go forwards...
 		if(pointNumIndex < curPath.size() - 1)
 		{
 			// Increment
@@ -899,30 +881,28 @@ MouseMotionListener{
 	 */
 	public void printLocationsToFile()
 	{
-		final String locTextHeader = "Locations:";
-		final String locStatusBar = "Locations written to txt file: " + 
+		final String LOCATION_FILE_HEADER = "Locations:";
+		final String WRITE_SUCCESS = "Locations written to txt file: " + 
 			LOCATIONS_TXT_FILE;
-		FileOutputStream textOutput;
 		PrintStream outStream;
 		
-		Location [] sortedLocs = this.getSortedLocationArray();
+		Location [] sortedLocs = getSortedLocationArray();
 		
 		try{
-			textOutput =  new FileOutputStream(LOCATIONS_TXT_FILE);
-			outStream = new PrintStream( new BufferedOutputStream(textOutput));
+			outStream = new PrintStream( new BufferedOutputStream(
+							new FileOutputStream(LOCATIONS_TXT_FILE)));
 			
-			outStream.println(locTextHeader);
+			outStream.println(LOCATION_FILE_HEADER);  // print header
 			
-			// loop through each location and print its name and
-			// (x,y) coordinates
+			// Print out a location info string for each location
 			for(Location loc: sortedLocs)
 			{
 				outStream.println( loc.toString() );
 			}
-			//Set the status bar for success
-			parent.statusBar.setText(locStatusBar);
 			//close the file stream
 			outStream.close();
+			// Notify of success
+			setStatusBarText(WRITE_SUCCESS);
 		}
 		catch(Exception e){
 			System.err.println("Error writing to file" + LOCATIONS_TXT_FILE);
@@ -931,7 +911,6 @@ MouseMotionListener{
 	
 	/**
 	 * Creates a new path and adds it to the paths array.  
-	 *
 	 */
 	public void createNewPath()
 	{
@@ -1122,7 +1101,6 @@ MouseMotionListener{
 	 */
 	public void createLocation()
 	{
-		System.err.println("pointNUmIndex = " + pointNumIndex);
 		final String DEFAULT_NAME = "<Enter name here>";
 		final String NO_POINT_SELECTED = "Please select a point first!"; 
 		if(curPath == null || curPath.size() < pointNumIndex + 1)
@@ -1163,7 +1141,7 @@ MouseMotionListener{
 		dialog.setVisible(true);
 		
 	}
-	
+
 	/**
 	 * Listner for save of cancel used by createLocation()
 	 */
@@ -1996,7 +1974,7 @@ MouseMotionListener{
 
 		return ( "Path Number: " + (pathNumIndex + 1) + " of " + paths.size()+
 				",  Element: " + (elementNumber) + " of " + curPath.size() +
-				printCurrentPoint() + printCurrentLocation() );
+				printCurrentPoint() + getCurrentLocationDescription() );
 	}
 	
 	
@@ -2006,14 +1984,14 @@ MouseMotionListener{
 	 * This method is used to by setStatusBar.  
 	 * @return name of location if exist, else null string.
 	 */
-	public String printCurrentLocation () {
+	public String getCurrentLocationDescription () {
 		// Only print if locations exists and there are points
 		// on the currently selected path.  (Null exception guards)
 		String stringToReturn = "";
 		if( locations.size() > 0 && curPath.size() > 0)
 		{
-			int locIndex=findLocationAtPoint(getCurrentPoint());
-			// If a valid index was found for in the locations array...
+			int locIndex = findLocationAtPoint(getCurrentPoint());
+			// If a valid index was found in the locations array...
 			if (locIndex >= 0)
 			{
 				stringToReturn = ", Locations: ";
@@ -2051,9 +2029,7 @@ MouseMotionListener{
 				return(stringToReturn);
 			}
 		}
-		
-		
-		
+		// No location ==> don't print info.
 		return("");
 	}
 	

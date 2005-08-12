@@ -405,16 +405,12 @@ public class PathOptimize
 			System.err.println("\n======  START OF BINARY FILE OUTPUT  " +
 					"======\n");
 		
-		File pointOutputFile = new File(pointFileName);
-        File locOutputFile = new File(locFileName);
-        File edgeOutputFile = new File(edgeFileName);
-        
         // output point data
         try{
             DataOutputStream pointOut = new DataOutputStream(
 					new BufferedOutputStream(
-							new FileOutputStream(pointOutputFile)));
-            
+							new FileOutputStream(new File(pointFileName))));
+
 			if(debugBinaryGraphPoints)
 				System.err.println("===== GraphPoints =====");
             // for each GraphPoint
@@ -438,7 +434,7 @@ public class PathOptimize
         try{
             DataOutputStream locOut= new DataOutputStream(
 					new BufferedOutputStream(
-							new FileOutputStream(locOutputFile)));
+							new FileOutputStream(new File(locFileName))));
             
 			if(debugBinaryLocations)
 				System.err.println("===== Locations =====");
@@ -466,7 +462,7 @@ public class PathOptimize
 			
             DataOutputStream edgeOut= new DataOutputStream(
 					new BufferedOutputStream(
-							new FileOutputStream(edgeOutputFile)));
+							new FileOutputStream(new File(edgeFileName))));
             
 			int maxEdgeSize = 0;
 			
@@ -482,7 +478,7 @@ public class PathOptimize
             // for each Edge
             for(int i = 0; i < outEdges.size(); i++)
             {
-            	((Edge)outEdges.get(i)).binaryWrite(edgeOut, maxEdgeSize);
+            	(outEdges.get(i)).binaryWrite(edgeOut, maxEdgeSize);
             }
             //close stream
             edgeOut.close();

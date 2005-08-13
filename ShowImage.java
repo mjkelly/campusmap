@@ -38,7 +38,7 @@ public class ShowImage extends JFrame{
 	
 	private JMenuItem prevPath, nextPath, newPath, iteratePaths,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
-	read, write, createLocationFile, changeImage,//IO
+	read, write, createLocationFile, changeImage, loadDefinedLocations, //IO
 	locationEditor, editLocation, createLocation, selectEditLocation;
 	
 	// For accessing the locationName text field
@@ -137,6 +137,10 @@ public class ShowImage extends JFrame{
 			{
 				ipanel.iterateThroughPathsAtPoint(ipanel.getCurrentPoint());
 			}
+			if(e.getSource() == loadDefinedLocations)
+			{
+				ipanel.readCustomLocationInformation();
+			}
 		}
 	}
 	
@@ -198,6 +202,9 @@ public class ShowImage extends JFrame{
 		
 		read = file.add(makeJMenuItem("Open files", listener, READ_KEY));
 		write = file.add(makeJMenuItem("Save files", listener, WRITE_KEY));
+		loadDefinedLocations = 
+			file.add(makeJMenuItem("Load defined locations", listener, 0));
+
 		file.addSeparator();
 		createLocationFile = file.add(makeJMenuItem(
 				"Print Location List", listener, LOCATION_FILE_KEY));
@@ -1889,6 +1896,69 @@ MouseMotionListener{
 	}
 	
 	/**
+	 * Reads a tab diliminated file that contains location names
+	 * followed by their coordinates.  Adds each location with a new path
+	 * and point at the location's coordinate.
+	 */
+	public void readCustomLocationInformation()
+	{
+		// Where in the tab deliminated field the following entries are located
+		final int NAME_FIELD = 0;
+		final int LOCAL_X_FIELD = 1;
+		final int LOCAL_Y_FIELD = 2;
+		BufferedReader stream = null;  //"Initialize" our stream
+		final String LOCATION_FILE_NAME = "locations.tab";  // name of the file
+		try{
+			// Stream wrapping
+			stream = new BufferedReader(
+							new InputStreamReader(
+									new FileInputStream(LOCATION_FILE_NAME)));
+			
+			while(stream.ready())   // While the stream can be read...
+			{
+				String line = stream.readLine();  // get line from stream
+				// Tab deliminated file ==> split on regex \t
+				String [] split = line.split("\t");
+				String name = split[NAME_FIELD];
+				// initialize the X/Y coordinates
+				int xCord = 0;
+				int yCord = 0;
+				try{
+					// Grab the X/Y coordinate from the split line
+					xCord = Integer.parseInt(split[LOCAL_X_FIELD]);
+					yCord = Integer.parseInt(split[LOCAL_Y_FIELD]);
+				}
+				// Make sure that we didn't mess up and pass non-integers 
+				// somehow
+				catch (NumberFormatException e)
+				{
+					System.err.println("Bad integer value for " + name);
+					e.printStackTrace();
+				}
+				// Add the line as a location
+				locations.add(new Location(new Point(xCord, yCord), name));
+				// create a new path
+				createNewPath();
+				// Add the location's coordinate to that path
+				createNewPointInCurPath(new Point(xCord, yCord));
+			}
+
+		}
+		// If there was a problem opening the file
+		catch(FileNotFoundException e)
+		{
+			System.err.println("Could not find file: " + LOCATION_FILE_NAME);
+			e.printStackTrace();
+		}
+		// If there was an IO exception
+		catch(IOException e)
+		{
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	
+	/**
 	 * Display a dialog that allows the user to place a point (node) at a
 	 * specified & entered x/y coordinate. If nothing (or an invalid integer)
 	 * is entered in either field, that coordinate remains unchanged.
@@ -1943,6 +2013,7 @@ MouseMotionListener{
 				{
 					System.err.println("Could not parse X value, " +
 							"using current point's x value.");
+					setStatusBarText("Please enter integer values only!");
 					newX = getCurrentPoint().x;
 				}
 				
@@ -1956,6 +2027,7 @@ MouseMotionListener{
 				{
 					System.err.println("Could not parse Y value, " +
 					"using current point's y value.");
+					setStatusBarText("Please enter integer values only!");
 					newY = getCurrentPoint().y;
 				}
 				

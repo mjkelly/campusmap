@@ -36,7 +36,7 @@ public class ShowImage extends JFrame{
 	 */
 	public ScrollablePicture ipanel;
 	
-	private JMenuItem prevPath, nextPath, newPath, iteratePaths,// path manipulation
+	private JMenuItem prevPath, nextPath, newPath, deletePath, iteratePaths,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
 	read, write, createLocationFile, changeImage, loadDefinedLocations, //IO
 	locationEditor, editLocation, createLocation, selectLocation;
@@ -117,6 +117,9 @@ public class ShowImage extends JFrame{
 			if(e.getSource() == newPath)
 				ipanel.createNewPath();
 			
+			if(e.getSource() == deletePath)
+				ipanel.deleteCurPath();
+			
 			if(e.getSource() == changeImage)
 				changeImage(); //Do change image stuff here
 			
@@ -172,7 +175,7 @@ public class ShowImage extends JFrame{
 		
 		// USED:
 		// A B C D E F G H I J K L M N O P Q R S T U V W X Y Z + -
-		//   Y Y   Y Y Y   Y   Y Y Y Y Y Y     Y Y             Y Y
+		//   Y Y Y Y Y Y   Y   Y Y Y Y Y Y     Y Y             Y Y
 		// IO
 		final int READ_KEY 				= KeyEvent.VK_O; 
 		final int WRITE_KEY 			= KeyEvent.VK_S;
@@ -181,6 +184,7 @@ public class ShowImage extends JFrame{
 		final int NEXT_PATH_KEY 		= KeyEvent.VK_PLUS; // Done in handleKey
 		final int PREV_PATH_KEY 		= KeyEvent.VK_MINUS;// Done in handleKey
 		final int NEW_PATH_KEY 			= KeyEvent.VK_N;
+		final int DELETE_PATH_KEY		= KeyEvent.VK_D;
 		// Element
 		final int NEXT_ELEMENT_KEY 		= KeyEvent.VK_F;
 		final int PREV_ELEMENT_KEY 		= KeyEvent.VK_B;
@@ -219,11 +223,14 @@ public class ShowImage extends JFrame{
 				listener, NEW_PATH_KEY));
 		path.addSeparator();
 		prevPath = path.add(makeJMenuItem("Previous Path (-)", 
-				listener, PREV_PATH_KEY, 0, 0));
+				listener, 0));
 		nextPath = path.add(makeJMenuItem("Next Path (+)", 
-				listener, NEXT_PATH_KEY, 0, 0));
+				listener, 0));
 		iteratePaths = path.add(makeJMenuItem("Iterate through paths on Current Point", 
 				listener, ITERATE_PATHS));
+		path.addSeparator();
+		deletePath = path.add(makeJMenuItem("Delete Path", 
+				listener, DELETE_PATH_KEY));
 		
 		
 		/** Menu associated with element options **/
@@ -972,6 +979,39 @@ MouseMotionListener{
 		repaint();
 	}
 	
+	public void deleteCurPath()
+	{
+		int confirmReturn = 0;
+		int numElements = curPath.size();
+		confirmReturn = JOptionPane.showConfirmDialog(parent, 
+				"Are you sure you want to delete path " + pathNumIndex + 
+				" which contains " + numElements + " elements?", 
+				"Delete Path", JOptionPane.YES_NO_OPTION, 
+				JOptionPane.WARNING_MESSAGE);
+		
+		if(confirmReturn == JOptionPane.YES_OPTION)
+		{
+			if(paths.size() > 0)
+			{
+				// Remove all points ont the path
+				while(undoConnection());
+				if(paths.size() > 1)
+					paths.remove( pathNumIndex );
+				if(pathNumIndex > paths.size() -1)
+					pathNumIndex = paths.size() -1;
+				// Get the current path
+				curPath = paths.get(pathNumIndex);
+				setPointNumIndexToEnd();
+				setStatusBarText("Path deleted: " + numElements 
+						+ " elements deleted");
+			}
+			else
+			{
+				setStatusBarText("No paths exists");
+			}
+		}
+	}
+	
 	/**
 	 * Centers the visible window to the currently selected (in focus) point.
 	 */
@@ -1373,29 +1413,29 @@ MouseMotionListener{
 	{
 		// The number of items (i.e. text boxes, submit buttons etc, 
 		// to be displayed per location
-		
+
 		// The overall dialog box, this contains everything need...
 		final JDialog dialog = new JDialog(parent, "Location Editor");
-		
+
 		// Set layout of the dialog box
 		dialog.setLayout( new FlowLayout() );
-		
+
 		// JPannel to contain the scroll
 		//JPanel panel = new JPanel();
 		JPanel panel = new JPanel();
 		// To list all of the locations in rows (with submit buttons)
 		panel.setLayout( new GridLayout(locations.size() + 1, 1));
-		
+
 
 		//Create the action listeners!
 		Location[] sortedLocs = getSortedLocationArray();
-		
+
 		// For every location in the sortedLocation array
 		for (Location loc : sortedLocs) {
 			JPanel locPanel = new ComponentEditor(loc);
 			panel.add(locPanel);
 		}
-		
+
 		// create a new scroll over the panel
 		JScrollPane scroll = new JScrollPane(panel);
 		// set size of scroll
@@ -1411,7 +1451,7 @@ MouseMotionListener{
 		dialog.pack();
 		dialog.setSize(800,700);
 		dialog.setVisible(true);
-		
+
 		close.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{	
@@ -1421,23 +1461,23 @@ MouseMotionListener{
 			}
 		});
 	}	
-	
+
 	/**
 	 * This method deletes the current link.
+	 * @return True if successful, false otherwise.
 	 */
-	public void undoConnection ()
+	public boolean undoConnection ()
 	{
 		// Only go back if there is a point to go to
 		if(curPath.size() > 0)
 		{
 			// Get a pointer to the point that we want to undo
 			Point undoPoint = getCurrentPoint();
-			
-			
+
+
 			// Returns -1 if no index was found.
 			int locIndex = findLocationAtPoint(undoPoint);
-			
-			
+
 			// if there's a location and it has less than two
 			// connections, delete the location in addition to the point.
 			// Get the index of a location at the point.
@@ -1445,14 +1485,18 @@ MouseMotionListener{
 				locations.remove(locIndex);
 			
 			// remove the current node, decrement pointNumIndex
-			curPath.remove(pointNumIndex--);
+			curPath.remove(pointNumIndex);
+			if(curPath.size() == 0 || pointNumIndex > 0)
+				pointNumIndex--;
 			
 			setDefaultStatusBar();
 			repaint();
+			return true;
 		}
 		else
 		{
 			setStatusBarText("Error: Attempted to remove non-existing point");
+			return false;
 		}
 		
 	}

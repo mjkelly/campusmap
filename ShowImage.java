@@ -36,7 +36,7 @@ public class ShowImage extends JFrame{
 	 */
 	public ScrollablePicture ipanel;
 	
-	private JMenuItem prevPath, nextPath, newPath, deletePath, iteratePaths,// path manipulation
+	private JMenuItem prevPath, nextPath, newPath, deletePath, iteratePaths, goToPath,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
 	read, write, createLocationFile, changeImage, loadDefinedLocations, //IO
 	locationEditor, editLocation, createLocation, selectLocation;
@@ -94,7 +94,7 @@ public class ShowImage extends JFrame{
 				ipanel.goToNextPath();
 			
 			if(e.getSource() == undoConnection)
-				ipanel.undoConnection();
+				ipanel.removeCurPoint();
 			
 			if(e.getSource() == nextElement)
 				ipanel.goToNextElement();
@@ -119,6 +119,9 @@ public class ShowImage extends JFrame{
 			
 			if(e.getSource() == deletePath)
 				ipanel.deleteCurPath();
+			
+			if(e.getSource() == goToPath)
+				ipanel.goToPath();
 			
 			if(e.getSource() == changeImage)
 				changeImage(); //Do change image stuff here
@@ -181,8 +184,6 @@ public class ShowImage extends JFrame{
 		final int WRITE_KEY 			= KeyEvent.VK_S;
 		final int LOCATION_FILE_KEY 	= KeyEvent.VK_P;
 		// Path
-		final int NEXT_PATH_KEY 		= KeyEvent.VK_PLUS; // Done in handleKey
-		final int PREV_PATH_KEY 		= KeyEvent.VK_MINUS;// Done in handleKey
 		final int NEW_PATH_KEY 			= KeyEvent.VK_N;
 		final int DELETE_PATH_KEY		= KeyEvent.VK_D;
 		// Element
@@ -195,7 +196,7 @@ public class ShowImage extends JFrame{
 		final int LOC_EDITOR_KEY 		= KeyEvent.VK_E;
 		final int EDIT_LOCATION			= KeyEvent.VK_T;
 		final int CREATE_LOCATION		= KeyEvent.VK_L;
-		final int SELECT_EDIT_LOCATION	= KeyEvent.VK_G;
+		final int SELECT_LOCATION		= KeyEvent.VK_G;
 		final int ITERATE_PATHS			= KeyEvent.VK_I;
 		
 		/** Setup the pretty menu bar!  **/
@@ -226,6 +227,7 @@ public class ShowImage extends JFrame{
 				listener, 0));
 		nextPath = path.add(makeJMenuItem("Next Path (+)", 
 				listener, 0));
+		goToPath = path.add(makeJMenuItem("Go to path number", listener, 0));
 		iteratePaths = path.add(makeJMenuItem("Iterate through paths on Current Point", 
 				listener, ITERATE_PATHS));
 		path.addSeparator();
@@ -256,7 +258,7 @@ public class ShowImage extends JFrame{
 		editLocation = location.add(makeJMenuItem("Edit Current Location", 
 				listener, EDIT_LOCATION));
 		selectLocation = location.add(makeJMenuItem(
-				"Select a location", listener, SELECT_EDIT_LOCATION));
+				"Go to location", listener, SELECT_LOCATION));
 		createLocation = location.add(makeJMenuItem(
 				"Create New Location (At current point)", 
 				listener, CREATE_LOCATION));
@@ -757,7 +759,7 @@ MouseMotionListener{
 		if(c ==  KeyEvent.VK_F1)
 		{
 			// Call a method to handle undoing the connection
-			undoConnection();
+			removeCurPoint();
 		}
 		// F2: Go to previous path option
 		else if(c == KeyEvent.VK_F2 || c == KeyEvent.VK_MINUS)
@@ -861,16 +863,33 @@ MouseMotionListener{
 		}
 	}
 	
+	public void goToPath()
+	{
+		String selected = null;
+		selected = JOptionPane.showInputDialog(parent, 
+				"Choose a path # between 0 and " + (paths.size() - 1), 
+				"Choose a path", JOptionPane.QUESTION_MESSAGE);
+		int pathNum = pathNumIndex;
+		try
+		{
+			pathNum = Integer.parseInt(selected);
+		}
+		catch(NumberFormatException e)
+		{
+			setStatusBarText("Please enter a integer value");
+		}
+		goToPathNumber(pathNum);
+	}
+	
 	/**
 	 * Go to the passed in path number
-	 * NOT USED CURRENTLY!
 	 * @param pathNum path number to go to.
 	 */
 	public void goToPathNumber(int pathNum)
 	{
 		// if number passed is in range
-		if(pathNum > 0 && pathNum <= paths.size() - 1)
-		{	
+		if(pathNum >= 0 && pathNum <= paths.size() - 1)
+		{
 			pathNumIndex = pathNum;
 			curPath = paths.get(pathNum);
 			//autofocus
@@ -994,7 +1013,7 @@ MouseMotionListener{
 			if(paths.size() > 0)
 			{
 				// Remove all points ont the path
-				while(undoConnection());
+				while(removeCurPoint());
 				if(paths.size() > 1)
 					paths.remove( pathNumIndex );
 				if(pathNumIndex > paths.size() -1)
@@ -1187,7 +1206,7 @@ MouseMotionListener{
 	 */
 	public void createLocation()
 	{
-		final String DEFAULT_NAME = "<Enter name here>";
+		final String DEFAULT_NAME = "<Enter Location name here>";
 		final String NO_POINT_SELECTED = "Please select a point first!"; 
 		if(curPath == null || curPath.size() == 0)
 		{
@@ -1196,9 +1215,12 @@ MouseMotionListener{
 		}
 		Point curPoint = getCurrentPoint();
 		Location newLoc = new Location(curPoint, DEFAULT_NAME);
+		newLoc.setCanPassThrough(false);
+		newLoc.setAllowIntersections(true);
+		newLoc.setDisplayName(true);
 		
 		// Create the dialog box (parent == ShowImage object)
-		final JDialog dialog = new JDialog(parent, "Edit Location");
+		final JDialog dialog = new JDialog(parent, "Create Location");
 		
 		// Set the layout
 		dialog.getContentPane().setLayout( new FlowLayout() );
@@ -1221,11 +1243,8 @@ MouseMotionListener{
 		save.addActionListener(changeListener);
 		cancel.addActionListener(changeListener);
 
-		// UGLY hardcoding for stupid flowLayout
-		dialog.setSize(925,275);
-
+		dialog.pack();
 		dialog.setVisible(true);
-		
 	}
 
 	/**
@@ -1366,43 +1385,23 @@ MouseMotionListener{
 	 */
 	public void deleteLocation(Location locToDelete)
 	{
-		final JDialog confirmDialog = new JDialog(parent, "Confirm");
-		confirmDialog.setLayout(new FlowLayout());
-		final JLabel prompt = new JLabel(
-			"Are you sure you want to delete this location?");
-		JButton yes = new JButton("Yes");
-		JButton no = new JButton("No");
+		int confirmReturn = 0;
+		confirmReturn = JOptionPane.showConfirmDialog(parent, 
+				"Are you sure you want to delete location " + locToDelete, 
+				"Delete Path", JOptionPane.YES_NO_OPTION, 
+				JOptionPane.WARNING_MESSAGE);
 		
-		confirmDialog.add(prompt);
-		confirmDialog.add(yes);
-		confirmDialog.add(no);
-		
-		confirmDialog.pack();
-		confirmDialog.setVisible(true);
-		
-		final Location passedLocationToDelete = locToDelete;
-		yes.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				String deletedLocName = passedLocationToDelete.getName();
-				// remove location
-				locations.remove(passedLocationToDelete);
-				confirmDialog.dispose();
-				confirmDialog.setVisible(false);
-				setStatusBarText("Location: " + deletedLocName + " deleted!");
-				repaint();
-			}
-		});
-		no.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				confirmDialog.dispose();
-				confirmDialog.setVisible(false);
-				setStatusBarText("Deletion canceled");
-			}
-		});
+		if (confirmReturn == JOptionPane.YES_OPTION)
+		{
+			String deletedLocName = locToDelete.getName();
+			// remove location
+			locations.remove(locToDelete);
+			setStatusBarText("Location: " + deletedLocName + " deleted!");
+			repaint();
+		}
+		else
+			setStatusBarText("Deletion canceled");
 	}
-	
 	
 	/**
 	 * This method launches a dialog box hereby known as the locationEditor
@@ -1411,9 +1410,6 @@ MouseMotionListener{
 	 */
 	public void locationEditor()
 	{
-		// The number of items (i.e. text boxes, submit buttons etc, 
-		// to be displayed per location
-
 		// The overall dialog box, this contains everything need...
 		final JDialog dialog = new JDialog(parent, "Location Editor");
 
@@ -1463,10 +1459,10 @@ MouseMotionListener{
 	}	
 
 	/**
-	 * This method deletes the current link.
+	 * This method deletes the current point from the path.
 	 * @return True if successful, false otherwise.
 	 */
-	public boolean undoConnection ()
+	public boolean removeCurPoint ()
 	{
 		// Only go back if there is a point to go to
 		if(curPath.size() > 0)

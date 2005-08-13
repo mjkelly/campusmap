@@ -464,21 +464,33 @@ public class PathOptimize
 					new BufferedOutputStream(
 							new FileOutputStream(new File(edgeFileName))));
             
-			int maxEdgeSize = 0;
+			int maxNumPointsPerEdge = 0;
 			
 			// Get the maximum number of points in the set of edgegs...
 			for (Edge tempEdge : outEdges) {
-				if(tempEdge.path.size() > maxEdgeSize)
-					maxEdgeSize = tempEdge.path.size();
+				if(tempEdge.path.size() > maxNumPointsPerEdge)
+					maxNumPointsPerEdge = tempEdge.path.size();
 			}
 			
-			// Write out the # number of bytes per selection...
-			edgeOut.writeInt(8*maxEdgeSize + 4*4);
+			
+			final int SIZE_OF_INT = 4;
+			final int NUM_BYTES_TO_WRITE_POINT = 2*SIZE_OF_INT;
+			
+			// Write out the # number of bytes per edge...(constant)
+			edgeOut.writeInt(
+					// Graphpoint ID
+					// EdgePoint1 ID
+					// EdgePoint2 ID
+					// Number of points
+					4*SIZE_OF_INT +
+					// The Points + their buffer
+					NUM_BYTES_TO_WRITE_POINT*maxNumPointsPerEdge
+			);
 			
             // for each Edge
             for(int i = 0; i < outEdges.size(); i++)
             {
-            	(outEdges.get(i)).binaryWrite(edgeOut, maxEdgeSize);
+            	(outEdges.get(i)).binaryWrite(edgeOut, maxNumPointsPerEdge);
             }
             //close stream
             edgeOut.close();
@@ -1627,8 +1639,8 @@ class GraphPoint
 	 */
 	public void binaryWriteLocation(DataOutputStream out)
 	{
-		// don't do anything if we don't have a label
-		if(this.locLabel == null)
+		// don't do anything if the graphpoint isn't attached to a location
+		if(locLabel == null)
 			return;
 	
 		try{
@@ -1648,12 +1660,12 @@ class GraphPoint
 			if(PathOptimize.debugBinaryLocations)
 				System.err.println("DisplayName:" + this.locLabel.isDisplayName());
             out.writeByte(this.locLabel.isDisplayName() ? 1 : 0);
-	        
+
             // output ID of associated GraphPoint
 			if(PathOptimize.debugBinaryLocations)
 				System.err.println("Associated GraphPoint: " + this.ID);
 			out.writeInt(this.ID);
-	        
+
             // output display name
 			if(PathOptimize.debugBinaryLocations)
 				System.err.println("Display name: " + this.locLabel.getName() 

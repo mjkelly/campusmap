@@ -39,7 +39,7 @@ public class ShowImage extends JFrame{
 	private JMenuItem prevPath, nextPath, newPath, iteratePaths,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
 	read, write, createLocationFile, changeImage, loadDefinedLocations, //IO
-	locationEditor, editLocation, createLocation, selectEditLocation;
+	locationEditor, editLocation, createLocation, selectLocation;
 	
 	// For accessing the locationName text field
 	
@@ -129,9 +129,10 @@ public class ShowImage extends JFrame{
 			{
 				ipanel.createLocation();
 			}
-			if(e.getSource() == selectEditLocation)
+			if(e.getSource() == selectLocation)
 			{
-				ipanel.selectLocation(0);  // Select location + jobID.
+				ipanel.selectLocation(
+                        ScrollablePicture.SelectLocationJobID.CENTER);
 			}
 			if(e.getSource() == iteratePaths)
 			{
@@ -233,7 +234,7 @@ public class ShowImage extends JFrame{
 		nextElement = element.add(makeJMenuItem("Next Element in path", 
 				listener, NEXT_ELEMENT_KEY));
 		centerOnElement = element.add(
-				makeJMenuItem("(C)enter on selected element", 
+				makeJMenuItem("Center on selected element", 
 						listener, CENTER_KEY));
 		element.addSeparator();
 		undoConnection = element.add(makeJMenuItem("Undo last created connection", 
@@ -247,8 +248,8 @@ public class ShowImage extends JFrame{
 				listener, LOC_EDITOR_KEY));
 		editLocation = location.add(makeJMenuItem("Edit Current Location", 
 				listener, EDIT_LOCATION));
-		selectEditLocation = location.add(makeJMenuItem(
-				"Select and edit a location", listener, SELECT_EDIT_LOCATION));
+		selectLocation = location.add(makeJMenuItem(
+				"Select a location", listener, SELECT_EDIT_LOCATION));
 		createLocation = location.add(makeJMenuItem(
 				"Create New Location (At current point)", 
 				listener, CREATE_LOCATION));
@@ -420,6 +421,11 @@ MouseMotionListener{
 	
 	// List of all locations mapped
 	final String LOCATIONS_TXT_FILE = "Locations.txt";
+    
+    // actions taken by selectLocation():
+    // center on the selected location, or create a new point connected to the
+    // selected location
+    enum SelectLocationJobID { CENTER, NEW };
 	
 	/**
 	 * 
@@ -615,7 +621,7 @@ MouseMotionListener{
 	 * to select it for either editing or creating a new point at. 
 	 * @param passedJobId What to do with the selected location
 	 */
-	public void selectLocation(int passedJobId)
+	public void selectLocation(SelectLocationJobID passedJobId)
 	{
 		//Index into the locationNames[] and locations vector
 		int index; 
@@ -662,7 +668,7 @@ MouseMotionListener{
 		dialog.pack();
 		
 		//final ScrollablePicture thisElement = this;?
-		final int jobID = passedJobId;
+		final SelectLocationJobID jobID = passedJobId;
 		
 	
 		// Can you hear the cricket's chirping?
@@ -677,12 +683,11 @@ MouseMotionListener{
 				
 				switch (jobID)
 				{
-				case 0:  // Edit selected location
-					editLocation(selectedLocation);
+				case CENTER:  // center on the selected location
 					iterateThroughPathsAtPoint(selectedLocation.cord);
 					centerOnSelectedPoint();
 					break;
-				case 1:  // middle click --> go to location
+				case NEW:  // middle click --> go to location
 					createNewPointInCurPath(selectedLocation.cord);
 					break;
 				default:
@@ -720,7 +725,7 @@ MouseMotionListener{
 	 */
 	public void middleClickGoToLocation()
 	{
-		selectLocation(1);
+		selectLocation(SelectLocationJobID.NEW);
 	}
 	
 	/**

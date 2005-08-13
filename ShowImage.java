@@ -2544,6 +2544,10 @@ MouseMotionListener{
 				(int)end.getX(), (int)end.getY() );
 	}
 	
+	/**
+	 * Sorts the location vector into an array.
+	 * @return A sorted array of the location objects.  
+	 */
 	public Location [] getSortedLocationArray()
 	{
 		
@@ -2610,6 +2614,8 @@ class Location implements Serializable, ComponentElement
 	 * The name associated with the location
 	 */
 	private String name;
+	
+	private Vector <String> aliases  = new Vector<String>();
 	
 	/**
 	 * Building code for a location
@@ -2687,7 +2693,6 @@ class Location implements Serializable, ComponentElement
 	 * @param x x coordinate for the location's Point field
 	 * @param y y coordinate for the location's Point field
 	 * @param passedName The name of the location
-	 * @param parent Allows for access to checkboxes.  
 	 */
 	public Location(int x, int y, String passedName)
 	{
@@ -2696,6 +2701,69 @@ class Location implements Serializable, ComponentElement
 		ID = IDcount++;         // Get the current ID and increment
 	}
 	
+	/**
+	 * Adds the passed string to the aliases vector.
+	 * @param s String to add to the aliases vector.
+	 */
+	public void addAlias(String s)
+	{
+		aliases.add(s);
+	}
+	
+	/**
+	 * Remove the alias at passed index.
+	 * @param index The index to remove at
+	 * @return The alias the was removed, null if bad index passed.  
+	 */
+	public String removeAlias(int index)
+	{
+		try{
+			return(aliases.remove(index));
+		}
+		catch(ArrayIndexOutOfBoundsException e)
+		{
+			System.err.println("Bad index was passed to " +
+					"Location's removeAlias()");
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * Sets the alias at passed index to passed string
+	 * @param index The index to set at
+	 * @param s String to set
+	 */
+	public void setAlias(int index, String s)
+	{
+		try{
+			aliases.set(index, s);
+		}
+		catch(ArrayIndexOutOfBoundsException e)
+		{
+			System.err.println("Bad index was passed to " +
+					"Location's setAlias()");
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * Gets the alias at the specified index
+	 * @param index The index to get the alias at.
+	 * @return The string at the specified index, else null.
+	 */
+	public String getAlias(int index)
+	{
+		try{
+			return(aliases.get(index));
+		}
+		catch(ArrayIndexOutOfBoundsException e)
+		{
+			System.err.println("Bad index was passed to " +
+					"Location's getAlias()");
+			e.printStackTrace();
+		}
+		return null;
+	}
 	/**
 	 * Overloaded toString method for outputing the name and coordinates of
 	 * a location.  Used in painting the coordinates to the screen
@@ -3007,6 +3075,9 @@ class BooleanEditorBox extends JCheckBox implements EditorBox
 	ComponentEditor parent;
 	int id;
 	private Color defaultBackgroundColor;
+	/**
+	 * Default constructor for the editor box...gets the background color.
+	 */
 	public BooleanEditorBox()
 	{
 		super();

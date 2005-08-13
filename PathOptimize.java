@@ -1670,34 +1670,64 @@ class GraphPoint
 			if(PathOptimize.debugBinaryLocations)
 				System.err.println("Display name: " + this.locLabel.getName() 
 						+ "(" + this.locLabel.getName().length() + ")");
-            out.writeInt(this.locLabel.getName().length());
-			out.writeChars(this.locLabel.getName());
+            binWriteStr(out, this.locLabel.getName());
+            //out.writeInt(this.locLabel.getName().length());
+			//out.writeChars(this.locLabel.getName());
             
             // output building code
             if(PathOptimize.debugBinaryLocations)
                 System.err.println("Building code: "
                         + this.locLabel.getBuildingCode() + "("
                         + this.locLabel.getBuildingCode().length() + ")");
-            out.writeInt(this.locLabel.getBuildingCode().length());
-            out.writeChars(this.locLabel.getBuildingCode());
+            binWriteStr(out, this.locLabel.getBuildingCode());
+            //out.writeInt(this.locLabel.getBuildingCode().length());
+            //out.writeChars(this.locLabel.getBuildingCode());
             
             // output location description
             if(PathOptimize.debugBinaryLocations)
                 System.err.println("Location description: "
                         + this.locLabel.getLocDescription() + "("
                         + this.locLabel.getLocDescription().length() + ")");
-            out.writeInt(this.locLabel.getLocDescription().length());
-            out.writeChars(this.locLabel.getLocDescription());
+            binWriteStr(out, this.locLabel.getLocDescription());
+            //out.writeInt(this.locLabel.getLocDescription().length());
+            //out.writeChars(this.locLabel.getLocDescription());
+            
+            // first write out the number of aliases
+            if(PathOptimize.debugBinaryLocations)
+                System.err.println("Location aliases (" +
+                        this.locLabel.getAliases().size() + "):");
+            out.writeInt(this.locLabel.getAliases().size());
+            
+            // then write out each alias string individually
+            for(String s: this.locLabel.getAliases()){
+                if(PathOptimize.debugBinaryLocations)
+                    System.err.println("\t" + s);
+                binWriteStr(out, s);
+            }
             
 			if(PathOptimize.debugBinaryLocations)
 				System.err.println("---end---");
 		}
 	    catch(IOException e){
-	    	System.err.println("Error in GraphPoint.binaryWriteLocation!");
+	    	System.err.println("Error in GraphPoint.binaryWriteLocation: "
+                    + e.getMessage());
 	    }
 	    
 	}
 
+    /**
+     * Write the given string to the given file stream in an easily-readable
+     * binary format.
+     * @param out output stream
+     * @param str the string to write
+     * @return the length of the string written
+     */ 
+    public int binWriteStr(DataOutputStream out, String str) throws IOException{
+        out.writeInt(str.length());
+        out.writeChars(str);
+        return str.length();
+    }
+    
 	/**
 	 * Checks to see if the location label is null, if it isn't null
 	 * returns the location label's name field with a newline.  

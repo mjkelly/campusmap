@@ -1945,9 +1945,10 @@ MouseMotionListener{
 	public void readCustomLocationInformation()
 	{
 		// Where in the tab deliminated field the following entries are located
-		final int NAME_FIELD = 0;
-		final int LOCAL_X_FIELD = 1;
-		final int LOCAL_Y_FIELD = 2;
+        final int TYPE_FIELD = 0;
+		final int NAME_FIELD = 1;
+		final int LOCAL_X_FIELD = 2;
+		final int LOCAL_Y_FIELD = 3;
 		BufferedReader stream = null;  //"Initialize" our stream
 		final String LOCATION_FILE_NAME = "locations.tab";  // name of the file
 		try{
@@ -1955,34 +1956,66 @@ MouseMotionListener{
 			stream = new BufferedReader(
 							new InputStreamReader(
 									new FileInputStream(LOCATION_FILE_NAME)));
-			
-			while(stream.ready())   // While the stream can be read...
+			// keep track of the previous location in the file
+            Location prevLoc = null;
+
+            while(stream.ready())   // While the stream can be read...
 			{
 				String line = stream.readLine();  // get line from stream
 				// Tab deliminated file ==> split on regex \t
 				String [] split = line.split("\t");
 				String name = split[NAME_FIELD];
 				// initialize the X/Y coordinates
-				int xCord = 0;
-				int yCord = 0;
-				try{
-					// Grab the X/Y coordinate from the split line
-					xCord = Integer.parseInt(split[LOCAL_X_FIELD]);
-					yCord = Integer.parseInt(split[LOCAL_Y_FIELD]);
-				}
-				// Make sure that we didn't mess up and pass non-integers 
-				// somehow
-				catch (NumberFormatException e)
-				{
-					System.err.println("Bad integer value for " + name);
-					e.printStackTrace();
-				}
-				// Add the line as a location
-				locations.add(new Location(new Point(xCord, yCord), name));
-				// create a new path
-				createNewPath();
-				// Add the location's coordinate to that path
-				createNewPointInCurPath(new Point(xCord, yCord));
+                if(split[TYPE_FIELD].equals("OFFICIAL"))
+                {
+                    int xCord = 0;
+                    int yCord = 0;
+                    try
+                    {
+                        // Grab the X/Y coordinate from the split line
+                        xCord = Integer.parseInt(split[LOCAL_X_FIELD]);
+                        yCord = Integer.parseInt(split[LOCAL_Y_FIELD]);
+                    }
+                    // Make sure that we didn't mess up and pass non-integers 
+                    // somehow
+                    catch (NumberFormatException e)
+                    {
+                        System.err.println("Bad integer value for " + name);
+                        e.printStackTrace();
+                    }
+                    // Add the line as a location
+                    prevLoc = new Location(new Point(xCord, yCord), name);
+                    locations.add(prevLoc);
+                    // create a new path
+                    createNewPath();
+                    // Add the location's coordinate to that path
+                    createNewPointInCurPath(new Point(xCord, yCord));
+                    
+                    //System.err.println("Added location: " + prevLoc);
+                }
+                else if(split[TYPE_FIELD].equals("ALIAS"))
+                {
+                    // make sure there's actually a previous location
+                    if(prevLoc != null)
+                    {
+                        // add this alias to the previous location
+                        prevLoc.addAlias(split[NAME_FIELD]);
+                        //System.err.println("Alias for " + prevLoc + ": "
+                        //       + split[NAME_FIELD]);
+                    }
+                    else
+                    {
+                        // this shouldn't happen...
+                        System.err.println("Malformed file: Alias listed with" +
+                                " no previous location.");
+                    }
+                }
+                else
+                {
+                    // ...and neither should this
+                    System.err.println("Oh no! Unknown field type: "
+                            + split[TYPE_FIELD]);
+                }
 			}
 
 		}

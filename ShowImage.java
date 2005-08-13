@@ -466,6 +466,7 @@ MouseMotionListener{
 		
 		paths.add( new Vector<Point>() );
 		curPath = paths.get(pathNumIndex);
+		setPointNumIndexToEnd();
 		setDefaultStatusBar();
 		
 		/* add the mouse-click handler */
@@ -539,10 +540,10 @@ MouseMotionListener{
 		curPath.add(pointToAdd);
 		
 		// Set the element focus to the last element (the one just created)
-		setPointNumIndex(true);
+		setPointNumIndexToEnd();
 		
 		// and redraw immediately to see the changes
-		repaint( getVisibleRect() );
+		repaint();
 		
 		// update the status bar
 		setDefaultStatusBar();
@@ -551,12 +552,17 @@ MouseMotionListener{
 		this.requestFocus();
 	}
 	
+	/**
+	 * Get the current point!
+	 * @return The current point or null if the current path has no points
+	 * (or if pathNumIndex somehow got set too large.)
+	 */
 	public Point getCurrentPoint()
 	{
 		if(pointNumIndex < 0)
-			System.err.println("pointNumIndex < 0 in getCurrentPoint()!");
+			return null;
 		if(pointNumIndex > curPath.size() - 1)
-			System.err.println("pointNumIndex too large in getCurrentPoint()!");
+			return null;
 		return(curPath.get(pointNumIndex));
 	}
 	
@@ -817,7 +823,7 @@ MouseMotionListener{
 			// Set focus
 			curPath = paths.get(--pathNumIndex);
 			// Automatically focus on the last element
-			setPointNumIndex(true);
+			setPointNumIndexToEnd();
 			// Set statusbar
 			setDefaultStatusBar();
 			repaint();
@@ -841,7 +847,7 @@ MouseMotionListener{
 			// Advance
 			curPath = paths.get(++pathNumIndex);
 			// Automatically focus on the last element
-			setPointNumIndex(true);
+			setPointNumIndexToEnd();
 			// Set statusBar
 			setDefaultStatusBar();
 			repaint();
@@ -850,6 +856,7 @@ MouseMotionListener{
 	
 	/**
 	 * Go to the passed in path number
+	 * NOT USED CURRENTLY!
 	 * @param pathNum path number to go to.
 	 */
 	public void goToPathNumber(int pathNum)
@@ -860,7 +867,7 @@ MouseMotionListener{
 			pathNumIndex = pathNum;
 			curPath = paths.get(pathNum);
 			//autofocus
-			setPointNumIndex(true);
+			setPointNumIndexToEnd();
 			// statusBar
 			setDefaultStatusBar();
 			repaint();
@@ -957,8 +964,8 @@ MouseMotionListener{
 		// Set focus
 		curPath = paths.get(pathNumIndex);
 		
-		//Start at the 0th point.  
-		pointNumIndex = 0;
+		setPointNumIndexToEnd();
+		
 		// Status bar
 		setDefaultStatusBar();
 		// dance, dance, dance!
@@ -971,7 +978,7 @@ MouseMotionListener{
 	public void centerOnSelectedPoint()
 	{
 		// Only center if pointNumIndex in range
-		if(pointNumIndex <= curPath.size() - 1)
+		if(pointNumIndex <= curPath.size() - 1 && pointNumIndex >= 0)
 		{
 			//Get a pointer to the Point that we want to center too
 			Point center = getCurrentPoint();
@@ -988,6 +995,10 @@ MouseMotionListener{
 			
 			// Scroll to the newly created rectangle
 			scrollRectToVisible(r);
+		}
+		else
+		{
+			setStatusBarText("Please select a point to center on!");
 		}
 	}
 	/**
@@ -1138,12 +1149,12 @@ MouseMotionListener{
 	{
 		final String DEFAULT_NAME = "<Enter name here>";
 		final String NO_POINT_SELECTED = "Please select a point first!"; 
-		if(curPath == null || curPath.size() < pointNumIndex + 1)
+		if(curPath == null || curPath.size() == 0)
 		{
 			parent.statusBar.setText(NO_POINT_SELECTED);
 			return;
 		}
-		Point curPoint = (Point)curPath.get( pointNumIndex );
+		Point curPoint = getCurrentPoint();
 		Location newLoc = new Location(curPoint, DEFAULT_NAME);
 		
 		// Create the dialog box (parent == ShowImage object)
@@ -1230,13 +1241,13 @@ MouseMotionListener{
 	{
 		final String NO_LOCATION_SELECTED = "Please select a location first!"; 
 		System.err.println("editLocation call received...");
-		if(curPath == null || curPath.size() < pointNumIndex + 1)
+		if(curPath == null || curPath.size() == 0)
 		{
 			parent.statusBar.setText(NO_LOCATION_SELECTED);
 			return;
 		}
 		System.err.println("Verification of lines complete...getting point...");
-		Point curPoint = (Point)curPath.get( pointNumIndex );
+		Point curPoint = getCurrentPoint();
 		if(curPoint == null)
 		{
 			parent.statusBar.setText(NO_LOCATION_SELECTED);
@@ -1271,8 +1282,6 @@ MouseMotionListener{
 		dialog.add(close);
 		dialog.add(delete);
 		dialog.pack();
-		//Ugh...why isn't pack() working?  Setting manually...
-		dialog.setSize(925,275);
 		dialog.setVisible(true);
 		
 		// Hack to pass down the location
@@ -1369,7 +1378,7 @@ MouseMotionListener{
 		final JDialog dialog = new JDialog(parent, "Location Editor");
 		
 		// Set layout of the dialog box
-		dialog.getContentPane().setLayout( new FlowLayout() );
+		dialog.setLayout( new FlowLayout() );
 		
 		// JPannel to contain the scroll
 		//JPanel panel = new JPanel();
@@ -1437,9 +1446,6 @@ MouseMotionListener{
 			
 			// remove the current node, decrement pointNumIndex
 			curPath.remove(pointNumIndex--);
-			
-			// Ensure a valid pointNumIndex;
-			setValidPointNumIndex();
 			
 			setDefaultStatusBar();
 			repaint();
@@ -1713,7 +1719,7 @@ MouseMotionListener{
 			//Set lines
 			curPath = paths.get(pathNumIndex);
 			// Set the point
-			pointNumIndex = curPath.size() - 1;
+			setPointNumIndexToEnd();
 			
 			// Do the repaint dance...woooo!
 			repaint();
@@ -1747,25 +1753,8 @@ MouseMotionListener{
 	/**
 	 * Set the pointNumIndex to the last element in the currently selected path.
 	 */
-	public void setPointNumIndex (boolean setAtEndPoint)
+	public void setPointNumIndexToEnd()
 	{
-		//If empty, set to 0
-		if(curPath.size() == 0)
-			pointNumIndex = 0;
-		//Otherwise set to it's size.  
-		else
-			pointNumIndex = curPath.size() - 1;
-	}
-	
-	/**
-	 * Ensure that the pointNumIndex is either at the first element or the 
-	 * last element in the currently selected path.
-	 */
-	public void setValidPointNumIndex()
-	{
-		if(pointNumIndex < 0)
-			pointNumIndex = 0;
-		if(pointNumIndex >= curPath.size())
 			pointNumIndex = curPath.size() - 1;
 	}
 	
@@ -2178,10 +2167,15 @@ MouseMotionListener{
 	 */
 	public void iterateThroughPathsAtPoint(Point p)
 	{
+		if(p == null)
+		{
+			setStatusBarText("Please select a point to iterate over");
+			return;
+		}
 		if(!p.equals(previouslySearchedPoint))
 		{
 			previouslySearchedPoint = p;
-			lastVertex = 0;
+			lastVertex = -1;
 		}
 		
 		// Get the next path in the search
@@ -2191,7 +2185,7 @@ MouseMotionListener{
 		if(lastVertex < 0)
 		{
 			//System.err.println("No path found...starting again");
-			lastVertex = 0;  // start at beginning again
+			lastVertex = -1;  // start at beginning again
 			iterateThroughPathsAtPoint(p);  // search
 		}
 		
@@ -2239,10 +2233,9 @@ MouseMotionListener{
 					return(i);
 				}
 		
-		// Return an error & output a message if path couldn't be found.  
 		parent.statusBar.setText(allListed);
 		return(-1);
-		
+
 	}
 	
 	/**
@@ -2285,12 +2278,11 @@ MouseMotionListener{
 	 * @return string as described, else empty string.
 	 */
 	public String printCurrentPoint (){
-		// Print out point only if the size is greater than 0 &
-		// The pointNumIndex is greater than zero.  
+		// Print out point only if the size is greater than 0
 		if( curPath.size() > 0)
 		{
-			return(",  @ (" + ((Point)curPath.get( pointNumIndex )).x + 
-					", " + ((Point)curPath.get( pointNumIndex )).y + ")");
+			return(",  @ (" + getCurrentPoint().x + 
+					", " + getCurrentPoint().y + ")");
 		}
 		return("");
 	}
@@ -2444,16 +2436,14 @@ MouseMotionListener{
 					g.setColor(OUT_OF_FOCUS_PATH);
 					// if we have a "previous" dot to connect to, and at least
 					// ONE of the dots is visible, connect the two with a line
-					if(prev != null && 
-							(visible.contains(cur) || visible.contains(prev))){
+					if(prev != null /*&& 
+							(visible.contains(cur) || visible.contains(prev))*/){
 						connectTheDots(g, prev, cur);
 					}
-					
 					if(pointInPath == ((Vector)paths.get(pathsIndex)).size()-1)
 					{
 						g.setColor(LASTPLACED_DOT);
 					}
-					
 				}
 				
 				// now draw the actual dot
@@ -3058,7 +3048,7 @@ class StringEditorBox extends JTextArea implements EditorBox
 	public StringEditorBox()
 	{
 		// Create the JText area: height = 1, width = 60
-		super(1, 80);
+		super(1, 50);
 		defaultBackgroundColor = getBackground();
 		this.addKeyListener(new KeyListener(){
 			/** Stub */

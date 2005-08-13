@@ -1155,7 +1155,7 @@ MouseMotionListener{
 					locout.writeObject(loc.getName());
 				}
 			}
-			if(LOCATION_VERSION_NUMBER == 2)
+			if(LOCATION_VERSION_NUMBER == 2 || LOCATION_VERSION_NUMBER == 3)
 			{
 				// print out the size of the location Vector
 				locout.writeInt(locationsToWrite.size());
@@ -1171,6 +1171,8 @@ MouseMotionListener{
 					locout.writeBoolean(loc.isDisplayName());
 					locout.writeInt(loc.ID);
 					locout.writeObject(loc.getName());
+					if(LOCATION_VERSION_NUMBER == 3)
+						locout.writeObject(loc.getAliases());
 					
 					// The following two lines are the difference between
 					// version 1 and version 2
@@ -1634,7 +1636,7 @@ MouseMotionListener{
 			 * Version 2:
 			 * Added two text field to location: buildingCode and locDescription
 			 */
-			else if(locVersionNumber == 2)
+			else if(locVersionNumber == 2 || locVersionNumber == 3)
 			{
 				// Get the number of locations
 				int numLocations = locin.readInt();
@@ -1666,6 +1668,8 @@ MouseMotionListener{
 				// Temporary location description for location
 				String tempLocDescription;
 				
+				Vector <String> tempAliases = null;
+				
 				// Clean out the locations vector to store in the new info
 				locations.clear();
 				for(int locNum = 0; locNum < numLocations; locNum++)
@@ -1677,6 +1681,9 @@ MouseMotionListener{
 					tempDisplayName = locin.readBoolean();
 					tempID = locin.readInt();
 					tempName = (String)locin.readObject();
+					
+					if(locVersionNumber == 3)
+						tempAliases = (Vector<String>)locin.readObject();
 					
 					tempBuildingCode = (String)locin.readObject();
 					tempLocDescription = (String)locin.readObject();
@@ -1693,6 +1700,7 @@ MouseMotionListener{
 					tempLocation.setAllowIntersections(tempIntersect);
 					tempLocation.setCanPassThrough(tempCanPass);
 					tempLocation.setDisplayName(tempDisplayName);
+					tempLocation.setAliases(tempAliases);
 					
 					// Set the two strings: Building Code and 
 					// Location description
@@ -2571,7 +2579,7 @@ MouseMotionListener{
 
 /**
  * Interface: Used for the ComponentEditor class
- * Note: Indexes between get and set MUST match
+ * Note: Indexes in get and set MUST match
  *       The number of values must match the # of descriptions
  */
 interface ComponentElement
@@ -2580,6 +2588,7 @@ interface ComponentElement
 	 * Sets the passed element at passed index
 	 * @param value modification to string
 	 * @param index index to place modification
+	 * @return String describing an error, if one occured, else null.
 	 */
 	String setElementValue(Object value, int index);
 	/**
@@ -2699,6 +2708,24 @@ class Location implements Serializable, ComponentElement
 		cord = new Point(x,y);  // Create coordinate based on passed in values
 		name = passedName;      // Copy name string (Strings are constants!)
 		ID = IDcount++;         // Get the current ID and increment
+	}
+	
+	/**
+	 * Sets the aliases vector to the passed in vector
+	 * @param newVector The string vector to set
+	 */
+	public void setAliases(Vector <String> newVector)
+	{
+		aliases = newVector;
+	}
+	
+	/**
+	 * Returns a vector that it is the current aliases vector
+	 * @return  The aliases vector
+	 */
+	public Vector<String> getAliases()
+	{
+		return(aliases);
 	}
 	
 	/**

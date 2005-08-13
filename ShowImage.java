@@ -1301,19 +1301,16 @@ MouseMotionListener{
 	public void editLocation()
 	{
 		final String NO_LOCATION_SELECTED = "Please select a location first!"; 
-		System.err.println("editLocation call received...");
 		if(curPath == null || curPath.size() == 0)
 		{
 			parent.statusBar.setText(NO_LOCATION_SELECTED);
 			return;
 		}
-		System.err.println("Verification of lines complete...getting point...");
 		Point curPoint = getCurrentPoint();
 		if(curPoint == null)
 		{
 			parent.statusBar.setText(NO_LOCATION_SELECTED);
 		}
-		System.err.println("Point checked for null..");
 		
 		int locationIndex = findLocationAtPoint(curPoint);
 		if(locationIndex < 0)
@@ -1334,7 +1331,6 @@ MouseMotionListener{
 		dialog.getContentPane().setLayout( new FlowLayout() );
 		// Create the JPanel for the location
 		JPanel componentPanel = new ComponentEditor(locToEdit);
-		
 		JButton close = new JButton("close");
 		JButton delete = new JButton("Delete Location");
 		// Add JPanel
@@ -1700,7 +1696,8 @@ MouseMotionListener{
 					tempLocation.setAllowIntersections(tempIntersect);
 					tempLocation.setCanPassThrough(tempCanPass);
 					tempLocation.setDisplayName(tempDisplayName);
-					tempLocation.setAliases(tempAliases);
+					if(locVersionNumber == 3)
+						tempLocation.setAliases(tempAliases);
 					
 					// Set the two strings: Building Code and 
 					// Location description
@@ -1777,7 +1774,7 @@ MouseMotionListener{
 			parent.statusBar.setText(ERROR_READING_DATA);
 			
 			/**
-			 * If the path data didn't load, but location did did...
+			 * If the path data didn't load, but location did...
 			 * Create a new path for each location and add the location's point
 			 * to that path.
 			 */
@@ -1786,6 +1783,8 @@ MouseMotionListener{
 				System.err.println("Path loading failed, " +
 				"location loading sucessful");
 				
+				System.err.println("Adding new path and point " +
+						"for each location.");
 				// For every location entry
 				for (Location tempLoc : locations) {
 					// create a new path
@@ -2657,7 +2656,7 @@ class Location implements Serializable, ComponentElement
 	 */
 	private String name;
 	
-	private Vector <String> aliases  = new Vector<String>();
+	private Vector <String> aliases;
 	
 	/**
 	 * Building code for a location
@@ -2728,6 +2727,9 @@ class Location implements Serializable, ComponentElement
 	{
 		cord = p;
 		this.name = name;
+		ID = IDcount++;         // Get the current ID and increment
+		aliases = new Vector<String>();
+		addAlias("Foo");
 	}
 	
 	/**
@@ -2738,9 +2740,7 @@ class Location implements Serializable, ComponentElement
 	 */
 	public Location(int x, int y, String passedName)
 	{
-		cord = new Point(x,y);  // Create coordinate based on passed in values
-		name = passedName;      // Copy name string (Strings are constants!)
-		ID = IDcount++;         // Get the current ID and increment
+		this(new Point(x,y), passedName);
 	}
 	
 	/**
@@ -2890,7 +2890,7 @@ class Location implements Serializable, ComponentElement
 		String [] descriptions 
 		= {"Name of Location @ (" + this.cord.x + ", " + this.cord.y + ")" //Name
 				, "ID", "Description", "canPassThrough", 
-				"allowIntersections", "displayName"};
+				"allowIntersections", "displayName", "Aliases"};
 		return (descriptions);
 	}
 	
@@ -2915,6 +2915,8 @@ class Location implements Serializable, ComponentElement
 			return new Boolean(isAllowIntersections());
 		case 5:
 			return new Boolean(isDisplayName());
+		case 6:
+			return getAliases();
 		default:
 			return "ERROR!";
 		}
@@ -2952,9 +2954,30 @@ class Location implements Serializable, ComponentElement
 		case 5:
 			setDisplayName(((Boolean)value).booleanValue());
 			break;
+		case 6:
+			this.setAliases((Vector<String>)value);
+			break;
 		}
 		return null;
 	}
+}
+
+interface FieldEditor
+{
+	/**
+	 * Gets the variable value of a variable identified by the specified index
+	 * @param id The identifier for the variable
+	 * @return The variable value as an object
+	 */
+	Object getVariableValue(int id);
+	
+	/**
+	 * Set the value of a variable (choosing the variable using the passed id
+	 * @param newVal The value to change to
+	 * @param id The value to change to.
+	 * @return error string if an error occured, else returns the empty string
+	 */
+	String setVariableValue(Object newVal, int id);
 }
 
 /**
@@ -2963,16 +2986,25 @@ class Location implements Serializable, ComponentElement
  */
 interface EditorBox
 {
-	final static Color SUBMIT_COLOR = Color.GREEN, 
-	ERROR_COLOR  = Color.RED,
-	CHANGE_COLOR = Color.LIGHT_GRAY;
+	/**
+	 * Submit color
+	 */
+	final static Color SUBMIT_COLOR = Color.GREEN;
+	/**
+	 * Error color
+	 */
+	final static Color ERROR_COLOR  = Color.RED;
+	/**
+	 * Change color
+	 */
+	final static Color CHANGE_COLOR = Color.LIGHT_GRAY;
 	/**
 	 * Links the EditorBox to a specific variable of the ComponentEditor.
 	 * @param parent The ComponentEditor to link to
 	 * @param id for identification of the variable that can be used
 	 * to get and set the variable in calls to parent.
 	 */
-	public void linkToVariable(ComponentEditor parent, int id);
+	public void linkToVariable(FieldEditor parent, int id);
 	/**
 	 * This method should save changes to the variable that the editor box
 	 * controls.
@@ -2991,7 +3023,7 @@ interface EditorBox
  * into the object.  (which causes a second level of highlighting).  
  * @author David Lindquist
  */
-class ComponentEditor extends JPanel
+class ComponentEditor extends JPanel implements FieldEditor
 {
 	final static long serialVersionUID = 1;
 	private EditorBox [] boxes;
@@ -3029,6 +3061,14 @@ class ComponentEditor extends JPanel
 				// Instantiate the BooleanEditorBoxes
 				boxes[i] = new BooleanEditorBox();
 			}
+			else if(element.getElementValue(i) instanceof Vector)
+			{
+				boxes[i] = new StringVectorEditorBox();
+			}
+			else
+			{
+				System.err.println("We got an unknown type!" + element.getElementValue(i));
+			}
 			boxes[i].linkToVariable(this, i);
 		}
 		
@@ -3040,16 +3080,24 @@ class ComponentEditor extends JPanel
 		
 		// Set the layout type...all columns...description/element + submit
 		// button
-		this.setLayout(new GridLayout(numElements*2 + 1, 1));
+		GridBagLayout gridBag = new GridBagLayout();
+		GridBagConstraints constraint = new GridBagConstraints();
+		setLayout(gridBag);
+		
+		constraint.gridwidth = GridBagConstraints.REMAINDER;
+		
 		
 		// Assign the elements into the panel
 		for(int i = 0; i < numElements; i++)
 		{
-			add(new JLabel(descriptions[i]));  // add description
+			JLabel descript = new JLabel(descriptions[i]);
+			gridBag.setConstraints(descript, constraint);
+			add(descript);  // add description
 			
 			try
 			{
 				JComponent c = (JComponent)boxes[i];
+				gridBag.setConstraints(c, constraint);
 				this.add(c);  // add the JTextBox
 			}
 			catch(ClassCastException e)
@@ -3061,6 +3109,7 @@ class ComponentEditor extends JPanel
 		}
 		// Add the submit button
 		this.add(submit);
+		gridBag.setConstraints(submit, constraint);
 	}
 	
 	/**
@@ -3077,9 +3126,9 @@ class ComponentEditor extends JPanel
 	}
 	
 	/**
-	 * Gets value of at given index/id
-	 * @param id The index/id
-	 * @return Content of variable
+	 * Gets the variable value of a variable identified by the specified index
+	 * @param id The identifier for the variable
+	 * @return The variable value as an object
 	 */
 	public Object getVariableValue(int id)
 	{	return element.getElementValue(id); }
@@ -3096,8 +3145,6 @@ class ComponentEditor extends JPanel
 		if(!result.equals(""))
 			System.err.println(result);
 	}
-	
-
 	
 	/**
 	 * Response for the submit button
@@ -3129,75 +3176,98 @@ class ComponentEditor extends JPanel
 	}
 }
 
-class BooleanEditorBox extends JCheckBox implements EditorBox
+/**
+ * This class is both an editorBox and a field editor!
+ * It is an EditorBox for a Vector<String> object, while being a FieldEditor for 
+ * all of the Strings in the object.
+ */
+class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 {
-	final static long serialVersionUID = 5;
-	ComponentEditor parent;
-	int id;
-	private Color defaultBackgroundColor;
+	final static long serialVersionUID = 6; //removes warning
+	private Vector<StringEditorBox> stringEditors = 
+		new Vector<StringEditorBox>();
+	private FieldEditor parent = null;
+	private GridBagConstraints constraint;
+	private GridBagLayout layout;
+	int vectorId;
 	/**
-	 * Default constructor for the editor box...gets the background color.
+	 * Default constructor for StringVectorEditorBox
 	 */
-	public BooleanEditorBox()
+	public StringVectorEditorBox()
 	{
-		super();
-		defaultBackgroundColor = getBackground();
-	}
-	public void linkToVariable(ComponentEditor parent, int id)
-	{
-		this.parent = parent;
-		this.id = id;
-		setSelected(parentValue());
-		this.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{	if(changeInElement())
-					setBackground(EditorBox.CHANGE_COLOR);
-				else
-					setBackground(defaultBackgroundColor);
-			}
-		});
+		constraint =  new GridBagConstraints();
+		layout = new GridBagLayout();
+		constraint.weightx = GridBagConstraints.REMAINDER;
+		setLayout(layout);
 	}
 
-	/**
-	 * Gets the value of the variable
-	 * @return The value of the variable.
-	 */
-	public boolean parentValue()
+	public void linkToVariable(FieldEditor parent, int id)
 	{
-		return ((Boolean)parent.getVariableValue(id)).booleanValue();
+		System.err.println("LinkToVariable called!");
+		this.parent = parent;
+		this.vectorId = id;
+		Vector<String> initialVec = (Vector<String>)parent.getVariableValue(id);
+		for(int i = 0; i< initialVec.size(); i++)
+		{
+			StringEditorBox boxToAdd = new StringEditorBox();
+			boxToAdd.linkToVariable(this, i);
+			JButton removeButton = new JButton("Remove");
+			//boxToAdd.linkToVariable(this, i);
+			stringEditors.add(i, boxToAdd);
+			add(boxToAdd);
+			layout.setConstraints(boxToAdd, constraint);
+			add(removeButton);
+			layout.setConstraints(removeButton, constraint);
+			
+			final StringEditorBox passedBoxToAdd = boxToAdd;
+			final JButton passedRemoveButton = removeButton;
+			removeButton.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e)
+				{
+					passedBoxToAdd.setVisible(false);
+					passedRemoveButton.setVisible(false);
+					repaint();
+				}
+			});
+		}
 	}
-	
-	/**
-	 * Saves changes to the variable.
-	 * @return String passes back an error if one occured while setting the 
-	 * value
-	 */
+
+	public void refreshDisplay()
+	{
+		repaint();
+	}
 	public String saveChange()
 	{
-		String error = "";
-		if(changeInElement())
+		for(StringEditorBox box: stringEditors)
 		{
-			error =  parent.setVariableValue(isSelected(), id);
-			if(error != null)  // if there is an error message
-			{
-				setBackground(EditorBox.ERROR_COLOR);
-				return error;
-			}
-			else
-				setBackground(EditorBox.SUBMIT_COLOR);
+			box.saveChange();
 		}
 		return "";
 	}
+
 	/**
-	 * Determins if there is a change in the box.
-	 * @return True if changed, else false.  
+	 * Gets the variable value of a variable identified by the specified index
+	 * @param id The identifier for the variable
+	 * @return The variable value as an object
 	 */
-	public boolean changeInElement()
-	{
-		return(parentValue() != isSelected());
+	public Object getVariableValue(int id) {
+		System.err.println("Calling for variable id = " + id);
+		Vector<String> tempVect = (Vector<String>)parent.getVariableValue(vectorId);
+		return(tempVect.get(id));
+	}
+
+	/**
+	 * Set the value of a variable (choosing the variable using the passed id
+	 * @param newVal The value to change to
+	 * @param id The value to change to.
+	 * @return error string if an error occured, else returns the empty string
+	 */
+	public String setVariableValue(Object newVal, int id) {
+		Vector<String> tempVect = (Vector<String>)parent.getVariableValue(id);
+		tempVect.set(id,(String)newVal);
+		return "";
 	}
 }
-
 /**
  * This class provides a customized JTextArea that has methods to detect
  * if it's content has changed from a value identified by the box's ID.
@@ -3207,7 +3277,7 @@ class BooleanEditorBox extends JCheckBox implements EditorBox
 class StringEditorBox extends JTextArea implements EditorBox
 {
 	final static long serialVersionUID = 1;
-	private ComponentEditor parent;  // parent for sending messages
+	private FieldEditor parent;  // parent for sending messages
 	//for background colors
 	private int id; // The ID of the string element that the box is storing
 	private Color defaultBackgroundColor;
@@ -3248,7 +3318,7 @@ class StringEditorBox extends JTextArea implements EditorBox
 	 * @param id integer ID: the array index of the passed variable, used to 
 	 * determine what variable to get/set in calls to the parent.
 	 */
-	public void linkToVariable(ComponentEditor parent, int id)
+	public void linkToVariable(FieldEditor parent, int id)
 	{
 		// Set the default text
 		this.setText((String)parent.getVariableValue(id));
@@ -3320,3 +3390,76 @@ class StringEditorBox extends JTextArea implements EditorBox
 	public void resetColor()
 	{ this.setBackground(defaultBackgroundColor); }
 }
+
+
+class BooleanEditorBox extends JCheckBox implements EditorBox
+{
+	final static long serialVersionUID = 5;
+	FieldEditor parent;
+	int id;
+	private Color defaultBackgroundColor;
+	/**
+	 * Default constructor for the editor box...gets the background color.
+	 */
+	public BooleanEditorBox()
+	{
+		super();
+		defaultBackgroundColor = getBackground();
+	}
+	
+	public void linkToVariable(FieldEditor parent, int id)
+	{
+		this.parent = parent;
+		this.id = id;
+		setSelected(parentValue());
+		this.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{	if(changeInElement())
+					setBackground(EditorBox.CHANGE_COLOR);
+				else
+					setBackground(defaultBackgroundColor);
+			}
+		});
+	}
+
+	/**
+	 * Gets the value of the variable
+	 * @return The value of the variable.
+	 */
+	public boolean parentValue()
+	{
+		return ((Boolean)parent.getVariableValue(id)).booleanValue();
+	}
+	
+	/**
+	 * Saves changes to the variable.
+	 * @return String passes back an error if one occured while setting the 
+	 * value
+	 */
+	public String saveChange()
+	{
+		String error = "";
+		if(changeInElement())
+		{
+			error =  parent.setVariableValue(isSelected(), id);
+			if(error != null)  // if there is an error message
+			{
+				setBackground(EditorBox.ERROR_COLOR);
+				return error;
+			}
+			else
+				setBackground(EditorBox.SUBMIT_COLOR);
+		}
+		return "";
+	}
+	
+	/**
+	 * Determins if there is a change in the box.
+	 * @return True if changed, else false.  
+	 */
+	public boolean changeInElement()
+	{
+		return(parentValue() != isSelected());
+	}
+}
+

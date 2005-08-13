@@ -1,4 +1,4 @@
-// vim: tabstop=4 shiftwidth=4 textwidth=79 expandtab
+    // vim: tabstop=4 shiftwidth=4 textwidth=79 expandtab
 /*-----------------------------------------------------------------
  * $Id$
  * Editor for map path data.
@@ -458,8 +458,36 @@ MouseMotionListener{
 		/* add the mouse-click handler */
 		addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
+				int x = e.getX();
+				int y = e.getY();
 				if(SwingUtilities.isLeftMouseButton(e)) {
-					createNewPointInCurPath(e.getPoint());
+                    // Left control-click ==> select closest location
+                    // if only control is down
+				    if(e.isControlDown() && !e.isAltDown() && !e.isShiftDown()){
+                        double dist = -1.0;
+                        double minDist = -1.0;
+                        Location closestLoc = null;
+                        // select the location closest to the click
+                        for(Location l: locations){
+                            double dx = e.getX() - l.cord.x;
+                            double dy = e.getY() - l.cord.y;
+                            dist = Math.sqrt(dx*dx + dy*dy);
+                            if(minDist == -1.0 || minDist > dist){
+                                minDist = dist;
+                                closestLoc = l;
+                            }
+                        }
+                        
+                        // select the closest point we found
+                        if(closestLoc != null){
+                            iterateThroughPathsAtPoint(closestLoc.cord);
+                        }
+				    }
+                    // Left click ==> create new point in the current path
+				    // regular click; no modifiers
+				    else{
+				        createNewPointInCurPath(new Point(x, y));
+				    }
 				}
 				else if(SwingUtilities.isRightMouseButton(e)) {
 					// Change current point's coordinates

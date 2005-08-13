@@ -218,6 +218,13 @@ sub loadLocations{
 		$thisLoc->{'Description'} = readJavaString(*INPUT);
 		print STDERR "Description: $thisLoc->{'Description'}\n" if DEBUG;
 
+		# read the location's aliases, one at a time
+		my $numAliases = readInt(*INPUT);
+		@{$thisLoc->{'Aliases'}} = ();
+		for(1..$numAliases){
+			push(@{$thisLoc->{'Aliases'}}, readJavaString(*INPUT));
+		}
+
 		print STDERR "Storing under " . nameNormalize($name) . "\n" if DEBUG;
 		print STDERR "---end---\n" if DEBUG;
 	}

@@ -2730,6 +2730,7 @@ class Location implements Serializable, ComponentElement
 		ID = IDcount++;         // Get the current ID and increment
 		aliases = new Vector<String>();
 		addAlias("Foo");
+		addAlias("Bar");
 	}
 	
 	/**
@@ -3091,8 +3092,13 @@ class ComponentEditor extends JPanel implements FieldEditor
 		for(int i = 0; i < numElements; i++)
 		{
 			JLabel descript = new JLabel(descriptions[i]);
+			if(element.getElementValue(i) instanceof Boolean)
+				constraint.gridwidth = GridBagConstraints.RELATIVE;
+				
 			gridBag.setConstraints(descript, constraint);
 			add(descript);  // add description
+			
+			constraint.gridwidth = GridBagConstraints.REMAINDER;
 			
 			try
 			{
@@ -3120,6 +3126,7 @@ class ComponentEditor extends JPanel implements FieldEditor
 	 */
 	public String setVariableValue(Object newVal, int id)
 	{
+		repaint();
 		// update value
 		String possibleError = element.setElementValue(newVal, id);
 		return possibleError;
@@ -3197,45 +3204,108 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 	{
 		constraint =  new GridBagConstraints();
 		layout = new GridBagLayout();
-		constraint.weightx = GridBagConstraints.REMAINDER;
 		setLayout(layout);
 	}
 
 	public void linkToVariable(FieldEditor parent, int id)
 	{
-		System.err.println("LinkToVariable called!");
 		this.parent = parent;
 		this.vectorId = id;
-		Vector<String> initialVec = (Vector<String>)parent.getVariableValue(id);
-		for(int i = 0; i< initialVec.size(); i++)
+
+		//draw stuff
+		regenerate();
+	}
+
+	public void regenerate()
+	{
+		this.removeAll();
+		stringEditors.clear();
+		// Add button
+		JButton addButton = new JButton("Add");
+		add(addButton);
+		
+		Vector<String> initialVec = getParentVector();
+		for(int i = 0; i < initialVec.size(); i++)
 		{
-			StringEditorBox boxToAdd = new StringEditorBox();
-			boxToAdd.linkToVariable(this, i);
+			StringEditorBox box = new StringEditorBox();
+			box.linkToVariable(this, i);
+			stringEditors.add(i, box);
+			
 			JButton removeButton = new JButton("Remove");
-			//boxToAdd.linkToVariable(this, i);
-			stringEditors.add(i, boxToAdd);
-			add(boxToAdd);
-			layout.setConstraints(boxToAdd, constraint);
+			add(box);
+			constraint.gridwidth = GridBagConstraints.RELATIVE;
+			layout.setConstraints(box, constraint);
 			add(removeButton);
+			constraint.gridwidth = GridBagConstraints.REMAINDER;
 			layout.setConstraints(removeButton, constraint);
 			
-			final StringEditorBox passedBoxToAdd = boxToAdd;
-			final JButton passedRemoveButton = removeButton;
+			final StringEditorBox passedBox = box;
 			removeButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e)
 				{
-					passedBoxToAdd.setVisible(false);
-					passedRemoveButton.setVisible(false);
-					repaint();
+					removeField(stringEditors.indexOf(passedBox));
+					regenerate();
 				}
 			});
+			repaint();
+			
 		}
-	}
 
-	public void refreshDisplay()
-	{
+		layout.setConstraints(addButton, constraint);
+		addButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				addField();
+				regenerate();
+			}
+		});
+		for(Component c : getComponents())
+		{
+			System.err.println(c.toString());
+			c.setVisible(true);
+			c.repaint();
+		}
+		this.setVisible(true);
 		repaint();
 	}
+	
+	/**
+	 * Adds a new Box, returns the box to allow it to be added
+	 * to the display.
+	 * @return The new box.
+	 */
+	public StringEditorBox addField()
+	{
+		// Get parent's vector of strings
+		Vector<String> tempVect = getParentVector();
+		// Add new element
+		tempVect.add("<New>");
+		// Create a new StringEditor box to use for the new field
+		StringEditorBox newBox = new StringEditorBox();
+		// Link up the variable (that we created earlier)
+		newBox.linkToVariable(this, stringEditors.size());
+		// Add the box to the stringEditor Boxes
+		stringEditors.add(newBox);
+		repaint();
+		return(newBox);
+	}
+
+	/**
+	 * Removes an element from "stored" vector at the passed index
+	 * @param i The index of the element to remove.
+	 */
+	public void removeField(int i)
+	{
+		Vector<String> tempVect = getParentVector();
+		tempVect.remove(i);
+		stringEditors.remove(i);
+		repaint();
+	}
+
+	/**
+	 * Make all of the StringEditorBoxes save
+	 * @return The empty string...always
+	 */
 	public String saveChange()
 	{
 		for(StringEditorBox box: stringEditors)
@@ -3251,9 +3321,19 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 	 * @return The variable value as an object
 	 */
 	public Object getVariableValue(int id) {
-		System.err.println("Calling for variable id = " + id);
-		Vector<String> tempVect = (Vector<String>)parent.getVariableValue(vectorId);
+		Vector<String> tempVect = getParentVector();
 		return(tempVect.get(id));
+	}
+	
+	/**
+	 * Returns the parent's vector (Assumes that the vectorId was 
+	 * correctly assigned).
+	 * @return The Vector&lt;String&gt; that is associated with this
+	 * object's ID.  
+	 */
+	public Vector<String> getParentVector()
+	{
+		return (Vector<String>)parent.getVariableValue(vectorId);
 	}
 
 	/**
@@ -3263,9 +3343,9 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 	 * @return error string if an error occured, else returns the empty string
 	 */
 	public String setVariableValue(Object newVal, int id) {
-		Vector<String> tempVect = (Vector<String>)parent.getVariableValue(id);
+		Vector<String> tempVect = (Vector<String>)parent.getVariableValue(vectorId);
 		tempVect.set(id,(String)newVal);
-		return "";
+		return null;
 	}
 }
 /**

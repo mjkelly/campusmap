@@ -25,7 +25,7 @@ use File::Temp ();
 use HTML::Template;
 use GD;
 
-use MapGlobals qw(TRUE FALSE INFINITY between asInt @SIZES @SCALES);
+use MapGlobals qw(TRUE FALSE INFINITY between asInt round @SIZES @SCALES);
 use LoadData qw(nameNormalize);
 use MapGraphics;
 use ShortestPath;
@@ -617,7 +617,7 @@ if($template eq 'plain'){
 	# this is tells whether we're actually displaying a path between two separate locations
 	$tmpl->param( GOT_PATH => $havePath );
 	$tmpl->param( DISTANCE => sprintf("%.02f", $dist || 0) );
-	$tmpl->param( TIME => sprintf("%.02f", ($dist || 0)*$mpm) );
+	$tmpl->param( TIME => formatTime(($dist||0)*$mpm) );
 
 	# a bunch of boolean values, for whatever strange logic we may need inside the template
 	$tmpl->param( SRC_FOUND => $src_found );
@@ -704,7 +704,7 @@ elsif ($template eq 'js'){
 
 	# this is tells whether we're actually displaying a path between two separate locations
 	$tmpl->param( DISTANCE => sprintf("%.02f", $dist || 0) );
-	$tmpl->param( TIME => sprintf("%.02f", ($dist || 0)*$mpm) );
+	$tmpl->param( TIME => formatTime(($dist||0)*$mpm) );
 
 	# a bunch of boolean values, for whatever strange logic we may need inside the template
 	$tmpl->param( SRC_FOUND => $src_found );
@@ -977,6 +977,22 @@ sub pickZoom{
 }
 
 
+###################################################################
+# Given a search string and a hashref of locations (returned by
+# MapGlobals::loadLocations()), find the best match, or return a list of
+# possible matches if no single sufficiently good match exists.
+#
+# Args:
+#	- the search string
+#	- a hashref of locations
+# Returns:
+#	- an array of hashrefs: each contains two keys: 'id', which gives the
+#	  location ID; and 'matches', which is a float between 0 and 1,
+#	  representing the "goodness" of the match. The array is ordered by the
+#	  'matches' key of each element. If only one element is returned, it is
+#	  a good match. If more than one is returned, they should be displayed
+#	  for the user to choose between.
+###################################################################
 sub findLocation{
 	my($text, $locations) = @_;
 
@@ -997,4 +1013,20 @@ sub findLocation{
 	elsif($text ne ''){
 		return LoadData::findName($text, $locations);
 	}
+}
+
+###################################################################
+# Given a number of minutes, format it nicely.
+# Args:
+#	- number of minutes
+# Returns:
+#	- a nice string representing the argument
+###################################################################
+sub formatTime{
+	my $t = shift;
+	my $min = asInt($t);
+	my $low = $t - $min;
+	my $secs = round($low*60);
+	$secs = '0' . $secs if($secs < 10);
+	return round($min) . ':' . $secs;
 }

@@ -11,7 +11,7 @@ package LoadData;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(nameNormalize);
+@EXPORT_OK = qw(nameNormalize tokenize);
 @EXPORT = qw();
 
 
@@ -704,6 +704,9 @@ SEARCH:				foreach my $s_tok (@search_toks){
 sub tokenize{
 	my($str) = @_;
 
+	# internal punctuation is gone
+	$str =~ s/(\w)'(\w)/$1$2/g;
+
 	# split on whitespace
 	my @toks = split(/[\s\/]+/, $str);
 
@@ -714,7 +717,7 @@ sub tokenize{
 	foreach (@toks){
 		$norm_str = nameNormalize($_);
 		next if( $norm_str eq '' );
-		next if( $norm_str =~ /^(and|of|by|for|hall)$/ );
+		next if( $norm_str =~ /^(and|of|by|for)$/ );
 
 		$newtoks{$norm_str} = 1;
 	}

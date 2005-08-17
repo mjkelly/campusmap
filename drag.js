@@ -79,10 +79,11 @@ var buttonScrollCount = 0;
 var buttonDelay = 15;
 var buttonIncrement = 10;
 
-// for tracking zoom levels: view.curZoom is an index into zoomLevels, which is
-// an array of ZoomLevel objects
-var zoomLevels;
+// the size multipliers of the various zoom levels.
+// scales[0] should always be 1.
 var scales = new Array(1, 0.5, 0.25, 0.125);
+// an array of Map objects, representing the possible base images
+var maps;
 
 var locationList = new Array();
 var pathObj;
@@ -156,19 +157,15 @@ function basicInit(){
 	registerTextInput("to");
 	startListen();
 
-	// Create the zoomLevel objects.  
-	// Setup for the zoom levels
-	zoomLevels = new Array(
-		new ZoomLevel('map', 1,     36, 33, 7200, 6600),
-		new ZoomLevel('map', 0.5,   18, 17, 3600, 3300),
-		new ZoomLevel('map', 0.25,  9,  9,  1800, 1650),
-		new ZoomLevel('map', 0.125, 5,  5,  900,  825 )
+	// initialize the possible base maps
+	maps = new Array(
+		new Map('map', 0, 0, 7200, 6600),
+		new Map('sat', 0, 0)
 	);
-	//view.curZoom = 2; // this is an index into zoomLevels
 
 	// build the zoom buttons
 	var zoomHTML = "";
-	for(var i = 0; i < zoomLevels.length; i++){
+	for(var i = 0; i < scales.length; i++){
 		zoomHTML += '<a href="javascript:setZoom(' + i + ')"><img id="zoomButton_' + i + '" src="'
 			+ zoomButtonURL
 			+ '" width="30" height="20" border="0" /></a><br />';
@@ -513,7 +510,7 @@ function zoomIn(){
 * The "zoom out" button was pressed.
 ******************************************************************/
 function zoomOut(){
-	if(view.curZoom < zoomLevels.length - 1)
+	if(view.curZoom < scales.length - 1)
 		view.setZoomLevel(view.curZoom + 1);
 
 	//alert("Current: (" + view.curX + ", " + view.curY + "), zoom: " + view.curZoom);
@@ -579,10 +576,10 @@ function updateMapLocation(){
 		view.curX = 0;
 	if(view.curY < 0)
 		view.curY = 0;
-	if(view.curX > zoomLevels[view.curZoom].getMaxX())
-		view.curX = zoomLevels[view.curZoom].getMaxX();
-	if(view.curY > zoomLevels[view.curZoom].getMaxY())
-		view.curY = zoomLevels[view.curZoom].getMaxY();
+	if(view.curX > view.getMaxX())
+		view.curX = view.getMaxX();
+	if(view.curY > view.getMaxY())
+		view.curY = view.getMaxY();
 
 	// Set to negatives to preserve our sanity in other places
 	// e.g: move map right==> set to the negative change to cause
@@ -621,37 +618,6 @@ function updatePathObjects(){
 			+ pathObj.images[view.curZoom].src + '\');"></div>';
 		path.innerHTML = str;
 		//alert(str);
-	}
-}
-
-/******************************************************************
-* This is the ZoomLevel class.
-* It is really just a struct that contains all the information associated
-* with a single zoom level: map size in pixels and grid squares,
-* scale multiplier, etc.
-******************************************************************/
-function ZoomLevel(name, zoom, gridX, gridY, pixX, pixY){
-	// The zoom scale of the map (e.g. 1, .5, .25, .125)
-	this.mapZoom = zoom;
-
-	// The name of the map (e.g. "map")
-	this.mapName = name;
-
-	// # of grid squares on the map (e.g. 36x33)
-	this.gridMaxX = gridX;
-	this.gridMaxY = gridY;
-	
-	// Resolution of the map (7200x6600)
-	this.mapMaxX = pixX;
-	this.mapMaxY = pixY;
-	//alert("New ZoomLevel: (" + this.mapMaxX + ", " + this.mapMaxY + ")");
-
-	/* accessors to adjust map width/height to maximum upper-left offsets */
-	this.getMaxX = function() {
-		return this.mapMaxX - view.width;
-	}
-	this.getMaxY = function() {
-		return this.mapMaxY - view.height;
 	}
 }
 
@@ -736,9 +702,9 @@ function Path(x, y, width, height, dist, src, dst){
 	else{ min = this.source; max = this.destination; }
 
 	// preload the path images at all zoom levels
-	this.images = new Array(zoomLevels.length);
-	for(var i = 0; i < zoomLevels.length; i++){
-		this.images[i] = new Image(width * zoomLevels[i].mapZoom, height * zoomLevels[i].mapZoom);
+	this.images = new Array(scales.length);
+	for(var i = 0; i < scales.length; i++){
+		this.images[i] = new Image(Math.floor(width * scales[i]), Math.floor(height * scales[i]));
 		this.images[i].src = pathsDir + '/im-' + min + '-' + max + '-' + i + '.png';
 		//alert(this.images[i].src);
 	}
@@ -754,11 +720,12 @@ function Path(x, y, width, height, dist, src, dst){
 * -- they are global functions.
 ******************************************************************/
 // Constructor: 
-function Viewport(x, y, width, height, curZoom){
+function Viewport(x, y, width, height, curZoom, curMap){
 	var zoomFactor = scales[curZoom] / scales[0];
 
 	this.width = width;
 	this.height = height;
+	this.map = curMap;
 
 	// default* values are what we zoom to when the "center" button is clicked
 	this.defaultX = x;
@@ -776,6 +743,35 @@ function Viewport(x, y, width, height, curZoom){
 	// initialize the sizes of viewport's container
 	container.style.width = view.width + "px";
 	container.style.height = view.height + "px";
+
+	/******************************************************************
+	* Return the maximum left offset of the viewport.
+	******************************************************************/
+	this.getMaxX = function() {
+		return Math.floor(maps[this.map].width*scales[this.curZoom]) - this.width;
+	}
+	/******************************************************************
+	* Return the maximum upper offset of the viewport.
+	******************************************************************/
+	this.getMaxY = function() {
+		return Math.floor(maps[this.map].height*scales[this.curZoom])- this.height;
+	}
+
+	/******************************************************************
+	* Return the number of grid squares in the horizontal direction, at the
+	* current zoom level.
+	******************************************************************/
+	this.gridMaxX = function(){
+		return Math.ceil(maps[this.map].width/squareWidth);
+	}
+
+	/******************************************************************
+	* Return the number of grid squares in the vertical direction, at the
+	* current zoom level.
+	******************************************************************/
+	this.gridMaxY = function(){
+		return Math.ceil(maps[this.map].height/squareHeight);
+	}
 
 	/******************************************************************
 	* Snap to the given absolute coordinates.
@@ -846,9 +842,9 @@ function Viewport(x, y, width, height, curZoom){
 				alert("setZoomLevel: Error! New zoom level = " + newZoom + " < 0 (too small).");
 				newZoom = 0;
 			}
-			else if (newZoom >= zoomLevels.length){
-				alert("setZoomLevel: Error! New zoom level  = " + newZoom + " >= zoomLevels.length = " + zoomLevels.length + " (too big).");
-				newZoom = zoomLevels.length - 1;
+			else if (newZoom >= scales.length){
+				alert("setZoomLevel: Error! New zoom level  = " + newZoom + " >= scales.length = " + scales.length + " (too big).");
+				newZoom = scales.length - 1;
 			}
 
 			// abort before we do anything serious if we're not
@@ -919,11 +915,11 @@ function Viewport(x, y, width, height, curZoom){
 		for(var numX = initialX -1; numX <= (gridWidth + initialX); numX++) {
 			for(var numY = initialY -1; numY <= (gridHeight + initialY); numY++) {
 				if( numX >= 0 && numY >= 0
-					&& numX < zoomLevels[view.curZoom].gridMaxX
-					&& numY < zoomLevels[view.curZoom].gridMaxY) {
+					&& numX < view.gridMaxX()
+					&& numY < view.gridMaxY()) {
 
 					str += '<div class="mapBox" style="background-image: url(\''
-						+ gridDir + '/' + zoomLevels[view.curZoom].mapName + '-' + view.curZoom
+						+ gridDir + '/' + maps[view.map].name + '-' + view.curZoom
 						+ '[' + numY + '][' + numX + '].png\'); '
 						+ 'left: ' + numX*(squareWidth) + 'px;'
 						+ 'top: ' + numY*(squareHeight) + 'px;'
@@ -972,34 +968,14 @@ function Viewport(x, y, width, height, curZoom){
 
 /******************************************************************
 * Recalculate how long it takes a person to walk The Path.
-* Bonus feature: Reimplements part of printf.
 ******************************************************************/
 function calcTime(prevDist, mpm){
-	// this is really what we're here to do:
-	var dist = prevDist*mpm;
-	var precision = 2;
 
 	// change the mpm value in the main input form, so subsequent submits
 	// use the new value
 	document.main.mpm.value = mpm;
 
-	// round the new value
-	dist = round(dist, precision);
-
-	// now we need to do some formatting. ugh.
-
-	var parts = String(dist).split(".");
-	// the digits after the decimal point, or the empty string
-	var low = parts[1] || '';
-	// the digits before the decimal point
-	var high = parts[0];
-
-	// add zeroes until we reach the target length
-	while( low.length < precision )
-		low += '0';
-
-	// put it all together
-	document.getElementById("time").innerHTML = high + '.' + low;
+	document.getElementById("time").innerHTML = formatTime(prevDist*mpm);
 
 	// if this was called from an onsubmit event, don't submit!
 	return false;
@@ -1012,7 +988,54 @@ function round(n, precision){
 	// this is the multiplier we need so that all the significant digits
 	// come before the decimal point
 	var m = Math.pow(10, precision);
-	alert("Round: " + n + " --> " + (Math.round(n * m) / m));
+	//alert("Round: " + n + " --> " + (Math.round(n * m) / m));
 	return Math.round(n * m) / m;
 }
 
+/******************************************************************
+* Return a nice approximation of a given number to a certain precision.
+******************************************************************/
+function formatNum(n, precision){
+	// round the new value
+	n = round(n, precision);
+
+	// now we need to do some formatting. ugh.
+
+	var parts = String(n).split(".");
+	// the digits after the decimal point, or the empty string
+	var low = parts[1] || '';
+	// the digits before the decimal point
+	var high = parts[0];
+
+	// add zeroes until we reach the target length
+	while( low.length < precision )
+		low += '0';
+
+	// put it all together
+	return high + '.' + low;
+}
+
+/******************************************************************
+* Given a floating-point number of minutes, return a nice string representation
+* in whole minutes and secons.
+******************************************************************/
+function formatTime(time){
+	var min = Math.floor(time);
+	var low = time - min;
+	var secs = Math.round(low*60);
+	if(secs < 10) secs = '0' + secs;
+	return Math.round(min) + ':' + secs;
+}
+
+/******************************************************************
+* This is the Map class. It's a struct that stores the attributes of a given
+* base image.
+******************************************************************/
+function Map(name, xoff, yoff, w, h){
+	this.name = name;
+	//XXX: these aren't used. they should be, assuming we even need them.
+	this.xoff = xoff;
+	this.yoff = yoff;
+	this.width = w;
+	this.height = h;
+}

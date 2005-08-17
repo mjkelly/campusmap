@@ -18,7 +18,7 @@ use constant{
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(TRUE FALSE INFINITY between max min asInt @SIZES @SCALES);
+@EXPORT_OK = qw(TRUE FALSE INFINITY between max min asInt round @SIZES @SCALES);
 @EXPORT = qw();
 
 # a list of scaling attributes
@@ -304,4 +304,18 @@ sub asInt{
 	else{
 		return 0;
 	}
+}
+
+###################################################################
+# Round the given number to the nearest whole number. Straight from the Perl
+# FAQ, 4.13.
+#
+# Args:
+#	- the number to round
+# Returns:
+#	- the given number, rounded to the nearest whole number
+###################################################################
+sub round{
+	my $n = shift;
+	return int($n + .5 * ($n <=> 0));
 }

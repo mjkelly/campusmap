@@ -379,6 +379,7 @@ function handleKeyPress(e){
 
 /******************************************************************
 * Conditiontally suppress key events.
+* NOTE: Note sure if this is really necessary or useful on any platform.
 ******************************************************************/
 function nullKeyHandler(e){
 	if(!listening())
@@ -908,33 +909,36 @@ function Viewport(x, y, width, height, curZoom, curMap){
 
 		//alert("loadView(" + x + ", " + y + ")");
 
+		/* get the bounds for the loop */
+		var x0 = Math.max(initialX - 1, 0);
+		var x1 = Math.min(gridWidth + initialX + 1, view.gridMaxX() - 1);
+		var y0 = Math.max(initialY - 1, 0);
+		var y1 = Math.min(gridHeight + initialY + 1, view.gridMaxY() - 1);
+
 		var str = "";
+		var numX;
+		var numY;
 
 		// loop through all grid squares that are within the current view, or
 		// close to the current view
-		for(var numX = initialX -1; numX <= (gridWidth + initialX); numX++) {
-			for(var numY = initialY -1; numY <= (gridHeight + initialY); numY++) {
-				if( numX >= 0 && numY >= 0
-					&& numX < view.gridMaxX()
-					&& numY < view.gridMaxY()) {
 
-					str += '<div class="mapBox" style="background-image: url(\''
-						+ gridDir + '/' + maps[view.map].name + '-' + view.curZoom
-						+ '[' + numY + '][' + numX + '].png\'); '
-						+ 'left: ' + numX*(squareWidth) + 'px;'
-						+ 'top: ' + numY*(squareHeight) + 'px;'
-						+ '" ondrag="return false;"></div>' + "\n";
-						//    ^^^^^<-- little-known trick! (for IE, as always) :)
-					
-					//alert(str);
+		// a small string that's not dependent on the loop variables
+		var middleStr = '/' + maps[view.map].name + '-' + view.curZoom + '[';
 
-					//str += addImage(numX, numY);
-				}
+		for(numX = x0; numX < x1; numX++) {
+			for(numY = y0; numY < y1; numY++) {
+				str += '<div class="mapBox" style="background-image: url(\''
+					+ gridDir + middleStr + numY + '][' + numX + '].png\');left: '
+					+ numX*squareWidth + 'px;' + 'top: '
+					+ numY*squareHeight + 'px;" ondrag="return false;"></div>';
 			}
 		}
+		// ondrag="return false;" is a little trick to prevent text selection in IE
+
 		//alert(str);
 		map.innerHTML = str;
 
+		// remember the last place we loaded
 		this.lastLoadX = x;
 		this.lastLoadY = y;
 		//alert(map.innerHTML);
@@ -963,6 +967,7 @@ function Viewport(x, y, width, height, curZoom, curMap){
 	this.curZoom = 0;
 	this.setZoomLevelNoRedraw(curZoom);
 	this.centerOn(x, y);
+	
 
 }
 
@@ -983,6 +988,7 @@ function calcTime(prevDist, mpm){
 
 /******************************************************************
 * Round the given number to the given number of decimal places.
+* XXX: Currently unused (except by formatNum, which is also unused).
 ******************************************************************/
 function round(n, precision){
 	// this is the multiplier we need so that all the significant digits
@@ -994,6 +1000,7 @@ function round(n, precision){
 
 /******************************************************************
 * Return a nice approximation of a given number to a certain precision.
+* XXX: Currently unused.
 ******************************************************************/
 function formatNum(n, precision){
 	// round the new value

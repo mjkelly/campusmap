@@ -37,8 +37,8 @@
 	</tr>
 	<tr>
 		<td><a href="http://opera.com/">Opera</a> 8 (Linux, MacOS)</td>
-		<td class="part">Arrow keys also scroll browser window</td>
-		<td class="part">Minus key conflicts with built-in command on Linux</td>
+		<td class="full">Full functionality</td>
+		<td class="part">Arrow keys also scroll browser window, minus key conflicts with built-in command on Linux</td>
 	</tr>
 	<tr>
 		<td><a href="http://www.mozilla.org/products/mozilla1.x/">Mozilla</a> 1.7 (Linux, MacOS)</td>

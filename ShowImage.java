@@ -64,6 +64,10 @@ public class ShowImage extends JFrame{
 		s.ipanel.selectRead();
 	}
 	
+	/**
+	 * This method may or may not work properly, it was just a test.
+	 * This isn't the method you're looking for...*waves hand*
+	 */
 	public void changeImage()
 	{
 		JFileChooser chooser = new JFileChooser();
@@ -77,8 +81,19 @@ public class ShowImage extends JFrame{
 	}
 	
 	
+	/**
+	 * This is the mouse listener for the menu items.
+	 * It simply uses it's actionPerformed method to determine
+	 * which menu was clicked and then call the appropriate method
+	 * to handle the event.  
+	 * @author David Lindquist
+	 *
+	 */
 	class MenuListener implements ActionListener
 	{
+		/**
+		 * Passes on the task based on which menu was clicked.
+		 */
 		public void actionPerformed(ActionEvent e)
 		{
 			if(e.getSource() == read)
@@ -151,6 +166,14 @@ public class ShowImage extends JFrame{
 		}
 	}
 	
+	/**
+	 * Overrided method, reduces the number of parameters needed
+	 * for the call.  
+	 * @param name The name to call the menu
+	 * @param listener The listener to assign to the menu
+	 * @param keyCode The key code to use as a shortcut to the menu.
+	 * @return The result of calling the real makeJMenuItem method.
+	 */
 	public JMenuItem makeJMenuItem(String name, ActionListener listener, 
 			int keyCode)
 	{
@@ -158,14 +181,24 @@ public class ShowImage extends JFrame{
 				KeyEvent.CTRL_MASK);
 	}
 	
+	/**
+	 * Creates a new JMenu item binded to the alias of the keyEvent.
+	 * Adds the action listener, and the mod + 
+	 * @param name Name for the menu
+	 * @param listener The menu's listener for events
+	 * @param keyEvent The alias key for the menu
+	 * @param accel ?
+	 * @param accel_mod ?
+	 * @return The created menu.
+	 */
 	public JMenuItem makeJMenuItem(String name, ActionListener listener, 
 			int keyEvent, int accel, int accel_mod)
 	{
-		JMenuItem tempMenu = new JMenuItem(name, keyEvent);
-		tempMenu.addActionListener(listener);
+		JMenuItem newMenu = new JMenuItem(name, keyEvent);
+		newMenu.addActionListener(listener);
 		if(accel > 0 && accel_mod > 0)
-			tempMenu.setAccelerator(KeyStroke.getKeyStroke(accel, accel_mod));
-		return(tempMenu);
+			newMenu.setAccelerator(KeyStroke.getKeyStroke(accel, accel_mod));
+		return(newMenu);
 	}
 	
 	/**
@@ -513,8 +546,32 @@ MouseMotionListener{
 				    }
 				}
 				else if(SwingUtilities.isRightMouseButton(e)) {
-					// Change current point's coordinates
-					changeCurSelectedPointCord(e.getPoint());					
+					/** CTRL + right click == select closest path **/
+					if(e.isControlDown() && !e.isAltDown() && !e.isShiftDown()){
+                        double dist = -1.0;
+                        double minDist = -1.0;
+                        Location closestLoc = null;
+                        // select the location closest to the click
+                        for(Location l: locations){
+                            double dx = e.getX() - l.cord.x;
+                            double dy = e.getY() - l.cord.y;
+                            dist = Math.sqrt(dx*dx + dy*dy);
+                            if(minDist == -1.0 || minDist > dist){
+                                minDist = dist;
+                                closestLoc = l;
+                            }
+                        }
+                        
+                        // select the closest point we found
+                        if(closestLoc != null){
+                            iterateThroughPathsAtPoint(closestLoc.cord);
+                        }
+				    }
+					else
+					{
+						// Change current point's coordinates
+						changeCurSelectedPointCord(e.getPoint());					
+					}
 				}
 				// If you use any other buttton on your mouse...
 				else{
@@ -1177,7 +1234,7 @@ MouseMotionListener{
 					// The following two lines are the difference between
 					// version 1 and version 2
 					locout.writeObject(loc.getBuildingCode());
-					locout.writeObject(loc.getLocDescription());
+					locout.writeObject(loc.getKeywords());
 				}
 			}
 			// Close stream
@@ -1630,7 +1687,7 @@ MouseMotionListener{
 			}
 			/**
 			 * Version 2:
-			 * Added two text field to location: buildingCode and locDescription
+			 * Added two text field to location: buildingCode and keywords
 			 */
 			else if(locVersionNumber == 2 || locVersionNumber == 3)
 			{
@@ -1661,8 +1718,8 @@ MouseMotionListener{
 				// Temporary buildingCode for location
 				String tempBuildingCode;
 				
-				// Temporary location description for location
-				String tempLocDescription;
+				// Temporary location keywords
+				String tempKeywords;
 				
 				Vector <String> tempAliases = null;
 				
@@ -1682,7 +1739,7 @@ MouseMotionListener{
 						tempAliases = (Vector<String>)locin.readObject();
 					
 					tempBuildingCode = (String)locin.readObject();
-					tempLocDescription = (String)locin.readObject();
+					tempKeywords = (String)locin.readObject();
 					
 					
 					//public Location(int x, int y, String passedName, 
@@ -1700,9 +1757,9 @@ MouseMotionListener{
 						tempLocation.setAliases(tempAliases);
 					
 					// Set the two strings: Building Code and 
-					// Location description
+					// Location keywords
 					tempLocation.setBuildingCode(tempBuildingCode);
-					tempLocation.setLocDescription(tempLocDescription);
+					tempLocation.setKeywords(tempKeywords);
 					
 					// Set the binary file ID #
 					tempLocation.ID = tempID;
@@ -2666,7 +2723,7 @@ class Location implements Serializable, ComponentElement
 	/**
 	 * Description of the a location
 	 */
-	private String locDescription = "";
+	private String keywords = "";
 	
 	// Determines if we can use this point when linking together sets of
 	// paths
@@ -2867,18 +2924,18 @@ class Location implements Serializable, ComponentElement
 		this.buildingCode = buildingCode;
 	}
 	/**
-	 * Returns the location description (Location.locDescription)
-	 * @return The locationdescription The location description
+	 * Returns the string with the location descriptions
+	 * @return keywords that apply to the location
 	 */
-	public String getLocDescription() {
-		return locDescription;
+	public String getKeywords() {
+		return keywords;
 	}
 	/**
-	 * Sets the location description
-	 * @param locDescription The location description
+	 * Sets the location keywords
+	 * @param keywords The keywords to apply
 	 */
-	public void setLocDescription(String locDescription) {
-		this.locDescription = locDescription;
+	public void setKeywords(String keywords) {
+		this.keywords = keywords;
 	}
 	
 	/**
@@ -2890,7 +2947,7 @@ class Location implements Serializable, ComponentElement
 	{
 		String [] descriptions 
 		= {"Name of Location @ (" + this.cord.x + ", " + this.cord.y + ")" //Name
-				, "ID", "Description", "canPassThrough", 
+				, "ID", "Keywords", "canPassThrough", 
 				"allowIntersections", "displayName", "Aliases"};
 		return (descriptions);
 	}
@@ -2909,7 +2966,7 @@ class Location implements Serializable, ComponentElement
 		case 1:
 			return getBuildingCode();
 		case 2:
-			return getLocDescription();
+			return getKeywords();
 		case 3:
 			return new Boolean(isCanPassThrough());
 		case 4:
@@ -2944,7 +3001,7 @@ class Location implements Serializable, ComponentElement
 			setBuildingCode((String)value);
 			break;
 		case 2:
-			setLocDescription((String)value);
+			setKeywords((String)value);
 			break;
 		case 3:
 			setCanPassThrough(((Boolean)value).booleanValue());

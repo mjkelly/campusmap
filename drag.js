@@ -159,6 +159,7 @@ function basicInit(){
 
 	// initialize the possible base maps
 	maps = new Array(
+		new Map('colormap', 0, 0, 7200, 6600),
 		new Map('map', 0, 0, 7200, 6600),
 		new Map('sat', 0, 0)
 	);
@@ -763,7 +764,7 @@ function Viewport(x, y, width, height, curZoom, curMap){
 	* current zoom level.
 	******************************************************************/
 	this.gridMaxX = function(){
-		return Math.ceil(maps[this.map].width/squareWidth);
+		return Math.ceil((maps[this.map].width*scales[this.curZoom])/squareWidth);
 	}
 
 	/******************************************************************
@@ -771,7 +772,7 @@ function Viewport(x, y, width, height, curZoom, curMap){
 	* current zoom level.
 	******************************************************************/
 	this.gridMaxY = function(){
-		return Math.ceil(maps[this.map].height/squareHeight);
+		return Math.ceil((maps[this.map].height*scales[this.curZoom])/squareHeight);
 	}
 
 	/******************************************************************
@@ -909,11 +910,13 @@ function Viewport(x, y, width, height, curZoom, curMap){
 
 		//alert("loadView(" + x + ", " + y + ")");
 
-		/* get the bounds for the loop */
+		// get the bounds for the loop
 		var x0 = Math.max(initialX - 1, 0);
-		var x1 = Math.min(gridWidth + initialX + 1, view.gridMaxX() - 1);
+		var x1 = Math.min(gridWidth + initialX + 1, view.gridMaxX());
 		var y0 = Math.max(initialY - 1, 0);
-		var y1 = Math.min(gridHeight + initialY + 1, view.gridMaxY() - 1);
+		var y1 = Math.min(gridHeight + initialY + 1, view.gridMaxY());
+
+		//alert("maxX = " + (view.gridMaxX() - 1) + ", maxY = " + (view.gridMaxY() - 1));
 
 		var str = "";
 		var numX;

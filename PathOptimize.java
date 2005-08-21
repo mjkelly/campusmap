@@ -1683,14 +1683,14 @@ class GraphPoint
             //out.writeInt(this.locLabel.getBuildingCode().length());
             //out.writeChars(this.locLabel.getBuildingCode());
             
-            // output location description
+            // output location keywords
             if(PathOptimize.debugBinaryLocations)
-                System.err.println("Location description: "
-                        + this.locLabel.getLocDescription() + "("
-                        + this.locLabel.getLocDescription().length() + ")");
-            binWriteStr(out, this.locLabel.getLocDescription());
-            //out.writeInt(this.locLabel.getLocDescription().length());
-            //out.writeChars(this.locLabel.getLocDescription());
+                System.err.println("Location keywords: "
+                        + this.locLabel.getKeywords() + "("
+                        + this.locLabel.getKeywords().length() + ")");
+            binWriteStr(out, this.locLabel.getKeywords());
+            //out.writeInt(this.locLabel.getKeywords().length());
+            //out.writeChars(this.locLabel.getKeywords());
             
             // first write out the number of aliases
             if(PathOptimize.debugBinaryLocations)

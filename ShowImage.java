@@ -1867,11 +1867,14 @@ MouseMotionListener{
 	}
 	
 	/**
-	 * oooo...scale thingies
+	 * Scales all of the data to a specified 
+	 * x offset, y offset, x scale, or y scale.
 	 */
 	public void scaleData()
 	{
-		final int NUM_COLUMNS = 20;
+		final int NUM_COLUMNS = 10;
+		final String DEFAULT_OFFSET = "0";
+		final String DEFAULT_SCALE = "1";
 		final JDialog dialog = new JDialog(parent, "Scale Data", true);
 		dialog.setLayout( new FlowLayout() );
 		JLabel xOffsetLabel = new JLabel("X Offset");
@@ -1879,11 +1882,11 @@ MouseMotionListener{
 		JLabel xScaleLabel  = new JLabel("X scale");
 		JLabel yScaleLabel  = new JLabel("Y scale");
 		
-		final JTextArea xOff = new JTextArea("0", 1, NUM_COLUMNS);
-		final JTextArea yOff = new JTextArea("0", 1, NUM_COLUMNS);
+		final JTextArea xOff = new JTextArea(DEFAULT_OFFSET, 1, NUM_COLUMNS);
+		final JTextArea yOff = new JTextArea(DEFAULT_OFFSET, 1, NUM_COLUMNS);
 		
-		final JTextArea xScale = new JTextArea("1", 1, NUM_COLUMNS);
-		final JTextArea yScale = new JTextArea("1", 1, NUM_COLUMNS);
+		final JTextArea xScale = new JTextArea(DEFAULT_SCALE, 1, NUM_COLUMNS);
+		final JTextArea yScale = new JTextArea(DEFAULT_SCALE, 1, NUM_COLUMNS);
 		
 		dialog.add(xOffsetLabel);
 		dialog.add(xOff);
@@ -1903,10 +1906,8 @@ MouseMotionListener{
 		submit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
-				System.err.println("submit actionListner called");
 				double xOffValue = 0, yOffValue = 0, 
 						xScaleValue = 1, yScaleValue = 1;
-				
 				try
 				{
 					xOffValue = Double.parseDouble(xOff.getText());
@@ -1939,15 +1940,16 @@ MouseMotionListener{
 				parent.repaint();
 				dialog.dispose();
 				dialog.setVisible(false);
+				setStatusBarText("Data scaled");
 			}
 		});
 		
 		cancel.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
-				System.err.println("Cancel actionlistenered called");
 				dialog.dispose();
 				dialog.setVisible(false);
+				setStatusBarText("Data scaling canceled");
 			}
 		});
 		

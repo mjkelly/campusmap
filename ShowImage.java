@@ -38,7 +38,7 @@ public class ShowImage extends JFrame{
 	
 	private JMenuItem prevPath, nextPath, newPath, deletePath, iteratePaths, goToPath,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
-	read, write, createLocationFile, changeImage, loadDefinedLocations, //IO
+	read, write, createLocationFile, changeImage, loadDefinedLocations, scaleData,//IO
 	locationEditor, editLocation, createLocation, selectLocation;
 	
 	// For accessing the locationName text field
@@ -101,6 +101,9 @@ public class ShowImage extends JFrame{
 			
 			if(e.getSource() == write)
 				ipanel.selectWrite();
+	
+			if(e.getSource() == scaleData)
+				ipanel.scaleData();
 			
 			if(e.getSource() == prevPath)
 				ipanel.goToPreviousPath();
@@ -249,6 +252,7 @@ public class ShowImage extends JFrame{
 				"Print Location List", listener, LOCATION_FILE_KEY));
 		changeImage = file.add(makeJMenuItem("Change Image", listener, 0));
 		
+		scaleData = file.add(makeJMenuItem("Data Scaling", listener, 0));
 		
 		/** Menu associated with path options **/
 		JMenu path = new JMenu("Path Editing");
@@ -1860,6 +1864,98 @@ MouseMotionListener{
 	public void setPointNumIndexToEnd()
 	{
 			pointNumIndex = curPath.size() - 1;
+	}
+	
+	/**
+	 * oooo...scale thingies
+	 */
+	public void scaleData()
+	{
+		final int NUM_COLUMNS = 20;
+		final JDialog dialog = new JDialog(parent, "Scale Data", true);
+		dialog.setLayout( new FlowLayout() );
+		JLabel xOffsetLabel = new JLabel("X Offset");
+		JLabel yOffsetLabel = new JLabel("Y Offset");
+		JLabel xScaleLabel  = new JLabel("X scale");
+		JLabel yScaleLabel  = new JLabel("Y scale");
+		
+		final JTextArea xOff = new JTextArea("0", 1, NUM_COLUMNS);
+		final JTextArea yOff = new JTextArea("0", 1, NUM_COLUMNS);
+		
+		final JTextArea xScale = new JTextArea("1", 1, NUM_COLUMNS);
+		final JTextArea yScale = new JTextArea("1", 1, NUM_COLUMNS);
+		
+		dialog.add(xOffsetLabel);
+		dialog.add(xOff);
+		
+		dialog.add(yOffsetLabel);
+		dialog.add(yOff);
+		
+		dialog.add(xScaleLabel);
+		dialog.add(xScale);
+		
+		dialog.add(yScaleLabel);
+		dialog.add(yScale);
+		
+		JButton submit = new JButton("Submit");
+		JButton cancel = new JButton("Cancel");
+		
+		submit.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				System.err.println("submit actionListner called");
+				double xOffValue = 0, yOffValue = 0, 
+						xScaleValue = 1, yScaleValue = 1;
+				
+				try
+				{
+					xOffValue = Double.parseDouble(xOff.getText());
+					yOffValue = Double.parseDouble(yOff.getText());
+					xScaleValue = Double.parseDouble(xScale.getText());
+					yScaleValue = Double.parseDouble(yScale.getText());
+				}
+				catch(NumberFormatException exc)
+				{
+					System.err.println("Number format exception convertin value!");
+				}
+				
+				// Apply to paths
+				for(Vector<Point> path : paths) // for all paths
+				{
+					for(Point p : path)  // for all points in each path
+					{
+						p.x = (int)(p.x*xScaleValue) + (int)xOffValue;
+						p.y = (int)(p.y*yScaleValue) + (int)yOffValue;
+					}
+				}
+				
+				// Apply to locations
+				for(Location loc : locations)
+				{
+					Point p = loc.cord;
+					p.x = (int)(p.x*xScaleValue) + (int)xOffValue;
+					p.y = (int)(p.y*yScaleValue) + (int)yOffValue;
+				}
+				parent.repaint();
+				dialog.dispose();
+				dialog.setVisible(false);
+			}
+		});
+		
+		cancel.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				System.err.println("Cancel actionlistenered called");
+				dialog.dispose();
+				dialog.setVisible(false);
+			}
+		});
+		
+		dialog.add(submit);
+		dialog.add(cancel);
+		
+		dialog.pack();
+		dialog.setVisible(true);
 	}
 	
 	/**

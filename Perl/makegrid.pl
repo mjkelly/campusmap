@@ -26,11 +26,12 @@ my @sizes = (
 	[1800, 1650],
 	[900,  825 ],
 );
-my $zoom = 1;
+my $zoom = int(shift(@ARGV)) || 0;
 
 my $base_name  = 'map';
 
-my $base_image = "grid_bases/scale-$zoom.gd2";
+#my $base_image = "grid_bases/scale-$zoom.gd2";
+my $base_image = "../color-map/scale-$zoom.gd2";
 my $out_dir = 'grid';
 
 my($x, $y);
@@ -54,6 +55,9 @@ while($y*$height < $sizes[$zoom][1]){
 		}
 		else{
 			my $im = GD::Image->newFromGd2Part($base_image, $x*$width, $y*$height, $width, $height);
+			if(!defined($im)){
+				die "Image object undefined! (Error opening base image?)\n";
+			}
 
 			open(OUT, '>', $filename) or die "Foo! $!\n";
 			binmode(OUT);
@@ -68,3 +72,7 @@ while($y*$height < $sizes[$zoom][1]){
 
 print "gridMaxX = $x\n";
 print "gridMaxY = $y\n";
+
+if($debug){
+	print "Debug mode -- dry run only. Turn off debug mode to write images.\n";
+}

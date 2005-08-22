@@ -87,7 +87,7 @@ my $template = $q->param('mode') || '';
 # we only care about the word characters in the template name (this is for taint mode)
 $template =~ /^(\w+)/;
 $template = $1;
-$template = 'js' if(!length($template) || !exists($MapGlobals::TEMPLATES{$template}));
+$template = 'js' if(!length($template || '') || !exists($MapGlobals::TEMPLATES{$template}));
 
 # -----------------------------------------------------------------
 # Do startup stuff: load data, convert some of the input data, initialize
@@ -109,7 +109,7 @@ my $width  = $SIZES[$size][0];
 my $height = $SIZES[$size][1];
 
 # kill old temporary files
-MapGlobals::reaper($MapGlobals::DYNAMIC_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
+MapGlobals::reaper($MapGlobals::DYNAMIC_IMG_DIR, $MapGlobals::DYNAMIC_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
 
 my $ERROR = '';
 
@@ -271,7 +271,7 @@ if($havePath){
 
 		# if we created a cache file, we're responsible for clearing
 		# out any old ones too
-		LoadData::cacheReaper();
+		MapGlobals::reaper($MapGlobals::CACHE_DIR, $MapGlobals::CACHE_EXPIRY, '.cache');
 	}
 	
 	# adjust the pixel distance to the unit we're using to display it (mi, ft, etc)
@@ -541,6 +541,7 @@ if($template eq 'plain'){
 elsif ($template eq 'js'){
 
 	if($havePath){
+
 		# a little padding 
 		my $padding = 8;
 		# if we have a path between two locations, write the path images
@@ -557,6 +558,9 @@ elsif ($template eq 'js'){
 			$curScale = $SCALES[$i];
 
 			if(! -e MapGlobals::getPathFilename($from, $to, $i) ){
+				# since we're creating new ones, delete old path files
+				MapGlobals::reaper($MapGlobals::PATH_IMG_DIR, $MapGlobals::PATH_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
+
 				#print "generating scale $i: $curScale\n";
 				
 				my $im = GD::Image->new($pathWidth*$curScale, $pathHeight*$curScale);

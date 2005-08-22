@@ -248,7 +248,7 @@ sub drawLinesRaw{
 
 	$im->setThickness($thickness);
 
-	warn "drawLinesRaw: offsets: ($xoff, $yoff), size: ($w, $h)\n";
+	#warn "drawLinesRaw: offsets: ($xoff, $yoff), size: ($w, $h)\n";
 
 	# cycle through each point in this Edge
 	foreach $curpt ( @$points ){
@@ -262,7 +262,7 @@ sub drawLinesRaw{
 				$color
 			);
 		}
-		warn "drawing: (" . ($curpt->{'x'} - $xoff) . ", " . ($curpt->{'y'} - $yoff) . ")\n";
+		#warn "drawing: (" . ($curpt->{'x'} - $xoff) . ", " . ($curpt->{'y'} - $yoff) . ")\n";
 		$prevpt = $curpt;
 	}
 }

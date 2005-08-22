@@ -117,7 +117,7 @@ our $EDGE_FILE		= 'binEdgeData.dat';
 # where cache files (which store the coordinates of shortest paths) go
 our $CACHE_DIR		= 'cache';
 # how long cache files hang around for, in seconds
-our $CACHE_EXPIRY	= 60;
+our $CACHE_EXPIRY	= 10*60;
 
 # where static content is stored
 our $HTML_BASE		= '../../ucsdmap';
@@ -133,7 +133,10 @@ our $GRID_IMG_DIR	= $STATIC_IMG_DIR . '/grid';
 # deletion
 our $DYNAMIC_IMG_SUFFIX	= '.png';
 # maximum age, in seconds, of dynamically generated images
-our $DYNAMIC_MAX_AGE	= 300;
+our $DYNAMIC_MAX_AGE	= 10*60;
+
+# how long path images stay up
+our $PATH_MAX_AGE	= 10*60;
 
 # we also have some basic utility functions in here, that any part
 # of the script may want to use
@@ -192,14 +195,19 @@ sub getPathFilename{
 ###################################################################
 # Remove old dynamic files from $DYNAMIC_IMG_DIR.
 # Args:
+#	- the directory to reap
 #	- maximum allowed age of files, in seconds
 #	- the suffix of files to be killed
+# Returns:
+#	- the number of heads on the floor
 ###################################################################
 sub reaper{
-	my($max_age, $kill_suffix) = (@_);
+	# Don't fear the reaper...
+	my($dir, $max_age, $kill_suffix) = (@_);
 	my $now = time();
 
-	opendir(DIR, $DYNAMIC_IMG_DIR);
+	#warn "reaper: checking dir $dir for $kill_suffix files older than $max_age secs...\n";
+	opendir(DIR, $dir);
 
 	while( my $file = readdir(DIR) ){
 		# skip dotfiles
@@ -209,19 +217,22 @@ sub reaper{
 		next if( substr($file, -(length($kill_suffix))) ne $kill_suffix);
 
 		# get the age of the file in seconds
-		my $age = $now -(stat("$DYNAMIC_IMG_DIR/$file"))[9];
+		my $age = $now -(stat("$dir/$file"))[9];
 
 		# kill it if it's too old
 		if($age > $max_age){
 			# make sure the filename is roughly of the correct format,
 			# to avoid deleting random stuff that somehow got in here
+			# (yes, we're doing this twice: this time it's to
+			# appease taint mode)
 			if($file =~ /^([-\w]+)$kill_suffix$/){
 				$file = $1 . $kill_suffix;
 				#warn "reaper @ $now: $file: chop, chop, chop!\n";
-				unlink("$DYNAMIC_IMG_DIR/$file");
+				unlink("$dir/$file");
 			}
 		}
 	}
+	# more cowbell!
 
 	closedir(DIR);
 }

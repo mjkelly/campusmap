@@ -506,36 +506,6 @@ sub loadCache{
 }
 
 ###################################################################
-# Clear the patch cache of old files. The cache directory and
-# the expiry time of cache files are defined in MapGlobals.pm.
-# Args: n/a
-# Returns: n/a
-###################################################################
-sub cacheReaper{
-	# Don't fear the reaper...
-	#warn "Invoking cache reaper...\n";
-	my $now = time();
-	opendir(DIR, $MapGlobals::CACHE_DIR) or die "Cannot open directory $MapGlobals::CACHE_DIR\n";
-	while( defined(my $file = readdir(DIR)) ){
-		next if( substr($file, 0, 1) eq '.' );
-		# 8 is atime, 9 is mtime, 10 is ctime
-		my $time = (stat( "$MapGlobals::CACHE_DIR/$file"))[9];
-		# delete files if they're too old
-		#warn "Cache reaper: $file: time differential: " . ($now - $time) . "s\n";
-		if( $now - $time > $MapGlobals::CACHE_EXPIRY ){
-			# make absolutely sure the file is of the right
-			# format to delete
-			if($file =~ /(\d+)-(\d+).cache/){
-				$file = "$1-$2.cache";
-				#warn "Cache reaper @ $now: $file: chop, chop, chop!\n";
-				unlink("$MapGlobals::CACHE_DIR/$file");
-			}
-		}
-	}
-	closedir(DIR);
-}
-
-###################################################################
 # Normalize a Location name string to make subsequent searching easier.
 # Normalization consists of all non-alphanumerics, and lowercasing
 # all letters.

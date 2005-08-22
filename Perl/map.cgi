@@ -146,7 +146,7 @@ else{
 		}
 		else{
 			# this is bad. we can't handle two keywords
-			$ERROR .= "<p>Whoa there, mate! They can't both be keywords!</p>\n";
+			$ERROR .= "<p>Whoa there, mate! They can't <em>both</em> be keywords!</p>\n";
 		}
 		$dst_found = FALSE;
 	}

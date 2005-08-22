@@ -2884,8 +2884,8 @@ class Location implements Serializable, ComponentElement
 		this.name = name;
 		ID = IDcount++;         // Get the current ID and increment
 		aliases = new Vector<String>();
-		addAlias("Foo");
-		addAlias("Bar");
+		//addAlias("Foo");
+		//addAlias("Bar");
 	}
 	
 	/**

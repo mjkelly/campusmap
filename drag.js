@@ -1,12 +1,13 @@
-/******************************************************************
+/*-----------------------------------------------------------------
 * drag.js
 *
 * Functions for a draggable, scrollable, dynamically loading map
 * with multiple zoom levels.
 *
 * Copyright 2005 Michael Kelly and David Lindquist
-******************************************************************/
-
+* 
+* $Id$
+-----------------------------------------------------------------*/
 
 /*
 TODO:
@@ -94,7 +95,7 @@ var pathObj;
 * first (possibly after external global variable initialization), otherwise
 * things will break.
 ******************************************************************/
-function basicInit(){
+function dragInit(){
 
 	draggy = document.getElementById("draggy");
 	draggyStyle = draggy.style;

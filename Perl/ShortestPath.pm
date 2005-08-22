@@ -224,6 +224,10 @@ sub pathPoints{
 
 ###################################################################
 # Find the distance to a given point.
+#
+# NOTE: We need this function because the raw distance value in each GraphPoint
+# includes fake adjustments for the no-pass-through flag. I think.
+#
 # Args:
 #	- a hashref of points, run through find(). The arguments to find()
 #	  determine how this is generated, and thus what the "source" location is.

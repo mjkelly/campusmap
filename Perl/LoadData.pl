@@ -99,7 +99,7 @@ if($doLocations){
 		print "\tCoordinates: ($locations->{'ByID'}{$locID}{'x'}, $locations->{'ByID'}{$locID}{'y'})\n";
 		print "\tDisplayName: $locations->{'ByID'}{$locID}{'DisplayName'}\n";
 		print "\tPoint ID: $locations->{'ByID'}{$locID}{'PointID'}\n";
-		print "\tDescription: $locations->{'ByID'}{$locID}{'Description'}\n";
+		print "\tKeywords: $locations->{'ByID'}{$locID}{'Keywords'}\n";
 	}
 }
 

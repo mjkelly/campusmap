@@ -4,10 +4,14 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# TODO: Create some kind of 'viewport' object to avoid passing around
-# these huge, indecipherable (and frequently-changing!) lists.
+# TODO:
+#	- Create some kind of 'viewport' object to avoid passing around
+# 	  these huge, indecipherable (and frequently-changing!) lists.
+#	- move as many subroutines as possible out of this file
+#	- check loading and searching of $points: is it being done more often
+#	  than necessary on double fuzzy matches?
 #
-# Fri Jul  8 18:59:00 PDT 2005
+# Sun Aug 21 20:26:36 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -116,6 +120,8 @@ my $ERROR = '';
 
 # keep track of whether source and destination locations were found
 my ($src_found, $dst_found) = (TRUE, TRUE);
+# keep track of whether we're doing a keyword search on either source or destination
+my($src_keyword, $dst_keyword) = (FALSE, FALSE);
 # any text associated with the operation of finding the source or destination
 # (this is "did you mean...?" stuff)
 my($src_help, $dst_help) = ('', '');
@@ -132,46 +138,71 @@ if($fromTxt eq '' && $toTxt eq ''){
 else{
 
 	##### this is for the destination location #####
-	@toids = findLocation($toTxt, $locations);
-	# we found an exact match
-	if(@toids == 1){
-		# since we found a real location, we've got to reset all the text
-		# associated with the location
-		$to = $toids[0]{'id'};
-		$toTxt = $locations->{'ByID'}{$to}{'Name'};
-		$toTxtSafe = CGI::escapeHTML($toTxt);
-	}
-	# we have multiple matches
-	elsif(@toids > 1){
+	if( isKeyword($toTxt) ){
+		# keyword matching
+		if( !isKeyword($fromTxt) ){
+			@toids = LoadData::findKeyword(LoadData::getKeyText($toTxt), $locations);
+			$dst_keyword = TRUE;
+		}
+		else{
+			# this is bad. we can't handle two keywords
+			$ERROR .= "<p>Whoa there, mate! They can't both be keywords!</p>\n";
+		}
 		$dst_found = FALSE;
 	}
-	# no matches
 	else{
-		# I've done all I can. He's dead, Jim.
-		$ERROR .= "<p>Destination location &quot;$toTxtSafe&quot; not found.</p>\n"
-			if($toTxt ne '');
-		$dst_found = FALSE;
+		# regular matching
+		@toids = findLocation($toTxt, $locations);
+		# we found an exact match
+		if(@toids == 1){
+			# since we found a real location, we've got to reset all the text
+			# associated with the location
+			$to = $toids[0]{'id'};
+			$toTxt = $locations->{'ByID'}{$to}{'Name'};
+			$toTxtSafe = CGI::escapeHTML($toTxt);
+		}
+		# we have multiple matches
+		elsif(@toids > 1){
+			$dst_found = FALSE;
+		}
+		# no matches
+		else{
+			# I've done all I can. He's dead, Jim.
+			$ERROR .= "<p>Destination location &quot;$toTxtSafe&quot; not found.</p>\n" if($toTxt ne '');
+			$dst_found = FALSE;
+		}
 	}
 
 	##### this is for the source location #####
-	@fromids = findLocation($fromTxt, $locations);
-	# we found an exact match
-	if(@fromids == 1){
-		# since we found a real location, we've got to reset all the text
-		# associated with the location
-		$from = $fromids[0]{'id'};
-		$fromTxt = $locations->{'ByID'}{$from}{'Name'};
-		$fromTxtSafe = CGI::escapeHTML($fromTxt);
-	}
-	# we have multiple matches
-	elsif(@fromids > 1){
+	if( isKeyword($fromTxt) ){
+		# keyword matching
+		if( !isKeyword($toTxt) ){
+			@fromids = LoadData::findKeyword(LoadData::getKeyText($fromTxt), $locations);
+			$src_keyword = TRUE;
+		}
+		# we don't print an error in an else{} here, because that
+		# already happened above
 		$src_found = FALSE;
 	}
-	# no matches
 	else{
-		$ERROR .= "<p>Start location &quot;$fromTxtSafe&quot; not found.</p>\n"
-			if($fromTxt ne '');
-		$src_found = FALSE;
+		@fromids = findLocation($fromTxt, $locations);
+		# we found an exact match
+		if(@fromids == 1){
+			# since we found a real location, we've got to reset all the text
+			# associated with the location
+			$from = $fromids[0]{'id'};
+			$fromTxt = $locations->{'ByID'}{$from}{'Name'};
+			$fromTxtSafe = CGI::escapeHTML($fromTxt);
+		}
+		# we have multiple matches
+		elsif(@fromids > 1){
+			$src_found = FALSE;
+		}
+		# no matches
+		else{
+			$ERROR .= "<p>Start location &quot;$fromTxtSafe&quot; not found.</p>\n" if($fromTxt ne '');
+			$src_found = FALSE;
+		}
 	}
 
 }
@@ -265,26 +296,50 @@ if($havePath){
 # if we don't have a full path, check if we have a single location,
 # and center on that
 else{
+	# error if we got no matches
+	if(@fromids == 0){
+		if($src_keyword){
+			$ERROR .= "<p><b>&quot;" . LoadData::getKeyText($fromTxtSafe) . "&quot; is not a valid keyword.</b></p>\n";
+		}
+	}
 	# if we got multiple matches, build help text to disambiguate
-	if(@fromids > 1){
+	elsif(@fromids > 1){
 		# if we found a good 'from' location, run shortest path stuff
 		# so we can display distances
 		if($dst_found){
 			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
 			ShortestPath::find($endID, $points);
 		}
-		$src_help = "<p><b>Start location &quot;$fromTxtSafe&quot; not found.</b></p>"
-			. buildHelpText(undef, $toTxtURL, $mpm, $template, $locations, $points, \@fromids);
+		if($src_keyword){
+			$src_help = "<p><b>Closest matches for $fromTxtSafe...</b></p>"
+				. buildKeywordText(undef, $toTxtURL, $mpm, $template, $locations, $points, \@fromids);
+		}
+		else{
+			$src_help = "<p><b>Start location &quot;$fromTxtSafe&quot; not found.</b></p>"
+				. buildHelpText(undef, $toTxtURL, $mpm, $template, $locations, $points, \@fromids);
+		}
 	}
-	if(@toids > 1){
+
+	if(@toids == 0){
+		if($dst_keyword){
+			$ERROR .= "<p><b>&quot;" . LoadData::getKeyText($toTxtSafe) . "&quot; is not a valid keyword.</b></p>\n";
+		}
+	}
+	elsif(@toids > 1){
 		# if we found a good 'to' location, run shortest path stuff
 		# so we can display distances
 		if($src_found){
 			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
 			ShortestPath::find($startID, $points);
 		}
-		$dst_help = "<p><b>Destination location &quot;$toTxtSafe&quot; not found.</b></p>"
-			. buildHelpText($fromTxtURL, undef, $mpm, $template, $locations, $points, \@toids);
+		if($dst_keyword){
+			$dst_help = "<p><b>Closest matches for $toTxtSafe...</b></p>"
+				. buildKeywordText($fromTxtURL, undef, $mpm, $template, $locations, $points, \@toids);
+		}
+		else{
+			$dst_help = "<p><b>Destination location &quot;$toTxtSafe&quot; not found.</b></p>"
+				. buildHelpText($fromTxtURL, undef, $mpm, $template, $locations, $points, \@toids);
+		}
 	}
 
 	if($src_found){
@@ -541,6 +596,7 @@ my $tmpl = HTML::Template->new(
 );
 
 # this is stuff for the plain view
+# XXX: merge the code for these two views.
 if($template eq 'plain'){
 
 	# basic info: who we are, where to find images, etc
@@ -737,6 +793,7 @@ print "Content-type: text/html\n\n" . $tmpl->output();
 
 # -----------------------------------------------------------------
 # Subroutines.
+# XXX: these should be moved someplace better.
 # -----------------------------------------------------------------
 
 ###################################################################
@@ -821,22 +878,97 @@ sub buildHelpText{
 	# that's the one we have a list of IDs for.
 	my $helpfor = defined($fromTxt) ? 'to' : 'from';
 
-	#my $str = "<p><b>Found " . @$ids . " close matches:</b></p>\n<ol>\n";
-	my $str = "<p><b>Did you mean...</b></p>\n<ol>\n";
+	# add distances to the list of IDs
+	if( defined($points) ){
+		foreach (@$ids){
+			my $target = $points->{$locations->{'ByID'}{$_->{'id'}}{'PointID'}};
+			$_->{'dist'} = ShortestPath::distTo($points, $target);
+		}
+	}
+
+	my $str = buildLocationOptions($helpfor, "Did you mean...", $ids, $locations, $fromTxt, $toTxt, $mpm, $mode);
+	return $str;
+}
+
+###################################################################
+# Analogous to buildHelpText, but builds text for keyword searches.
+#
+# Args (same as buildHelpText()):
+#	- 'from' search text (or undef)
+#	- 'to' search text (or undef)
+#	- miles per minute (to perserve state)
+#	- template mode (to perserve state)
+#	- hashref of locations
+#	- hashref of GraphPoints (optional, to list distances)
+#	- arrayref of location IDs (ints) that are possible matches to the
+#	  search term
+###################################################################
+sub buildKeywordText{
+	my ($fromTxt, $toTxt, $mpm, $mode, $locations, $points, $ids) = (@_);
+
+	# internally-defined maximum number of locations to list
+	my $max = 10;
+
+	# figure out which kind of help we're giving
+	# one of $fromTxt and $toTxt will be undef. whichever one is,
+	# that's the one we have a list of IDs for.
+	my $helpfor = defined($fromTxt) ? 'to' : 'from';
+
+	# add distances to the list of IDs
+	if( defined($points) ){
+		foreach (@$ids){
+			my $target = $points->{$locations->{'ByID'}{$_->{'id'}}{'PointID'}};
+			$_->{'dist'} = ShortestPath::distTo($points, $target);
+		}
+
+		# now we sort by those distances
+		@$ids = sort { $a->{'dist'} <=> $b->{'dist'} } @$ids;
+
+		if(@$ids > $max){
+			@$ids = @$ids[0..$max-1];
+		}
+	}
+
+	my $str = buildLocationOptions($helpfor, '', $ids, $locations, $fromTxt, $toTxt, $mpm, $mode);
+	return $str;
+}
+
+###################################################################
+# Build a list of locations, with links that allow completion of the current
+# search with each location listed. Used to list results of fuzzy matching or
+# keyword searches.
+#
+# Args (same as buildHelpText()):
+#	- a string, 'from' or 'to', indicating whether the text we're building
+#	  contains suggestions for the 'from' or 'to' location, respectively.
+#	- a title for the list of suggestions
+#	- an arrayref of matching IDs, as gotten from findLocation() or
+#	  findKeyword(). If distances to each location should be displayed,
+#	  each item of this array (a hashref) should contain a key 'dist' that
+#	  lists the distance in raw base pixels.
+#	- hashref of locations
+#	- 'from' search text
+#	- 'to' search text
+#	- miles per minute (to perserve state)
+#	- template mode (to perserve state)
+###################################################################
+sub buildLocationOptions{
+	my($helpfor, $title, $ids, $locations, $fromTxt, $toTxt, $mpm, $mode) = @_;
+	my $str = (length($title) ? "<p><b>$title</b></p>\n" : '') . "<ol>\n";
 	my $url;
 	foreach (@$ids){
+		# build distance text
 		my $dist_txt = '';
-		if( defined($points) ){
-			my $target = $points->{$locations->{'ByID'}{$_->{'id'}}{'PointID'}};
-			if($target->{'Distance'} == INFINITY){
+		if( exists($_->{'dist'}) ){
+			if($_->{'dist'} == INFINITY){
 				$dist_txt = ' (&#8734;)'; # this is the infinity symbol
 			}
-			elsif($target->{'Distance'} == 0){
+			elsif($_->{'dist'} == 0){
 				$dist_txt = '';
 			}
 			else{
 				$dist_txt = sprintf(" (%0.2f mi)",
-					ShortestPath::distTo($points, $target)/$MapGlobals::PIXELS_PER_UNIT);
+					$_->{'dist'}/$MapGlobals::PIXELS_PER_UNIT);
 			}
 		}
 
@@ -862,6 +994,8 @@ sub buildHelpText{
 # Builds two strings containing the <option> tags that list source and
 # destination locations. This is a very template-ish thing to do, but we do it
 # here for speed reasons.
+#
+# FIXME: scoping! aren't $fromTxt and $toTxt outside this function?
 # 
 # Args:
 #	- location hashref
@@ -1013,6 +1147,18 @@ sub findLocation{
 	elsif($text ne ''){
 		return LoadData::findName($text, $locations);
 	}
+}
+
+###################################################################
+# Check if a the given search string represents a keyword search.
+# Args:
+#	- a search string
+# Returns:
+#	- 1 if the given search string is a keyword search, else 0
+###################################################################
+sub isKeyword{
+	my($str) = @_;
+	return (lc(substr($str, 0, 8)) eq 'keyword:');
 }
 
 ###################################################################

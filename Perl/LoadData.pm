@@ -164,7 +164,7 @@ sub loadLocations{
 	my $unpacked;
 
 	# a hashref of locations to return
-	my $locations = { ByID => {}, ByName => {}, ByCode => {} };
+	my $locations = { ByID => {}, ByName => {}, ByCode => {}, ByKeyword => {} };
 
 	open(INPUT, '<', $filename) or die "Cannot open $filename for reading: $!\n";
 
@@ -214,9 +214,14 @@ sub loadLocations{
 			$locations->{'ByCode'}{$code} = $thisLoc;
 		}
 		
-		# read the location's description
-		$thisLoc->{'Description'} = readJavaString(*INPUT);
-		print STDERR "Description: $thisLoc->{'Description'}\n" if DEBUG;
+		# read the location's keyword field
+		$thisLoc->{'Keywords'} = readJavaString(*INPUT);
+		print STDERR "Keywords: $thisLoc->{'Keywords'}\n" if DEBUG;
+
+		# add this location under each of its keywords
+		foreach my $key (tokenize($thisLoc->{'Keywords'})){
+			push(@{$locations->{'ByKeyword'}{$key}}, $thisLoc);
+		}
 
 		# read the location's aliases, one at a time
 		my $numAliases = readInt(*INPUT);
@@ -726,4 +731,41 @@ sub tokenize{
 	return keys %newtoks;
 }
 
+###################################################################
+# Find all the locations with a given keyword, sorted by distance.
+# Args:
+#	- the keyword. this should already be stripped of the 'keyword:'
+#	  prefix, and properly normalized.
+# Returns:
+#	- an array containing the matches, in a similar format to findLocation():
+#	  (
+#		{ id => 6, matches => 1 },
+#		{ id => 42, matches => 1 },
+#		{ id => 17, matches => 1 }
+#	  )
+# 	Note that the 'matches' key is always 1, because it means nothing here.
+###################################################################
+sub findKeyword{
+	my($keyword, $locations) = @_;
+	warn "$keyword is a keyword. gotta catch 'em all...\n";
+	my @r = ();
+	foreach my $l ( @{$locations->{'ByKeyword'}{$keyword}} ){
+		push(@r, { id => $l->{'ID'}, matches => 1 });
+	}
+	return @r;
+}
+
+###################################################################
+# Return the formatted keyword text from a search string.
+# Args:
+#	- the search string
+# Returns:
+#	- 
+###################################################################
+sub getKeyText{
+	my $str = shift();
+	return nameNormalize(substr($str, 8));
+}
+
 1;
+

@@ -6,7 +6,7 @@
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
 <link rel="stylesheet" href="<TMPL_VAR NAME=CSS_DIR>/main.css" />
 <link rel="stylesheet" href="<TMPL_VAR NAME=CSS_DIR>/js.css" />
-</head>
+<link rel="SHORTCUT ICON" href="/favicon.ico" />
 
 <style type="text/css">
 	/* CSS set by the template */
@@ -18,10 +18,11 @@
 	}
 </style>
 
+</head>
 <body id="theBody">
 
-<script language="javascript" src="<TMPL_VAR NAME=HTML_DIR>/drag.js"></script>
-<script language="javascript">
+<script type="text/javascript" src="<TMPL_VAR NAME=HTML_DIR>/drag.js"></script>
+<script type="text/javascript">
 	// set global variables through the template
 	var zoomButtonURL		= "<TMPL_VAR NAME=IMG_DIR>/zoom-level.png";
 	var zoomButtonSelectedURL	= "<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png";
@@ -212,7 +213,7 @@
 
 
 
-			<script language="javascript">
+			<script type="text/javascript">
 				basicInit();
 				<TMPL_IF NAME=SRC_FOUND>
 					new Location("<TMPL_VAR NAME=SRC_NAME>", <TMPL_VAR NAME=SRC_X>, <TMPL_VAR NAME=SRC_Y>, 'src');

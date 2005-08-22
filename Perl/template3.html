@@ -44,10 +44,11 @@
 					<input tabindex="1" id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
 					<br />
 					<select tabindex="3" id="from_selector" name="from_selector" class="operaDoesNotInheritProperly">
+						<option value="">(None)</option>
+						<option value="" disabled="disabled">----------------</option>
 						<option value="keyword:food">Closest Food</option>
 						<option value="keyword:parking">Closest Parking</option>
 						<option value="" disabled="disabled">----------------</option>
-						<option value="">(None)</option>
 						<TMPL_VAR NAME=LOCATION_OPT>
 					</select>
 				</div>
@@ -61,10 +62,11 @@
 				<input tabindex="2" id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
 				<br />
 				<select tabindex="4" id="to_selector" name="to_selector" class="operaDoesNotInheritProperly">
+					<option value="">(None)</option>
+					<option value="" disabled="disabled">----------------</option>
 					<option value="keyword:food">Closest Food</option>
 					<option value="keyword:parking">Closest Parking</option>
 					<option value="" disabled="disabled">----------------</option>
-					<option value="">(None)</option>
 					<TMPL_VAR NAME=LOCATION_OPT>
 				</select>
 

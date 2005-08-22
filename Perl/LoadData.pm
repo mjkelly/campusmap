@@ -747,7 +747,6 @@ sub tokenize{
 ###################################################################
 sub findKeyword{
 	my($keyword, $locations) = @_;
-	warn "$keyword is a keyword. gotta catch 'em all...\n";
 	my @r = ();
 	foreach my $l ( @{$locations->{'ByKeyword'}{$keyword}} ){
 		push(@r, { id => $l->{'ID'}, matches => 1 });

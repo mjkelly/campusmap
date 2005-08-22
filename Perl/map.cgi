@@ -213,9 +213,8 @@ else{
 # -----------------------------------------------------------------
 
 # build a list of printable location names
-my @locParam;
 my($name, $trunc);
-my($loc_opt_from, $loc_opt_to) = buildLocationList($locations);
+my $loc_opt = buildLocationList($locations);
 
 # we actually run the shortest-path algorithm only if we found both
 # the source and destination locations
@@ -613,6 +612,7 @@ if($template eq 'plain'){
 	$tmpl->param( IMG_THUMB => $tmpthumb->filename );
 
 	# static content directories
+	$tmpl->param( HTML_DIR => $MapGlobals::HTML_BASE );
 	$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
 	$tmpl->param( CSS_DIR => $MapGlobals::CSS_DIR );
 
@@ -631,9 +631,7 @@ if($template eq 'plain'){
 	$tmpl->param( ZOOM_WIDGET =>
 		listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size, $mpm, $template));
 
-	#$tmpl->param( LOCATIONS => \@locParam );
-	$tmpl->param( LOCATION_OPT_FROM => $loc_opt_from);
-	$tmpl->param( LOCATION_OPT_TO =>  $loc_opt_to);
+	$tmpl->param( LOCATION_OPT =>  $loc_opt);
 
 	# the strings representing the state of various buttons
 	$tmpl->param( UP_URL => 
@@ -729,8 +727,7 @@ elsif ($template eq 'js'){
 	$tmpl->param( SRC_HELP => $src_help );
 	$tmpl->param( DST_HELP => $dst_help );
 
-	$tmpl->param( LOCATION_OPT_FROM => $loc_opt_from);
-	$tmpl->param( LOCATION_OPT_TO =>  $loc_opt_to);
+	$tmpl->param( LOCATION_OPT =>  $loc_opt);
 
 	$tmpl->param( SRC_FOUND => $src_found );
 	if($src_found){
@@ -1002,30 +999,24 @@ sub buildLocationOptions{
 ###################################################################
 sub buildLocationList{
 	my($locations) = @_;
-	my ($loc_opt_from, $loc_opt_to) = ('', '');
+	my $txt = '';
 
 	foreach (sort keys %{$locations->{'ByName'}}){
-
 		$trunc = $name = $locations->{'ByName'}{$_}{'Name'};
+
 		# truncate the name if it's too long
 		if(length($name) > $MapGlobals::MAX_NAME_LEN){
 			$trunc = substr($name, 0, $MapGlobals::MAX_NAME_LEN) . '...';
 		}
 
-		$loc_opt_from .= sprintf(qq{<option value="%s"%s>%s</option>\n},
+		$txt .= sprintf(qq{<option value="%s">%s</option>\n},
 			CGI::escapeHTML($name),
-			($fromTxt eq $name ? ' selected="selected"' : ''),
-			CGI::escapeHTML($trunc)
-		);
-		$loc_opt_to .= sprintf(qq{<option value="%s"%s>%s</option>\n},
-			CGI::escapeHTML($name),
-			($toTxt eq $name ? ' selected="selected"' : ''),
 			CGI::escapeHTML($trunc)
 		);
 
 	}
 
-	return($loc_opt_from, $loc_opt_to);
+	return $txt;
 }
 
 ###################################################################

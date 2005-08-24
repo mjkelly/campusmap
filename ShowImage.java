@@ -23,7 +23,6 @@ import java.util.*;
  */
 public class ShowImage extends JFrame{
 	
-	// CONSTANTS
 	private ImageIcon img;
 	/**
 	 * For writing status text descriptions on current point and 
@@ -87,7 +86,6 @@ public class ShowImage extends JFrame{
 	 * which menu was clicked and then call the appropriate method
 	 * to handle the event.  
 	 * @author David Lindquist
-	 *
 	 */
 	class MenuListener implements ActionListener
 	{
@@ -145,27 +143,20 @@ public class ShowImage extends JFrame{
 				changeImage(); //Do change image stuff here
 			
 			if(e.getSource() == editLocation)
-			{
 				ipanel.editLocation();
-			}
 			
 			if(e.getSource() == createLocation)
-			{
 				ipanel.createLocation();
-			}
+
 			if(e.getSource() == selectLocation)
-			{
 				ipanel.selectLocation(
                         ScrollablePicture.SelectLocationJobID.CENTER);
-			}
+
 			if(e.getSource() == iteratePaths)
-			{
 				ipanel.iterateThroughPathsAtPoint(ipanel.getCurrentPoint());
-			}
+			
 			if(e.getSource() == loadDefinedLocations)
-			{
 				ipanel.readCustomLocationInformation();
-			}
 		}
 	}
 	
@@ -551,27 +542,36 @@ MouseMotionListener{
 				}
 				else if(SwingUtilities.isRightMouseButton(e)) {
 					/** CTRL + right click == select closest path **/
-					if(e.isControlDown() && !e.isAltDown() && !e.isShiftDown()){
+					if(e.isControlDown() && !e.isAltDown() && !e.isShiftDown())
+					{
                         double dist = -1.0;
                         double minDist = -1.0;
-                        Location closestLoc = null;
+                        double dx, dy;   //gogo calc!  :)
+                        Point closestPoint = null;
                         // select the location closest to the click
-                        for(Location l: locations){
-                            double dx = e.getX() - l.cord.x;
-                            double dy = e.getY() - l.cord.y;
-                            dist = Math.sqrt(dx*dx + dy*dy);
-                            if(minDist == -1.0 || minDist > dist){
-                                minDist = dist;
-                                closestLoc = l;
-                            }
-                        }
+                        for(Vector<Point> path: paths)
+                        	for(Point p : path)
+                        	{
+                        		dx = e.getX() - p.x;
+                        		if(dx > minDist)
+                        			continue;
+                        		dy = e.getY() - p.y;
+                        		if(dy > minDist)
+                        			continue;
+                        		dist = Math.sqrt(dx*dx + dy*dy);  //pathag
+                        		if(minDist == -1.0 || minDist > dist)
+                        		{
+                        			minDist = dist;
+                        			closestPoint = p;
+                        		}
+                        	}
                         
-                        // select the closest point we found
-                        if(closestLoc != null){
-                            iterateThroughPathsAtPoint(closestLoc.cord);
+                        if(closestPoint != null)
+                        {
+                        	iterateThroughPathsAtPoint(closestPoint);
                         }
 				    }
-					else
+					else // plain right click (no modifiers)
 					{
 						// Change current point's coordinates
 						changeCurSelectedPointCord(e.getPoint());					
@@ -590,10 +590,8 @@ MouseMotionListener{
 	
 	/**
 	 * This method creates a new point in the currently selected path
-	 * at the passed in (x,y) pair.  (Will also create a location
-	 * if text is entered in the text bar).  
-	 * @param x -- x coordinate to create the point at. 
-	 * @param y -- y coordinate to create the point at.
+	 * at the passed in point.
+	 * @param pointToAdd The point to add the location at
 	 */
 	public void createNewPointInCurPath(Point pointToAdd)
 	{
@@ -637,19 +635,17 @@ MouseMotionListener{
 	}
 	
 	/**
-	 * Method: void changeCurSelectedPointCord(int x, int y)
 	 * Change the coordinates of the currently selected point to the passed
-	 * in x-y coordinate.
+	 * in point.
 	 * <p>
 	 * 2 cases:<br>
 	 * 1:  Location exists at the previous point:<br>
 	 * Move the location and all points that it intersects with to the
-	 * new x and y coordinates.<br><br>
+	 * new point<br><br>
 	 * 2:  Location does not exist at the previous point:<br>
-	 * Move the previous point to the new x and y coordinates
+	 * Move the previous point to the new point
 	 * 
-	 * @param x -- The x coordinate to change to.
-	 * @param y -- The y coordinate to change to.
+	 * @param pointToMoveTo The point to move the current point to
 	 */
 	public void changeCurSelectedPointCord(Point pointToMoveTo)
 	{
@@ -924,6 +920,11 @@ MouseMotionListener{
 		}
 	}
 	
+	/**
+	 * Uses a JOptionPane dialog box to select a path number
+	 * If valid input...uses the goToPathNumber(int) method to 
+	 * set focus to the path.
+	 */
 	public void goToPath()
 	{
 		String selected = null;
@@ -1059,9 +1060,16 @@ MouseMotionListener{
 		repaint();
 	}
 	
+	/**
+	 * This method puts up a JOptionPane confirmation box to determine
+	 * if the user is sure they want to delete the currently selected
+	 * path.  If Yes is entered, the path is removed by first deleting
+	 * all of the points in the path, and then the path itself is
+	 * removed from the paths vector.  
+	 */
 	public void deleteCurPath()
 	{
-		int confirmReturn = 0;
+		int confirmReturn;
 		int numElements = curPath.size();
 		confirmReturn = JOptionPane.showConfirmDialog(parent, 
 				"Are you sure you want to delete path " + pathNumIndex + 
@@ -1741,6 +1749,7 @@ MouseMotionListener{
 					
 					if(locVersionNumber == 3)
 						tempAliases = (Vector<String>)locin.readObject();
+
 					
 					tempBuildingCode = (String)locin.readObject();
 					tempKeywords = (String)locin.readObject();
@@ -1906,6 +1915,7 @@ MouseMotionListener{
 		submit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
+				boolean error = false;
 				double xOffValue = 0, yOffValue = 0, 
 						xScaleValue = 1, yScaleValue = 1;
 				try
@@ -1917,7 +1927,9 @@ MouseMotionListener{
 				}
 				catch(NumberFormatException exc)
 				{
-					System.err.println("Number format exception convertin value!");
+					setStatusBarText(
+							"Number format exception converting value!");
+					error = true;
 				}
 				
 				// Apply to paths
@@ -1940,7 +1952,8 @@ MouseMotionListener{
 				parent.repaint();
 				dialog.dispose();
 				dialog.setVisible(false);
-				setStatusBarText("Data scaled");
+				if(!error)
+					setStatusBarText("Data scaled");
 			}
 		});
 		
@@ -3371,6 +3384,9 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 		regenerate();
 	}
 
+	/**
+	 * Refreshes the box fully
+	 */
 	public void regenerate()
 	{
 		this.removeAll();

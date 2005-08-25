@@ -25,6 +25,9 @@ if(@ARGV){
 	$doEdges = ($arg =~ /e/i);
 }
 
+my $str = shift(@ARGV);
+print "search string is: $str\n";
+
 print "===== Points =====\n";
 
 my $points = LoadData::loadPoints($dir . '/' . $MapGlobals::POINT_FILE);

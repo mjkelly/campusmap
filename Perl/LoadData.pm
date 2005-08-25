@@ -4,14 +4,14 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Fri Jul  1 23:39:04 PDT 2005
+# Wed Aug 24 20:45:19 PDT 2005
 # -----------------------------------------------------------------
 
 package LoadData;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(nameNormalize tokenize);
+@EXPORT_OK = qw(nameNormalize tokenize findLocation findKeyword isKeyword getKeyText);
 @EXPORT = qw();
 
 
@@ -524,8 +524,48 @@ sub nameNormalize{
 }
 
 ###################################################################
+# Given a search string and a hashref of locations (returned by
+# MapGlobals::loadLocations()), find the best match, or return a list of
+# possible matches if no single sufficiently good match exists.
+#
+# Args:
+#	- the search string
+#	- a hashref of locations
+# Returns:
+#	- an array of hashrefs: each contains two keys: 'id', which gives the
+#	  location ID; and 'matches', which is a float between 0 and 1,
+#	  representing the "goodness" of the match. The array is ordered by the
+#	  'matches' key of each element. If only one element is returned, it is
+#	  a good match. If more than one is returned, they should be displayed
+#	  for the user to choose between.
+###################################################################
+sub findLocation{
+	my($text, $locations) = @_;
+
+	if($text eq ''){
+		return ();
+	}
+
+	# first check for an exact name match
+	if( exists($locations->{'ByName'}{nameNormalize($text)}) ){
+		return ( { id => $locations->{'ByName'}{nameNormalize($text)}{'ID'},
+			matches => 1.0 } );
+	}
+	# then check a building code match
+	elsif( exists($locations->{'ByCode'}{$text}) ){
+		return ( { id => $locations->{'ByCode'}{$text}{'ID'}, matches => 1.0 } );
+	}
+	# otherwise, fall back to substrings and fuzzy things
+	elsif($text ne ''){
+		return LoadData::fuzzyFind($text, $locations);
+	}
+}
+
+###################################################################
 # Given user input, return the ID of the location that best matches, or -1 if
 # there's nothing reasonable.
+#
+# TODO: This code is messy. Make it less so, sometime.
 #
 # Args:
 #	- a search string
@@ -541,106 +581,142 @@ sub nameNormalize{
 #		{ id => 17, matches => 0.15 }
 #	  )
 ###################################################################
-sub findName{
+sub fuzzyFind{
 	my ($search_str, $locations) = @_;
 	my @search_toks = tokenize($search_str);
+	my $search_norm = nameNormalize($search_str);
 	my $search_len = scalar @search_toks;
+
+	# trace function execution, for debugging
+	my $outstr = '';
 
 	# store the top few matches we get.
 	my @top_matches;
 
 	#print "SEACH STRING: $search_str -> (@search_toks) [$search_len]\n";
 
-	foreach ( keys %{$locations->{'ByID'}} ){
-		# there should be a better way to do this. maybe I should
-		# stop polluting the $locations hash with multiple keys for
-		# each ID.
-		my $outstr = '';
-		my $loc_str = $locations->{'ByID'}{$_}{'Name'};
-		my @loc_toks = tokenize($loc_str);
-		my $loc_len = scalar @loc_toks;
-		$outstr .= "LOCATION: $loc_str -> (@loc_toks) [$loc_len]\n";
+	# first look for straight substrings
+	my $best = undef;
+	my $best_id = undef;
+	foreach my $name ( keys %{$locations->{'ByName'}} ){
+		#print "$locations->{'ByName'}{$name}{'Name'}\n";
 
-		# aaaagh, nested loops...
-		my $matches = 0;
-		my $l_matched = 0;
-LOC:			foreach my $l_tok (@loc_toks){
-			$outstr .= "\t$l_tok:";
-SEARCH:				foreach my $s_tok (@search_toks){
-				# exact match
-				if($s_tok eq $l_tok){
-					my $strength = 1;
-					$outstr .= " $s_tok [$strength EXACT]\n";
-
-					$matches += $strength;
-					$l_matched++;
-					# we found a perfect match for this token.
-					# move on to the next token.
-					next LOC;
-				}
-				# substring search
-				elsif( index($l_tok, $s_tok) != -1 ){
-					my $strength = length($s_tok) / length($l_tok);
-					$outstr .= " $s_tok [$strength SUB]";
-
-					$matches += $strength;
-					$l_matched++;
-					next SEARCH;
-				}
-				# superstring search
-				elsif( index($s_tok, $l_tok) != -1 ){
-					my $strength = length($l_tok) / length($s_tok);
-					$outstr .= " $s_tok [$strength SUPER]";
-
-					$matches += $strength;
-					$l_matched++;
-					next SEARCH;
-				}
-				# fuzzy matching...
-				else{
-					my $dist = distance([0, 1, 1], $s_tok, $l_tok);
-					# the "weighted distance" is
-					# ($dist/ length($s_tok). the higher
-					# this is, the worse the match.
-					my $strength = 1 - ($dist/ length($s_tok));
-
-					# ignore the really bad matches
-					# this is critical, so long names
-					# don't accumulate match strength
-					# from a series of bad matches
-					if($strength > 0.5){
-						$matches += $strength;
-						$l_matched++;
-						$outstr .= " $s_tok [$dist -> $strength FUZZY]";
-						next SEARCH;
-					}
+		# search through the primary name, and all aliases
+		foreach( $name, @{$locations->{'ByName'}{$name}{'Aliases'}} ){
+			# (yes, the primary name is already normalized, but the aliases aren't)
+			my $norm = nameNormalize($_);
+			#print "\t$norm\n";
+			# search for simple substrings
+			if( index($norm, $search_norm) != -1 ){
+				#print "*** $norm is a superstring of $search_norm.\n";
+				# only keep the shortest substring
+				if( !defined($best) || length($norm) < length($best) ){
+					#print "*** this is the best substring.\n";
+					#print "*** it represents $locations->{'ByName'}{$name}{'ID'}\n";
+					$best = $norm;
+					$best_id = $locations->{'ByName'}{$name}{'ID'};
 				}
 			}
-			$outstr .= "\n";
-		}
-
-		# if we had any matches, keep track of this result
-		if($matches && $l_matched){
-			# we heavily weight in favor of multiple word matches,
-			# but lightly weight against longer matches.
-			# In other words, if you search for "foo bar",
-			# the following strings should match in the
-			# following order:
-			# 1. "foo bar"
-			# 2. "foo bar baz"
-			# 3. "foo baz"
-			# All of this is subject to change, of course. ;)
-			$matches = $matches**2 / ($loc_len);
-			if($matches >= 0.05){
-				push(@top_matches, { matches => $matches, id => $_});
-			}
-		}
-
-		$outstr .= "\t$matches matches ($l_matched).\n";
-		if($l_matched){
-			#print $outstr;
 		}
 	}
+
+	# if we got a substring, just return that -- don't bother with expensive fuzzy matching
+	if( defined($best) ){
+		#print "returning id = $locations->{'ByID'}{$best_id}{'ID'}\n";
+		return({
+			id => $locations->{'ByID'}{$best_id}{'ID'},
+			matches => 1.0,
+		});
+	}
+	#print "aww, we fell through. time for fuzzy matching.\n";
+
+	foreach my $loc_id ( keys %{$locations->{'ByID'}} ){
+		# this is just an array made up of the location's primary name
+		# and all its aliases
+		foreach( $locations->{'ByID'}{$loc_id}{'Name'}, @{$locations->{'ByName'}{$loc_id}{'Aliases'}} ){
+			my @loc_toks = tokenize($_);
+			my $loc_len = scalar @loc_toks;
+			$outstr .= "LOCATION: $_ -> (@loc_toks) [$loc_len]\n";
+
+			# aaaagh, nested loops...
+			my $matches = 0;
+			my $l_matched = 0;
+	LOC:			foreach my $l_tok (@loc_toks){
+				$outstr .= "\t$l_tok:";
+	SEARCH:				foreach my $s_tok (@search_toks){
+					# exact match
+					if($s_tok eq $l_tok){
+						my $strength = 1;
+						$outstr .= " $s_tok [$strength EXACT]\n";
+
+						$matches += $strength;
+						$l_matched++;
+						# we found a perfect match for this token.
+						# move on to the next token.
+						next LOC;
+					}
+					# substring search
+					elsif( index($l_tok, $s_tok) != -1 ){
+						my $strength = length($s_tok) / length($l_tok);
+						$outstr .= " $s_tok [$strength SUB]";
+
+						$matches += $strength;
+						$l_matched++;
+						next SEARCH;
+					}
+					# superstring search
+					elsif( index($s_tok, $l_tok) != -1 ){
+						my $strength = length($l_tok) / length($s_tok);
+						$outstr .= " $s_tok [$strength SUPER]";
+
+						$matches += $strength;
+						$l_matched++;
+						next SEARCH;
+					}
+					# fuzzy matching...
+					else{
+						my $dist = distance([0, 1, 1], $s_tok, $l_tok);
+						# the "weighted distance" is
+						# ($dist/ length($s_tok). the higher
+						# this is, the worse the match.
+						my $strength = 1 - ($dist/ length($s_tok));
+
+						# ignore the really bad matches
+						# this is critical, so long names
+						# don't accumulate match strength
+						# from a series of bad matches
+						if($strength > 0.5){
+							$matches += $strength;
+							$l_matched++;
+							$outstr .= " $s_tok [$dist -> $strength FUZZY]";
+							next SEARCH;
+						}
+					}
+				}
+				$outstr .= "\n";
+			}
+
+			# if we had any matches, keep track of this result
+			if($matches && $l_matched){
+				# we heavily weight in favor of multiple word matches,
+				# but lightly weight against longer matches.
+				# In other words, if you search for "foo bar",
+				# the following strings should match in the
+				# following order:
+				# 1. "foo bar"
+				# 2. "foo bar baz"
+				# 3. "foo baz"
+				# All of this is subject to change, of course. ;)
+				$matches = ($matches*$matches) / ($loc_len);
+				if($matches >= 0.05){
+					push(@top_matches, { matches => $matches, id => $loc_id});
+				}
+			}
+
+			$outstr .= "\t$matches matches ($l_matched).\n";
+		}
+	}
+	#print "$outstr";
 
 	# this is the fifth or last index
 	my $four = $#top_matches < 4 ? $#top_matches : 4;
@@ -702,7 +778,9 @@ sub tokenize{
 }
 
 ###################################################################
-# Find all the locations with a given keyword, sorted by distance.
+# Find all the locations with a given keyword. The order in which they are
+# returned is not specified.
+#
 # Args:
 #	- the keyword. this should already be stripped of the 'keyword:'
 #	  prefix, and properly normalized.
@@ -722,6 +800,18 @@ sub findKeyword{
 		push(@r, { id => $l->{'ID'}, matches => 1 });
 	}
 	return @r;
+}
+
+###################################################################
+# Check if a the given search string represents a keyword search.
+# Args:
+#	- a search string
+# Returns:
+#	- 1 if the given search string is a keyword search, else 0
+###################################################################
+sub isKeyword{
+	my($str) = @_;
+	return (lc(substr($str, 0, 8)) eq 'keyword:');
 }
 
 ###################################################################

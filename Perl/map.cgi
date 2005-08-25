@@ -11,7 +11,7 @@
 #	- check loading and searching of $points: is it being done more often
 #	  than necessary on double fuzzy matches?
 #
-# Sun Aug 21 20:26:36 PDT 2005
+# Wed Aug 24 20:45:24 PDT 2005
 # -----------------------------------------------------------------
 
 use strict;
@@ -30,7 +30,7 @@ use HTML::Template;
 use GD;
 
 use MapGlobals qw(TRUE FALSE INFINITY between asInt round @SIZES @SCALES);
-use LoadData qw(nameNormalize);
+use LoadData qw(nameNormalize findLocation isKeyword getKeyText);
 use MapGraphics;
 use ShortestPath;
 
@@ -141,7 +141,7 @@ else{
 	if( isKeyword($toTxt) ){
 		# keyword matching
 		if( !isKeyword($fromTxt) ){
-			@toids = LoadData::findKeyword(LoadData::getKeyText($toTxt), $locations);
+			@toids = findKeyword(getKeyText($toTxt), $locations);
 			$dst_keyword = TRUE;
 		}
 		else{
@@ -177,7 +177,7 @@ else{
 	if( isKeyword($fromTxt) ){
 		# keyword matching
 		if( !isKeyword($toTxt) ){
-			@fromids = LoadData::findKeyword(LoadData::getKeyText($fromTxt), $locations);
+			@fromids = findKeyword(getKeyText($fromTxt), $locations);
 			$src_keyword = TRUE;
 		}
 		# we don't print an error in an else{} here, because that
@@ -298,7 +298,7 @@ else{
 	# error if we got no matches
 	if(@fromids == 0){
 		if($src_keyword){
-			$ERROR .= "<p><b>&quot;" . LoadData::getKeyText($fromTxtSafe) . "&quot; is not a valid keyword.</b></p>\n";
+			$ERROR .= "<p><b>&quot;" . getKeyText($fromTxtSafe) . "&quot; is not a valid keyword.</b></p>\n";
 		}
 	}
 	# if we got multiple matches, build help text to disambiguate
@@ -321,7 +321,7 @@ else{
 
 	if(@toids == 0){
 		if($dst_keyword){
-			$ERROR .= "<p><b>&quot;" . LoadData::getKeyText($toTxtSafe) . "&quot; is not a valid keyword.</b></p>\n";
+			$ERROR .= "<p><b>&quot;" . getKeyText($toTxtSafe) . "&quot; is not a valid keyword.</b></p>\n";
 		}
 	}
 	elsif(@toids > 1){
@@ -1105,56 +1105,6 @@ sub pickZoom{
 	return ($scale, $xoff, $yoff);
 }
 
-
-###################################################################
-# Given a search string and a hashref of locations (returned by
-# MapGlobals::loadLocations()), find the best match, or return a list of
-# possible matches if no single sufficiently good match exists.
-#
-# Args:
-#	- the search string
-#	- a hashref of locations
-# Returns:
-#	- an array of hashrefs: each contains two keys: 'id', which gives the
-#	  location ID; and 'matches', which is a float between 0 and 1,
-#	  representing the "goodness" of the match. The array is ordered by the
-#	  'matches' key of each element. If only one element is returned, it is
-#	  a good match. If more than one is returned, they should be displayed
-#	  for the user to choose between.
-###################################################################
-sub findLocation{
-	my($text, $locations) = @_;
-
-	if($text eq ''){
-		return ();
-	}
-
-	# first check for an exact name match
-	if( exists($locations->{'ByName'}{nameNormalize($text)}) ){
-		return ( { id => $locations->{'ByName'}{nameNormalize($text)}{'ID'},
-			matches => 1.0 } );
-	}
-	# then check a building code match
-	elsif( exists($locations->{'ByCode'}{$text}) ){
-		return ( { id => $locations->{'ByCode'}{$text}{'ID'}, matches => 1.0 } );
-	}
-	# otherwise, fall back to fuzzy matching
-	elsif($text ne ''){
-		return LoadData::findName($text, $locations);
-	}
-}
-
-###################################################################
-# Check if a the given search string represents a keyword search.
-# Args:
-#	- a search string
-# Returns:
-#	- 1 if the given search string is a keyword search, else 0
-###################################################################
-sub isKeyword{
-	my($str) = @_;
-	return (lc(substr($str, 0, 8)) eq 'keyword:');
-}
 
 ###################################################################
 # Given a number of minutes, format it nicely.

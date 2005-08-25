@@ -2,189 +2,67 @@
         "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>About UCSDMap: Interface Features</title>
+<title>About UCSDMap: Using the JavaScript Interface</title>
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 <div id="top">
 	<h1>About UCSDMap</h1>
-<!--#include virtual="/cgi-bin/menu.pl?interface"-->
+<!--#include virtual="/cgi-bin/menu.pl?js"-->
 </div>
 
-<h2>Interface Features (non-JavaScript)</h2>
+<h2>Moving the Map</h2>
 
+<p>There are three ways to scroll and zoom the map:</p>
 
-<p><b>Note:</b> This page discusses the older, non-JavaScript interface. Some
-interface details are therefore different. (Users who do not have JavaScript
-enabled, are redirected to this interface.)</p>
-
-<h3>Location name labels:</h3>
-	<ul>
-	<li>Colored based on whether the location was entered in the start or
-	  end box
+<ul>
+	<li>The controls to the left of the map view
 		<ul>
-		<li>label is colored green if entered in the start box, red if
-		  entered in the end box.</li>
+			<li>The arrow buttons slide the map.</li>
+			<li>The circle resets the map to the default view.</li>
+			<li>The plus and minus buttons zoom in and out.</li>
+			<li>The ovals between the plus and minus buttons change the selected zoom level.</li>
 		</ul>
 	</li>
-	<li>If there's no room to display the location label to the right of
-	  the location then it will be displayed on the left.
-		<ul>
-		<li>Exception: when the label cannot be displayed either on the
-		  left or the right. (If this happens, both location names
-		  still appear to the left of the map.)</li>
-		</ul>
-	</li>
-	<li>These rules for displaying of the location labels hold while moving
-	  on the map.</li>
-	</ul>
 
-<h3>Moving and zooming with the map:</h3>
-	<ul>
-	<li>Navigation bar operations:
-		<ul>
-		<li>Navigation arrows: pan to the North, South, East, or West.</li>
-		<li>Circle (in the center of the navigation arrows): returns the</li>
-		  map to the default zoom and center of the currently
-		  displayed path or location (the same as clicking the
-		  &quot;submit&quot; button again).</li>
-		<li>Zoom bar:
-			<ul>
-			<li>Plus and Minus arrows: Moves to the next lower or
-			  higher zoom level.</li>
-			<li>Ovals: Go directly to zoom level. (Red oval
-			  represents current zoom level)</li>
-			</ul>
-		</li>
-		</ul>
-	</li>
-	<li>Clicking on the map centers the map on the point clicked</li>
-	<li>Clicking on the thumbnail (upper right) centers the map on
-	  the point clicked</li>
-	</ul>
+	<li>Clicking and dragging inside the map view</li>
 
-<h3>Thumbnail:</h3>
-	<ul>
-	<li>Show the overall view of the map</li>
-	<li>Blue rectangle shows the current map display</li>
-	<li>If applicable, green and red boxes indicate the start and end</li>
-	  locations
-	<li>Thumbnail is synchronized with map operations and vice versa</li>
-	</ul>
+	<li>Keyboard shortcuts (see below)</li>
+	
+</ul>
 
-<h3>Searching for a location:</h3>
-	<ul>
-	<li>A location can be typed into either the start or end box near the
-	  top of the page or selected in the drop down menu
-	<li>Fuzzy matching for typed location names
-		<ul>
-		<li>When there is only one close match: Auto-corrects and
-		  displays the location</li>
-		<li>Displays a list of hyperlinks when there are multiple close
-		  matches (sorted by closeness)
-			<ul>
-			<li>If the other entry field has a valid (or
-			  auto-corrected) location entered, the list of
-			  hyperlinks contains the distance of each suggested
-			  location to the valid location (or infinity if it
-			  cannot be reached).</li>
-			</ul>
-		</li>
-		<li>The desired location can be displayed by clicking on the
-		  corresponding hyperlink
-		</ul>
-	</li>
-	<li>If the location name entered matches a known building code, the
-	location with that building code is selected.</li>
-	</ul>
+<p>Additionally, clicking on one of the location names that appear to the left
+of the map centers on that location.</p>
 
-<h3>Displaying of shortest known path between locations:</h3>
-	<ul>
-	<li>When two locations are entered, the shortest known path is found
-	  between the two points
-		<ul>
-		<li>Computation of the shortest path is accomplished using
-		  Dijkstra's Algorithm on provided datafiles</li>
-		<li>Datafile properties can be set to stop the shortest path
-		  from going through certain locations (so people aren't</li>
-		  directed to walk through buildings)</li>
-		<li>Datafile properties can be set to allow for bridges and
-		  tunnel</li>
-		</ul>
-	</li>
-	<li>Information of the path is displayed to the left of the navigation
-	  bar:
-		<ul>
-		<li>The from (start) location is underlined and labeled in green</li>
-		<li>The to (end) location is underlined and labeled in red</li>
-		<li>The distance between the two location is displayed in miles.</li>
-		<li>The time it takes to walk between the two locations is
-		  displayed based on entry of walking speed (15min/mile
-		  default)</li>
-		</ul>
-	</li>
-	<li>The path is displayed on the map:
-		<ul>
-		<li>The path is drawn in blue on the map between the two labeled
-		  locations</li>
-		<li>The drawn path will maintain itself through different zoom
-		  levels and recentering</li>
-		</ul>
-	<li>Default display:
-		<ul>
-		<li>The highest zoom level is used such that all of the path can
-		  still be displayed on the map.
-			<ul>
-			<li>Thus, by default, all elements of the path will be
-			  viewable (Exception: when the path is too big for
-			  the lowest zoom level)
-				<ul>
-				<li>In this case, the display centers on the end
-				  location</li>
-				</ul>
-			</li>
-			</ul>
-		</li>
-		</ul>
-	</li>
-	</ul>
+<h2>Keyboard Shortcuts</h2>
+<table border="0" cellpadding="0" cellspacing="10">
+	<tr align="left">
+		<th>Key</th>
+		<th>Function</th>
+	</tr>
+	<tr>
+		<td><b>+</b> (plus)</td>	
+		<td>Zoom in</td>
+	</tr>
+	<tr>
+		<td><b>-</b> (minus)</td>	
+		<td>Zoom out</td>
+	</tr>
+	<tr>
+		<td>Arrow keys</td>	
+		<td>Scroll the map in the given direction</td>
+	</tr>
+</table>
 
-<h3>Data caching:</h3>
-	<ul>
-	<li>All displayed paths are cached and will be retrieved if they are
-	  requested again
-		<ul>
-		<li>Caching prevents the need to load two of the main datafiles
-		  and run Dijkstra's algorithm.</li>
-		<li>This allows for faster zooming and moving around the map
-		<li>The length of time that the cache files are retained is
-		  adjustable (currently 10 minutes)</li>
-		</ul>
-	</li>
-	<li>Data stored in cache files is as follows
-		<ul>
-		<li>The distance of the path.</li>
-		<li>The minimum and maximum X and Y coordinates of the points that appear in the path.</li>
-		<li>The number of edges (sets of points) that are stored in the cache.</li>
-		<li>The edges themselves. Edges represent the sets of
-		    points that lie on each vertex of the graph that represents the
-		    paths on the map. Each edge consists of:</li>
-			<ul>
-			<li>The number of coordinate pairs.</li>
-			<li>Each coordinate pair, which is simply an X coordinate followed by a Y coordinate.</li>
-			</ul>
-		</ul>
-	</li>
-	<li>The data in the cache is designed to mimic the data that would be retrieved from disk if no cache was used. This results in a slightly more complicated data format, but allows for more sharing of code once the data is loaded.</li>
-	</ul>
+<p><b>Note:</b> Not all key commands work in all browsers.</p>
 
-<h3>Notes:</h3>
-	<ul>
-	<li>You can find the distance to the nearest food facility by entering a
-	  start location and &quot;food&quot; for the end location</li>
-	</ul>
+<h2>Browser Compatibility</h2>
 
+<p>The following browsers are compatible: Firefox, Internet Explorer, Safari, and Opera.</p>
+
+<p>Click <a href="browsers.shtml">here</a> for a full table listing interface
+functionality in all tested browsers.</p>
 
 </body>
 </html>

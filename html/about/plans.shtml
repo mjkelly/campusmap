@@ -20,20 +20,20 @@ the end of Summer Session I and the beginning of Fall 2005.) Crossed-off items
 have been completed.</p>
 
 <ul>
-	<li><b>A better base map.</b> The current map is the visitor map
+	<li><b>Complete path data.</b> The current path data is for
+	demonstration only and is in no way complete. Now that we have obtained
+	a vector version of the base map we wish to use, we can create our base
+	images and enter full path and location data. </li>
+
+	<li><strike><b>A better base map.</b> The current map is the visitor map
 	PDF. (It even still has the key in the upper right-hand corner!) We
 	would like to use the colored visitor map, such as the one that is used by <a
-	href="http://maps.ucsd.edu/Viewer.htm?Zoom=2&Map=Visitor&O.x=88&O.y=73&Cmnd=Mgfy&View=Medium&P.x=206&P.y=154">maps.ucsd.edu</a>.</li>
+	href="http://maps.ucsd.edu/Viewer.htm?Zoom=2&Map=Visitor&O.x=88&O.y=73&Cmnd=Mgfy&View=Medium&P.x=206&P.y=154">maps.ucsd.edu</a>.</strike></li>
 
-	<li><b>Complete path data.</b> The current path data is for
-	demonstration only and is in no way complete. Once we obtain a final
-	base map and create a scaled base image for use in the editor, we'll
-	enter in the complete path data.</li>
-
-	<li><b>Complete building codes.</b> The application supports
+	<li><strike><b>Complete building codes.</b> The application supports
 	associating a building code with each location (i.e., &quot;PCYNH&quot;
 	with &quot;Pepper Canyon Hall&quot;), and many, but not all, have been
-	entered.</li>
+	entered.</strike></li>
 
 	<li><strike><b>Google Maps-style scrolling.</b> Who can resist?</strike></li>
 

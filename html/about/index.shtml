@@ -29,14 +29,14 @@
 </p>
 
 <p>
-	Through the online interface, users may search for up to two locations
-	at a time and view the shortest path between them, as well as the
-	distance and approximate walking time (based on user-adjustable walking
-	speed) of that path. Users may drag, scroll, and zoom the map in
-	real-time, in the style of Google Maps. Based on optional keywords
-	attached to each location in the editor, users may also search for the
-	closest location of a certain kind. (For example, to find the closest
-	parking lot to a given building.)
+	Through the online interface, users may search for up to two locations at a
+	time and view the shortest path between them, as well as the distance and
+	approximate walking time (based on user-adjustable walking speed) of that path.
+	Users may drag, scroll, and zoom the map in real-time, in the style of Google
+	Maps. This allows for the quick and easy viewing of the whole campus. Based on
+	optional keywords attached to each location in the editor, users may also
+	search for the closest location of a certain kind. (For example, to find the
+	closest parking lot to a given building.)
 </p>
 
 </body>

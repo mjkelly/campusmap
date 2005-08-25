@@ -2,14 +2,14 @@
         "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>About UCSDMap: Using the JavaScript Interface</title>
+<title>About CampusMap: Using the JavaScript Interface</title>
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 <div id="top">
-	<h1>About UCSDMap</h1>
-<!--#include virtual="/cgi-bin/menu.pl?js"-->
+	<h1>About CampusMap</h1>
+<!--#include virtual="/cgi-bin/menu.pl?interface"-->
 </div>
 
 <h2>Moving the Map</h2>

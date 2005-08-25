@@ -15,13 +15,13 @@ use warnings;
 my %menu = (
 	abstract =>		{ name => "Abstract",		url => "/about/index.shtml" },
 	editor =>		{ name => "About the Editor",	url => "/about/editor.shtml" },
-	interface =>		{ name => "Plain Interface",	url => "/about/interface.shtml" },
-	js =>			{ name => "JavaScript Interface", url => "/about/js.shtml" },
+	interface =>		{ name => "About the Interface",	url => "/about/interface.shtml" },
+	#js =>			{ name => "JavaScript Interface", url => "/about/js.shtml" },
 	plans =>		{ name => "Plans",		url => "/about/plans.shtml" },
-	whynot =>		{ name => "Vs. Google Maps",	url => "/about/whyNotGoogleMaps.shtml" },
+	#whynot =>		{ name => "Vs. Google Maps",	url => "/about/whyNotGoogleMaps.shtml" },
 	implementation =>	{ name => "Implementation",	url => "/cgi-bin/map.cgi" },
 );
-my @order = qw( abstract editor interface js plans whynot implementation );
+my @order = qw( abstract editor interface plans implementation );
 my $current = $ENV{'QUERY_STRING'} || $ARGV[0] || '';
 
 print "Content-type: text/html\n\n\t<p>[\n";

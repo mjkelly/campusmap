@@ -37,7 +37,7 @@ public class ShowImage extends JFrame{
 	
 	private JMenuItem prevPath, nextPath, newPath, deletePath, iteratePaths, goToPath,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
-	read, write, createLocationFile, changeImage, loadDefinedLocations, scaleData,//IO
+	read, write, createLocationFile, changeImage, loadDefinedLocations, scaleData, loadXMLLocations,//IO
 	locationEditor, editLocation, createLocation, selectLocation;
 	
 	// For accessing the locationName text field
@@ -157,6 +157,9 @@ public class ShowImage extends JFrame{
 			
 			if(e.getSource() == loadDefinedLocations)
 				ipanel.readCustomLocationInformation();
+
+            if(e.getSource() == loadXMLLocations)
+                ipanel.loadXMLLocations();
 		}
 	}
 	
@@ -235,10 +238,16 @@ public class ShowImage extends JFrame{
 		
 		read = file.add(makeJMenuItem("Open files", listener, READ_KEY));
 		write = file.add(makeJMenuItem("Save files", listener, WRITE_KEY));
-		loadDefinedLocations = 
+		
+        file.addSeparator();
+        loadDefinedLocations = 
 			file.add(makeJMenuItem("Load defined locations", listener, 0));
-
-		file.addSeparator();
+        loadXMLLocations = 
+            file.add(makeJMenuItem("Load XML locations", listener, 0));
+        file.addSeparator();
+        
+        loadDefinedLocations = 
+            file.add(makeJMenuItem("Load defined locations", listener, 0));
 		createLocationFile = file.add(makeJMenuItem(
 				"Print Location List", listener, LOCATION_FILE_KEY));
 		changeImage = file.add(makeJMenuItem("Change Image", listener, 0));
@@ -2199,6 +2208,21 @@ MouseMotionListener{
 			e.printStackTrace();
 		}
 	}
+    
+    /**
+     * Load locations from an XML file. Woohoo.
+     */
+    public void loadXMLLocations(){
+        Vector<Location> newLocs = xmlHandler.loadLocations();
+        for(Location l: newLocs){
+            // add this location
+            locations.add(l);
+            // create a new path
+            createNewPath();
+            // Add the location's coordinate to that path
+            createNewPointInCurPath(new Point(l.cord.x, l.cord.y));
+        }
+    }
 	
 	/**
 	 * Display a dialog that allows the user to place a point (node) at a
@@ -3057,7 +3081,7 @@ class Location implements Serializable, ComponentElement
 	public String[] getComponentDescriptions()
 	{
 		String [] descriptions 
-		= {"Name of Location @ (" + this.cord.x + ", " + this.cord.y + ")" //Name
+		= {"Name of Location @ (" + this.cord.x + ", " + this.cord.y + "), ID " + this.ID //Name
 				, "ID", "Keywords", "canPassThrough", 
 				"allowIntersections", "displayName", "Aliases"};
 		return (descriptions);
@@ -3402,7 +3426,8 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 			box.linkToVariable(this, i);
 			stringEditors.add(i, box);
 			
-			JButton removeButton = new JButton("Remove");
+            JButton removeButton = new JButton("Remove");
+            
 			add(box);
 			constraint.gridwidth = GridBagConstraints.RELATIVE;
 			layout.setConstraints(box, constraint);
@@ -3430,14 +3455,16 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 				regenerate();
 			}
 		});
+        
 		for(Component c : getComponents())
 		{
-			System.err.println(c.toString());
+			//System.err.println(c.toString());
 			c.setVisible(true);
 			c.repaint();
 		}
 		this.setVisible(true);
-		repaint();
+		//repaint();
+        setSize(400,400);
 	}
 	
 	/**

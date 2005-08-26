@@ -532,12 +532,7 @@ sub nameNormalize{
 #	- the search string
 #	- a hashref of locations
 # Returns:
-#	- an array of hashrefs: each contains two keys: 'id', which gives the
-#	  location ID; and 'matches', which is a float between 0 and 1,
-#	  representing the "goodness" of the match. The array is ordered by the
-#	  'matches' key of each element. If only one element is returned, it is
-#	  a good match. If more than one is returned, they should be displayed
-#	  for the user to choose between.
+#	- an array of hashrefs in the same format as fuzzyFind.
 ###################################################################
 sub findLocation{
 	my($text, $locations) = @_;
@@ -546,14 +541,23 @@ sub findLocation{
 		return ();
 	}
 
+	my $norm_text = nameNormalize($text);
+
 	# first check for an exact name match
-	if( exists($locations->{'ByName'}{nameNormalize($text)}) ){
-		return ( { id => $locations->{'ByName'}{nameNormalize($text)}{'ID'},
-			matches => 1.0 } );
+	if( exists($locations->{'ByName'}{$norm_text}) ){
+		return ({
+			id => $locations->{'ByName'}{$norm_text}{'ID'},
+			matches => 1.0,
+			text => $locations->{'ByName'}{$norm_text}{'Name'},
+		});
 	}
 	# then check a building code match
 	elsif( exists($locations->{'ByCode'}{$text}) ){
-		return ( { id => $locations->{'ByCode'}{$text}{'ID'}, matches => 1.0 } );
+		return ({
+			id => $locations->{'ByCode'}{$text}{'ID'},
+			matches => 1.0,
+			text => $locations->{'ByCode'}{$text}{'Name'},
+		});
 	}
 	# otherwise, fall back to substrings and fuzzy things
 	elsif($text ne ''){
@@ -572,13 +576,15 @@ sub findLocation{
 #	- a hashref of locations to search
 # Returns:
 #	- an array containing the best matches: each element in the array is a
-#	  hashref containing the keys 'id' (the ID of the location) and
-#	  'matches' (a floating-point number representing the relative goodness
-#	  of a match). The array is sorted by the 'matches' field. i.e., 
+#	hashref containing the keys 'id' (the ID of the location), 'matches' (a
+#	floating-point number representing the relative goodness of a match),
+#	and 'text', which is the precise text that was matched -- this may be
+#	the official location name or an alias.
+#	The array is sorted by the 'matches' field. i.e., 
 #	  (
-#		{ id => 6, matches => 0.25 },
-#		{ id => 42, matches => 0.20 },
-#		{ id => 17, matches => 0.15 }
+#		{ id => 6, matches => 0.25, text => 'Foo' },
+#		{ id => 42, matches => 0.20, text => 'Bar' },
+#		{ id => 17, matches => 0.15, text => 'Baz' }
 #	  )
 ###################################################################
 sub fuzzyFind{
@@ -593,48 +599,55 @@ sub fuzzyFind{
 	# store the top few matches we get.
 	my @top_matches;
 
-	#print "SEACH STRING: $search_str -> (@search_toks) [$search_len]\n";
+	#warn "SEACH STRING: $search_str -> (@search_toks) [$search_len]\n";
 
 	# first look for straight substrings
-	my $best = undef;
 	my $best_id = undef;
-	foreach my $name ( keys %{$locations->{'ByName'}} ){
-		#print "$locations->{'ByName'}{$name}{'Name'}\n";
+	my $best_txt = undef;
+	#warn "SUBSTRING LOOP:\n";
+	foreach my $loc_id ( keys %{$locations->{'ByID'}} ){
+		#warn "$locations->{'ByName'}{$name}{'Name'}\n";
+
+		#warn "\tID = $loc_id\n";
 
 		# search through the primary name, and all aliases
-		foreach( $name, @{$locations->{'ByName'}{$name}{'Aliases'}} ){
-			# (yes, the primary name is already normalized, but the aliases aren't)
+		foreach( $locations->{'ByID'}{$loc_id}{'Name'}, @{$locations->{'ByID'}{$loc_id}{'Aliases'}} ){
 			my $norm = nameNormalize($_);
-			#print "\t$norm\n";
+			#warn "\t\t$_ --> $norm\n";
+			#warn "\t$norm\n";
 			# search for simple substrings
 			if( index($norm, $search_norm) != -1 ){
-				#print "*** $norm is a superstring of $search_norm.\n";
+				#warn "*** $norm is a superstring of $search_norm.\n";
 				# only keep the shortest substring
-				if( !defined($best) || length($norm) < length($best) ){
-					#print "*** this is the best substring.\n";
-					#print "*** it represents $locations->{'ByName'}{$name}{'ID'}\n";
-					$best = $norm;
-					$best_id = $locations->{'ByName'}{$name}{'ID'};
+				if( !defined($best_txt) || length($_) < length($best_txt) ){
+					#warn "*** this is the best substring.\n";
+					#warn "*** it represents $locations->{'ByName'}{$name}{'ID'}\n";
+					$best_id = $loc_id;
+					$best_txt = $_;
 				}
 			}
 		}
 	}
 
 	# if we got a substring, just return that -- don't bother with expensive fuzzy matching
-	if( defined($best) ){
-		#print "returning id = $locations->{'ByID'}{$best_id}{'ID'}\n";
+	if( defined($best_txt) ){
+		#warn "returning id = $locations->{'ByID'}{$best_id}{'ID'}\n";
 		return({
 			id => $locations->{'ByID'}{$best_id}{'ID'},
 			matches => 1.0,
+			text => $best_txt,
 		});
 	}
-	#print "aww, we fell through. time for fuzzy matching.\n";
+	#warn "aww, we fell through. time for fuzzy matching.\n";
 
+	#warn "FUZZY LOOP:\n";
 	foreach my $loc_id ( keys %{$locations->{'ByID'}} ){
 		# this is just an array made up of the location's primary name
 		# and all its aliases
-		foreach( $locations->{'ByID'}{$loc_id}{'Name'}, @{$locations->{'ByName'}{$loc_id}{'Aliases'}} ){
+		#warn "\tID = $loc_id\n";
+		foreach( $locations->{'ByID'}{$loc_id}{'Name'}, @{$locations->{'ByID'}{$loc_id}{'Aliases'}} ){
 			my @loc_toks = tokenize($_);
+			#warn "\t\t$_ --> (@loc_toks)\n";
 			my $loc_len = scalar @loc_toks;
 			$outstr .= "LOCATION: $_ -> (@loc_toks) [$loc_len]\n";
 
@@ -709,14 +722,18 @@ sub fuzzyFind{
 				# All of this is subject to change, of course. ;)
 				$matches = ($matches*$matches) / ($loc_len);
 				if($matches >= 0.05){
-					push(@top_matches, { matches => $matches, id => $loc_id});
+					push(@top_matches, {
+						id => $loc_id,
+						matches => $matches,
+						text => $_,
+					});
 				}
 			}
 
 			$outstr .= "\t$matches matches ($l_matched).\n";
 		}
 	}
-	#print "$outstr";
+	#warn "$outstr";
 
 	# this is the fifth or last index
 	my $four = $#top_matches < 4 ? $#top_matches : 4;
@@ -724,8 +741,8 @@ sub fuzzyFind{
 	# now we decide how many matches to return
 	if(@top_matches){
 		@top_matches = sort { $b->{'matches'} <=> $a->{'matches'} } @top_matches;
-		#print "MATCHES:\n";
-		#print "\t$locations->{'ByID'}{$_->{'id'}}{'Name'} [$_->{'matches'}]\n" for @top_matches;
+		#warn "MATCHES:\n";
+		#warn "\t$locations->{'ByID'}{$_->{'id'}}{'Name'} [$_->{'matches'}]\n" for @top_matches;
 
 		# if it's a high enough score...
 		if( $top_matches[0]{'matches'} > 0.5 ){

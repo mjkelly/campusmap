@@ -41,6 +41,9 @@ our $BASE_IMAGE		= 'UCSDmap.png';
 our $_BASE_GD2_IMAGE	= 'UCSDmap';
 our $BASE_GD2_IMAGE	= $_BASE_GD2_IMAGE . 'gd2';
 
+# the name of the main interface script, used for form actions, etc
+our $SELF		= 'map.cgi';
+
 our %TEMPLATES = (
 	plain => 'template3.html',
 	print => 'print_tmpl.html',

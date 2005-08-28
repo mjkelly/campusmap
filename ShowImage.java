@@ -37,7 +37,7 @@ public class ShowImage extends JFrame{
 	
 	private JMenuItem prevPath, nextPath, newPath, deletePath, iteratePaths, goToPath,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
-	read, write, createLocationFile, changeImage, loadDefinedLocations, scaleData, loadXMLLocations,//IO
+	read, write, createLocationFile, changeImage, loadDefinedLocations, scaleData, writeXMLLocations, loadXMLLocations,//IO
 	locationEditor, editLocation, createLocation, selectLocation;
 	
 	// For accessing the locationName text field
@@ -160,6 +160,9 @@ public class ShowImage extends JFrame{
 
             if(e.getSource() == loadXMLLocations)
                 ipanel.loadXMLLocations();
+            
+            if(e.getSource() == writeXMLLocations)
+            	ipanel.writeXMLLocations();
 		}
 	}
 	
@@ -240,10 +243,12 @@ public class ShowImage extends JFrame{
 		write = file.add(makeJMenuItem("Save files", listener, WRITE_KEY));
 		
         file.addSeparator();
-        loadDefinedLocations = 
-			file.add(makeJMenuItem("Load defined locations", listener, 0));
+        
+        writeXMLLocations = 
+        	file.add(makeJMenuItem("Write XML Locations", listener, 0));
+        
         loadXMLLocations = 
-            file.add(makeJMenuItem("Load XML locations", listener, 0));
+            file.add(makeJMenuItem("Load XML Locations", listener, 0));
         file.addSeparator();
         
         loadDefinedLocations = 
@@ -2223,6 +2228,102 @@ MouseMotionListener{
             createNewPointInCurPath(new Point(l.cord.x, l.cord.y));
         }
     }
+    
+    /**
+     * Write locations out to an XML file.
+     */
+    public void writeXMLLocations(){
+    	File xmlOut = new File("loc.xml");
+    	OutputStreamWriter out = null;
+    	
+    	// Open ye stream
+    	try{
+    		out = new OutputStreamWriter(new BufferedOutputStream(
+    				new FileOutputStream(xmlOut)));
+    	}
+    	catch(IOException e){
+    		System.err.println("Error creating file " + xmlOut);
+    		e.printStackTrace();
+    	}
+    	// Write out the locations
+    	try{
+    		writeXMLLocationData(out);
+    		out.close();
+    	}
+    	catch(IOException e){
+    		System.err.println("Error writing out to file " + xmlOut);
+    	}
+    }
+    
+    /**
+     * Writes out the location data to the passed OutputStreamWriter
+     * @param out The StreamWriter to use to write out with
+     * @throws IOException
+     */
+    public void writeXMLLocationData(OutputStreamWriter out) 
+    	throws IOException
+    {
+    	// Write out the prolog
+    	out.write("<?xml version='1.0' encoding='UTF-8' ?>\n");
+    	
+    	// Write out the main Location wrapper
+    	out.write(
+    			"<locations version=\"1.0\" maxid=\"" + Location.IDcount + "\">\n");
+    	
+    	for(Location l: locations)
+    	{
+    		String locTag = "<location ";
+    		//<location x="100" y="100" id="1" passthrough="true" intersect="true" displayname="true">
+    		// x cord, y cord
+    		locTag += "x=\"" + l.cord.x + "\" y=\"" + l.cord.y + "\" ";
+    		//ID
+    		locTag += "id=\"" + l.ID + "\" ";
+
+    		locTag += "passthrough=\"" + 
+    			(l.isCanPassThrough() ? ("true"): ("false")) + "\" ";
+    		
+    		locTag += "intersect=\"" + 
+			(l.isAllowIntersections() ? ("true"): ("false")) + "\" ";
+    		
+    		locTag += "displayname=\"" + 
+			(l.isDisplayName() ? ("true"):("false")) + "\"";
+    		
+    		//Close the tag
+    		locTag += ">\n";
+    		
+    		// Start the Location field
+    		out.write(locTag);
+    		
+    		// Write out the name
+    		//<name>York Hall</name>
+    		out.write("\t<name>" + l.getName() + "</name>\n");
+
+    		// Write out the aliases, if any exist
+    		if(l.getAliases() != null && l.getAliases().size() > 0)
+    		{
+    			out.write("\t<aliases>\n");
+    			for(String alias : l.getAliases())
+    			{
+    				out.write("\t\t<alias>" + alias + "</alias>\n");
+    			}
+    			out.write("\t</aliases>\n");
+    		}
+    		
+    		// write out the keyword field
+    		if(l.getKeywords().length() > 0)
+    			out.write("\t<keywords>" + l.getKeywords() + "</keywords>\n");
+
+    		// write out the building code
+    		if(l.getBuildingCode().length() > 0)
+    			out.write("\t<code>" + l.getBuildingCode() + "</code>\n");
+    		
+    		// End the location tag
+    		out.write("</location>\n");
+    	}
+    	// Close the locations
+    	out.append("</locations>");
+    }
+    
 	
 	/**
 	 * Display a dialog that allows the user to place a point (node) at a

@@ -21,7 +21,171 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.Attributes;
 
 public class XMLFileIO {
+	
+	/**
+	 * Writes out the passed vector of locations to the passed filename
+	 * @param outFile The filename to open an output stream to
+	 * @param locVector The vector of locations to write out
+	 * @return Error string if one occured, else null.
+	 */
+	public static String writeLocations(
+			String outFile, Vector<Location> locVector)
+	{
+    	File xmlOut = new File(outFile);
+    	OutputStreamWriter out = null;
+    	
+    	// Open ye stream
+    	try{
+    		out = new OutputStreamWriter(new BufferedOutputStream(
+    				new FileOutputStream(xmlOut)));
+    	}
+    	catch(IOException e){
+    		System.err.println("Error creating file " + xmlOut);
+    		e.printStackTrace();
+    		return("Error writing location to: " + xmlOut);
+    	}
+    	// Write out the locations
+    	try{
+    		writeXMLLocationData(locVector, out);
+    		out.close();
+    	}
+    	catch(IOException e){
+    		System.err.println("Error writing out to file " + xmlOut);
+    		return("Error occured in writing process: " + xmlOut);
+    	}
+		return null;
+	}
+	
+    /**
+     * Writes out the passed location data to the passed OutputStreamWriter
+     * @param out The StreamWriter to use to write out with
+     * @param locations The location data
+     * @throws IOException an error the occurs in attempting to write
+     */
+	public static void writeXMLLocationData(Vector<Location> locations, 
+			OutputStreamWriter out) throws IOException
+	{
+    	// Write out the prolog
+    	out.write("<?xml version='1.0' encoding='UTF-8' ?>\n");
+    	
+    	// Write out the main Location wrapper
+    	out.write(
+    			"<locations version=\"1.0\" maxid=\"" + Location.IDcount + "\">\n");
+    	
+    	for(Location l: locations)
+    	{
+    		String locTag = "<location ";
+    		//<location x="100" y="100" id="1" passthrough="true" intersect="true" displayname="true">
+    		// x cord, y cord
+    		locTag += "x=\"" + l.cord.x + "\" y=\"" + l.cord.y + "\" ";
+    		//ID
+    		locTag += "id=\"" + l.ID + "\" ";
 
+    		locTag += "passthrough=\"" + 
+    			(l.isCanPassThrough() ? ("true"): ("false")) + "\" ";
+    		
+    		locTag += "intersect=\"" + 
+			(l.isAllowIntersections() ? ("true"): ("false")) + "\" ";
+    		
+    		locTag += "displayname=\"" + 
+			(l.isDisplayName() ? ("true"):("false")) + "\"";
+    		
+    		//Close the tag
+    		locTag += ">\n";
+    		
+    		// Start the Location field
+    		out.write(locTag);
+    		
+    		// Write out the name
+    		//<name>York Hall</name>
+    		out.write("\t<name>" + l.getName() + "</name>\n");
+
+    		// Write out the aliases, if any exist
+    		if(l.getAliases() != null && l.getAliases().size() > 0)
+    		{
+    			out.write("\t<aliases>\n");
+    			for(String alias : l.getAliases())
+    			{
+    				out.write("\t\t<alias>" + alias + "</alias>\n");
+    			}
+    			out.write("\t</aliases>\n");
+    		}
+    		
+    		// write out the keyword field
+    		if(l.getKeywords().length() > 0)
+    			out.write("\t<keywords>" + l.getKeywords() + "</keywords>\n");
+
+    		// write out the building code
+    		if(l.getBuildingCode().length() > 0)
+    			out.write("\t<code>" + l.getBuildingCode() + "</code>\n");
+    		
+    		// End the location tag
+    		out.write("</location>\n");
+    	}
+    	// Close the locations
+    	out.append("</locations>");
+	}
+
+	/**
+	 * Write out the passed in path data to the passed in filename
+	 * @param outFile The name of the file to write to
+	 * @param paths The data to write
+	 * @return Error if one occured, else null.
+	 */
+	public static String writePaths(
+			String outFile, Vector<Vector<Point>> paths)
+	{
+    	File xmlOut = new File(outFile);
+    	OutputStreamWriter out = null;
+    	
+    	// Open ye stream
+    	try{
+    		out = new OutputStreamWriter(new BufferedOutputStream(
+    				new FileOutputStream(xmlOut)));
+    	}
+    	catch(IOException e){
+    		System.err.println("Error creating file " + xmlOut);
+    		e.printStackTrace();
+    		return("Error opening file: " + xmlOut);
+    	}
+    	// Write out the locations
+    	try{
+        	final String TAB = "\t";
+        	out.write("<?xml version='1.0' encoding='UTF-8' ?>\n\n");
+        	
+        	// Open the container for all the paths
+    		out.write("<paths>\n");
+    		
+    		// for each path in the set of paths
+    		for(Vector<Point> path : paths)
+    		{
+    			// if path isn't empty, write it out
+    			if(path.size() > 0)
+    			{
+    				// Open path
+    				out.write(TAB + "<path>\n");
+    				// write the points in the path
+    				for(Point p : path)
+    				{
+    					out.write(TAB+TAB + "<point x=\"" + p.x + 
+    							"\" y=\"" + p.y + "\" />\n");
+    				}
+    				// close path
+    				out.write(TAB + "</path>\n");
+    			}
+    		}
+    		// close container for all paths
+    		out.write("</paths>\n");
+    		out.close();
+    	}
+    	catch(IOException e){
+    		System.err.println("Error writing out to file " + xmlOut);
+    		return ("Error in writing out to file " + xmlOut);
+    	}
+    	return null;
+	}
+
+	
     /**
      * Load a series of locations from an XML file.
      */

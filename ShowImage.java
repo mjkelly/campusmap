@@ -37,8 +37,10 @@ public class ShowImage extends JFrame{
 	
 	private JMenuItem prevPath, nextPath, newPath, deletePath, iteratePaths, goToPath,// path manipulation
 	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
-	read, write, createLocationFile, changeImage, loadDefinedLocations, scaleData, writeXMLLocations, loadXMLLocations,//IO
-	locationEditor, editLocation, createLocation, selectLocation;
+	read, write, createLocationFile, changeImage, loadDefinedLocations,
+    scaleData, loadXMLLocations, loadXMLPaths, writeXMLLocations, //IO
+	
+    locationEditor, editLocation, createLocation, selectLocation;
 	
 	// For accessing the locationName text field
 	
@@ -160,7 +162,10 @@ public class ShowImage extends JFrame{
 
             if(e.getSource() == loadXMLLocations)
                 ipanel.loadXMLLocations();
-            
+
+            if(e.getSource() == loadXMLPaths)
+                ipanel.loadXMLPaths();
+  
             if(e.getSource() == writeXMLLocations)
             	ipanel.writeXMLLocations();
 		}
@@ -248,7 +253,10 @@ public class ShowImage extends JFrame{
         	file.add(makeJMenuItem("Write XML Locations", listener, 0));
         
         loadXMLLocations = 
-            file.add(makeJMenuItem("Load XML Locations", listener, 0));
+            file.add(makeJMenuItem("Load XML locations", listener, 0));
+        loadXMLPaths = 
+            file.add(makeJMenuItem("Load XML paths", listener, 0));
+
         file.addSeparator();
         
         loadDefinedLocations = 
@@ -2227,6 +2235,23 @@ MouseMotionListener{
             // Add the location's coordinate to that path
             createNewPointInCurPath(new Point(l.cord.x, l.cord.y));
         }
+        
+        // you know the drill...
+        setDefaultStatusBar();
+        repaint();
+    }
+    
+    /**
+     * Load paths from an XML file.
+     */
+    public void loadXMLPaths(){
+        Vector<Vector<Point>> newPaths = xmlHandler.loadPaths();
+        for(Vector<Point> p: newPaths){
+            paths.add(p);
+        }
+        // cha-cha-cha!
+        setDefaultStatusBar();
+        repaint();
     }
     
     /**

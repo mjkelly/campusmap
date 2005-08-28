@@ -10,6 +10,7 @@
 
 import java.io.*;
 import java.util.*;
+import java.awt.Point;
 
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.SAXParser;
@@ -47,7 +48,118 @@ public class xmlHandler {
 
         return locs;
     }
+    
+    /**
+     * Load paths from an XML file.
+     * @return a vector of vectors containg all the loaded points
+     */
+    public static Vector<Vector<Point>> loadPaths() {
+        SAXParserFactory sax = SAXParserFactory.newInstance();
+        Vector<Vector<Point>> points = new Vector<Vector<Point>>();
 
+        try {
+            SAXParser parser = sax.newSAXParser();
+            parser.parse("paths.xml", new PathHandler(points));
+        } catch (ParserConfigurationException e) {
+            System.err.println("ParserConfigurationException: "
+                    + e.getMessage());
+        } catch (SAXException e) {
+            System.err.println("SAXException: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("IOException: " + e.getMessage());
+        }
+
+        System.err.println("Locations parsed:");
+        for (Vector<Point> v : points) {
+            System.err.println("Path:");
+            for(Point p : v){
+                System.err.println("\t" + p);
+            }
+        }
+
+        return points;
+    }
+
+    
+    /**
+     * Print an Attributes object. (Looks like a glorified array...)
+     * 
+     * @param a
+     *            the Attributes object to print
+     */
+    public static void writeAttrs(Attributes a) {
+        for (int i = 0; i < a.getLength(); i++)
+            System.err.println("\t\t[" + a.getQName(i) + " = " + a.getValue(i)
+                    + "]");
+    }
+
+    /**
+     * A wrapper for Integer.parseInt() -- if a NumberFormatException is thrown,
+     * this method smothers it and returns 0 instead.
+     * 
+     * @param s the string to parse
+     * @return the integer value of <code>s</code>, or 0 on an exception
+     */
+    public static int parseInt(String s) {
+        // try to return the string as an int
+        try {
+            return Integer.parseInt(s);
+        }
+        // but if we can't parse it, return 0
+        catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Convert a string to a boolean value. The string "true" (in any
+     * capitalization) is true, and everything else is false.
+     * 
+     * @param s
+     *            the string to parse
+     * @return true if the lowercase version of <code>s</code> is "true", else
+     *         false
+     */
+    public static boolean parseBoolean(String s) {
+        // "true" is true, everything else is false
+        return (s.toLowerCase().equals("true"));
+    }
+
+    
+}
+
+/**
+ * This class handles all the SAX callbacks for a path XML file.
+ */
+class PathHandler extends DefaultHandler {
+    Vector<Vector<Point>> points;
+    Vector<Point> curPath;
+    
+    public PathHandler(Vector<Vector<Point>> points){
+        this.points = points;
+    }
+    
+    public void startElement(String uri, String localName, String qName,
+            Attributes attributes) {
+        
+        if (qName.equals("path")) {
+            curPath = new Vector<Point>();
+            points.add(curPath);
+            System.err.println("<path>");
+        }
+        else if(qName.equals("point")){
+            int x = xmlHandler.parseInt(attributes.getValue("x"));
+            int y = xmlHandler.parseInt(attributes.getValue("y"));
+            curPath.add(new Point(x, y));
+            System.err.println("<point x='" + x + "' y='" + y + "'/>");
+        }
+    }
+    
+    public void endElement(String uri, String localName, String qName) {
+        if (qName.equals("path")) {
+            System.err.println("</path>");
+        }
+    }
 }
 
 /**
@@ -85,22 +197,8 @@ class LocationHandler extends DefaultHandler {
      * @param locs
      *            a vector of locations to add to
      */
-    public LocationHandler(Vector<Location> locs) {
-        locations = locs;
-    }
-
-    /**
-     * Called when the document starts.
-     */
-    public void startDocument() {
-        System.err.println("Start document");
-    }
-
-    /**
-     * Called when the document ends.
-     */
-    public void endDocument() {
-        System.err.println("End document");
+    public LocationHandler(Vector<Location> locations) {
+        this.locations = locations;
     }
 
     /**
@@ -111,7 +209,7 @@ class LocationHandler extends DefaultHandler {
             Attributes attributes) {
         System.err.println("\t<" + qName + ">");
         // System.err.println("\tattributes = " + attributes);
-        writeAttrs(attributes);
+        xmlHandler.writeAttrs(attributes);
 
         // reset the buffer storing inner characters of this element
         innerText = new StringBuffer(64);
@@ -120,7 +218,7 @@ class LocationHandler extends DefaultHandler {
         // we just check for one attribute
         if (qName.equals("locations")) {
             if (attributes.getValue("maxid") != null)
-                Location.IDcount = parseInt(attributes.getValue("maxid"));
+                Location.IDcount = xmlHandler.parseInt(attributes.getValue("maxid"));
         }
 
         // this is an individual location
@@ -141,19 +239,19 @@ class LocationHandler extends DefaultHandler {
 
             // get the integer attributes of the location
             if (attributes.getValue("id") != null)
-                id = parseInt(attributes.getValue("id"));
+                id = xmlHandler.parseInt(attributes.getValue("id"));
             if (attributes.getValue("x") != null)
-                x = parseInt(attributes.getValue("x"));
+                x = xmlHandler.parseInt(attributes.getValue("x"));
             if (attributes.getValue("y") != null)
-                y = parseInt(attributes.getValue("y"));
+                y = xmlHandler.parseInt(attributes.getValue("y"));
 
             // get the boolean attributes of the location
             if (attributes.getValue("passthrough") != null)
-                passThrough = parseBoolean(attributes.getValue("passthrough"));
+                passThrough = xmlHandler.parseBoolean(attributes.getValue("passthrough"));
             if (attributes.getValue("intersect") != null)
-                intersect = parseBoolean(attributes.getValue("intersect"));
+                intersect = xmlHandler.parseBoolean(attributes.getValue("intersect"));
             if (attributes.getValue("displayname") != null)
-                displayName = parseBoolean(attributes.getValue("displayname"));
+                displayName = xmlHandler.parseBoolean(attributes.getValue("displayname"));
 
         }
 
@@ -244,49 +342,4 @@ class LocationHandler extends DefaultHandler {
             innerText.append(ch, start, length);
     }
 
-    /* ANYTHING BELOW HERE IS NOT PART OF THE INTERFACE */
-
-    /**
-     * Print an Attributes object. (Looks like a glorified array...)
-     * 
-     * @param a
-     *            the Attributes object to print
-     */
-    public void writeAttrs(Attributes a) {
-        for (int i = 0; i < a.getLength(); i++)
-            System.err.println("\t\t[" + a.getQName(i) + " = " + a.getValue(i)
-                    + "]");
-    }
-
-    /**
-     * A wrapper for Integer.parseInt() -- if a NumberFormatException is thrown,
-     * this method smothers it and returns 0 instead.
-     * 
-     * @param s the string to parse
-     * @return the integer value of <code>s</code>, or 0 on an exception
-     */
-    public int parseInt(String s) {
-        // try to return the string as an int
-        try {
-            return Integer.parseInt(s);
-        }
-        // but if we can't parse it, return 0
-        catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
-    /**
-     * Convert a string to a boolean value. The string "true" (in any
-     * capitalization) is true, and everything else is false.
-     * 
-     * @param s
-     *            the string to parse
-     * @return true if the lowercase version of <code>s</code> is "true", else
-     *         false
-     */
-    public boolean parseBoolean(String s) {
-        // "true" is true, everything else is false
-        return (s.toLowerCase().equals("true"));
-    }
-}
+ }

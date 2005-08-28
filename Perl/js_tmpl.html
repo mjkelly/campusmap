@@ -221,7 +221,8 @@
 
 
 			<script type="text/javascript">
-				menuInit('from', 'to', 'from_selector', 'to_selector');
+				menuInit('from', 'to', 'from_selector', 'to_selector',
+					"<TMPL_VAR NAME=TXT_SRC_OFFICIAL>", "<TMPL_VAR NAME=TXT_DST_OFFICIAL>");
 				dragInit();
 				<TMPL_IF NAME=SRC_FOUND>
 					new Location("<TMPL_VAR NAME=SRC_NAME>", <TMPL_VAR NAME=SRC_X>, <TMPL_VAR NAME=SRC_Y>, 'src');

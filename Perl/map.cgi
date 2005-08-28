@@ -157,7 +157,7 @@ else{
 			# since we found a real location, we've got to reset all the text
 			# associated with the location
 			$to = $toids[0]{'id'};
-			$toTxt = $locations->{'ByID'}{$to}{'Name'};
+			$toTxt = $toids[0]{'text'};
 			$toTxtSafe = CGI::escapeHTML($toTxt);
 		}
 		# we have multiple matches
@@ -190,7 +190,7 @@ else{
 			# since we found a real location, we've got to reset all the text
 			# associated with the location
 			$from = $fromids[0]{'id'};
-			$fromTxt = $locations->{'ByID'}{$from}{'Name'};
+			$fromTxt = $fromids[0]{'text'};
 			$fromTxtSafe = CGI::escapeHTML($fromTxt);
 		}
 		# we have multiple matches
@@ -667,7 +667,9 @@ if($template eq 'plain'){
 
 	# text
 	$tmpl->param( TXT_SRC => $fromTxtSafe );
+	$tmpl->param( TXT_SRC_OFFICIAL => CGI::escapeHTML($locations->{'ByID'}{$from}{'Name'}) );
 	$tmpl->param( TXT_DST => $toTxtSafe );
+	$tmpl->param( TXT_DST_OFFICIAL => CGI::escapeHTML($locations->{'ByID'}{$to}{'Name'}) );
 	$tmpl->param( TXT_ERROR => $ERROR );
 
 	# this is tells whether we're actually displaying a path between two separate locations
@@ -723,7 +725,9 @@ elsif ($template eq 'js'){
 
 	# text
 	$tmpl->param( TXT_SRC => $fromTxtSafe );
+	$tmpl->param( TXT_SRC_OFFICIAL => CGI::escapeHTML($locations->{'ByID'}{$from}{'Name'}) );
 	$tmpl->param( TXT_DST => $toTxtSafe );
+	$tmpl->param( TXT_DST_OFFICIAL => CGI::escapeHTML($locations->{'ByID'}{$to}{'Name'}) );
 	$tmpl->param( TXT_ERROR => $ERROR );
 	# helper text for searching
 	$tmpl->param( SRC_HELP => $src_help );

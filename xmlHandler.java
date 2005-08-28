@@ -142,22 +142,17 @@ class PathHandler extends DefaultHandler {
     public void startElement(String uri, String localName, String qName,
             Attributes attributes) {
         
+        // when we encounter a <path> tag, add another vector
         if (qName.equals("path")) {
             curPath = new Vector<Point>();
             points.add(curPath);
-            System.err.println("<path>");
         }
+        // a <point> tag is just another Point() in the current path...
         else if(qName.equals("point")){
             int x = xmlHandler.parseInt(attributes.getValue("x"));
             int y = xmlHandler.parseInt(attributes.getValue("y"));
-            curPath.add(new Point(x, y));
-            System.err.println("<point x='" + x + "' y='" + y + "'/>");
-        }
-    }
-    
-    public void endElement(String uri, String localName, String qName) {
-        if (qName.equals("path")) {
-            System.err.println("</path>");
+            if(curPath != null)
+                curPath.add(new Point(x, y));
         }
     }
 }

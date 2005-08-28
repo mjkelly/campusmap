@@ -65,6 +65,7 @@ public class XMLFileIO {
 	public static void writeXMLLocationData(Vector<Location> locations, 
 			OutputStreamWriter out) throws IOException
 	{
+		final String TAB = "\t";
     	// Write out the prolog
     	out.write("<?xml version='1.0' encoding='UTF-8' ?>\n");
     	
@@ -98,7 +99,7 @@ public class XMLFileIO {
     		
     		// Write out the name
     		//<name>York Hall</name>
-    		out.write("\t<name>" + l.getName() + "</name>\n");
+    		out.write(TAB + terminal("name", l.getName())); 
 
     		// Write out the aliases, if any exist
     		if(l.getAliases() != null && l.getAliases().size() > 0)
@@ -106,18 +107,18 @@ public class XMLFileIO {
     			out.write("\t<aliases>\n");
     			for(String alias : l.getAliases())
     			{
-    				out.write("\t\t<alias>" + alias + "</alias>\n");
+    				out.write(TAB + TAB + terminal("alias", alias)); 
     			}
     			out.write("\t</aliases>\n");
     		}
     		
     		// write out the keyword field
     		if(l.getKeywords().length() > 0)
-    			out.write("\t<keywords>" + l.getKeywords() + "</keywords>\n");
+    			out.write(TAB + terminal("keywords", l.getKeywords())); 
 
     		// write out the building code
     		if(l.getBuildingCode().length() > 0)
-    			out.write("\t<code>" + l.getBuildingCode() + "</code>\n");
+    			out.write(TAB + terminal("code", l.getBuildingCode())); 
     		
     		// End the location tag
     		out.write("</location>\n");
@@ -126,6 +127,24 @@ public class XMLFileIO {
     	out.append("</locations>");
 	}
 
+	public static String terminal(String name, String content)
+	{
+		return("<" + name + ">" + toXMLStr(content) + "</" + name + ">");
+	}
+	/**
+	 * Converts the passed in string to a valid XML content string
+	 * @param s The string to convert
+	 * @return valid XML string
+	 */
+	public static String toXMLStr(String s)
+	{
+		s = s.replaceAll("&", "&amp;");
+		s = s.replaceAll("<", "&lt");
+		s = s.replaceAll(">", "&gt");
+		s = s.replaceAll("'", "&apos;");
+		s = s.replaceAll("\"", "&quot;");
+		return s;
+	}
 	/**
 	 * Write out the passed in path data to the passed in filename
 	 * @param outFile The name of the file to write to
@@ -188,57 +207,72 @@ public class XMLFileIO {
 	
     /**
      * Load a series of locations from an XML file.
+     * @param locationFile The file to load
+     * @return the locations contained by the XML file.
      */
-    public static Vector<Location> loadLocations() {
+    public static Vector<Location> loadLocations(String locationFile) {
+    	boolean printLoadedLocations = false;
         SAXParserFactory sax = SAXParserFactory.newInstance();
         Vector<Location> locs = new Vector<Location>();
         
         try {
             SAXParser parser = sax.newSAXParser();
-            parser.parse("locations.xml", new LocationHandler(locs));
+            parser.parse(locationFile, new LocationHandler(locs));
         } catch (ParserConfigurationException e) {
             System.err.println("ParserConfigurationException: "
                     + e.getMessage());
+            return locs;  // return locations obtained so far
         } catch (SAXException e) {
             System.err.println("SAXException: " + e.getMessage());
+            return locs;
         } catch (IOException e) {
             System.err.println("IOException: " + e.getMessage());
+            return locs;
         }
-
-        System.err.println("Locations parsed:");
-        for (Location l : locs) {
-            System.err.println(l);
+        if(printLoadedLocations)
+        {
+        	System.err.println("Locations parsed:");
+        	for (Location l : locs) {
+        		System.err.println(l);
+        	}
         }
-
         return locs;
     }
     
     /**
      * Load paths from an XML file.
+     * @param pathFile The XML file to load from
      * @return a vector of vectors containg all the loaded points
      */
-    public static Vector<Vector<Point>> loadPaths() {
+    public static Vector<Vector<Point>> loadPaths(String pathFile) {
+    	boolean printLoadedPaths = false;
         SAXParserFactory sax = SAXParserFactory.newInstance();
         Vector<Vector<Point>> points = new Vector<Vector<Point>>();
 
         try {
             SAXParser parser = sax.newSAXParser();
-            parser.parse("paths.xml", new PathHandler(points));
+            parser.parse(pathFile, new PathHandler(points));
         } catch (ParserConfigurationException e) {
             System.err.println("ParserConfigurationException: "
                     + e.getMessage());
+            return points; // return the points parsed out so far
         } catch (SAXException e) {
             System.err.println("SAXException: " + e.getMessage());
+            return points;
         } catch (IOException e) {
             System.err.println("IOException: " + e.getMessage());
+            return points;
         }
 
-        System.err.println("Locations parsed:");
-        for (Vector<Point> v : points) {
-            System.err.println("Path:");
-            for(Point p : v){
-                System.err.println("\t" + p);
-            }
+        if(printLoadedPaths)
+        {
+        	System.err.println("Points parsed:");
+        	for (Vector<Point> v : points) {
+        		System.err.println("Path:");
+        		for(Point p : v){
+        			System.err.println("\t" + p);
+        		}
+        	}
         }
 
         return points;

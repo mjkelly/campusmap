@@ -1413,6 +1413,14 @@ MouseMotionListener{
 		editLocation(locToEdit);
 	}
 
+	/**
+	 * Uses a dialog box to edit a single location.
+	 * Uses the component editor to provide to edit the location.
+	 * Adds a close and delete button.  The close button
+	 * has an actionlistener that disposes of the editing dialog
+	 * box.  Delete actionlistener calls deleteLocation(Location l).
+	 * @param locToEdit The location to edit
+	 */
 	public void editLocation(Location locToEdit)
 	{
 		// Create the dialog box (parent == ShowImage object)

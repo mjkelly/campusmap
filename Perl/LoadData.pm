@@ -204,7 +204,7 @@ sub loadLocations{
 		$locations->{'ByName'}{nameNormalize($name)} = $thisLoc;
 
 		# read the location's building code
-		my $code = readJavaString(*INPUT);
+		my $code = lc(readJavaString(*INPUT));
 		$thisLoc->{'BuildingCode'} = $code;
 		print STDERR "Building Code: $thisLoc->{'BuildingCode'}\n" if DEBUG;
 
@@ -542,6 +542,7 @@ sub findLocation{
 	}
 
 	my $norm_text = nameNormalize($text);
+	my $lc_text = lc($text);
 
 	# first check for an exact name match
 	if( exists($locations->{'ByName'}{$norm_text}) ){
@@ -552,11 +553,11 @@ sub findLocation{
 		});
 	}
 	# then check a building code match
-	elsif( exists($locations->{'ByCode'}{$text}) ){
+	elsif( exists($locations->{'ByCode'}{$lc_text}) ){
 		return ({
-			id => $locations->{'ByCode'}{$text}{'ID'},
+			id => $locations->{'ByCode'}{$lc_text}{'ID'},
 			matches => 1.0,
-			text => $locations->{'ByCode'}{$text}{'Name'},
+			text => $locations->{'ByCode'}{$lc_text}{'Name'},
 		});
 	}
 	# otherwise, fall back to substrings and fuzzy things

@@ -99,6 +99,7 @@ body{
 #thumb{
 	width: 144px;
 	height: 132px;
+	border: 1px solid black;
 }
 #fromTxt, #fromTxt a:link, #fromTxt a:visited, #fromTxt a:hover, #fromTxt a:active{ 
 	border-bottom: 2px solid #00ff00;

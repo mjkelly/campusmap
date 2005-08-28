@@ -1,5 +1,5 @@
 /*
- * xmlTest.java, Aug 26, 2005
+ * XMLFileIO.java, Aug 26, 2005
  * mkelly
  * Part of UCSDMap.
  *
@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.Attributes;
 
-public class xmlHandler {
+public class XMLFileIO {
 
     /**
      * Load a series of locations from an XML file.
@@ -28,7 +28,7 @@ public class xmlHandler {
     public static Vector<Location> loadLocations() {
         SAXParserFactory sax = SAXParserFactory.newInstance();
         Vector<Location> locs = new Vector<Location>();
-
+        
         try {
             SAXParser parser = sax.newSAXParser();
             parser.parse("locations.xml", new LocationHandler(locs));
@@ -149,8 +149,8 @@ class PathHandler extends DefaultHandler {
         }
         // a <point> tag is just another Point() in the current path...
         else if(qName.equals("point")){
-            int x = xmlHandler.parseInt(attributes.getValue("x"));
-            int y = xmlHandler.parseInt(attributes.getValue("y"));
+            int x = XMLFileIO.parseInt(attributes.getValue("x"));
+            int y = XMLFileIO.parseInt(attributes.getValue("y"));
             if(curPath != null)
                 curPath.add(new Point(x, y));
         }
@@ -204,7 +204,7 @@ class LocationHandler extends DefaultHandler {
             Attributes attributes) {
         System.err.println("\t<" + qName + ">");
         // System.err.println("\tattributes = " + attributes);
-        xmlHandler.writeAttrs(attributes);
+        XMLFileIO.writeAttrs(attributes);
 
         // reset the buffer storing inner characters of this element
         innerText = new StringBuffer(64);
@@ -213,7 +213,7 @@ class LocationHandler extends DefaultHandler {
         // we just check for one attribute
         if (qName.equals("locations")) {
             if (attributes.getValue("maxid") != null)
-                Location.IDcount = xmlHandler.parseInt(attributes.getValue("maxid"));
+                Location.IDcount = XMLFileIO.parseInt(attributes.getValue("maxid"));
         }
 
         // this is an individual location
@@ -234,19 +234,19 @@ class LocationHandler extends DefaultHandler {
 
             // get the integer attributes of the location
             if (attributes.getValue("id") != null)
-                id = xmlHandler.parseInt(attributes.getValue("id"));
+                id = XMLFileIO.parseInt(attributes.getValue("id"));
             if (attributes.getValue("x") != null)
-                x = xmlHandler.parseInt(attributes.getValue("x"));
+                x = XMLFileIO.parseInt(attributes.getValue("x"));
             if (attributes.getValue("y") != null)
-                y = xmlHandler.parseInt(attributes.getValue("y"));
+                y = XMLFileIO.parseInt(attributes.getValue("y"));
 
             // get the boolean attributes of the location
             if (attributes.getValue("passthrough") != null)
-                passThrough = xmlHandler.parseBoolean(attributes.getValue("passthrough"));
+                passThrough = XMLFileIO.parseBoolean(attributes.getValue("passthrough"));
             if (attributes.getValue("intersect") != null)
-                intersect = xmlHandler.parseBoolean(attributes.getValue("intersect"));
+                intersect = XMLFileIO.parseBoolean(attributes.getValue("intersect"));
             if (attributes.getValue("displayname") != null)
-                displayName = xmlHandler.parseBoolean(attributes.getValue("displayname"));
+                displayName = XMLFileIO.parseBoolean(attributes.getValue("displayname"));
 
         }
 

@@ -2226,7 +2226,7 @@ MouseMotionListener{
      * Load locations from an XML file. Woohoo.
      */
     public void loadXMLLocations(){
-        Vector<Location> newLocs = xmlHandler.loadLocations();
+        Vector<Location> newLocs = XMLFileIO.loadLocations();
         for(Location l: newLocs){
             // add this location
             locations.add(l);
@@ -2245,7 +2245,7 @@ MouseMotionListener{
      * Load paths from an XML file.
      */
     public void loadXMLPaths(){
-        Vector<Vector<Point>> newPaths = xmlHandler.loadPaths();
+        Vector<Vector<Point>> newPaths = XMLFileIO.loadPaths();
         for(Vector<Point> p: newPaths){
             paths.add(p);
         }

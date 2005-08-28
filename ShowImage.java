@@ -1323,7 +1323,7 @@ MouseMotionListener{
 		// Set the layout
 		dialog.getContentPane().setLayout( new FlowLayout() );
 		// Create the JPanel for the location
-		ComponentEditor componentPanel = new ComponentEditor(newLoc);
+		ComponentEditor componentPanel = new ComponentEditor(newLoc, dialog);
 		
 		//buttons...ComponentEditor
 		JButton save = new JButton("Save");
@@ -1338,9 +1338,10 @@ MouseMotionListener{
 		ActionListener changeListener 
 			= new LocationCreationChoiceListener(newLoc, dialog, componentPanel, save, cancel);
 		
+        
 		save.addActionListener(changeListener);
 		cancel.addActionListener(changeListener);
-
+        
 		dialog.pack();
 		dialog.setVisible(true);
 	}
@@ -1434,7 +1435,7 @@ MouseMotionListener{
 		// Set the layout
 		dialog.getContentPane().setLayout( new FlowLayout() );
 		// Create the JPanel for the location
-		JPanel componentPanel = new ComponentEditor(locToEdit);
+		JPanel componentPanel = new ComponentEditor(locToEdit, dialog);
 		JButton close = new JButton("close");
 		JButton delete = new JButton("Delete Location");
 		// Add JPanel
@@ -1444,7 +1445,7 @@ MouseMotionListener{
 		dialog.add(delete);
 		dialog.pack();
 		dialog.setVisible(true);
-		
+        
 		// Hack to pass down the location
 		final Location passLocDown = locToEdit;
 		/**
@@ -1530,7 +1531,7 @@ MouseMotionListener{
 
 		// For every location in the sortedLocation array
 		for (Location loc : sortedLocs) {
-			JPanel locPanel = new ComponentEditor(loc);
+			JPanel locPanel = new ComponentEditor(loc, dialog);
 			panel.add(locPanel);
 		}
 
@@ -1547,7 +1548,7 @@ MouseMotionListener{
 		dialog.add(scroll);
 		dialog.add(close);
 		dialog.pack();
-		dialog.setSize(800,700);
+		//dialog.setSize(800,700);
 		dialog.setVisible(true);
 
 		close.addActionListener(new ActionListener(){
@@ -3264,6 +3265,16 @@ interface EditorBox
 	 * to get and set the variable in calls to parent.
 	 */
 	public void linkToVariable(FieldEditor parent, int id);
+    
+    /**
+     * Links the EditorBox to the Window that contains it. This is used, e.g.,
+     * if the implementing class changes its container size and needs to
+     * repack the parent.
+     * @param parent the Window that contains the EditorBox (JFrames and
+     *      JDialogs are Windows)
+     */
+    public void linkToParent(Window parent);
+    
 	/**
 	 * This method should save changes to the variable that the editor box
 	 * controls.
@@ -3297,7 +3308,7 @@ class ComponentEditor extends JPanel implements FieldEditor
 	 * their descriptions).  
 	 * @param passedElement The obedient object.
 	 */
-	public ComponentEditor(ComponentElement passedElement)
+	public ComponentEditor(ComponentElement passedElement, Window parent)
 	{
 		super();
 		this.element = passedElement;
@@ -3323,6 +3334,7 @@ class ComponentEditor extends JPanel implements FieldEditor
 			else if(element.getElementValue(i) instanceof Vector)
 			{
 				boxes[i] = new StringVectorEditorBox();
+                boxes[i].linkToParent(parent);
 			}
 			else
 			{
@@ -3455,6 +3467,8 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 	private GridBagConstraints constraint;
 	private GridBagLayout layout;
 	int vectorId;
+    
+    private Window windowParent = null;
 	/**
 	 * Default constructor for StringVectorEditorBox
 	 */
@@ -3473,6 +3487,10 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 		//draw stuff
 		regenerate();
 	}
+    
+    public void linkToParent(Window parent){
+        this.windowParent = parent;
+    }
 
 	/**
 	 * Refreshes the box fully
@@ -3488,7 +3506,7 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 		Vector<String> initialVec = getParentVector();
 		for(int i = 0; i < initialVec.size(); i++)
 		{
-			StringEditorBox box = new StringEditorBox();
+			StringEditorBox box = new StringEditorBox(30);
 			box.linkToVariable(this, i);
 			stringEditors.add(i, box);
 			
@@ -3531,6 +3549,11 @@ class StringVectorEditorBox extends JPanel implements EditorBox, FieldEditor
 		this.setVisible(true);
 		//repaint();
         setSize(400,400);
+        
+        // since we might have changed the size of the window,
+        // repack our containing JFrame
+        if(windowParent != null)
+            windowParent.pack();
 	}
 	
 	/**
@@ -3628,12 +3651,20 @@ class StringEditorBox extends JTextArea implements EditorBox
 	
 	/**
 	 * This is the constructor for the component box.
-	 * Sets the size of the text box and adds it's actionListener.
+	 * Sets the size of the text box and adds its actionListener.
 	 */
-	public StringEditorBox()
+	public StringEditorBox(){
+        this(50);
+    }
+    
+    /**
+     * This constructor allows the width of the JTextBox to be specified.
+     * @param width the width of the text box, in characters
+     */
+    public StringEditorBox(int width)
 	{
 		// Create the JText area: height = 1, width = 60
-		super(1, 50);
+		super(1, width);
 		defaultBackgroundColor = getBackground();
 		this.addKeyListener(new KeyListener(){
 			/** Stub */
@@ -3641,7 +3672,7 @@ class StringEditorBox extends JTextArea implements EditorBox
 			/**
 			 * When a key is pressed...
 			 * If there is a difference, highlight the color, else set it back
-			 * to it's default color.
+			 * to its default color.
 			 * @param e The key event -- unused.
 			 */
 			public void keyReleased(KeyEvent e){
@@ -3669,6 +3700,9 @@ class StringEditorBox extends JTextArea implements EditorBox
 		this.parent = parent;
 		this.id = id;
 	}
+    
+    /** Stub */
+    public void linkToParent(Window parent){}
 	
 	/**
 	 * Checks to see if there are changes between the stored value and
@@ -3765,6 +3799,8 @@ class BooleanEditorBox extends JCheckBox implements EditorBox
 			}
 		});
 	}
+    
+    public void linkToParent(Window parent){}
 
 	/**
 	 * Gets the value of the variable

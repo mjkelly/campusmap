@@ -75,20 +75,20 @@ public class XMLFileIO {
     	
     	for(Location l: locations)
     	{
-    		String locTag = "<location ";
-    		//<location x="100" y="100" id="1" passthrough="true" intersect="true" displayname="true">
+    		String locTag = "\t<location ";
+    		//<location x="100" y="100" id="1" passThrough="true" intersect="true" displayName="true">
     		// x cord, y cord
     		locTag += "x=\"" + l.cord.x + "\" y=\"" + l.cord.y + "\" ";
     		//ID
     		locTag += "id=\"" + l.ID + "\" ";
 
-    		locTag += "passthrough=\"" + 
+    		locTag += "passThrough=\"" + 
     			(l.isCanPassThrough() ? ("true"): ("false")) + "\" ";
     		
     		locTag += "intersect=\"" + 
 			(l.isAllowIntersections() ? ("true"): ("false")) + "\" ";
     		
-    		locTag += "displayname=\"" + 
+    		locTag += "displayName=\"" + 
 			(l.isDisplayName() ? ("true"):("false")) + "\"";
     		
     		//Close the tag
@@ -99,40 +99,50 @@ public class XMLFileIO {
     		
     		// Write out the name
     		//<name>York Hall</name>
-    		out.write(TAB + terminal("name", l.getName())); 
+    		out.write(TAB + TAB + terminal("name", l.getName()) + "\n"); 
 
     		// Write out the aliases, if any exist
     		if(l.getAliases() != null && l.getAliases().size() > 0)
     		{
-    			out.write("\t<aliases>\n");
+    			out.write("\t\t<aliases>\n");
     			for(String alias : l.getAliases())
     			{
-    				out.write(TAB + TAB + terminal("alias", alias)); 
+    				out.write(TAB + TAB + TAB + terminal("alias", alias) + "\n"); 
     			}
-    			out.write("\t</aliases>\n");
+    			out.write("\t\t</aliases>\n");
     		}
     		
     		// write out the keyword field
     		if(l.getKeywords().length() > 0)
-    			out.write(TAB + terminal("keywords", l.getKeywords())); 
+    			out.write(TAB + TAB + terminal("keywords", l.getKeywords()) + "\n"); 
 
     		// write out the building code
     		if(l.getBuildingCode().length() > 0)
-    			out.write(TAB + terminal("code", l.getBuildingCode())); 
+    			out.write(TAB + TAB + terminal("code", l.getBuildingCode()) + "\n"); 
     		
     		// End the location tag
-    		out.write("</location>\n");
+    		out.write("\t</location>\n");
     	}
     	// Close the locations
     	out.append("</locations>");
 	}
 
+    /**
+     * Return a terminal tag of the given name with the given contents.
+     * The contents are escaped.
+     * @param name the name of the tag to return
+     * @param content the content of the tag, unescaped
+     * @return a terminal tag named <code>name</code>, containing
+     * <code>content</code>
+     */
 	public static String terminal(String name, String content)
 	{
 		return("<" + name + ">" + toXMLStr(content) + "</" + name + ">");
 	}
+    
 	/**
 	 * Converts the passed in string to a valid XML content string
+     * TODO: Check XML specs... specifically what characters must be escaped?
 	 * @param s The string to convert
 	 * @return valid XML string
 	 */
@@ -187,7 +197,7 @@ public class XMLFileIO {
     				for(Point p : path)
     				{
     					out.write(TAB+TAB + "<point x=\"" + p.x + 
-    							"\" y=\"" + p.y + "\" />\n");
+    							"\" y=\"" + p.y + "\"/>\n");
     				}
     				// close path
     				out.write(TAB + "</path>\n");
@@ -322,7 +332,6 @@ public class XMLFileIO {
         // "true" is true, everything else is false
         return (s.toLowerCase().equals("true"));
     }
-
     
 }
 
@@ -400,10 +409,6 @@ class LocationHandler extends DefaultHandler {
      */
     public void startElement(String uri, String localName, String qName,
             Attributes attributes) {
-        System.err.println("\t<" + qName + ">");
-        // System.err.println("\tattributes = " + attributes);
-        XMLFileIO.writeAttrs(attributes);
-
         // reset the buffer storing inner characters of this element
         innerText = new StringBuffer(64);
 
@@ -439,12 +444,12 @@ class LocationHandler extends DefaultHandler {
                 y = XMLFileIO.parseInt(attributes.getValue("y"));
 
             // get the boolean attributes of the location
-            if (attributes.getValue("passthrough") != null)
-                passThrough = XMLFileIO.parseBoolean(attributes.getValue("passthrough"));
+            if (attributes.getValue("passThrough") != null)
+                passThrough = XMLFileIO.parseBoolean(attributes.getValue("passThrough"));
             if (attributes.getValue("intersect") != null)
                 intersect = XMLFileIO.parseBoolean(attributes.getValue("intersect"));
-            if (attributes.getValue("displayname") != null)
-                displayName = XMLFileIO.parseBoolean(attributes.getValue("displayname"));
+            if (attributes.getValue("displayName") != null)
+                displayName = XMLFileIO.parseBoolean(attributes.getValue("displayName"));
 
         }
 
@@ -462,9 +467,6 @@ class LocationHandler extends DefaultHandler {
      * object creation goes here.
      */
     public void endElement(String uri, String localName, String qName) {
-        if (innerText != null)
-            System.err.println("\t" + new String(innerText));
-        System.err.println("\t</" + qName + ">");
 
         // anything containing just text, such as <name>foo</name>,
         // can be initialized here, because innerText will contain "foo"

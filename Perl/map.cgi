@@ -11,7 +11,7 @@
 #	- check loading and searching of $points: is it being done more often
 #	  than necessary on double fuzzy matches?
 #
-# Wed Aug 24 20:45:24 PDT 2005
+# $Id$
 # -----------------------------------------------------------------
 
 use strict;
@@ -29,7 +29,8 @@ use File::Temp ();
 use HTML::Template;
 use GD;
 
-use MapGlobals qw(TRUE FALSE INFINITY between asInt round @SIZES @SCALES);
+# import lots of stuff from lots of different places...
+use MapGlobals qw(TRUE FALSE INFINITY between asInt round getWords @SIZES @SCALES);
 use LoadData qw(nameNormalize findLocation findKeyword isKeyword getKeyText);
 use MapGraphics;
 use ShortestPath;
@@ -83,10 +84,14 @@ my $thumby = defined($q->param('thumb.y')) ? asInt($q->param('thumb.y')) : undef
 
 # which template to use for output
 my $template = $q->param('mode') || '';
-# we only care about the word characters in the template name (this is for taint mode)
-$template =~ /^(\w+)/;
-$template = $1;
-$template = 'js' if(!length($template || '') || !exists($MapGlobals::TEMPLATES{$template}));
+# we only care about the word characters in the template name (yeah, this is for taint mode)
+$template = getWords($template);
+$template = $MapGlobals::DEFAULT_TEMPLATE if( !exists($MapGlobals::TEMPLATES{$template}) );
+
+# the base image
+my $mapname = $q->param('mapname') || '';
+$mapname = getWords($mapname);
+$mapname = $MapGlobals::DEFAULT_MAP if(!exists($MapGlobals::maps{$mapname}) );
 
 # -----------------------------------------------------------------
 # Do startup stuff: load data, convert some of the input data, initialize
@@ -419,7 +424,7 @@ if($template eq 'plain'){
 
 	# get the image of the appropriate scale from disk, and grab only
 	# what we need by size and offset
-	my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($scale),
+	my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($mapname, $scale),
 		$rawxoff, $rawyoff, $width, $height);
 
 	my $src_color = $im->colorAllocate(@MapGlobals::SRC_COLOR);
@@ -602,12 +607,6 @@ if($template eq 'plain'){
 	# basic info: who we are, where to find images, etc
 	$tmpl->param( SELF => $MapGlobals::SELF ); # whoooooooooo are you?
 
-	# CVS tags
-	#$tmpl->param( CVS_ID => '$Id$');
-	$tmpl->param( CVS_REVISION => '$Revision$');
-	#$tmpl->param( CVS_DATE => '$Date$');
-	#$tmpl->param( CVS_AUTHOR => '$Author$');
-
 	# filenames for the temporary thumb and map files
 	$tmpl->param( IMG_VIEW => $tmpfile->filename );
 	$tmpl->param( IMG_THUMB => $tmpthumb->filename );
@@ -687,24 +686,12 @@ if($template eq 'plain'){
 	#$tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
 	#$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
 
-	# hex triplets representing the colors for the source and destination locations
-	#$tmpl->param( SRC_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::SRC_COLOR));
-	#$tmpl->param( DST_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::DST_COLOR));
-	#$tmpl->param( PATH_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::PATH_COLOR));
-	#$tmpl->param( BG_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::LOC_BG_COLOR));
-
 }
 # output variables for the javascript template
 elsif ($template eq 'js'){
 
 	# basic info: who we are, where to find images, etc
 	$tmpl->param( SELF => $MapGlobals::SELF ); # whoooooooooo are you?
-
-	# CVS tags
-	#$tmpl->param( CVS_ID => '$Id$');
-	$tmpl->param( CVS_REVISION => '$Revision$');
-	#$tmpl->param( CVS_DATE => '$Date$');
-	#$tmpl->param( CVS_AUTHOR => '$Author$');
 
 	$tmpl->param( HTML_DIR => $MapGlobals::HTML_BASE );
 	$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
@@ -718,6 +705,7 @@ elsif ($template eq 'js'){
 	$tmpl->param( HEIGHT => $height );
 	$tmpl->param( MPM => $mpm );
 	$tmpl->param( MODE => $template );
+	$tmpl->param( MAP_NAME => $mapname );
 	$tmpl->param( XOFF => $xoff );
 	$tmpl->param( YOFF => $yoff );
 
@@ -773,12 +761,6 @@ elsif ($template eq 'js'){
 	#$tmpl->param( SRC_OR_DST_FOUND => ($src_found || $dst_found) );
 	#$tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
 	#$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
-
-	# hex triplets representing the colors for the source and destination locations
-	#$tmpl->param( SRC_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::SRC_COLOR));
-	#$tmpl->param( DST_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::DST_COLOR));
-	#$tmpl->param( PATH_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::PATH_COLOR));
-	#$tmpl->param( BG_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::LOC_BG_COLOR));
 
 }
 # XXX: theoretical print view?

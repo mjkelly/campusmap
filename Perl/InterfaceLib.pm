@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Thu Aug 25 20:01:08 PDT 2005
+# $Id$
 # -----------------------------------------------------------------
 
 package InterfaceLib;

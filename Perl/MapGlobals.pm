@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Sun Jun 12 13:22:08 PDT 2005
+# $Id$
 # -----------------------------------------------------------------
 
 package MapGlobals;
@@ -20,7 +20,7 @@ use constant{
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(TRUE FALSE INFINITY between max min asInt round @SIZES @SCALES);
+@EXPORT_OK = qw(TRUE FALSE INFINITY between max min asInt round getWords @SIZES @SCALES);
 @EXPORT = qw();
 
 # -----------------------------------------------------------------
@@ -54,12 +54,20 @@ our $RATIO_Y = $THUMB_Y / $IMAGE_Y;
 # -----------------------------------------------------------------
 # Filenames.
 # -----------------------------------------------------------------
-# some names for the various base images.
-our $_BASE_NAME		= 'UCSDmap';
-our $BASE_IMAGE		= $_BASE_NAME . '.png';
-
 # the name of the main interface script, used for form actions, etc
 our $SELF		= 'map.cgi';
+
+# some names for the various base images.
+our $_BASE_NAME		= 'base-images/map';
+
+# The series of scaled base images we may use. The key is what is passed in
+# from the outside, and value is what is incorporated into the filename.
+# (There's no particular reason why they would be different.)
+our %maps = (
+	map => 'map',
+);
+# if we get no input from the user, or it's invalid, which map do we choose?
+our $DEFAULT_MAP = 'map';
 
 # match query-string arguments to template filenames
 our %TEMPLATES = (
@@ -67,6 +75,7 @@ our %TEMPLATES = (
 #	print => 'print_tmpl.html',
 	js => 'js_tmpl.html',
 );
+our $DEFAULT_TEMPLATE = 'js';
 
 # where static content is stored
 our $HTML_BASE		= '../../ucsdmap';
@@ -156,14 +165,16 @@ our $PATH_MAX_AGE	= 10*60;
 # Given a scale, return the path to the GD2 base image at that scale.
 # Does NOT check if the file exists.
 # Args:
+#	- the name of the map, as passed in by the user (a key into %maps)
 #	- the scale, as an array offset
 # Returns:
 #	- the path to the GD2 base image at that scale. File might
 #	  not exist.
 ###################################################################
 sub getGd2Filename{
-	my ($scale) = (@_);
-	return $_BASE_NAME . '-' . $scale . '.gd2';
+	my ($map, $scale) = (@_);
+	warn "RETURNING: " . $_BASE_NAME . '-' . $maps{$map} . '-' . $scale . '.gd2';
+	return $_BASE_NAME . '-' . $maps{$map} . '-' . $scale . '.gd2';
 }
 
 ###################################################################
@@ -260,12 +271,8 @@ sub reaper{
 ###################################################################
 sub between{
 	my($min, $max, $val) = (@_);
-	if($val < $min){
-		return $min;
-	}
-	if($val > $max){
-		return $max;
-	}
+	return $min if($val < $min);
+	return $max if($val > $max);
 	return $val;
 }
 
@@ -279,12 +286,7 @@ sub between{
 ###################################################################
 sub min{
 	my($x, $y) = @_;
-	if($x < $y){
-		return $x;
-	}
-	else{
-		return $y;
-	}
+	return( ($x < $y) ? $x : $y );
 }
 
 ###################################################################
@@ -297,12 +299,7 @@ sub min{
 ###################################################################
 sub max{
 	my($x, $y) = @_;
-	if($x > $y){
-		return $x;
-	}
-	else{
-		return $y;
-	}
+	return( ($x > $y) ? $x : $y );
 }
 
 ###################################################################
@@ -320,12 +317,7 @@ sub max{
 sub asInt{
 	my $str = shift;
 	my ($r) = ($str =~ /^(\d+)/);
-	if($r){
-		return $r;
-	}
-	else{
-		return 0;
-	}
+	return( $r || 0 );
 }
 
 ###################################################################
@@ -339,5 +331,17 @@ sub asInt{
 ###################################################################
 sub round{
 	my $n = shift;
-	return int($n + .5 * ($n <=> 0));
+	return( int($n + 0.5 * ($n <=> 0)) );
+}
+
+###################################################################
+# Get the word-character ([a-zA-Z0-9_]) part of a string, which must start at
+# the beginning. If no such string exists, the empty string is returned.
+# Args:
+#	- the string from which to extract word characters
+###################################################################
+sub getWords{
+	my($str) = shift;
+	$str =~ /^(\w+)/;
+	return $1 || '';
 }

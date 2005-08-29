@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Wed Aug 24 20:45:19 PDT 2005
+# $Id$
 # -----------------------------------------------------------------
 
 package LoadData;

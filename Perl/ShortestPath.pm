@@ -4,7 +4,7 @@
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
-# Wed Jun 22 13:18:42 PDT 2005
+# $Id$
 # -----------------------------------------------------------------
 
 package ShortestPath;

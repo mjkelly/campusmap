@@ -409,6 +409,12 @@ class LocationHandler extends DefaultHandler {
      */
     public void startElement(String uri, String localName, String qName,
             Attributes attributes) {
+    	boolean debug = false;
+    	if(debug)
+        	System.err.println("\t<" + qName + ">");
+    	if(debug)
+    		XMLFileIO.writeAttrs(attributes);
+
         // reset the buffer storing inner characters of this element
         innerText = new StringBuffer(64);
 
@@ -467,6 +473,13 @@ class LocationHandler extends DefaultHandler {
      * object creation goes here.
      */
     public void endElement(String uri, String localName, String qName) {
+    	boolean debug = false;
+    	if(debug)
+        {
+    		if (innerText != null)
+    			System.err.println("\t" + new String(innerText));
+    		System.err.println("\t</" + qName + ">");
+        }
 
         // anything containing just text, such as <name>foo</name>,
         // can be initialized here, because innerText will contain "foo"

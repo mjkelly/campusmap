@@ -35,12 +35,17 @@ public class ShowImage extends JFrame{
 	 */
 	public ScrollablePicture ipanel;
 	
-	private JMenuItem prevPath, nextPath, newPath, deletePath, iteratePaths, goToPath,// path manipulation
-	undoConnection, manualPlace, nextElement, prevElement, centerOnElement,//element manipulation
-	read, write, createLocationFile, changeImage, loadDefinedLocations,
-    scaleData, loadXMLLocations, loadXMLPaths, writeXMLLocations, writeXMLPaths,//IO
+	private JMenuItem prevPath, nextPath, newPath, 
+		deletePath, iteratePaths, goToPath;// path manipulation
+	private JMenuItem undoConnection, manualPlace, nextElement, 
+		prevElement, centerOnElement;//element manipulation
+	private JMenuItem read, write, readPrimitive, writePrimitive, 
+		writeOptimize, createLocationFile, changeImage, loadDefinedLocations, 
+		scaleData;//IO
 	
-    locationEditor, editLocation, createLocation, selectLocation;
+	// Locations
+    private JMenuItem locationEditor, editLocation, createLocation, 
+    	selectLocation;
 	
 	// For accessing the locationName text field
 	
@@ -62,7 +67,17 @@ public class ShowImage extends JFrame{
 		s.setVisible(true);
 		
 		// Prompt for a reading option
-		s.ipanel.selectRead();
+		int confirmReturn = JOptionPane.showConfirmDialog(s, 
+				"Load data from XML files?", 
+				"Read raw data XML files", JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+		if(confirmReturn == JOptionPane.YES_OPTION)
+		{
+			s.ipanel.loadXMLLocations();
+			s.ipanel.loadXMLPaths();
+			s.ipanel.setStatusBarText("Raw data loaded");
+			//XXX: warning needs to go here too!
+		}
 	}
 	
 	/**
@@ -97,9 +112,15 @@ public class ShowImage extends JFrame{
 		public void actionPerformed(ActionEvent e)
 		{
 			if(e.getSource() == read)
-				ipanel.selectRead();
+				ipanel.readXMLDialog();
 			
 			if(e.getSource() == write)
+				ipanel.writeXMLDialog("Are you sure you want to write out XML data files?");
+			
+			if(e.getSource() == readPrimitive)
+				ipanel.selectRead();
+			
+			if(e.getSource() == writePrimitive)
 				ipanel.selectWrite();
 	
 			if(e.getSource() == scaleData)
@@ -159,18 +180,6 @@ public class ShowImage extends JFrame{
 			
 			if(e.getSource() == loadDefinedLocations)
 				ipanel.readCustomLocationInformation();
-
-            if(e.getSource() == loadXMLLocations)
-                ipanel.loadXMLLocations();
-
-            if(e.getSource() == loadXMLPaths)
-                ipanel.loadXMLPaths();
-  
-            if(e.getSource() == writeXMLLocations)
-            	ipanel.writeXMLLocations();
-            
-            if(e.getSource() == writeXMLPaths)
-            	ipanel.writeXMLPaths();
 		}
 	}
 	
@@ -252,16 +261,12 @@ public class ShowImage extends JFrame{
 		
         file.addSeparator();
         
-        writeXMLLocations = 
-        	file.add(makeJMenuItem("Write XML Locations", listener, 0));
-        writeXMLPaths = 
-        	file.add(makeJMenuItem("Write XML Paths", listener, 0));
-        
-        loadXMLLocations = 
-            file.add(makeJMenuItem("Load XML locations", listener, 0));
-        loadXMLPaths = 
-            file.add(makeJMenuItem("Load XML paths", listener, 0));
+        readPrimitive = 
+        	file.add(makeJMenuItem("Read Primitive data", listener, 0));
 
+        writePrimitive = 
+        	file.add(makeJMenuItem("Write Primitive data", listener, 0));
+        
         file.addSeparator();
         
         loadDefinedLocations = 
@@ -338,16 +343,11 @@ public class ShowImage extends JFrame{
 		addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent e){
 				// show a dialog asking the user to confirm
-				ipanel.selectWrite();
-				
-				// if we're here, the user said yes (and data has already
-				// been saved), or they said no (and we didn't cancel)
+				ipanel.writeXMLDialog("Save changes to raw data?");
 				setVisible(false);
 				dispose();
 			}
 		});
-		
-		
 		
 		// use a SpringLayout
 		SpringLayout spring = new SpringLayout();
@@ -466,7 +466,6 @@ MouseMotionListener{
 	// a searched locations.  
 	private int lastVertex = 0;
 	
-	
 	/*
 	 * Input/Output filenames
 	 */
@@ -494,7 +493,6 @@ MouseMotionListener{
     enum SelectLocationJobID { CENTER, NEW };
 	
 	/**
-	 * 
 	 * @param i The image to display
 	 * @param maxUnitPassed 
 	 * @param newParent ?
@@ -2018,63 +2016,29 @@ MouseMotionListener{
 	 */
 	public void selectWrite()
 	{
-		final JDialog dialog = new JDialog(parent,
-				"Writing data options", true);
-		dialog.getContentPane().setLayout( new FlowLayout() );
-		JButton writeRaw = new JButton("Save raw data to disk");
-		JButton createOpt = new JButton("Write optimization files");
-		JButton cancel = new JButton("Cancel");
-		
-		dialog.getContentPane().add(cancel);
-		dialog.getContentPane().add(createOpt);
-		dialog.getContentPane().add(writeRaw);
-		
-		dialog.pack();
-		
-		/**
-		 * If cancel button is pressed, close dialog box and
-		 * display notification in the status bar. 
-		 */
-		cancel.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				dialog.setVisible(false);
-				dialog.dispose();
-				parent.statusBar.setText("File writing canceled!");
-			}
-		});
+		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
+				"Do you want to write Raw data in java object format?", 
+				"Write raw data", JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+
+		if(confirmReturn == JOptionPane.YES_OPTION)
+		{
+			writeData(rawPathFile, rawLocFile, paths, locations);
+			setStatusBarText("Java data witten");
+		}
+		else
+		{
+			setStatusBarText("File writing canceled!");
+		}
 		
 		/**
 		 * If the create optimized data button is clicked,
 		 * Make a call to PathOptimize to have it run an optimized on
 		 * the raw in the current raw data files.  Outputs binary files also.
 		 */
-		createOpt.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				dialog.setVisible(false);
-				dialog.dispose();
-				
-				//PathOptimize pathOp = new PathOptimize();
-				PathOptimize.run(paths, locations, 
-						optPathFile, optLocFile,
-						binaryPoints, binaryLocations, binaryEdges
-				);
-			}
-		});
-		
-		/**
-		 * If the write raw data button is clicked,
-		 * Write out the raw data.  
-		 */
-		writeRaw.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				dialog.setVisible(false);
-				dialog.dispose();
-				writeData(rawPathFile, rawLocFile, paths, locations);
-			}
-		});
-		
-		// Show dialog box.  
-		dialog.setVisible(true);
+//				PathOptimize.run(paths, locations, 
+//						optPathFile, optLocFile,
+//						binaryPoints, binaryLocations, binaryEdges
 	}
 	
 	/**
@@ -2084,62 +2048,20 @@ MouseMotionListener{
 	 */
 	public void selectRead()
 	{
-		final String dialogBoxTitle = "Loading data options";
-		final String readRawButton  = "Load Raw Data";
-		final String readOptButton  = "Load optimized data output";
-		final String cancelButton   = "Cancel";
-		
-		// Create new JDialog
-		final JDialog dialog = new JDialog(parent, dialogBoxTitle, true);
-		
-		// Let's make it easy and just use FlowLayout.
-		dialog.getContentPane().setLayout( new FlowLayout() );
-		
-		// Create the JButtons, the reading options.
-		JButton readRaw = new JButton(readRawButton);
-		JButton readOptimized = new JButton(readOptButton);
-		JButton cancel = new JButton(cancelButton);
-		
-		// add all the interface elements to the dialog box
-		dialog.getContentPane().add(cancel);
-		dialog.getContentPane().add(readOptimized);
-		dialog.getContentPane().add(readRaw);
-		
-		// Fit subcomponents
-		dialog.pack();
-		
-		// What to do if cancel is pressed
-		cancel.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				final String canceledMessage = "Reading of data canceled!";
-				dialog.setVisible(false);
-				dialog.dispose();
-				parent.statusBar.setText(canceledMessage);
-			}
-		});
-		
-		// What to do if the read raw button is pressed
-		readRaw.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				dialog.setVisible(false);
-				dialog.dispose();
-				// Read data from the raw data files.  
-				readData(rawPathFile, rawLocFile);
-			}
-		});
-		
-		// What to do if the read optimized button is pressed
-		readOptimized.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				dialog.setVisible(false);
-				dialog.dispose();
-				// Read data from the optimized files.  
-				readData(optPathFile, optLocFile);
-			}
-		});
-		
-		// place dialog box
-		dialog.setVisible(true);
+		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
+				"Do you want to read Raw data in java object format?", 
+				"Read raw data", JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+		if(confirmReturn == JOptionPane.YES_OPTION)
+		{
+			readData(rawPathFile, rawLocFile);
+			setStatusBarText("Raw data loaded");
+		}
+		else
+		{
+			final String canceledMessage = "Reading of data canceled!";
+			setStatusBarText(canceledMessage);
+		}
 	}
 	
 	/**
@@ -2237,22 +2159,63 @@ MouseMotionListener{
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * 
+	 */
+	public void readXMLDialog(){
+		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
+				"Are you sure you want to load raw data from the XML files?", 
+				"Read raw data XML files", JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+		if(confirmReturn == JOptionPane.YES_OPTION)
+		{
+			loadXMLLocations();
+			loadXMLPaths();
+		}
+		setStatusBarText("Raw data loaded");
+		//XXX: Need to check for errors!
+	}
+	
+	/**
+	 * 
+	 */
+	public void writeXMLDialog(String prompt){
+		String errors = null;
+		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
+				prompt, 
+				"Write raw data to XML files", JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+		if(confirmReturn == JOptionPane.YES_OPTION)
+		{
+	    	String returnStatus = XMLFileIO.writeLocations(XMLLocFile, locations);
+	    	if(returnStatus != null)
+	    		errors = returnStatus;
+	    	returnStatus = XMLFileIO.writePaths(XMLPathFile, paths);
+	    	if(returnStatus != null)
+	    		errors += returnStatus;
+	    	if(errors == null)
+	    		setStatusBarText("Raw data written to XML files: " 
+	    				+ XMLLocFile + " and " + XMLPathFile);
+	    	else
+	    		setStatusBarText(errors);
+		}
+		else
+			setStatusBarText("Writing canceled");
+	}
+	
     
     /**
      * Load locations from an XML file. Woohoo.
      */
     public void loadXMLLocations(){
         Vector<Location> newLocs = XMLFileIO.loadLocations(XMLLocFile);
-        for(Location l: newLocs){
-            // add this location
-            locations.add(l);
-            // create a new path
-            createNewPath();
-            // Add the location's coordinate to that path
-            createNewPointInCurPath(new Point(l.cord.x, l.cord.y));
-        }
+        locations = newLocs;
+        goToPathNumber(paths.size() - 1);
         
-        // you know the drill...
+		// Set the element focus to the last element in current path
+		setPointNumIndexToEnd();
+		// you know the drill...
         setDefaultStatusBar();
         repaint();
     }
@@ -2262,10 +2225,10 @@ MouseMotionListener{
      */
     public void loadXMLPaths(){
         Vector<Vector<Point>> newPaths = XMLFileIO.loadPaths(XMLPathFile);
-        for(Vector<Point> p: newPaths){
-            paths.add(p);
-        }
+        paths = newPaths;
         // cha-cha-cha!
+        goToPathNumber(paths.size() - 1);
+        setPointNumIndexToEnd();
         setDefaultStatusBar();
         repaint();
     }

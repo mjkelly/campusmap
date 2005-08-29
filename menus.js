@@ -14,12 +14,12 @@ var m_to;
 var m_toList;
 
 /* run this first, after the menus have loaded */
-function menuInit(fromID, toID, fromListID, toListID){
+function menuInit(fromID, toID, fromListID, toListID, fromTxt, toTxt){
 	m_from = document.getElementById(fromID);
 	m_to = document.getElementById(toID);
 	m_fromList = document.getElementById(fromListID);
 	m_toList = document.getElementById(toListID);
-	updateList();
+	updateListWithText(fromTxt, toTxt);
 
 	m_fromList.onchange = updateText;
 	m_toList.onchange = updateText;
@@ -35,4 +35,10 @@ function updateText(){
 function updateList(){
 	m_fromList.value = m_from.value;
 	m_toList.value = m_to.value;
+}
+
+/* set the menu selection to the given values */
+function updateListWithText(fromTxt, toTxt){
+	m_fromList.value = fromTxt;
+	m_toList.value = toTxt;
 }

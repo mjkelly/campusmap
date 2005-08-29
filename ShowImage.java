@@ -73,9 +73,10 @@ public class ShowImage extends JFrame{
 				JOptionPane.WARNING_MESSAGE);
 		if(confirmReturn == JOptionPane.YES_OPTION)
 		{
+            s.ipanel.setStatusBarText("Loading data...");
 			s.ipanel.loadXMLLocations();
 			s.ipanel.loadXMLPaths();
-			s.ipanel.setStatusBarText("Raw data loaded");
+			s.ipanel.setStatusBarText("Raw data loaded.");
 			//XXX: warning needs to go here too!
 		}
 	}
@@ -1039,8 +1040,8 @@ MouseMotionListener{
 	public void printLocationsToFile()
 	{
 		final String LOCATION_FILE_HEADER = "Locations:";
-		final String WRITE_SUCCESS = "Locations written to txt file: " + 
-			LOCATIONS_TXT_FILE;
+		final String WRITE_SUCCESS = "Locations written to text file: " + 
+			LOCATIONS_TXT_FILE + ".";
 		PrintStream outStream;
 		
 		Location [] sortedLocs = getSortedLocationArray();
@@ -1186,9 +1187,9 @@ MouseMotionListener{
 			"Error in writing \"" + locFileName + "\"!";
 		
 		// Status bar messages on success or fail...
-		final String WRITE_SUCCESS = "Paths and locations written to file";
+		final String WRITE_SUCCESS = "Paths and locations written to file.";
 		final String WRITE_FAIL = 
-			"Path and location writing failed...see stderr";
+			"Path and location writing failed... see stderr.";
 		
 		// Define output files for paths and locations.
 		File pathOutputFile = new File(pathFileName);
@@ -2055,7 +2056,7 @@ MouseMotionListener{
 		if(confirmReturn == JOptionPane.YES_OPTION)
 		{
 			readData(rawPathFile, rawLocFile);
-			setStatusBarText("Raw data loaded");
+			setStatusBarText("Raw data loaded.");
 		}
 		else
 		{
@@ -2170,10 +2171,11 @@ MouseMotionListener{
 				JOptionPane.WARNING_MESSAGE);
 		if(confirmReturn == JOptionPane.YES_OPTION)
 		{
+            setStatusBarText("Loading data...");
 			loadXMLLocations();
 			loadXMLPaths();
+            setStatusBarText("Raw data loaded.");
 		}
-		setStatusBarText("Raw data loaded");
 		//XXX: Need to check for errors!
 	}
 	
@@ -2188,6 +2190,7 @@ MouseMotionListener{
 				JOptionPane.WARNING_MESSAGE);
 		if(confirmReturn == JOptionPane.YES_OPTION)
 		{
+            setStatusBarText("Writing...");
 	    	String returnStatus = XMLFileIO.writeLocations(XMLLocFile, locations);
 	    	if(returnStatus != null)
 	    		errors = returnStatus;
@@ -2196,7 +2199,7 @@ MouseMotionListener{
 	    		errors += returnStatus;
 	    	if(errors == null)
 	    		setStatusBarText("Raw data written to XML files: " 
-	    				+ XMLLocFile + " and " + XMLPathFile);
+	    				+ XMLLocFile + " and " + XMLPathFile + ".");
 	    	else
 	    		setStatusBarText(errors);
 		}
@@ -2229,8 +2232,10 @@ MouseMotionListener{
         // cha-cha-cha!
         goToPathNumber(paths.size() - 1);
         setPointNumIndexToEnd();
-        setDefaultStatusBar();
-        repaint();
+        
+        // we ALWAYS set the status bar after calling this method...
+        //setDefaultStatusBar();
+        //repaint();
     }
     
     /**

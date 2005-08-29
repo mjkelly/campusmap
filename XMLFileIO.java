@@ -20,7 +20,14 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.Attributes;
 
+/**
+ * Wrapper class for loading and saving paths and locations in XML format.
+ * (It's all quite SAXy.)
+ */
 public class XMLFileIO {
+
+    /** Print lots of info to trace execution of XML read/write methods? */
+    static final boolean VERBOSE = false;
 	
 	/**
 	 * Writes out the passed vector of locations to the passed filename
@@ -57,12 +64,14 @@ public class XMLFileIO {
 	}
 	
     /**
-     * Writes out the passed location data to the passed OutputStreamWriter
+     * Writes out the passed location data to the passed OutputStreamWriter.
+     * (Don't call this, call <code>writeData</code>. But it's private
+     * anyway, so you can't.)
      * @param out The StreamWriter to use to write out with
      * @param locations The location data
      * @throws IOException an error the occurs in attempting to write
      */
-	public static void writeXMLLocationData(Vector<Location> locations, 
+	private static void writeXMLLocationData(Vector<Location> locations, 
 			OutputStreamWriter out) throws IOException
 	{
 		final String TAB = "\t";
@@ -70,8 +79,7 @@ public class XMLFileIO {
     	out.write("<?xml version='1.0' encoding='UTF-8' ?>\n");
     	
     	// Write out the main Location wrapper
-    	out.write(
-    			"<locations version=\"1.0\" maxid=\"" + Location.IDcount + "\">\n");
+    	out.write("<locations version=\"1.0\">\n");
     	
     	for(Location l: locations)
     	{
@@ -221,7 +229,6 @@ public class XMLFileIO {
      * @return the locations contained by the XML file.
      */
     public static Vector<Location> loadLocations(String locationFile) {
-    	boolean printLoadedLocations = false;
         SAXParserFactory sax = SAXParserFactory.newInstance();
         Vector<Location> locs = new Vector<Location>();
         
@@ -239,7 +246,7 @@ public class XMLFileIO {
             System.err.println("IOException: " + e.getMessage());
             return locs;
         }
-        if(printLoadedLocations)
+        if(VERBOSE)
         {
         	System.err.println("Locations parsed:");
         	for (Location l : locs) {
@@ -368,6 +375,10 @@ class PathHandler extends DefaultHandler {
  * This class handles all the SAX callbacks for a location XML file.
  */
 class LocationHandler extends DefaultHandler {
+    
+    /** Whether or not we alter location IDs to be minimum and contiguous. */
+    public static boolean compressIDs = false;
+    
     // for storing inner text of elements
     StringBuffer innerText;
 
@@ -393,11 +404,11 @@ class LocationHandler extends DefaultHandler {
 
     boolean intersect, passThrough, displayName;
 
+    int maxLocID = 0;
+    
     /**
      * Constructor.
-     * 
-     * @param locs
-     *            a vector of locations to add to
+     * @param locs a vector of locations to add to
      */
     public LocationHandler(Vector<Location> locations) {
         this.locations = locations;
@@ -409,27 +420,20 @@ class LocationHandler extends DefaultHandler {
      */
     public void startElement(String uri, String localName, String qName,
             Attributes attributes) {
-    	boolean debug = false;
-    	if(debug)
+
+        if(XMLFileIO.VERBOSE){
         	System.err.println("\t<" + qName + ">");
-    	if(debug)
     		XMLFileIO.writeAttrs(attributes);
+        }
 
         // reset the buffer storing inner characters of this element
         innerText = new StringBuffer(64);
-
-        // this is the list of locations
-        // we just check for one attribute
-        if (qName.equals("locations")) {
-            if (attributes.getValue("maxid") != null)
-                Location.IDcount = XMLFileIO.parseInt(attributes.getValue("maxid"));
-        }
 
         // this is an individual location
         // we initialize variables representing the location's members to
         // default values, and get a few basic attributes (id, location, boolean
         // flags).
-        else if (qName.equals("location")) {
+        if (qName.equals("location")) {
             // when a new Location comes around, reset all temporary variables
             // to default values
             x = y = 0;
@@ -442,8 +446,21 @@ class LocationHandler extends DefaultHandler {
             id = 0;
 
             // get the integer attributes of the location
-            if (attributes.getValue("id") != null)
-                id = XMLFileIO.parseInt(attributes.getValue("id"));
+            if (attributes.getValue("id") != null) {
+                if(LocationHandler.compressIDs){
+                    id = ++maxLocID;
+                    if(XMLFileIO.VERBOSE)
+                        System.err.println("[[Compressing to ID = " + id + "]]");
+                }
+                else{
+                    id = XMLFileIO.parseInt(attributes.getValue("id"));
+                }
+                
+                // keep track of the largest ID we've seen so far
+                if(id > maxLocID){
+                    maxLocID = id;
+                }
+            }
             if (attributes.getValue("x") != null)
                 x = XMLFileIO.parseInt(attributes.getValue("x"));
             if (attributes.getValue("y") != null)
@@ -473,8 +490,7 @@ class LocationHandler extends DefaultHandler {
      * object creation goes here.
      */
     public void endElement(String uri, String localName, String qName) {
-    	boolean debug = false;
-    	if(debug)
+    	if(XMLFileIO.VERBOSE)
         {
     		if (innerText != null)
     			System.err.println("\t" + new String(innerText));
@@ -535,6 +551,17 @@ class LocationHandler extends DefaultHandler {
 
         // we're done with this text -- don't let it bleed into the next element
         innerText = null;
+    }
+    
+    /**
+     * When the document ends, we do a little housekeeping.
+     */
+    public void endDocument(){
+        Location.IDcount = maxLocID + 1;
+        if(XMLFileIO.VERBOSE){
+            System.err.println("At end of document. Location.IDcount = "
+                    + Location.IDcount);
+        }
     }
 
     /**

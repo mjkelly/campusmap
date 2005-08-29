@@ -472,7 +472,9 @@ MouseMotionListener{
 	 */
 	// Raw, unoptimized paths
 	final String rawPathFile = "data/rawPath.dat";
-	final String rawLocFile = "data/rawLocations.dat";
+	final String rawLocFile  = "data/rawLocations.dat";
+	final String XMLPathFile = "data/rawPath.xml";
+	final String XMLLocFile  = "data/rawLocations.xml";
 	
 	// Optimized paths put back into unoptimized format for debugging
 	final String optPathFile = "data/optimizedPath.dat";
@@ -2240,7 +2242,7 @@ MouseMotionListener{
      * Load locations from an XML file. Woohoo.
      */
     public void loadXMLLocations(){
-        Vector<Location> newLocs = XMLFileIO.loadLocations();
+        Vector<Location> newLocs = XMLFileIO.loadLocations(XMLLocFile);
         for(Location l: newLocs){
             // add this location
             locations.add(l);
@@ -2259,7 +2261,7 @@ MouseMotionListener{
      * Load paths from an XML file.
      */
     public void loadXMLPaths(){
-        Vector<Vector<Point>> newPaths = XMLFileIO.loadPaths();
+        Vector<Vector<Point>> newPaths = XMLFileIO.loadPaths(XMLPathFile);
         for(Vector<Point> p: newPaths){
             paths.add(p);
         }
@@ -2272,7 +2274,7 @@ MouseMotionListener{
      * Write locations out to an XML file, delegates to XMLFileIO method
      */
     public void writeXMLLocations(){
-    	String returnStatus = XMLFileIO.writeLocations("loc.xml", locations);
+    	String returnStatus = XMLFileIO.writeLocations(XMLLocFile, locations);
     	if(returnStatus != null)
     		setStatusBarText(returnStatus);
     	else
@@ -2284,7 +2286,7 @@ MouseMotionListener{
      */
     public void writeXMLPaths()
     {
-    	String error = XMLFileIO.writePaths("path_out.xml", paths);
+    	String error = XMLFileIO.writePaths(XMLPathFile, paths);
     	if(error == null)
     		setStatusBarText("XML Path data writen");
     	else
@@ -3842,4 +3844,3 @@ class BooleanEditorBox extends JCheckBox implements EditorBox
 		return(parentValue() != isSelected());
 	}
 }
-

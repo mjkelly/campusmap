@@ -419,9 +419,8 @@ if($template eq 'plain'){
 
 	# get the image of the appropriate scale from disk, and grab only
 	# what we need by size and offset
-	my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($SCALES[$scale]),
-		$rawxoff, $rawyoff, $width, $height)
-		|| die "Could not load base image " . MapGlobals::getGd2Filename($SCALES[$scale]) . "\n";
+	my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($scale),
+		$rawxoff, $rawyoff, $width, $height);
 
 	my $src_color = $im->colorAllocate(@MapGlobals::SRC_COLOR);
 	my $dst_color = $im->colorAllocate(@MapGlobals::DST_COLOR);
@@ -693,7 +692,6 @@ if($template eq 'plain'){
 	#$tmpl->param( DST_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::DST_COLOR));
 	#$tmpl->param( PATH_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::PATH_COLOR));
 	#$tmpl->param( BG_COLOR_HEX => sprintf("#%02x%02x%02x", @MapGlobals::LOC_BG_COLOR));
-	$tmpl->param( CSS_FILE => $MapGlobals::CSS_FILE );
 
 }
 # output variables for the javascript template

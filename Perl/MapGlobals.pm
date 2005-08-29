@@ -9,7 +9,9 @@
 
 package MapGlobals;
 
-# a few constants to make things more readable
+# -----------------------------------------------------------------
+# Basic constants.
+# -----------------------------------------------------------------
 use constant{
 	INFINITY	=> ~0,
 	TRUE		=> 1,
@@ -21,33 +23,19 @@ require Exporter;
 @EXPORT_OK = qw(TRUE FALSE INFINITY between max min asInt round @SIZES @SCALES);
 @EXPORT = qw();
 
-# a list of scaling attributes
+# -----------------------------------------------------------------
+# Sizes.
+# -----------------------------------------------------------------
 # we use indexes in the application, then map them to the acual multiplier
 # values internally. Remember, these MUST be multiplier values, because the low-level
 # drawing routines use them to scale path/location draws.
 our @SCALES = (1, 0.5, 0.25, 0.125);
 
-# map display sizes.
+# map viewport sizes.
 our @SIZES = (
 	[400, 300],
 	[500, 375],
 	[640, 480],
-);
-
-
-# some names for the various base images.
-# TODO: clean this up! (remember old scripts that rely on the old names)
-our $BASE_IMAGE		= 'UCSDmap.png';
-our $_BASE_GD2_IMAGE	= 'UCSDmap';
-our $BASE_GD2_IMAGE	= $_BASE_GD2_IMAGE . 'gd2';
-
-# the name of the main interface script, used for form actions, etc
-our $SELF		= 'map.cgi';
-
-our %TEMPLATES = (
-	plain => 'template3.html',
-	print => 'print_tmpl.html',
-	js => 'js_tmpl.html',
 );
 
 # size of the base image, in pixels
@@ -55,15 +43,68 @@ our $IMAGE_X = 7200;
 our $IMAGE_Y = 6600;
 
 # size of the thumbnail image
-#our $THUMB_X = 192;
-#our $THUMB_Y = 176;
 our $THUMB_X = 144;
 our $THUMB_Y = 132;
+
+# store the ratio between the thumbnail and the main base image
+# (these two REALLY should be the same...)
+our $RATIO_X = $THUMB_X / $IMAGE_X;
+our $RATIO_Y = $THUMB_Y / $IMAGE_Y;
+
+# -----------------------------------------------------------------
+# Filenames.
+# -----------------------------------------------------------------
+# some names for the various base images.
+our $_BASE_NAME		= 'UCSDmap';
+our $BASE_IMAGE		= $_BASE_NAME . '.png';
+
+# the name of the main interface script, used for form actions, etc
+our $SELF		= 'map.cgi';
+
+# match query-string arguments to template filenames
+our %TEMPLATES = (
+	plain => 'template3.html',
+#	print => 'print_tmpl.html',
+	js => 'js_tmpl.html',
+);
+
+# where static content is stored
+our $HTML_BASE		= '../../ucsdmap';
+##our $HTML_BASE		= '..';
+
+our $CSS_DIR		= "$HTML_BASE/css";
+our $STATIC_IMG_DIR	= "$HTML_BASE/images";
+our $DYNAMIC_IMG_DIR	= "$HTML_BASE/dynamic";
+our $PATH_IMG_DIR	= $DYNAMIC_IMG_DIR . '/paths';
+our $GRID_IMG_DIR	= $STATIC_IMG_DIR . '/grid';
+
+# where binary input files are stored
+our $DATA_DIR		= '.';
+# locations of the binary files that contain the graph of paths
+our $POINT_FILE		= "$DATA_DIR/binPointData.dat";
+our $LOCATION_FILE	= "$DATA_DIR/binLocationData.dat";
+our $EDGE_FILE		= "$DATA_DIR/binEdgeData.dat";
+
 our $THUMB_FILE = 'thumbnail.gd2';
 
-# _URL_ to the 
-our $CSS_FILE = '../../ucsdmap/css/main.css';
-##our $CSS_FILE = '/css/main.css';
+# -----------------------------------------------------------------
+# Graphics.
+# -----------------------------------------------------------------
+# how many pixels (on the largest base map) equal one meter
+# From tests, we've determined that 288696.00 px is approximately 0.72 mi.
+# that gives us ~400967 px per mile.
+our $PIXELS_PER_UNIT = 4010;
+# an abbreviation of the unit we're using (m for meters, mi for miles, etc)
+our $UNITS = "mi";
+
+# where to center when there isn't any selection.
+# (2184, 3264) is Geisel Library
+our $DEFAULT_XOFF  = 2184;
+our $DEFAULT_YOFF  = 3264;
+our $DEFAULT_SCALE = 3; #index into @SCALES
+# this is the scale we use when we're zoomed to a single
+# location (a real one). also an index into @SCALES.
+our $SINGLE_LOC_SCALE = 1;
 
 # how wide the font that we use for drawling location names is, in pixels
 our $FONT_WIDTH = 7;
@@ -76,86 +117,53 @@ our $MAX_NAME_LEN = 30;
 # how thick are the paths we draw between locations? (in pixels)
 our $PATH_THICKNESS = 4;
 
-# colors!
+# -----------------------------------------------------------------
+# Graphics::Colors
+# -----------------------------------------------------------------
 # these are triplets of values between 0 and 255 (inclusive)
 # color associated with 'from' location
 our @SRC_COLOR = (0, 255, 0);
 # color associated with 'to' location
 our @DST_COLOR = (255, 0, 0);
 # color paths are drawn in
-#our @PATH_COLOR = (0, 0, 255);
 our @PATH_COLOR = (51, 51, 204);
 # color the viewport outline rectangle (in the thumbnail) is drawn in
 our @RECT_COLOR = (0, 0, 255);
 # color location background text (@SRC_COLOR and @DST_COLOR) is drawn in
 our @LOC_BG_COLOR = (100, 100, 100);
 
-# store the ratio between the thumbnail and the main base image
-# (these two REALLY should be the same...)
-our $RATIO_X = $THUMB_X / $IMAGE_X;
-our $RATIO_Y = $THUMB_Y / $IMAGE_Y;
-
-# where to center when there isn't any selection.
-# (2184, 3264) is Geisel Library
-our $DEFAULT_XOFF  = 2184;
-our $DEFAULT_YOFF  = 3264;
-our $DEFAULT_SCALE = 3; #index into @SCALES
-# this is the scale we use when we're zoomed to a single
-# location (a real one). also an index into @SCALES.
-our $SINGLE_LOC_SCALE = 1;
-
-# how many pixels (on the largest base map) equal one meter
-# From tests, we've determined that 288696.00 px is approximately 0.72 mi.
-# that gives us ~400967 px per mile.
-#our $PIXELS_PER_UNIT = 400967; # <--- this was when we multiplied all distances by 100
-our $PIXELS_PER_UNIT = 4010;
-# an abbreviation of the unit we're using (m for meters, mi for miles, etc)
-our $UNITS = "mi";
-
-# locations of the binary files that contain the graph of paths
-our $POINT_FILE		= 'binPointData.dat';
-our $LOCATION_FILE	= 'binLocationData.dat';
-our $EDGE_FILE		= 'binEdgeData.dat';
-
+# -----------------------------------------------------------------
+# Caching
+# -----------------------------------------------------------------
 # where cache files (which store the coordinates of shortest paths) go
 our $CACHE_DIR		= 'cache';
 # how long cache files hang around for, in seconds
 our $CACHE_EXPIRY	= 10*60;
-
-# where static content is stored
-our $HTML_BASE		= '../../ucsdmap';
-##our $HTML_BASE		= '..';
-
-our $CSS_DIR		= "$HTML_BASE/css";
-our $STATIC_IMG_DIR	= "$HTML_BASE/images";
-our $DYNAMIC_IMG_DIR	= "$HTML_BASE/dynamic";
-our $PATH_IMG_DIR	= $DYNAMIC_IMG_DIR . '/paths';
-our $GRID_IMG_DIR	= $STATIC_IMG_DIR . '/grid';
 
 # the suffix of all dynamically-generated images; used for matching for
 # deletion
 our $DYNAMIC_IMG_SUFFIX	= '.png';
 # maximum age, in seconds, of dynamically generated images
 our $DYNAMIC_MAX_AGE	= 10*60;
-
 # how long path images stay up
 our $PATH_MAX_AGE	= 10*60;
 
-# we also have some basic utility functions in here, that any part
-# of the script may want to use
+# -----------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------
 
 ###################################################################
 # Given a scale, return the path to the GD2 base image at that scale.
 # Does NOT check if the file exists.
 # Args:
-#	- the scale (as a multiplier, not an array offset)
+#	- the scale, as an array offset
 # Returns:
 #	- the path to the GD2 base image at that scale. File might
 #	  not exist.
 ###################################################################
 sub getGd2Filename{
 	my ($scale) = (@_);
-	return $_BASE_GD2_IMAGE . '-' . $scale . '.gd2';
+	return $_BASE_NAME . '-' . $scale . '.gd2';
 }
 
 ###################################################################

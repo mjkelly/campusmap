@@ -41,9 +41,8 @@ public class ShowImage extends JFrame{
 		prevElement, centerOnElement;//element manipulation
 	
 	//IO
-	private JMenuItem read, write, readPrimitive, writePrimitive, 
-		writeOptimize, readOptimize, createLocationFile, changeImage, loadDefinedLocations, 
-		scaleData;
+	private JMenuItem read, write, writeOptimize, readOptimize, 
+		createLocationFile, changeImage, loadDefinedLocations, scaleData;
 	
 	// Locations
     private JMenuItem locationEditor, editLocation, createLocation, 
@@ -119,12 +118,6 @@ public class ShowImage extends JFrame{
 			
 			if(e.getSource() == write)
 				ipanel.writeXMLDialog("Are you sure you want to write out XML data files?");
-			
-			if(e.getSource() == readPrimitive)
-				ipanel.selectRead();
-			
-			if(e.getSource() == writePrimitive)
-				ipanel.selectWrite();
 	
 			if(e.getSource() == scaleData)
 				ipanel.scaleData();
@@ -271,11 +264,8 @@ public class ShowImage extends JFrame{
 
         file.addSeparator();
 
-        readPrimitive = 
-        	file.add(makeJMenuItem("Read Primitive data", listener, 0));
-
-        writePrimitive = 
-        	file.add(makeJMenuItem("Write Primitive data", listener, 0));
+		writeOptimize = file.add(makeJMenuItem("Write Optimized", listener, 0));
+		readOptimize = file.add(makeJMenuItem("Read Optimized", listener, 0));
         
         file.addSeparator();
         
@@ -287,9 +277,6 @@ public class ShowImage extends JFrame{
 		
 		scaleData = file.add(makeJMenuItem("Data Scaling", listener, 0));
 		
-		writeOptimize = file.add(makeJMenuItem("Write Optimized", listener, 0));
-		
-		readOptimize = file.add(makeJMenuItem("Read Optimized", listener, 0));
 		
 		/** Menu associated with path options **/
 		JMenu path = new JMenu("Path Editing");
@@ -890,12 +877,13 @@ MouseMotionListener{
 			// F7: Save data into files
 			else if(c ==  KeyEvent.VK_F7)
 			{
-				selectWrite();
+				writeXMLDialog(
+						"Are you sure you want to write out XML data files?");
 			}
 			// F8: load/read from files.
 			else if(c ==  KeyEvent.VK_F8)
 			{
-				selectRead();
+				readXMLDialog();
 			}
 			// F9: Print locations to file
 			else if(c == KeyEvent.VK_F9){
@@ -1173,148 +1161,6 @@ MouseMotionListener{
 		else
 		{
 			setStatusBarText("Please select a point to center on!");
-		}
-	}
-	/**
-	 * Write data to disk.
-	 * @param pathFileName The passed in name for the raw path data file.  
-	 * @param locFileName The passed in name for the raw location data file.
-	 * @param pathsToWrite The paths vector to write
-	 * @param locationsToWrite the locations vector to write
-	 */
-	public static void writeData(String pathFileName, String locFileName,
-			Vector <Vector<Point>> pathsToWrite, 
-			Vector <Location> locationsToWrite){
-		
-		// Booleans to tell if the writing of both path and location data
-		// was a success.
-		boolean pathWriteSuccess = false;
-		boolean locationWriteSuccess = false;
-		
-		// Define error strings
-		// File not found errors
-		final String pathNotFound = 
-			"File \"" + pathFileName + "\" not found!     ";
-		final String locNotFound = "File \"" + locFileName + "\" not found!";
-		
-		// IO errors
-		final String PATH_IO_ERROR = 
-			"IO Error in writing \"" + pathFileName + "\"!";
-		
-		final String LOCATION_IO_ERROR = 
-			"Error in writing \"" + locFileName + "\"!";
-		
-		// Status bar messages on success or fail...
-		final String WRITE_SUCCESS = "Paths and locations written to file.";
-		final String WRITE_FAIL = 
-			"Path and location writing failed... see stderr.";
-		
-		// Define output files for paths and locations.
-		File pathOutputFile = new File(pathFileName);
-		File locationOutputFile = new File(locFileName);
-		
-		
-		
-		// Write out the paths vector...
-		try{
-			// Open stream
-			ObjectOutputStream pathout = new ObjectOutputStream(
-					new BufferedOutputStream(
-							new FileOutputStream(pathOutputFile)));
-			
-			pathout.writeInt(PATH_VERSION_NUMBER);
-			
-			// Write out the object...
-			pathout.writeObject(pathsToWrite);
-			
-			// Close stream
-			pathout.close();
-			// If we get to this point, we were successful
-			pathWriteSuccess = true;
-		}
-		// Catch exceptions...pathWriteSuccess will not change value,
-		// so it will stay false.
-		catch(FileNotFoundException e){
-			System.err.println(pathNotFound);
-			parent.statusBar.setText(pathNotFound);
-		}
-		catch(IOException e){
-			System.err.println(PATH_IO_ERROR);
-		}
-		
-		// Write out the locations vector...
-		try{
-			//Open stream
-			ObjectOutputStream locout = new ObjectOutputStream(
-					new BufferedOutputStream(
-							new FileOutputStream(locationOutputFile)));
-			
-			// Write out the locations version number
-			locout.writeInt(LOCATION_VERSION_NUMBER);
-			
-			if(LOCATION_VERSION_NUMBER == 1)
-			{
-				// print out the size of the location Vector
-				locout.writeInt(locationsToWrite.size());
-				
-				// write out the static ID variable...IDcount
-				locout.writeInt(Location.IDcount);
-				
-				// For each location in the location Vector
-				for (Location loc : locationsToWrite) {
-					locout.writeBoolean(loc.isAllowIntersections());
-					locout.writeBoolean(loc.isCanPassThrough());
-					locout.writeObject(loc.cord);
-					locout.writeBoolean(loc.isDisplayName());
-					locout.writeInt(loc.ID);
-					locout.writeObject(loc.getName());
-				}
-			}
-			if(LOCATION_VERSION_NUMBER == 2 || LOCATION_VERSION_NUMBER == 3)
-			{
-				// print out the size of the location Vector
-				locout.writeInt(locationsToWrite.size());
-				
-				// write out the static ID variable...IDcount
-				locout.writeInt(Location.IDcount);
-				
-				// For each location in the location Vector
-				for (Location loc : locationsToWrite) {
-					locout.writeBoolean(loc.isAllowIntersections());
-					locout.writeBoolean(loc.isCanPassThrough());
-					locout.writeObject(loc.cord);
-					locout.writeBoolean(loc.isDisplayName());
-					locout.writeInt(loc.ID);
-					locout.writeObject(loc.getName());
-					if(LOCATION_VERSION_NUMBER == 3)
-						locout.writeObject(loc.getAliases());
-					
-					// The following two lines are the difference between
-					// version 1 and version 2
-					locout.writeObject(loc.getBuildingCode());
-					locout.writeObject(loc.getKeywords());
-				}
-			}
-			// Close stream
-			locout.close();
-			
-			// If we get to this point, the writting was successful, so mark.
-			locationWriteSuccess = true;
-		}
-		catch(FileNotFoundException e){
-			System.err.println(locNotFound);
-			parent.statusBar.setText(parent.statusBar.getText() + locNotFound);
-		}
-		catch(IOException e){
-			System.err.println(LOCATION_IO_ERROR);
-		}
-		if(locationWriteSuccess && pathWriteSuccess){
-			// Set status
-			parent.statusBar.setText(WRITE_SUCCESS);
-		}
-		else
-		{
-			parent.statusBar.setText(WRITE_FAIL);
 		}
 	}
 
@@ -1616,311 +1462,7 @@ MouseMotionListener{
 			setStatusBarText("Error: Attempted to remove non-existing point");
 			return false;
 		}
-		
-	}
-	
-	
-	/**
-	 * Read data from disk.
-	 * @param pathFileName The passed in name for the raw path data file.  
-	 * @param locFileName The passed in name for the raw location data file.
-	 */
-	public void readData(String pathFileName, String locFileName){
-		
-		// Booleans to determin if the reading of paths and locations were
-		// successful
-		boolean pathLoadSuccess = false;
-		boolean locationLoadSuccess = false;
-		
-		// Error strings...
-		// Files could not be found...
-		final String PATHS_FILE_NOT_FOUND = 
-			"File \"" + pathFileName + "\" not found!     ";
-		final String LOC_FILE_NOT_FOUND = 
-			"File \"" + locFileName + "\" not found!";
-		
-		// IO Errors occured in attempting to read
-		final String PATHS_IO_ERROR = 
-			"Exception reading \"" + pathFileName + "\"!";
-		final String LOCATION_IO_ERROR =
-			"Exception reading \"" + locFileName + "\"!";
-		
-		final String ERROR_READING_DATA = "Error occured in reading data!"
-			+ " See stderr output.";
-		
-		final String INPUT_READ_SUCCESS = "Input read from file";
-		
-		// Define input files for paths and locations.
-		File pathsInputFile = new File(pathFileName);
-		File locationsInputFile = new File(locFileName);
-		
-		// Get the paths vector
-		try{
-			int pathVersionNumber;
-			// Open stream
-			ObjectInputStream pathin = new ObjectInputStream(
-					new FileInputStream(pathsInputFile));
-			
-			pathVersionNumber = pathin.readInt();
-			
-			if(pathVersionNumber == 1)
-			{
-				// Read in the vector of paths...causes Java 5 warning
-				paths = (Vector)pathin.readObject();
-			}
-			else
-			{
-				System.err.println(
-						"No method for reading pathVersion number = " 
-						+ pathVersionNumber);
-			}
-			//close stream
-			pathin.close();
-			
-			// If we get to this point, we were successful in reading the 
-			// path
-			pathLoadSuccess = true;
-		}
-		catch(FileNotFoundException e){
-			System.err.println(PATHS_FILE_NOT_FOUND);
-			parent.statusBar.setText(PATHS_FILE_NOT_FOUND);
-		}
-		catch(Exception e){
-			// Indicate that an IO error occured.  
-			System.err.println(PATHS_IO_ERROR + ": " + e + ": " + e.getMessage());
-		}
-		
-		//Get the locations vector
-		try{
-			// Open stream
-			ObjectInputStream locin = new ObjectInputStream(
-					new FileInputStream(locationsInputFile));
-			
-			int locVersionNumber = locin.readInt();
-			
-			// Version 1: nothing much to say here, it's what I started with
-			if(locVersionNumber == 1)
-			{
-				// Get the number of locations
-				int numLocations = locin.readInt();
-				
-				// Get the count on IDs
-				Location.IDcount = locin.readInt();
-				
-				// Temporary Location pointer to store the location while
-				// it's properties are flowed in.
-				Location tempLocation;
-				
-				// Temporary boolean values for location variable
-				boolean tempIntersect;
-				boolean tempCanPass;
-				boolean tempDisplayName;
-				
-				// temporary coordinate
-				Point tempCord;
-				
-				// Temporary ID number for binary files
-				int tempID;
-				
-				// Temporary name of location
-				String tempName;
-				
-				// Clean out the locations vector to store in the new info
-				locations.clear();
-				for(int locNum = 0; locNum < numLocations; locNum++)
-				{
-					// Read in the fields in the order that they were written
-					tempIntersect = locin.readBoolean();
-					tempCanPass = locin.readBoolean();
-					tempCord = (Point)locin.readObject();
-					tempDisplayName = locin.readBoolean();
-					tempID = locin.readInt();
-					tempName = (String)locin.readObject();
-					
-					//public Location(int x, int y, String passedName, 
-					// ShowImage parent)
-					// Create the new location with the passed in values
-					tempLocation = new Location(tempCord.x, tempCord.y, 
-							tempName);
-					// Add the location into the locations vector
-					locations.add(locNum, tempLocation);
-					// Set the boolean values
-					tempLocation.setAllowIntersections(tempIntersect);
-					tempLocation.setCanPassThrough(tempCanPass);
-					tempLocation.setDisplayName(tempDisplayName);
-					// Set the binary file ID #
-					tempLocation.ID = tempID;
-				}
-			}
-			/**
-			 * Version 2:
-			 * Added two text field to location: buildingCode and keywords
-			 */
-			else if(locVersionNumber == 2 || locVersionNumber == 3)
-			{
-				// Get the number of locations
-				int numLocations = locin.readInt();
-				
-				// Get the count on IDs
-				Location.IDcount = locin.readInt();
-				
-				// Temporary Location pointer to store the location while
-				// it's properties are flowed in.
-				Location tempLocation;
-				
-				// Temporary boolean values for location variable
-				boolean tempIntersect;
-				boolean tempCanPass;
-				boolean tempDisplayName;
-				
-				// temporary coordinate
-				Point tempCord;
-				
-				// Temporary ID number for binary files
-				int tempID;
-				
-				// Temporary name of location
-				String tempName;
-				
-				// Temporary buildingCode for location
-				String tempBuildingCode;
-				
-				// Temporary location keywords
-				String tempKeywords;
-				
-				Vector <String> tempAliases = null;
-				
-				// Clean out the locations vector to store in the new info
-				locations.clear();
-				for(int locNum = 0; locNum < numLocations; locNum++)
-				{
-					// Read in the fields in the order that they were written
-					tempIntersect = locin.readBoolean();
-					tempCanPass = locin.readBoolean();
-					tempCord = (Point)locin.readObject();
-					tempDisplayName = locin.readBoolean();
-					tempID = locin.readInt();
-					tempName = (String)locin.readObject();
-					
-					if(locVersionNumber == 3)
-						tempAliases = (Vector<String>)locin.readObject();
-
-					
-					tempBuildingCode = (String)locin.readObject();
-					tempKeywords = (String)locin.readObject();
-					
-					
-					//public Location(int x, int y, String passedName, 
-					// ShowImage parent)
-					// Create the new location with the passed in values
-					tempLocation = new Location(tempCord.x, tempCord.y, 
-							tempName);
-					// Add the location into the locations vector
-					locations.add(locNum, tempLocation);
-					// Set the boolean values
-					tempLocation.setAllowIntersections(tempIntersect);
-					tempLocation.setCanPassThrough(tempCanPass);
-					tempLocation.setDisplayName(tempDisplayName);
-					if(locVersionNumber == 3)
-						tempLocation.setAliases(tempAliases);
-					
-					// Set the two strings: Building Code and 
-					// Location keywords
-					tempLocation.setBuildingCode(tempBuildingCode);
-					tempLocation.setKeywords(tempKeywords);
-					
-					// Set the binary file ID #
-					tempLocation.ID = tempID;
-				}
-			}
-			else
-			{
-				System.err.println("We don't have a read method for version" +
-				"locVersionNumber");
-			}
-			locationLoadSuccess = true;
-			//close stream
-			locin.close();
-			
-		}
-		catch(FileNotFoundException e){
-			System.err.println(LOC_FILE_NOT_FOUND);
-			parent.statusBar.setText(parent.statusBar.getText() 
-					+ LOC_FILE_NOT_FOUND);
-		}
-		catch(Exception e){
-			System.err.println(LOCATION_IO_ERROR + ": " + e + ": " + e.getMessage());
-		}
-		
-		// If both reading of locations and paths was successful...
-		if( locationLoadSuccess && pathLoadSuccess ){
-			
-			// set the starting point for the IDS of any new locations that
-			// are created.
-			Location.IDcount += locations.size();
-			
-			// now we do a little housekeeping: check for collisions between
-			// location IDs
-			for(int i = 0; i < locations.size(); i++){
-				for(int j = 0; j < locations.size(); j++){
-					if(i == j) continue;
-					// if the IDs of two of the locations are the same...
-					if(getLocation(i).ID == getLocation(j).ID){
-						// reassign one of them
-						getLocation(i).ID = Location.IDcount++;
-						System.err.println("Location ID collision! " +
-								"(Bad input data.)" + " Reassigning to " + 
-								getLocation(i).ID);
-					}
-				}
-			}
-			
-			// Set status bar
-			parent.statusBar.setText(INPUT_READ_SUCCESS);
-			
-			// Set the active path (also termed path in "focus")...
-			
-			// If the current pathNumIndex (path focus) is greater 
-			// than the size of the paths array that was just read in...
-			// Then attach focus to the last path in the paths array.
-			if(pathNumIndex > paths.size() - 1)
-				pathNumIndex = paths.size();
-			
-			//Set lines
-			curPath = paths.get(pathNumIndex);
-			// Set the point
-			setPointNumIndexToEnd();
-			
-			// Do the repaint dance...woooo!
-			repaint();
-		}
-		else
-		{
-			parent.statusBar.setText(ERROR_READING_DATA);
-			
-			/**
-			 * If the path data didn't load, but location did...
-			 * Create a new path for each location and add the location's point
-			 * to that path.
-			 */
-			if(!pathLoadSuccess && locationLoadSuccess)
-			{
-				System.err.println("Path loading failed, " +
-				"location loading sucessful");
-				
-				System.err.println("Adding new path and point " +
-						"for each location.");
-				// For every location entry
-				for (Location tempLoc : locations) {
-					// create a new path
-					createNewPath();
-					// Add the location's coordinate to that path
-					createNewPointInCurPath(tempLoc.cord);
-				}
-			}
-		}
-	}
-	
+	}	
 	
 	/**
 	 * Set the pointNumIndex to the last element in the currently selected path.
@@ -2029,35 +1571,6 @@ MouseMotionListener{
 	}
 	
 	/**
-	 * Opens up a dialog box for the user to select how to save the data
-	 * the data that has been entered.  
-	 *
-	 */
-	public void selectWrite()
-	{
-		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
-				"Do you want to write Raw data in java object format?", 
-				"Write raw data", JOptionPane.YES_NO_OPTION,
-				JOptionPane.WARNING_MESSAGE);
-
-		if(confirmReturn == JOptionPane.YES_OPTION)
-		{
-			writeData(rawPathFile, rawLocFile, paths, locations);
-			setStatusBarText("Java data witten");
-		}
-		else
-		{
-			setStatusBarText("File writing canceled!");
-		}
-		
-		/**
-		 * If the create optimized data button is clicked,
-		 * Make a call to PathOptimize to have it run an optimized on
-		 * the raw in the current raw data files.  Outputs binary files also.
-		 */
-	}
-	
-	/**
 	 * Prompts with a JOptionPane confirmation dialog box
 	 * to confirm that the user wants to run path Optimize.
 	 * 
@@ -2103,29 +1616,6 @@ MouseMotionListener{
 		else
 		{
 			setStatusBarText("Reading canceled");
-		}
-	}
-	
-	/**
-	 * Pops up a dialog box that asks what type of datafile the user wants
-	 * to load.  Takes the input and calls the functions to load the proper
-	 * data files.  (Raw data or optimized data).  
-	 */
-	public void selectRead()
-	{
-		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
-				"Do you want to read Raw data in java object format?", 
-				"Read raw data", JOptionPane.YES_NO_OPTION,
-				JOptionPane.WARNING_MESSAGE);
-		if(confirmReturn == JOptionPane.YES_OPTION)
-		{
-			readData(rawPathFile, rawLocFile);
-			setStatusBarText("Raw data loaded.");
-		}
-		else
-		{
-			final String canceledMessage = "Reading of data canceled!";
-			setStatusBarText(canceledMessage);
 		}
 	}
 	

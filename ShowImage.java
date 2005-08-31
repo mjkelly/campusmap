@@ -42,7 +42,7 @@ public class ShowImage extends JFrame{
 	
 	//IO
 	private JMenuItem read, write, readPrimitive, writePrimitive, 
-		writeOptimize, createLocationFile, changeImage, loadDefinedLocations, 
+		writeOptimize, readOptimize, createLocationFile, changeImage, loadDefinedLocations, 
 		scaleData;
 	
 	// Locations
@@ -76,8 +76,8 @@ public class ShowImage extends JFrame{
 		if(confirmReturn == JOptionPane.YES_OPTION)
 		{
             s.ipanel.setStatusBarText("Loading data...");
-			s.ipanel.loadXMLLocations();
-			s.ipanel.loadXMLPaths();
+			s.ipanel.loadXMLLocations(ScrollablePicture.XMLLocFile);
+			s.ipanel.loadXMLPaths(ScrollablePicture.XMLPathFile);
 			s.ipanel.setStatusBarText("Raw data loaded.");
 			//XXX: warning needs to go here too!
 		}
@@ -186,6 +186,9 @@ public class ShowImage extends JFrame{
 			
 			if(e.getSource() == writeOptimize)
 				ipanel.writeOptimize();
+			
+			if(e.getSource() == readOptimize)
+				ipanel.readOptimize();
 		}
 	}
 	
@@ -285,6 +288,8 @@ public class ShowImage extends JFrame{
 		scaleData = file.add(makeJMenuItem("Data Scaling", listener, 0));
 		
 		writeOptimize = file.add(makeJMenuItem("Write Optimized", listener, 0));
+		
+		readOptimize = file.add(makeJMenuItem("Read Optimized", listener, 0));
 		
 		/** Menu associated with path options **/
 		JMenu path = new JMenu("Path Editing");
@@ -394,9 +399,6 @@ public class ShowImage extends JFrame{
 		spring.putConstraint(SpringLayout.NORTH, scroll, 0, 
 				SpringLayout.NORTH, pane);
 		
-		
-		
-		
 		// |  scroll
 		// +--------------------------
 		// |                   ^^^
@@ -414,7 +416,6 @@ public class ShowImage extends JFrame{
 				SpringLayout.EAST, scroll);
 		spring.putConstraint(SpringLayout.SOUTH, pane, 5, 
 				SpringLayout.SOUTH, statusBar);
-		
 	}
 	
 	/**
@@ -2085,6 +2086,26 @@ MouseMotionListener{
 		}
 	}
 	
+	public void readOptimize()
+	{
+		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
+				"Would you like to read in optimized data?", 
+				"Load Optimized data", JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+		if(confirmReturn == JOptionPane.YES_OPTION)
+		{
+			loadXMLLocations(ScrollablePicture.optLocFile);
+			loadXMLPaths(ScrollablePicture.optPathFile);
+			setStatusBarText("Data optimization completed, " +
+					"output written to: " + binaryPoints + ", " + 
+					binaryLocations + ", and " + binaryEdges);
+		}
+		else
+		{
+			setStatusBarText("Reading canceled");
+		}
+	}
+	
 	/**
 	 * Pops up a dialog box that asks what type of datafile the user wants
 	 * to load.  Takes the input and calls the functions to load the proper
@@ -2205,7 +2226,8 @@ MouseMotionListener{
 	}
 	
 	/**
-	 * 
+	 * This method prompts for confirmation to load the default raw
+	 * data files.  If user confirms, the files are loaded by delegated methods
 	 */
 	public void readXMLDialog(){
 		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
@@ -2215,8 +2237,8 @@ MouseMotionListener{
 		if(confirmReturn == JOptionPane.YES_OPTION)
 		{
             setStatusBarText("Loading data...");
-			loadXMLLocations();
-			loadXMLPaths();
+			loadXMLLocations(XMLLocFile);
+			loadXMLPaths(XMLPathFile);
             setStatusBarText("Raw data loaded.");
 		}
 		//XXX: Need to check for errors!
@@ -2225,7 +2247,7 @@ MouseMotionListener{
 	/**
 	 * This creates the dialog prompting for confirmation to write files.
 	 * If user confirms, then the current data is writeen out to XML files.
-	 * @prompt The prompt to display on writing.
+	 * @param prompt to display on writing.
 	 */
 	public void writeXMLDialog(String prompt){
 		String errors = null;
@@ -2254,9 +2276,10 @@ MouseMotionListener{
     
     /**
      * Load locations from an XML file. Woohoo.
+     * @param locationFile The name of the file to load locations from
      */
-    public void loadXMLLocations(){
-        Vector<Location> newLocs = XMLFileIO.loadLocations(XMLLocFile);
+    public void loadXMLLocations(String locationFile){
+        Vector<Location> newLocs = XMLFileIO.loadLocations(locationFile);
         locations = newLocs;
         goToPathNumber(paths.size() - 1);
         
@@ -2269,9 +2292,10 @@ MouseMotionListener{
     
     /**
      * Load paths from an XML file.
+     * @param pathFile the pathfile to load
      */
-    public void loadXMLPaths(){
-        Vector<Vector<Point>> newPaths = XMLFileIO.loadPaths(XMLPathFile);
+    public void loadXMLPaths(String pathFile){
+        Vector<Vector<Point>> newPaths = XMLFileIO.loadPaths(pathFile);
         paths = newPaths;
         // cha-cha-cha!
         goToPathNumber(paths.size() - 1);

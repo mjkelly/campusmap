@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<locations version="1.0" maxid="8620">
+<locations version="1.0" maxid="8435">
 	<location x="1142" y="4678" id="1" passThrough="false" intersect="true" displayName="true">
 		<name>Pacific Hall</name>
 	</location>
@@ -54,9 +54,6 @@
 	</location>
 	<location x="1551" y="5850" id="3810" passThrough="false" intersect="true" displayName="true">
 		<name>Wagner Dance Building</name>
-	</location>
-	<location x="1062" y="5162" id="3813" passThrough="false" intersect="true" displayName="true">
-		<name>Fleet Housing (Challenger)</name>
 	</location>
 	<location x="825" y="3803" id="28" passThrough="false" intersect="true" displayName="true">
 		<name>Tioga Hall</name>
@@ -508,9 +505,6 @@
 	<location x="1704" y="3758" id="501" passThrough="false" intersect="true" displayName="true">
 		<name>Faculty Club, Ida and Cecil Green</name>
 	</location>
-	<location x="824" y="1842" id="4172" passThrough="false" intersect="true" displayName="true">
-		<name>Africa</name>
-	</location>
 	<location x="3866" y="3897" id="1123" passThrough="false" intersect="true" displayName="true">
 		<name>Foodworx</name>
 		<keywords>food</keywords>
@@ -523,6 +517,9 @@
 	</location>
 	<location x="1097" y="2763" id="2378" passThrough="false" intersect="false" displayName="true">
 		<name>OVT Brige East</name>
+	</location>
+	<location x="1062" y="5162" id="3813" passThrough="false" intersect="true" displayName="true">
+		<name>Fleet Housing (Challenger)</name>
 	</location>
 	<location x="982" y="5182" id="3815" passThrough="false" intersect="true" displayName="true">
 		<name>Fleet Housing (Beagle)</name>
@@ -542,8 +539,11 @@
 	<location x="1390" y="4995" id="3827" passThrough="false" intersect="true" displayName="true">
 		<name>Revelle Plaza</name>
 	</location>
-	<location x="1159" y="2181" id="4184" passThrough="false" intersect="true" displayName="true">
-		<name>Kathmandu</name>
+	<location x="824" y="1842" id="4172" passThrough="false" intersect="true" displayName="true">
+		<name>Africa</name>
+	</location>
+	<location x="822" y="2037" id="4175" passThrough="false" intersect="true" displayName="true">
+		<name>Europe</name>
 	</location>
 	<location x="820" y="2130" id="4176" passThrough="false" intersect="true" displayName="true">
 		<name>Latin America</name>
@@ -566,11 +566,8 @@
 	<location x="1156" y="2001" id="4183" passThrough="false" intersect="true" displayName="true">
 		<name>Geneva</name>
 	</location>
-	<location x="822" y="2037" id="4175" passThrough="false" intersect="true" displayName="true">
-		<name>Europe</name>
-	</location>
-	<location x="826" y="1939" id="4191" passThrough="false" intersect="true" displayName="true">
-		<name>Asia</name>
+	<location x="1159" y="2181" id="4184" passThrough="false" intersect="true" displayName="true">
+		<name>Kathmandu</name>
 	</location>
 	<location x="1169" y="2270" id="4185" passThrough="false" intersect="true" displayName="true">
 		<name>Cuzco</name>
@@ -591,6 +588,9 @@
 	</location>
 	<location x="1289" y="1892" id="4190" passThrough="false" intersect="true" displayName="true">
 		<name>Mesa Verde</name>
+	</location>
+	<location x="826" y="1939" id="4191" passThrough="false" intersect="true" displayName="true">
+		<name>Asia</name>
 	</location>
 	<location x="3049" y="4032" id="4923" passThrough="false" intersect="true" displayName="true">
 		<name>Pepper Canyon Hall</name>

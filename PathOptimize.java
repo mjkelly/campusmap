@@ -67,20 +67,36 @@ public class PathOptimize
     /**
      * Driver for testing PathOptimize
      * 
-     * WARNING: this method will not work as currently set up!
-     * 
      * @param args passed in command line arguments (none expected)
      */
     public static void main(String[] args)
     {
-    	//final String rawPathFile = "data/rawPath.dat";
-    	//final String rawLocFile = "data/rawLocations.dat";
-    	final String optPathFile = "data/optimizedPath.dat";
-    	final String optLocFile = "data/optimizedLocations.dat";
-    	final String binaryPoints = "data/binPointData.dat";
-    	final String binaryLocations =  "data/binLocationData.dat";
-    	final String binaryEdges = "data/binEdgeData.dat";
-    	run(null, null, optPathFile, optLocFile,
+    	final String optPathFile = ScrollablePicture.optPathFile;
+    	final String optLocFile = ScrollablePicture.optLocFile;
+    	final String binaryPoints = ScrollablePicture.binaryPoints;
+    	final String binaryLocations =  ScrollablePicture.binaryLocations;
+    	final String binaryEdges = ScrollablePicture.binaryEdges;
+		String XMLPathFile = null;
+		String XMLLocFile = null;
+    	if(args.length == 2)
+    	{
+    		XMLPathFile = args[0];
+    		XMLPathFile = args[1];
+    		System.err.println("Using command line specified " +
+    				"XML Path file: " + XMLPathFile + 
+    				", XML Location File: " + XMLLocFile);
+    	}
+    	else
+    	{
+    		XMLPathFile = ScrollablePicture.XMLPathFile;
+    		XMLLocFile = ScrollablePicture.XMLLocFile;
+    		System.err.println("Using XML Path file: " + XMLPathFile + 
+    				", XML Location File: " + XMLLocFile + 
+    				"\nTo specify files via command line use:" +
+    				"PathOptimize pathFile locationFile");
+    	}
+    	run(XMLFileIO.loadPaths(XMLPathFile), 
+    			XMLFileIO.loadLocations(XMLLocFile), optPathFile, optLocFile,
     			binaryPoints, binaryLocations, binaryEdges
     	);
     }
@@ -90,8 +106,6 @@ public class PathOptimize
 	 * by ShowImage.  Follow through the comments to see the process that this
 	 * method goes through.
 	 * <br><br>
-	 * This method is called from ShowImage
-	 * <br>
 	 * @param inPaths The raw path data from ShowImage
 	 * @param inLocations The "raw" location data from ShowImage
 	 * @param outPathFile The filename to write "optimized" raw data to
@@ -387,8 +401,21 @@ public class PathOptimize
 	 * @param locFileName
 	 */
     public void writePoints(String pathFileName, String locFileName){
-		ScrollablePicture.writeData(pathFileName, locFileName, 
-				outPaths, outLocations);
+    	String errors = null;
+    	String returnStatus = 
+    		XMLFileIO.writeLocations(locFileName, outLocations);
+    	if(returnStatus != null)
+    		errors = returnStatus;
+    	returnStatus = XMLFileIO.writePaths(pathFileName, outPaths);
+    	if(returnStatus != null)
+    		errors += returnStatus;
+    	if(errors != null)
+    	{
+    		System.err.println("=========\nError writing optimized data to XML:" +
+    				"\n" + errors + "=========");
+    	}
+//		ScrollablePicture.writeData(pathFileName, locFileName, 
+//				outPaths, outLocations);
 	}
     
 	/**
@@ -637,9 +664,7 @@ public class PathOptimize
     	double testSlope;
     	
     	boolean intersect = false;  // For vertical test
-    	
     	int ovIndex;
-    	
     	// Loop through all PathPoints in Paths Vector
     	for(int activeIndex1 = 0; activeIndex1<pathPoints.size(); 
     	activeIndex1++)
@@ -1721,6 +1746,7 @@ class GraphPoint
      * @param out output stream
      * @param str the string to write
      * @return the length of the string written
+     * @throws IOException If an error occurs in writing out the string.
      */ 
     public int binWriteStr(DataOutputStream out, String str) throws IOException{
         out.writeInt(str.length());

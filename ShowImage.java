@@ -39,9 +39,11 @@ public class ShowImage extends JFrame{
 		deletePath, iteratePaths, goToPath;// path manipulation
 	private JMenuItem undoConnection, manualPlace, nextElement, 
 		prevElement, centerOnElement;//element manipulation
+	
+	//IO
 	private JMenuItem read, write, readPrimitive, writePrimitive, 
 		writeOptimize, createLocationFile, changeImage, loadDefinedLocations, 
-		scaleData;//IO
+		scaleData;
 	
 	// Locations
     private JMenuItem locationEditor, editLocation, createLocation, 
@@ -181,6 +183,9 @@ public class ShowImage extends JFrame{
 			
 			if(e.getSource() == loadDefinedLocations)
 				ipanel.readCustomLocationInformation();
+			
+			if(e.getSource() == writeOptimize)
+				ipanel.writeOptimize();
 		}
 	}
 	
@@ -249,19 +254,20 @@ public class ShowImage extends JFrame{
 		final int CREATE_LOCATION		= KeyEvent.VK_L;
 		final int SELECT_LOCATION		= KeyEvent.VK_G;
 		final int ITERATE_PATHS			= KeyEvent.VK_I;
-		
+
+
 		/** Setup the pretty menu bar!  **/
 		MenuListener listener = new MenuListener();
 		JMenuBar bar = new JMenuBar();
 		
 		/** Menu associated with file I/O options **/
 		JMenu file = new JMenu("File I/O");
-		
+
 		read = file.add(makeJMenuItem("Open files", listener, READ_KEY));
 		write = file.add(makeJMenuItem("Save files", listener, WRITE_KEY));
-		
+
         file.addSeparator();
-        
+
         readPrimitive = 
         	file.add(makeJMenuItem("Read Primitive data", listener, 0));
 
@@ -277,6 +283,8 @@ public class ShowImage extends JFrame{
 		changeImage = file.add(makeJMenuItem("Change Image", listener, 0));
 		
 		scaleData = file.add(makeJMenuItem("Data Scaling", listener, 0));
+		
+		writeOptimize = file.add(makeJMenuItem("Write Optimized", listener, 0));
 		
 		/** Menu associated with path options **/
 		JMenu path = new JMenu("Path Editing");
@@ -473,17 +481,17 @@ MouseMotionListener{
 	// Raw, unoptimized paths
 	final String rawPathFile = "data/rawPath.dat";
 	final String rawLocFile  = "data/rawLocations.dat";
-	final String XMLPathFile = "data/rawPath.xml";
-	final String XMLLocFile  = "data/rawLocations.xml";
+	final static String XMLPathFile = "data/rawPath.xml";
+	final static String XMLLocFile  = "data/rawLocations.xml";
 	
 	// Optimized paths put back into unoptimized format for debugging
-	final String optPathFile = "data/optimizedPath.dat";
-	final String optLocFile = "data/optimizedLocations.dat";
+	final static String optPathFile = "data/optimizedPath.xml";
+	final static String optLocFile = "data/optimizedLocations.xml";
 	
 	// Binary file output
-	final String binaryPoints = "data/binPointData.dat";
-	final String binaryLocations =  "data/binLocationData.dat";
-	final String binaryEdges = "data/binEdgeData.dat";
+	final static String binaryPoints = "data/binPointData.dat";
+	final static String binaryLocations =  "data/binLocationData.dat";
+	final static String binaryEdges = "data/binEdgeData.dat";
 	
 	// List of all locations mapped
 	final String LOCATIONS_TXT_FILE = "Locations.txt";
@@ -491,7 +499,15 @@ MouseMotionListener{
     // actions taken by selectLocation():
     // center on the selected location, or create a new point connected to the
     // selected location
-    enum SelectLocationJobID { CENTER, NEW };
+    enum SelectLocationJobID { 
+    	/**
+    	 * Job = center 
+    	 */
+    	CENTER, 
+    	/**
+    	 * Job = create new
+    	 */
+    	NEW };
 	
 	/**
 	 * @param i The image to display
@@ -829,78 +845,79 @@ MouseMotionListener{
 	}
 	
 	/**
-	 * This method handles the key events.
-	 * The method is called by the anonymous KeyAdapter subclassed defined
-	 * in the constructor
-	 * We have events designated for F1-F10 + F12.  
-	 * @param k Key event to determine what key was pressed.  
-	 */
-	private void handleKey(KeyEvent k){
-		
-		int c = k.getKeyCode();
-//		System.err.println("Key entered = " + KeyEvent.getKeyText(c));
-		
-		// F1: Erase current point (and location, if applicable)
-		if(c ==  KeyEvent.VK_F1)
-		{
-			// Call a method to handle undoing the connection
-			removeCurPoint();
+		 * This method handles the key events.
+		 * The method is called by the anonymous KeyAdapter subclassed defined
+		 * in the constructor
+		 * We have events designated for F1-F10 + F12.  
+		 * @param k Key event to determine what key was pressed.  
+		 */
+		private void handleKey(KeyEvent k){
+			
+			int c = k.getKeyCode();
+	//		System.err.println("Key entered = " + KeyEvent.getKeyText(c));
+			
+			// F1: Erase current point (and location, if applicable)
+			if(c ==  KeyEvent.VK_F1)
+			{
+				// Call a method to handle undoing the connection
+				removeCurPoint();
+			}
+			// F2: Go to previous path option
+			else if(c == KeyEvent.VK_F2 || c == KeyEvent.VK_MINUS)
+			{
+				// Call method to go to previous path
+				goToPreviousPath();
+			}
+			// F3: Go to the next path (if exists)
+			else if(c == KeyEvent.VK_F3 || c == KeyEvent.VK_EQUALS)
+			{
+				goToNextPath();
+			}
+			// F4: Move backwards along elements in a path
+			else if(c == KeyEvent.VK_F4){
+				goToPreviousElement();
+			}
+			// F5: Move forwards along elements in a path
+			else if(c == KeyEvent.VK_F5){
+				goToNextElement();
+			}
+			// F6: Center on currently selected point
+			else if(c == KeyEvent.VK_F6)
+			{
+				centerOnSelectedPoint();
+			}
+			// F7: Save data into files
+			else if(c ==  KeyEvent.VK_F7)
+			{
+				selectWrite();
+			}
+			// F8: load/read from files.
+			else if(c ==  KeyEvent.VK_F8)
+			{
+				selectRead();
+			}
+			// F9: Print locations to file
+			else if(c == KeyEvent.VK_F9){
+				printLocationsToFile();
+			}
+			// F10: Manually place dialog
+			else if(c == KeyEvent.VK_F10)
+			{
+				manualPlaceDialog();
+			}
+			// F11: Location editor!
+			else if(c == KeyEvent.VK_F11)
+			{
+				locationEditor();
+			}
+			// F12: Create new path
+			else if(c == KeyEvent.VK_F12)
+			{
+				createNewPath();
+			}
 		}
-		// F2: Go to previous path option
-		else if(c == KeyEvent.VK_F2 || c == KeyEvent.VK_MINUS)
-		{
-			// Call method to go to previous path
-			goToPreviousPath();
-		}
-		// F3: Go to the next path (if exists)
-		else if(c == KeyEvent.VK_F3 || c == KeyEvent.VK_EQUALS)
-		{
-			goToNextPath();
-		}
-		// F4: Move backwards along elements in a path
-		else if(c == KeyEvent.VK_F4){
-			goToPreviousElement();
-		}
-		// F5: Move forwards along elements in a path
-		else if(c == KeyEvent.VK_F5){
-			goToNextElement();
-		}
-		// F6: Center on currently selected point
-		else if(c == KeyEvent.VK_F6)
-		{
-			centerOnSelectedPoint();
-		}
-		// F7: Save data into files
-		else if(c ==  KeyEvent.VK_F7)
-		{
-			selectWrite();
-		}
-		// F8: load/read from files.
-		else if(c ==  KeyEvent.VK_F8)
-		{
-			selectRead();
-		}
-		// F9: Print locations to file
-		else if(c == KeyEvent.VK_F9){
-			printLocationsToFile();
-		}
-		// F10: Manually place dialog
-		else if(c == KeyEvent.VK_F10)
-		{
-			manualPlaceDialog();
-		}
-		// F11: Location editor!
-		else if(c == KeyEvent.VK_F11)
-		{
-			locationEditor();
-		}
-		// F12: Create new path
-		else if(c == KeyEvent.VK_F12)
-		{
-			createNewPath();
-		}
-	}
-	
+
+
 	/**
 	 * Go back to the previous path in the paths vector. 
 	 * <br>
@@ -2037,9 +2054,35 @@ MouseMotionListener{
 		 * Make a call to PathOptimize to have it run an optimized on
 		 * the raw in the current raw data files.  Outputs binary files also.
 		 */
-//				PathOptimize.run(paths, locations, 
-//						optPathFile, optLocFile,
-//						binaryPoints, binaryLocations, binaryEdges
+	}
+	
+	/**
+	 * Prompts with a JOptionPane confirmation dialog box
+	 * to confirm that the user wants to run path Optimize.
+	 * 
+	 * If the user confirms, then path optimize is ran and 
+	 * a dialog is displaying showing the filenames writen to.
+	 * Otherwise, a simple message is displayed.
+	 */
+	public void writeOptimize()
+	{
+		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
+				"Would you like to write out optimized data?", 
+				"Optimize", JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+		if(confirmReturn == JOptionPane.YES_OPTION)
+		{
+			PathOptimize.run(paths, locations, 
+				optPathFile, optLocFile,
+				binaryPoints, binaryLocations, binaryEdges);
+			setStatusBarText("Data optimization completed, " +
+					"output written to: " + binaryPoints + ", " + 
+					binaryLocations + ", and " + binaryEdges);
+		}
+		else
+		{
+			setStatusBarText("Optimization canceled");
+		}
 	}
 	
 	/**
@@ -2180,7 +2223,9 @@ MouseMotionListener{
 	}
 	
 	/**
-	 * 
+	 * This creates the dialog prompting for confirmation to write files.
+	 * If user confirms, then the current data is writeen out to XML files.
+	 * @prompt The prompt to display on writing.
 	 */
 	public void writeXMLDialog(String prompt){
 		String errors = null;
@@ -2206,7 +2251,6 @@ MouseMotionListener{
 		else
 			setStatusBarText("Writing canceled");
 	}
-	
     
     /**
      * Load locations from an XML file. Woohoo.
@@ -3277,6 +3321,7 @@ class ComponentEditor extends JPanel implements FieldEditor
 	 * that allow for the getting and setting of elements (and getting
 	 * their descriptions).  
 	 * @param passedElement The obedient object.
+	 * @param parent The parent window of the component
 	 */
 	public ComponentEditor(ComponentElement passedElement, Window parent)
 	{

@@ -349,6 +349,10 @@ class PathHandler extends DefaultHandler {
     Vector<Vector<Point>> points;
     Vector<Point> curPath;
     
+    /**
+     * Constructor for PathHandler, sets the points vector.
+     * @param points The collection of points to write.
+     */
     public PathHandler(Vector<Vector<Point>> points){
         this.points = points;
     }
@@ -407,8 +411,8 @@ class LocationHandler extends DefaultHandler {
     int maxLocID = 0;
     
     /**
-     * Constructor.
-     * @param locs a vector of locations to add to
+     * Constructor, stores the locations to write
+     * @param locations Set of locations to write out
      */
     public LocationHandler(Vector<Location> locations) {
         this.locations = locations;

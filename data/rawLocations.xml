@@ -1100,7 +1100,7 @@
 			<alias>795 Sixth College</alias>
 		</aliases>
 	</location>
-	<location x="3950" y="1021" id="214" passThrough="false" intersect="false" displayName="false">
+	<location x="3924" y="1062" id="214" passThrough="false" intersect="false" displayName="false">
 		<name>Information Center - North Point Entrance</name>
 	</location>
 	<location x="1450" y="7006" id="215" passThrough="false" intersect="false" displayName="false">
@@ -1965,7 +1965,7 @@
 			<alias>ERC, Bldg 3.1</alias>
 		</aliases>
 	</location>
-	<location x="3521" y="2064" id="376" passThrough="false" intersect="false" displayName="false">
+	<location x="3495" y="2092" id="376" passThrough="false" intersect="false" displayName="false">
 		<name>Oceania Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 3.3</alias>

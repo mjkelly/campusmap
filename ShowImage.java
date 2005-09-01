@@ -544,6 +544,27 @@ MouseMotionListener{
 				int x = e.getX();
 				int y = e.getY();
 				if(SwingUtilities.isLeftMouseButton(e)) {
+					/** CTRL + right click == select closest point **/
+					if(e.isControlDown() /*&& !e.isAltDown()*/)
+					{
+                        Point closestPoint = getClosestPoint(e.getPoint());
+                        if(closestPoint != null)
+                        {
+                        	if(e.isShiftDown())  // connect to point
+                        	{
+                        		createNewPointInCurPath(closestPoint);
+                        	}
+                        	else  // select point
+                        		iterateThroughPathsAtPoint(closestPoint);
+                        }
+				    }
+					else // plain left click (no modifiers)
+					{
+				        createNewPointInCurPath(new Point(x, y));
+					}
+
+				}
+				else if(SwingUtilities.isRightMouseButton(e)) {
                     // Left control-click ==> select closest location
                     // if only control is down
 				    if(e.isControlDown() && !e.isAltDown() && !e.isShiftDown()){
@@ -566,48 +587,13 @@ MouseMotionListener{
                             iterateThroughPathsAtPoint(closestLoc.cord);
                         }
 				    }
-                    // Left click ==> create new point in the current path
-				    // regular click; no modifiers
+                    // Right ==> change coordinates
+				    // regular right click; no modifiers
 				    else{
-				        createNewPointInCurPath(new Point(x, y));
-				    }
-				}
-				else if(SwingUtilities.isRightMouseButton(e)) {
-					/** CTRL + right click == select closest path **/
-					if(e.isControlDown() && !e.isAltDown() && !e.isShiftDown())
-					{
-                        double dist = -1.0;
-                        double minDist = -1.0;
-                        double dx, dy;   //gogo calc!  :)
-                        Point closestPoint = null;
-                        // select the location closest to the click
-                        for(Vector<Point> path: paths)
-                        	for(Point p : path)
-                        	{
-                        		dx = e.getX() - p.x;
-                        		if(dx > minDist)
-                        			continue;
-                        		dy = e.getY() - p.y;
-                        		if(dy > minDist)
-                        			continue;
-                        		dist = Math.sqrt(dx*dx + dy*dy);  //pathag
-                        		if(minDist == -1.0 || minDist > dist)
-                        		{
-                        			minDist = dist;
-                        			closestPoint = p;
-                        		}
-                        	}
-                        
-                        if(closestPoint != null)
-                        {
-                        	iterateThroughPathsAtPoint(closestPoint);
-                        }
-				    }
-					else // plain right click (no modifiers)
-					{
 						// Change current point's coordinates
 						changeCurSelectedPointCord(e.getPoint());					
-					}
+				    }
+
 				}
 				// If you use any other buttton on your mouse...
 				else{
@@ -617,6 +603,32 @@ MouseMotionListener{
 			}
 		});
 		
+	}
+	
+	public Point getClosestPoint(Point inputPoint)
+	{
+        double dist = -1.0;
+        double minDist = -1.0;
+        double dx, dy;   //gogo calc!  :)
+        Point closestPoint = null;
+        // select the location closest to the click
+        for(Vector<Point> path: paths)
+        	for(Point p : path)
+        	{
+        		dx = inputPoint.x - p.x;
+        		if(dx > minDist)
+        			continue;
+        		dy = inputPoint.y - p.y;
+        		if(dy > minDist)
+        			continue;
+        		dist = Math.sqrt(dx*dx + dy*dy);  //pathag
+        		if(minDist == -1.0 || minDist > dist)
+        		{
+        			minDist = dist;
+        			closestPoint = p;
+        		}
+        	}
+        return closestPoint;
 	}
 	
 	
@@ -1927,9 +1939,10 @@ MouseMotionListener{
 	 **/
 	public String statusBarText (){
 		int elementNumber = pointNumIndex + 1;
+		int pathNumber = pathNumIndex + 1;
 
-		return ( "Path Number: " + (pathNumIndex + 1) + " of " + paths.size()+
-				",  Element: " + (elementNumber) + " of " + curPath.size() +
+		return ( "Path Number: " + pathNumber  + " of " + paths.size()+
+				",  Element: " + elementNumber + " of " + curPath.size() +
 				printCurrentPoint() + getCurrentLocationDescription() );
 	}
 	

@@ -13,7 +13,6 @@
 TODO:
 	- reinstate bgLayer, or some method of aborting drags that go beyond
 	  the window.
-	- write Perl function to remove old path images
 
 BUGS:
 	- Opera: Opera counts obscured layers in page sizing. This makes the scroll
@@ -159,11 +158,12 @@ function dragInit(){
 	startListen();
 
 	// initialize the possible base maps
-	maps = new Array(
-		new Map('colormap', 0, 0, 7200, 6600),
-		new Map('map', 0, 0, 7200, 6600),
-		new Map('sat', 0, 0)
-	);
+	maps = new Array();
+	// the key is what we get from map.cgi, the string name is what we use
+	// in the filename
+	// (yes, they really should be the same)
+	// TODO: make them that way
+	maps['map'] = new Map('colormap', 0, 0, 7200, 6600);
 
 	// build the zoom buttons
 	var zoomHTML = "";
@@ -728,7 +728,7 @@ function Viewport(x, y, width, height, curZoom, curMap){
 
 	this.width = width;
 	this.height = height;
-	this.map = curMap;
+	this.map = maps[curMap];
 
 	// default* values are what we zoom to when the "center" button is clicked
 	this.defaultX = x;
@@ -751,13 +751,13 @@ function Viewport(x, y, width, height, curZoom, curMap){
 	* Return the maximum left offset of the viewport.
 	******************************************************************/
 	this.getMaxX = function() {
-		return Math.floor(maps[this.map].width*scales[this.curZoom]) - this.width;
+		return Math.floor(this.map.width*scales[this.curZoom]) - this.width;
 	}
 	/******************************************************************
 	* Return the maximum upper offset of the viewport.
 	******************************************************************/
 	this.getMaxY = function() {
-		return Math.floor(maps[this.map].height*scales[this.curZoom])- this.height;
+		return Math.floor(this.map.height*scales[this.curZoom])- this.height;
 	}
 
 	/******************************************************************
@@ -765,7 +765,7 @@ function Viewport(x, y, width, height, curZoom, curMap){
 	* current zoom level.
 	******************************************************************/
 	this.gridMaxX = function(){
-		return Math.ceil((maps[this.map].width*scales[this.curZoom])/squareWidth);
+		return Math.ceil((this.map.width*scales[this.curZoom])/squareWidth);
 	}
 
 	/******************************************************************
@@ -773,7 +773,7 @@ function Viewport(x, y, width, height, curZoom, curMap){
 	* current zoom level.
 	******************************************************************/
 	this.gridMaxY = function(){
-		return Math.ceil((maps[this.map].height*scales[this.curZoom])/squareHeight);
+		return Math.ceil((this.map.height*scales[this.curZoom])/squareHeight);
 	}
 
 	/******************************************************************
@@ -927,7 +927,7 @@ function Viewport(x, y, width, height, curZoom, curMap){
 		// close to the current view
 
 		// a small string that's not dependent on the loop variables
-		var middleStr = '/' + maps[view.map].name + '-' + view.curZoom + '[';
+		var middleStr = '/' + view.map.name + '-' + view.curZoom + '[';
 
 		for(numX = x0; numX < x1; numX++) {
 			for(numY = y0; numY < y1; numY++) {

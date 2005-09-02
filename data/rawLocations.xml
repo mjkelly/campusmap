@@ -1225,7 +1225,7 @@
 			<alias>Endurance Hall</alias>
 		</aliases>
 	</location>
-	<location x="4594" y="5249" id="239" passThrough="false" intersect="false" displayName="false">
+	<location x="4614" y="5227" id="239" passThrough="false" intersect="false" displayName="false">
 		<name>Information Center - Gilman Entrance</name>
 	</location>
 	<location x="4098" y="2204" id="240" passThrough="false" intersect="false" displayName="false">

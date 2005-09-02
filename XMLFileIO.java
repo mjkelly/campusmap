@@ -445,7 +445,8 @@ class LocationHandler extends DefaultHandler {
             code = null;
             keywords = null;
             aliases = null;
-            intersect = passThrough = false;
+            passThrough = false;
+	    intersect = true;
             displayName = true;
             id = 0;
 

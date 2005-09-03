@@ -54,6 +54,7 @@ public class XMLFileIO {
     	// Write out the locations
     	try{
     		writeXMLLocationData(locVector, out);
+		out.flush();
     		out.close();
     	}
     	catch(IOException e){
@@ -131,8 +132,8 @@ public class XMLFileIO {
     		// End the location tag
     		out.write("\t</location>\n");
     	}
-    	// Close the locations
-    	out.append("</locations>");
+    	// Close the locations tag
+    	out.write("</locations>\n");
 	}
 
     /**

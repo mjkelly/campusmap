@@ -640,6 +640,9 @@ public class PathOptimize
     				
     				// Remove the overlapping PathPoint
     				pathPoints.remove(overlap);
+                    
+                    // we just removed this item, so decrement the index
+                    overlapIndex--;
     			}
     		}
     	}

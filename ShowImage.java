@@ -34,15 +34,19 @@ public class ShowImage extends JFrame{
 	 * that we will operate on.  
 	 */
 	public ScrollablePicture ipanel;
-	
+    
+    // path manipulation
 	private JMenuItem prevPath, nextPath, newPath, 
-		deletePath, iteratePaths, goToPath;// path manipulation
+		deletePath, iteratePaths, goToPath;
+    
+    // element manipulation
 	private JMenuItem undoConnection, manualPlace, nextElement, 
-		prevElement, centerOnElement;//element manipulation
+		prevElement, centerOnElement;
 	
 	//IO
 	private JMenuItem read, write, writeOptimize, readOptimize, 
-		createLocationFile, changeImage, loadDefinedLocations, scaleData;
+		createLocationFile, changeImage, loadDefinedLocations, scaleData,
+        clearPathsAndLocations, quit;
 	
 	// Locations
     private JMenuItem locationEditor, editLocation, createLocation, 
@@ -113,75 +117,85 @@ public class ShowImage extends JFrame{
 		 */
 		public void actionPerformed(ActionEvent e)
 		{
-			if(e.getSource() == read)
-				ipanel.readXMLDialog();
+            Object src = e.getSource();
+            
+            //XXX: This is UGLY. There MUST be a better way to do this.
+			if(src == read)
+				ipanel.readXMLDialog("Are you sure you want to load the raw XML data files?");
 			
-			if(e.getSource() == write)
-				ipanel.writeXMLDialog("Are you sure you want to write out XML data files?");
+			if(src == write)
+				ipanel.writeXMLDialog("Are you sure you want to save the raw XML data files?");
 	
-			if(e.getSource() == scaleData)
+			if(src == scaleData)
 				ipanel.scaleData();
 			
-			if(e.getSource() == prevPath)
+			if(src == prevPath)
 				ipanel.goToPreviousPath();
 			
-			if(e.getSource() == nextPath)
+			if(src == nextPath)
 				ipanel.goToNextPath();
 			
-			if(e.getSource() == undoConnection)
+			if(src == undoConnection)
 				ipanel.removeCurPoint();
 			
-			if(e.getSource() == nextElement)
+			if(src == nextElement)
 				ipanel.goToNextElement();
 			
-			if(e.getSource() == prevElement)
+			if(src == prevElement)
 				ipanel.goToPreviousElement();
 			
-			if(e.getSource() == centerOnElement)
+			if(src == centerOnElement)
 				ipanel.centerOnSelectedPoint();
 			
-			if(e.getSource() == createLocationFile)
+			if(src == createLocationFile)
 				ipanel.printLocationsToFile();
 			
-			if(e.getSource() == manualPlace)
+			if(src == manualPlace)
 				ipanel.manualPlaceDialog();
 			
-			if(e.getSource() == locationEditor)
+			if(src == locationEditor)
 				ipanel.locationEditor();
 			
-			if(e.getSource() == newPath)
+			if(src == newPath)
 				ipanel.createNewPath();
 			
-			if(e.getSource() == deletePath)
+			if(src == deletePath)
 				ipanel.deleteCurPath();
 			
-			if(e.getSource() == goToPath)
+			if(src == goToPath)
 				ipanel.goToPath();
 			
-			if(e.getSource() == changeImage)
+			if(src == changeImage)
 				changeImage(); //Do change image stuff here
 			
-			if(e.getSource() == editLocation)
+			if(src == editLocation)
 				ipanel.editLocation();
 			
-			if(e.getSource() == createLocation)
+			if(src == createLocation)
 				ipanel.createLocation();
 
-			if(e.getSource() == selectLocation)
+			if(src == selectLocation)
 				ipanel.selectLocation(
                         ScrollablePicture.SelectLocationJobID.CENTER);
 
-			if(e.getSource() == iteratePaths)
+			if(src == iteratePaths)
 				ipanel.iterateThroughPathsAtPoint(ipanel.getCurrentPoint());
 			
-			if(e.getSource() == loadDefinedLocations)
+			if(src == loadDefinedLocations)
 				ipanel.readCustomLocationInformation();
 			
-			if(e.getSource() == writeOptimize)
+			if(src == writeOptimize)
 				ipanel.writeOptimize();
 			
-			if(e.getSource() == readOptimize)
+			if(src == readOptimize)
 				ipanel.readOptimize();
+            
+            if(src == clearPathsAndLocations)
+                ipanel.clearPathsAndLocations();
+            
+            if(src == quit)
+                quit();
+            
 		}
 	}
 	
@@ -230,11 +244,12 @@ public class ShowImage extends JFrame{
 		
 		// USED:
 		// A B C D E F G H I J K L M N O P Q R S T U V W X Y Z + -
-		//   Y Y Y Y Y Y   Y   Y Y Y Y Y Y     Y Y             Y Y
+		//   Y Y Y Y Y Y   Y   Y Y Y Y Y Y Y   Y Y             Y Y
 		// IO
 		final int READ_KEY 				= KeyEvent.VK_O; 
 		final int WRITE_KEY 			= KeyEvent.VK_S;
 		final int LOCATION_FILE_KEY 	= KeyEvent.VK_P;
+        final int QUIT_KEY              = KeyEvent.VK_Q;
 		// Path
 		final int NEW_PATH_KEY 			= KeyEvent.VK_N;
 		final int DELETE_PATH_KEY		= KeyEvent.VK_D;
@@ -257,71 +272,72 @@ public class ShowImage extends JFrame{
 		JMenuBar bar = new JMenuBar();
 		
 		/** Menu associated with file I/O options **/
-		JMenu file = new JMenu("File I/O");
+		JMenu file = new JMenu("File");
 
-		read = file.add(makeJMenuItem("Open files", listener, READ_KEY));
-		write = file.add(makeJMenuItem("Save files", listener, WRITE_KEY));
-
+		read = file.add(makeJMenuItem("Open files...", listener, READ_KEY));
+		write = file.add(makeJMenuItem("Save files...", listener, WRITE_KEY));
         file.addSeparator();
-
-		writeOptimize = file.add(makeJMenuItem("Write Optimized", listener, 0));
-		readOptimize = file.add(makeJMenuItem("Read Optimized", listener, 0));
-        
+		writeOptimize = file.add(makeJMenuItem("Optimize Data...", listener, 0));
+		readOptimize = file.add(makeJMenuItem("View Optimized Data...", listener, 0));
         file.addSeparator();
-        
         loadDefinedLocations = 
-            file.add(makeJMenuItem("Load defined locations", listener, 0));
+            file.add(makeJMenuItem("Import Locations", listener, 0));
 		createLocationFile = file.add(makeJMenuItem(
 				"Print Location List", listener, LOCATION_FILE_KEY));
-		changeImage = file.add(makeJMenuItem("Change Image", listener, 0));
+		changeImage = file.add(makeJMenuItem("Change Image...", listener, 0));
 		
-		scaleData = file.add(makeJMenuItem("Data Scaling", listener, 0));
-		
-		
+		scaleData = file.add(makeJMenuItem("Scale Data...", listener, 0));
+        file.addSeparator();
+        clearPathsAndLocations = file.add(
+                makeJMenuItem("Clear Paths And Locations...", listener, 0));
+        file.addSeparator();
+        quit = file.add(makeJMenuItem("Quit", listener, QUIT_KEY));
+        
 		/** Menu associated with path options **/
-		JMenu path = new JMenu("Path Editing");
+		JMenu path = new JMenu("Paths");
 		// Path Manipulation path
-		newPath = path.add(makeJMenuItem("Create New Path", 
+		newPath = path.add(makeJMenuItem("New Path", 
 				listener, NEW_PATH_KEY));
 		path.addSeparator();
 		prevPath = path.add(makeJMenuItem("Previous Path (-)", 
 				listener, 0));
 		nextPath = path.add(makeJMenuItem("Next Path (+)", 
 				listener, 0));
-		goToPath = path.add(makeJMenuItem("Go to path number", listener, 0));
-		iteratePaths = path.add(makeJMenuItem("Iterate through paths on Current Point", 
-				listener, ITERATE_PATHS));
+		goToPath = path.add(makeJMenuItem("Go To Path...", listener, 0));
+		iteratePaths = path.add(
+                makeJMenuItem("Iterate Through Paths On Current Point",
+                        listener, ITERATE_PATHS));
 		path.addSeparator();
-		deletePath = path.add(makeJMenuItem("Delete Path", 
-				listener, DELETE_PATH_KEY));
+		deletePath = path.add(makeJMenuItem("Delete Current Path...", 
+				listener, DELETE_PATH_KEY));;
 		
 		
 		/** Menu associated with element options **/
-		JMenu element = new JMenu("Element Editing");
+		JMenu element = new JMenu("Points");
 		
-		prevElement = element.add(makeJMenuItem("Previous Element in path", 
+		prevElement = element.add(makeJMenuItem("Previous Point", 
 				listener, PREV_ELEMENT_KEY));
-		nextElement = element.add(makeJMenuItem("Next Element in path", 
+		nextElement = element.add(makeJMenuItem("Previous Point", 
 				listener, NEXT_ELEMENT_KEY));
 		centerOnElement = element.add(
-				makeJMenuItem("Center on selected element", 
+				makeJMenuItem("Center On Selected Point", 
 						listener, CENTER_KEY));
 		element.addSeparator();
-		undoConnection = element.add(makeJMenuItem("Undo last created connection", 
+		undoConnection = element.add(makeJMenuItem("Delete Current Point", 
 				listener, UNDO_CONNECTION_KEY));
-		manualPlace = element.add(makeJMenuItem("Manually Place Element", 
+		manualPlace = element.add(makeJMenuItem("Manually Place Point...", 
 				listener, MANUAL_PLACE_KEY));
 		
 		/** Menu associated with locations **/
 		JMenu location = new JMenu("Locations");
-		locationEditor = location.add(makeJMenuItem("Locations Editor", 
+		locationEditor = location.add(makeJMenuItem("Locations Editor...", 
 				listener, LOC_EDITOR_KEY));
-		editLocation = location.add(makeJMenuItem("Edit Current Location", 
+		editLocation = location.add(makeJMenuItem("Edit Current Location...", 
 				listener, EDIT_LOCATION));
 		selectLocation = location.add(makeJMenuItem(
-				"Go to location", listener, SELECT_LOCATION));
+				"Go to location...", listener, SELECT_LOCATION));
 		createLocation = location.add(makeJMenuItem(
-				"Create New Location (At current point)", 
+				"New Location At Current Point...", 
 				listener, CREATE_LOCATION));
 		
 		/** Add the menus **/
@@ -343,10 +359,7 @@ public class ShowImage extends JFrame{
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent e){
-				// show a dialog asking the user to confirm
-				ipanel.writeXMLDialog("Save changes to raw data?");
-				setVisible(false);
-				dispose();
+                quit();
 			}
 		});
 		
@@ -417,6 +430,35 @@ public class ShowImage extends JFrame{
 		System.err.println("Couldn't find file: " + path);
 		return (null);
 	}
+    
+    /**
+     * Quit the program (maybe). Ask the user to confirm, save, etc.
+     */
+    private void quit(){
+        //      show a dialog asking the user to confirm
+        int choice = JOptionPane.showConfirmDialog(this,
+                "Save changes to path and location data?", "Save Changes",
+                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        
+        switch(choice){
+        // if yes, save the data
+        case JOptionPane.YES_OPTION:
+            ipanel.writeAllXML();
+            // fall through...
+            
+        // if no, just quit the program
+        case JOptionPane.NO_OPTION:
+            setVisible(false);
+            dispose();
+            System.exit(0);
+            break;
+            
+        // if anything else happens, we don't quit
+        default:
+            break;
+        }
+        
+    }
 }
 
 
@@ -895,7 +937,7 @@ MouseMotionListener{
 			// F8: load/read from files.
 			else if(c ==  KeyEvent.VK_F8)
 			{
-				readXMLDialog();
+				readXMLDialog("Are you sure you want to load the raw XML data files?");
 			}
 			// F9: Print locations to file
 			else if(c == KeyEvent.VK_F9){
@@ -1382,6 +1424,36 @@ MouseMotionListener{
 		else
 			setStatusBarText("Deletion canceled");
 	}
+    
+    /**
+     * Remove all paths and locations. Pretty much the opposite of loading
+     * from disk. Protected, of cource, by a big scary dialog box.
+     */
+    public void clearPathsAndLocations()
+    {
+        int choice = JOptionPane.showConfirmDialog(parent,
+                "Are you sure you want to delete all paths and locations?",
+                "Confirm Deletion", JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        
+        if(choice == JOptionPane.YES_OPTION){
+            setStatusBarText("All paths and locations deleted");
+            
+            // empty everything
+            locations.clear();
+            paths.clear();
+            
+            // add back the default path
+            paths.add(new Vector<Point>());
+            
+            // set indices, etc, correctly
+            pathNumIndex = 0;
+            curPath = paths.get(pathNumIndex);
+            setPointNumIndexToEnd();
+        }
+        else
+            setStatusBarText("Deletion canceled");
+    }
 	
 	/**
 	 * This method launches a dialog box hereby known as the locationEditor
@@ -1731,20 +1803,27 @@ MouseMotionListener{
 	 * This method prompts for confirmation to load the default raw
 	 * data files.  If user confirms, the files are loaded by delegated methods
 	 */
-	public void readXMLDialog(){
+	public void readXMLDialog(String prompt){
 		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
-				"Are you sure you want to load raw data from the XML files?", 
-				"Read raw data XML files", JOptionPane.YES_NO_OPTION,
+				prompt, "Load Data", JOptionPane.YES_NO_OPTION,
 				JOptionPane.WARNING_MESSAGE);
 		if(confirmReturn == JOptionPane.YES_OPTION)
 		{
-            setStatusBarText("Loading data...");
-			loadXMLLocations(XMLLocFile);
-			loadXMLPaths(XMLPathFile);
-            setStatusBarText("Raw data loaded.");
+            readAllXML();
 		}
 		//XXX: Need to check for errors!
 	}
+    
+    /**
+     * Read raw path and location data from the XML file.
+     */
+    public void readAllXML()
+    {
+        setStatusBarText("Loading data...");
+        loadXMLLocations(XMLLocFile);
+        loadXMLPaths(XMLPathFile);
+        setStatusBarText("Raw data loaded.");
+    }
 	
 	/**
 	 * This creates the dialog prompting for confirmation to write files.
@@ -1752,29 +1831,37 @@ MouseMotionListener{
 	 * @param prompt to display on writing.
 	 */
 	public void writeXMLDialog(String prompt){
-		String errors = null;
 		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
-				prompt, 
-				"Write raw data to XML files", JOptionPane.YES_NO_OPTION,
+				prompt, "Save Data", JOptionPane.YES_NO_OPTION,
 				JOptionPane.WARNING_MESSAGE);
 		if(confirmReturn == JOptionPane.YES_OPTION)
 		{
-            setStatusBarText("Writing...");
-	    	String returnStatus = XMLFileIO.writeLocations(XMLLocFile, locations);
-	    	if(returnStatus != null)
-	    		errors = returnStatus;
-	    	returnStatus = XMLFileIO.writePaths(XMLPathFile, paths);
-	    	if(returnStatus != null)
-	    		errors += returnStatus;
-	    	if(errors == null)
-	    		setStatusBarText("Raw data written to XML files: " 
-	    				+ XMLLocFile + " and " + XMLPathFile + ".");
-	    	else
-	    		setStatusBarText(errors);
+		    writeAllXML();
 		}
 		else
 			setStatusBarText("Writing canceled");
 	}
+    
+    /**
+     * Write raw path and location data to disk, and print any errors to the
+     * status bar.
+     */
+    public void writeAllXML()
+    {
+        String errors = null;
+        setStatusBarText("Writing...");
+        String returnStatus = XMLFileIO.writeLocations(XMLLocFile, locations);
+        if(returnStatus != null)
+            errors = returnStatus;
+        returnStatus = XMLFileIO.writePaths(XMLPathFile, paths);
+        if(returnStatus != null)
+            errors += returnStatus;
+        if(errors == null)
+            setStatusBarText("Raw data written to XML files: " 
+                    + XMLLocFile + " and " + XMLPathFile + ".");
+        else
+            setStatusBarText(errors);
+    }
     
     /**
      * Load locations from an XML file. Woohoo.

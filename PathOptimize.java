@@ -641,6 +641,18 @@ public class PathOptimize
     			}
     		}
     	}
+        
+        // this part doesn't actually _do_ anything: rather, it's an integrity
+        // check to make sure all the duplicate points were removed.
+        // (I'm paranoid.)
+        for(PathPoint a: pathPoints){
+            for(PathPoint o: pathPoints){
+                if(a == o)
+                    continue;
+                if(a.point.equals(o.point))
+                    System.err.println("ERROR: Overlapping PathPoints!");
+            }
+        }
     }
     
     /**

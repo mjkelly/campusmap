@@ -595,14 +595,9 @@ public class PathOptimize
     		active = getPathPoint(activeIndex);
     		
     		// Loop through all path points again to look for intersections
-    		for(int overlapIndex = 0; overlapIndex < pathPoints.size();
-    			overlapIndex++)
+    		for(int overlapIndex = activeIndex + 1; 
+    			overlapIndex < pathPoints.size(); overlapIndex++)
     		{
-    			// Skip the active PathPoint (because's it's identical to
-    			// itself.
-    			if(activeIndex == overlapIndex)
-    				continue;
-    			
     			// If the active PathPoint intersects with a PathPoint, 
     			// then that PathPoint is an overlap PathPoint
     			if(getPointAtPathPointsIndex(activeIndex).equals(

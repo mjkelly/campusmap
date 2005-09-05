@@ -647,6 +647,13 @@ MouseMotionListener{
 		
 	}
 	
+	/**
+	 * Returns the closest point to the passed point that is contained
+	 * by one of the paths.
+	 * @param inputPoint Point to calculate distances to each point
+	 * in the paths vector
+	 * @return The closest point to the passed inputPoint
+	 */
 	public Point getClosestPoint(Point inputPoint)
 	{
         double dist = -1.0;
@@ -714,9 +721,16 @@ MouseMotionListener{
 	public Point getCurrentPoint()
 	{
 		if(pointNumIndex < 0)
+		{
+			System.err.println("pointNumIndex < 0 in getCurrentPoint!");
 			return null;
+		}
 		if(pointNumIndex > curPath.size() - 1)
+		{
+			System.err.println(
+					"PointNumIndex > curPath.size() -1 in getCurrentPoint!");
 			return null;
+		}
 		return(curPath.get(pointNumIndex));
 	}
 	
@@ -735,34 +749,28 @@ MouseMotionListener{
 	 */
 	public void changeCurSelectedPointCord(Point pointToMoveTo)
 	{
-		// Get the old point -- The point before the move...
-		Point oldPoint = new Point(getCurrentPoint());
 		
+		int locIndex = -1;
 		// check if there's an existing point
 		// findLocationAtPoint returns an index if found, -1 if not found.
-		int locIndex = findLocationAtPoint(getCurrentPoint()); 
+		locIndex = findLocationAtPoint(getCurrentPoint()); 
 		
 		//When we find a location at the point.  
 		if(locIndex >= 0){
+			// Get the old point -- The point before the move...
+			Point oldPoint = new Point(getCurrentPoint());
 			// move the location
 			Location toMove = locations.get(locIndex);
 			toMove.cord = pointToMoveTo;
 			// Move all points connected to the location
-			// For all paths
-			for(Vector<Point> path: paths)
-			{
-				// For each path, loop through all points
-				for(Point ptInPath: path)
-				{
+			for(Vector<Point> path: paths)  // For each path in set of paths
+				for(Point ptInPath: path)   // For each point in path
 					// If a point is equal to the old point
 					if(ptInPath.equals(oldPoint))
 					{
-						// Set the point equal to the old point to new
-						// new coordinates
+						// Move point in path to new point
 						ptInPath.setLocation(pointToMoveTo);
 					}
-				}
-			}
 		}
 		else  // no location...just move the point
 		{
@@ -2108,13 +2116,18 @@ MouseMotionListener{
 	 * @return the index of the matching location, or -1 if none is found.
 	 */
 	public int findLocationAtPoint(Point pointToCompare){
+		if(pointToCompare == null)
+		{
+			System.err.println("Point passed to compare to is null!");
+			return -1;
+		}
 		for(int locIndex = 0; locIndex < locations.size(); locIndex++){
 			if ((getLocation(locIndex).cord).equals(pointToCompare))
 			{
 				return(locIndex);
 			}
 		}
-		return(-1);
+		return -1;
 	}
 	
 	/**

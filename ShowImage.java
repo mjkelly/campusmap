@@ -121,10 +121,10 @@ public class ShowImage extends JFrame{
             
             //XXX: This is UGLY. There MUST be a better way to do this.
 			if(src == read)
-				ipanel.readXMLDialog("Are you sure you want to load the raw XML data files?");
+				ipanel.readXMLDialog();
 			
 			if(src == write)
-				ipanel.writeXMLDialog("Are you sure you want to save the raw XML data files?");
+				ipanel.writeXMLDialog();
 	
 			if(src == scaleData)
 				ipanel.scaleData();
@@ -931,13 +931,12 @@ MouseMotionListener{
 			// F7: Save data into files
 			else if(c ==  KeyEvent.VK_F7)
 			{
-				writeXMLDialog(
-						"Are you sure you want to write out XML data files?");
+				writeXMLDialog();
 			}
 			// F8: load/read from files.
 			else if(c ==  KeyEvent.VK_F8)
 			{
-				readXMLDialog("Are you sure you want to load the raw XML data files?");
+				readXMLDialog();
 			}
 			// F9: Print locations to file
 			else if(c == KeyEvent.VK_F9){
@@ -1816,7 +1815,8 @@ MouseMotionListener{
 	 * This method prompts for confirmation to load the default raw
 	 * data files.  If user confirms, the files are loaded by delegated methods
 	 */
-	public void readXMLDialog(String prompt){
+	public void readXMLDialog(){
+        final String prompt = "Are you sure you want to load the XML data?";
 		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
 				prompt, "Load Data", JOptionPane.YES_NO_OPTION,
 				JOptionPane.WARNING_MESSAGE);
@@ -1841,9 +1841,9 @@ MouseMotionListener{
 	/**
 	 * This creates the dialog prompting for confirmation to write files.
 	 * If user confirms, then the current data is writeen out to XML files.
-	 * @param prompt to display on writing.
 	 */
-	public void writeXMLDialog(String prompt){
+	public void writeXMLDialog(){
+        final String prompt = "Are you sure you want to save the XML data?";
 		int confirmReturn = JOptionPane.showConfirmDialog(parent, 
 				prompt, "Save Data", JOptionPane.YES_NO_OPTION,
 				JOptionPane.WARNING_MESSAGE);

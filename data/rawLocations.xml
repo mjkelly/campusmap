@@ -359,7 +359,7 @@
 			<alias>9393 Discovery Way</alias>
 		</aliases>
 	</location>
-	<location x="3836" y="3661" id="68" passThrough="false" intersect="true" displayName="true">
+	<location x="3836" y="3736" id="68" passThrough="false" intersect="true" displayName="true">
 		<name>Applied Physics and Mathematics</name>
 		<aliases>
 			<alias>AP&amp;M</alias>
@@ -580,7 +580,7 @@
 	<location x="5352" y="4859" id="111" passThrough="false" intersect="true" displayName="true">
 		<name>Cedar</name>
 	</location>
-	<location x="4778" y="4096" id="112" passThrough="false" intersect="true" displayName="true">
+	<location x="4724" y="4032" id="112" passThrough="false" intersect="true" displayName="true">
 		<name>Center Hall</name>
 	</location>
 	<location x="8390" y="5330" id="113" passThrough="false" intersect="true" displayName="true">
@@ -766,7 +766,7 @@
 			<alias>SIO Library</alias>
 		</aliases>
 	</location>
-	<location x="3992" y="2798" id="151" passThrough="false" intersect="true" displayName="true">
+	<location x="3977" y="2878" id="151" passThrough="false" intersect="true" displayName="true">
 		<name>Economics Building</name>
 	</location>
 	<location x="5772" y="3925" id="152" passThrough="false" intersect="true" displayName="true">
@@ -815,9 +815,11 @@
 		</aliases>
 	</location>
 	<location x="3851" y="5140" id="161" passThrough="false" intersect="true" displayName="true">
-		<name>Galbraith Hall</name>
+		<name>Center for Library and Instructional Computing Services</name>
 		<aliases>
 			<alias>Library - Galbraith</alias>
+			<alias>CLICS</alias>
+			<alias>Galbraith Hall</alias>
 		</aliases>
 	</location>
 	<location x="4669" y="3136" id="162" passThrough="false" intersect="true" displayName="true">
@@ -835,7 +837,7 @@
 	<location x="3805" y="4242" id="165" passThrough="false" intersect="true" displayName="true">
 		<name>Main Gymnasium</name>
 	</location>
-	<location x="3712" y="3868" id="166" passThrough="false" intersect="true" displayName="true">
+	<location x="3688" y="3883" id="166" passThrough="false" intersect="true" displayName="true">
 		<name>Humanities and Social Sciences</name>
 		<aliases>
 			<alias>H &amp; SS</alias>
@@ -903,34 +905,34 @@
 			<alias>IMG Expansion</alias>
 		</aliases>
 	</location>
-	<location x="3886" y="1967" id="178" passThrough="false" intersect="true" displayName="true">
+	<location x="3863" y="2025" id="178" passThrough="false" intersect="true" displayName="true">
 		<name>Institute of the Americas Building</name>
 	</location>
-	<location x="3805" y="2044" id="179" passThrough="false" intersect="true" displayName="true">
+	<location x="3786" y="2069" id="179" passThrough="false" intersect="true" displayName="true">
 		<name>Copley International Conference Center</name>
 		<aliases>
 			<alias>Institute of the Americas, Copley International Conference Center</alias>
 		</aliases>
 	</location>
-	<location x="3806" y="1891" id="180" passThrough="false" intersect="true" displayName="true">
+	<location x="3784" y="1923" id="180" passThrough="false" intersect="true" displayName="true">
 		<name>Gildred Latin American Studies Building</name>
 		<aliases>
 			<alias>Institute of the Americas, Latin American Studies Building</alias>
 		</aliases>
 	</location>
-	<location x="3858" y="2174" id="181" passThrough="false" intersect="true" displayName="true">
+	<location x="3829" y="2191" id="181" passThrough="false" intersect="true" displayName="true">
 		<name>Robinson Building 1 - Administration</name>
 		<aliases>
 			<alias>Int&apos;l Relations and Pacific Studies - Administration</alias>
 		</aliases>
 	</location>
-	<location x="3909" y="2250" id="182" passThrough="false" intersect="true" displayName="true">
+	<location x="3883" y="2282" id="182" passThrough="false" intersect="true" displayName="true">
 		<name>Robinson Building 2 - Auditorium</name>
 		<aliases>
 			<alias>Int&apos;l Relations and Pacific Studies - Auditorium</alias>
 		</aliases>
 	</location>
-	<location x="3865" y="2322" id="183" passThrough="false" intersect="true" displayName="true">
+	<location x="3834" y="2355" id="183" passThrough="false" intersect="true" displayName="true">
 		<name>Robinson Building 3 - Library</name>
 		<aliases>
 			<alias>Int&apos;l Relations and Pacific Studies - Library</alias>
@@ -990,7 +992,7 @@
 			<alias>University Art Gallery</alias>
 		</aliases>
 	</location>
-	<location x="4384" y="2845" id="194" passThrough="false" intersect="true" displayName="true">
+	<location x="4367" y="2867" id="194" passThrough="false" intersect="true" displayName="true">
 		<name>Marshall College Dean&apos;s Residence</name>
 	</location>
 	<location x="3782" y="2567" id="195" passThrough="false" intersect="true" displayName="true">
@@ -1000,21 +1002,13 @@
 			<alias>Marshall Lowers</alias>
 		</aliases>
 	</location>
-	<location x="3872" y="3058" id="196" passThrough="false" intersect="true" displayName="true">
+	<location x="3846" y="3080" id="196" passThrough="false" intersect="true" displayName="true">
 		<name>Marshall College Administration Building</name>
 		<aliases>
 			<alias>Marshall College Provost Office</alias>
 		</aliases>
 	</location>
-	<location x="3410" y="2534" id="197" passThrough="false" intersect="true" displayName="true">
-		<name>Marshall Residential Halls and Oceanview</name>
-		<aliases>
-			<alias>Marshall College Residential Halls/Oceanview Terrace</alias>
-			<alias>Residence Halls, Marshall College</alias>
-			<alias>Thurgood Marshall Residence Halls</alias>
-		</aliases>
-	</location>
-	<location x="4321" y="2734" id="198" passThrough="false" intersect="true" displayName="true">
+	<location x="4305" y="2760" id="198" passThrough="false" intersect="true" displayName="true">
 		<name>Marshall College Residence Hall Center</name>
 	</location>
 	<location x="4193" y="2750" id="199" passThrough="false" intersect="true" displayName="true">
@@ -1024,22 +1018,19 @@
 			<alias>Upper Marshall Apartments</alias>
 		</aliases>
 	</location>
-	<location x="6235" y="3838" id="200" passThrough="false" intersect="true" displayName="true">
-		<name>Matthews Apartments - 8 Bldgs</name>
-		<aliases>
-			<alias>Revelle Apartments, all units</alias>
-		</aliases>
+	<location x="6235" y="3806" id="200" passThrough="false" intersect="true" displayName="true">
+		<name>Matthews Apartments Building B</name>
 	</location>
 	<location x="4051" y="4751" id="201" passThrough="false" intersect="true" displayName="true">
 		<name>Mayer Hall</name>
 	</location>
-	<location x="3624" y="3681" id="202" passThrough="false" intersect="true" displayName="true">
+	<location x="3589" y="3736" id="202" passThrough="false" intersect="true" displayName="true">
 		<name>McGill Hall</name>
 		<aliases>
 			<alias>Mandler Hall (part of McGill Hall)</alias>
 		</aliases>
 	</location>
-	<location x="4053" y="3037" id="203" passThrough="false" intersect="true" displayName="true">
+	<location x="4018" y="3048" id="203" passThrough="false" intersect="true" displayName="true">
 		<name>Media Center</name>
 		<aliases>
 			<alias>Communication Building</alias>
@@ -1057,16 +1048,16 @@
 			<alias>Sixth College 794</alias>
 		</aliases>
 	</location>
-	<location x="4267" y="3018" id="206" passThrough="false" intersect="true" displayName="true">
+	<location x="4247" y="3038" id="206" passThrough="false" intersect="true" displayName="true">
 		<name>101 Marshall College</name>
 	</location>
-	<location x="3382" y="3876" id="207" passThrough="false" intersect="true" displayName="true">
+	<location x="3337" y="3914" id="207" passThrough="false" intersect="true" displayName="true">
 		<name>Muir College Apartments</name>
 		<aliases>
 			<alias>Tuolumne Apartments</alias>
 		</aliases>
 	</location>
-	<location x="3509" y="3751" id="208" passThrough="false" intersect="true" displayName="true">
+	<location x="3516" y="3791" id="208" passThrough="false" intersect="true" displayName="true">
 		<name>Stewart Commons</name>
 		<aliases>
 			<alias>El Mercado Restaurant</alias>
@@ -1074,7 +1065,7 @@
 			<alias>Muir College Commons</alias>
 		</aliases>
 	</location>
-	<location x="4206" y="3045" id="209" passThrough="false" intersect="true" displayName="true">
+	<location x="4190" y="3073" id="209" passThrough="false" intersect="true" displayName="true">
 		<name>Eucalyptus Point</name>
 		<aliases>
 			<alias>Munch Box</alias>
@@ -1144,7 +1135,7 @@
 	<location x="3583" y="4561" id="221" passThrough="false" intersect="true" displayName="true">
 		<name>Pacific Hall</name>
 	</location>
-	<location x="6350" y="3974" id="222" passThrough="false" intersect="true" displayName="true">
+	<location x="6313" y="4071" id="222" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth College Apartments (all units)</name>
 		<aliases>
 			<alias>Pepper Canyon Apartments (all units)</alias>
@@ -1157,7 +1148,7 @@
 			<alias>Perlman Ambulatory Care Center</alias>
 		</aliases>
 	</location>
-	<location x="4047" y="3456" id="224" passThrough="false" intersect="true" displayName="true">
+	<location x="4055" y="3474" id="224" passThrough="false" intersect="true" displayName="true">
 		<name>Peterson Hall</name>
 	</location>
 	<location x="742" y="7244" id="225" passThrough="false" intersect="true" displayName="true">
@@ -1192,7 +1183,7 @@
 			<alias>UCSD Bookstore</alias>
 		</aliases>
 	</location>
-	<location x="4198" y="1975" id="233" passThrough="false" intersect="true" displayName="true">
+	<location x="4071" y="2005" id="233" passThrough="false" intersect="true" displayName="true">
 		<name>Recreational and Intramural Athletic Complex</name>
 		<aliases>
 			<alias>RIMAC</alias>
@@ -1228,14 +1219,14 @@
 	<location x="4614" y="5227" id="239" passThrough="false" intersect="true" displayName="true">
 		<name>Information Center - Gilman Entrance</name>
 	</location>
-	<location x="4098" y="2204" id="240" passThrough="false" intersect="true" displayName="true">
+	<location x="4143" y="2219" id="240" passThrough="false" intersect="true" displayName="true">
 		<name>San Diego Supercomputer Center</name>
 		<aliases>
 			<alias>Supercomputer Center, San Dieg</alias>
 			<alias>SDSC</alias>
 		</aliases>
 	</location>
-	<location x="4057" y="2138" id="241" passThrough="false" intersect="true" displayName="true">
+	<location x="4046" y="2167" id="241" passThrough="false" intersect="true" displayName="true">
 		<name>San Diego Supercomputer Office Addition</name>
 		<aliases>
 			<alias>SDSC Addition</alias>
@@ -1256,7 +1247,7 @@
 	<location x="5520" y="4859" id="245" passThrough="false" intersect="true" displayName="true">
 		<name>School of Medicine Building 4</name>
 	</location>
-	<location x="4049" y="2375" id="246" passThrough="false" intersect="true" displayName="true">
+	<location x="3988" y="2405" id="246" passThrough="false" intersect="true" displayName="true">
 		<name>Social Sciences Building</name>
 		<aliases>
 			<alias>SSB</alias>
@@ -1269,19 +1260,19 @@
 			<alias>Discovery Way, 8655</alias>
 		</aliases>
 	</location>
-	<location x="3873" y="2879" id="248" passThrough="false" intersect="true" displayName="true">
+	<location x="3889" y="2861" id="248" passThrough="false" intersect="true" displayName="true">
 		<name>Sequoyah Hall</name>
 	</location>
 	<location x="8007" y="3635" id="249" passThrough="false" intersect="true" displayName="true">
 		<name>Shiley Eye Center</name>
 	</location>
-	<location x="4191" y="3187" id="250" passThrough="false" intersect="true" displayName="true">
+	<location x="4168" y="3209" id="250" passThrough="false" intersect="true" displayName="true">
 		<name>Solis Hall</name>
 	</location>
 	<location x="8230" y="5685" id="251" passThrough="false" intersect="true" displayName="true">
 		<name>Mesa Housing South (all units)</name>
 	</location>
-	<location x="4025" y="711" id="252" passThrough="false" intersect="true" displayName="true">
+	<location x="3978" y="733" id="252" passThrough="false" intersect="true" displayName="true">
 		<name>Spanos Athletic Training Facility</name>
 	</location>
 	<location x="5470" y="4597" id="253" passThrough="false" intersect="true" displayName="true">
@@ -1418,7 +1409,7 @@
 			<alias>TPCS</alias>
 		</aliases>
 	</location>
-	<location x="3407" y="3607" id="278" passThrough="false" intersect="true" displayName="true">
+	<location x="3380" y="3621" id="278" passThrough="false" intersect="true" displayName="true">
 		<name>Tenaya Hall</name>
 		<aliases>
 			<alias>Muir College Residence Hall Tenaya</alias>
@@ -1437,13 +1428,13 @@
 			<alias>Medical Center - Thornton</alias>
 		</aliases>
 	</location>
-	<location x="3323" y="3710" id="281" passThrough="false" intersect="true" displayName="true">
+	<location x="3295" y="3724" id="281" passThrough="false" intersect="true" displayName="true">
 		<name>Tioga Hall</name>
 		<aliases>
 			<alias>Muir College Residence Hall Tioga</alias>
 		</aliases>
 	</location>
-	<location x="3327" y="3005" id="282" passThrough="false" intersect="true" displayName="true">
+	<location x="3301" y="3034" id="282" passThrough="false" intersect="true" displayName="true">
 		<name>Extended Studies and Public Programs - Building A</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building A</alias>
@@ -1451,7 +1442,7 @@
 			<alias>ESPP - Building A</alias>
 		</aliases>
 	</location>
-	<location x="3296" y="2894" id="283" passThrough="false" intersect="true" displayName="true">
+	<location x="3258" y="2913" id="283" passThrough="false" intersect="true" displayName="true">
 		<name>Extended Studies and Public Programs - Building B</name>
 		<aliases>
 			<alias>University Extension - Building B</alias>
@@ -1459,7 +1450,7 @@
 			<alias>ESPP - Building B</alias>
 		</aliases>
 	</location>
-	<location x="3390" y="2966" id="284" passThrough="false" intersect="true" displayName="true">
+	<location x="3363" y="2984" id="284" passThrough="false" intersect="true" displayName="true">
 		<name>Extended Studies and Public Programs - Building C</name>
 		<aliases>
 			<alias>ESPP - Building C</alias>
@@ -1467,7 +1458,7 @@
 			<alias>UCSD Extension Complex - Building C</alias>
 		</aliases>
 	</location>
-	<location x="3345" y="2833" id="285" passThrough="false" intersect="true" displayName="true">
+	<location x="3314" y="2850" id="285" passThrough="false" intersect="true" displayName="true">
 		<name>Extended Studies and Public Programs - Building D</name>
 		<aliases>
 			<alias>ESPP - Building D</alias>
@@ -1475,7 +1466,7 @@
 			<alias>University Extension - Building D</alias>
 		</aliases>
 	</location>
-	<location x="3383" y="2892" id="286" passThrough="false" intersect="true" displayName="true">
+	<location x="3353" y="2906" id="286" passThrough="false" intersect="true" displayName="true">
 		<name>Extended Studies and Public Programs - Building E</name>
 		<aliases>
 			<alias>University Extension - Building E</alias>
@@ -1483,55 +1474,55 @@
 			<alias>UCSD Extension Complex - Building E</alias>
 		</aliases>
 	</location>
-	<location x="3336" y="2926" id="287" passThrough="false" intersect="true" displayName="true">
+	<location x="3309" y="2946" id="287" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building F</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building F</alias>
 		</aliases>
 	</location>
-	<location x="3293" y="2803" id="288" passThrough="false" intersect="true" displayName="true">
+	<location x="3264" y="2824" id="288" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building G Replacement</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building G Replacement</alias>
 		</aliases>
 	</location>
-	<location x="3341" y="2699" id="289" passThrough="false" intersect="true" displayName="true">
+	<location x="3312" y="2721" id="289" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building H</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building H</alias>
 		</aliases>
 	</location>
-	<location x="3332" y="2750" id="290" passThrough="false" intersect="true" displayName="true">
+	<location x="3302" y="2772" id="290" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building J</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building J</alias>
 		</aliases>
 	</location>
-	<location x="3393" y="2746" id="291" passThrough="false" intersect="true" displayName="true">
+	<location x="3370" y="2765" id="291" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building K</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building K</alias>
 		</aliases>
 	</location>
-	<location x="3396" y="2691" id="292" passThrough="false" intersect="true" displayName="true">
+	<location x="3368" y="2714" id="292" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building M</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building M</alias>
 		</aliases>
 	</location>
-	<location x="3293" y="2725" id="293" passThrough="false" intersect="true" displayName="true">
+	<location x="3263" y="2751" id="293" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building N</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building N</alias>
 		</aliases>
 	</location>
-	<location x="3508" y="2829" id="294" passThrough="false" intersect="true" displayName="true">
+	<location x="3496" y="2853" id="294" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building O - East</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building O - East</alias>
 		</aliases>
 	</location>
-	<location x="3471" y="2845" id="295" passThrough="false" intersect="true" displayName="true">
+	<location x="3443" y="2880" id="295" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building O - West</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building O - West</alias>
@@ -1581,7 +1572,7 @@
 			<alias>Earl Warren Apartments</alias>
 		</aliases>
 	</location>
-	<location x="4087" y="4980" id="307" passThrough="false" intersect="true" displayName="true">
+	<location x="4038" y="4979" id="307" passThrough="false" intersect="true" displayName="true">
 		<name>York Hall</name>
 	</location>
 	<location x="1532" y="6377" id="308" passThrough="false" intersect="true" displayName="true">
@@ -1642,13 +1633,13 @@
 	<location x="8199" y="2692" id="319" passThrough="false" intersect="true" displayName="true">
 		<name>Preuss School - Building F</name>
 	</location>
-	<location x="4268" y="3076" id="320" passThrough="false" intersect="true" displayName="true">
+	<location x="4253" y="3094" id="320" passThrough="false" intersect="true" displayName="true">
 		<name>102 Marshall College</name>
 	</location>
-	<location x="4245" y="3106" id="321" passThrough="false" intersect="true" displayName="true">
+	<location x="4226" y="3128" id="321" passThrough="false" intersect="true" displayName="true">
 		<name>103 Marshall College</name>
 	</location>
-	<location x="4259" y="3120" id="322" passThrough="false" intersect="true" displayName="true">
+	<location x="4240" y="3140" id="322" passThrough="false" intersect="true" displayName="true">
 		<name>103A Marshall College</name>
 	</location>
 	<location x="5555" y="4147" id="323" passThrough="false" intersect="true" displayName="true">
@@ -1749,16 +1740,16 @@
 			<alias>Animal Care Program Module</alias>
 		</aliases>
 	</location>
-	<location x="3281" y="3047" id="339" passThrough="false" intersect="true" displayName="true">
+	<location x="3259" y="3076" id="339" passThrough="false" intersect="true" displayName="true">
 		<name>UCSD Extension Complex - Building X</name>
 	</location>
-	<location x="3349" y="3105" id="340" passThrough="false" intersect="true" displayName="true">
+	<location x="3350" y="3104" id="340" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building Y</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building Y</alias>
 		</aliases>
 	</location>
-	<location x="3325" y="3075" id="341" passThrough="false" intersect="true" displayName="true">
+	<location x="3307" y="3100" id="341" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building Z</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building Z</alias>
@@ -1823,77 +1814,77 @@
 			<alias>School of Medicine Module 872</alias>
 		</aliases>
 	</location>
-	<location x="3782" y="1751" id="352" passThrough="false" intersect="true" displayName="true">
+	<location x="3772" y="1770" id="352" passThrough="false" intersect="true" displayName="true">
 		<name>Mesa Verde Hall North</name>
 		<aliases>
 			<alias>ERC, Bldg 1.1 North</alias>
 		</aliases>
 	</location>
-	<location x="3782" y="1802" id="353" passThrough="false" intersect="true" displayName="true">
+	<location x="3765" y="1841" id="353" passThrough="false" intersect="true" displayName="true">
 		<name>Mesa Verde Hall South</name>
 		<aliases>
 			<alias>ERC, Bldg 1.1 South</alias>
 		</aliases>
 	</location>
-	<location x="3670" y="1883" id="354" passThrough="false" intersect="true" displayName="true">
+	<location x="3658" y="1913" id="354" passThrough="false" intersect="true" displayName="true">
 		<name>Geneva Hall East</name>
 		<aliases>
 			<alias>ERC, Bldg 2.1 East</alias>
 		</aliases>
 	</location>
-	<location x="3620" y="1883" id="355" passThrough="false" intersect="true" displayName="true">
+	<location x="3584" y="1914" id="355" passThrough="false" intersect="true" displayName="true">
 		<name>Geneva Hall West</name>
 		<aliases>
 			<alias>ERC, Bldg 2.1 West</alias>
 		</aliases>
 	</location>
-	<location x="3694" y="1967" id="356" passThrough="false" intersect="true" displayName="true">
+	<location x="3672" y="1994" id="356" passThrough="false" intersect="true" displayName="true">
 		<name>ERC Laundry East</name>
 		<aliases>
 			<alias>Bldg 2.5</alias>
 			<alias>East Laundry, Roosevelt College</alias>
 		</aliases>
 	</location>
-	<location x="3671" y="2054" id="357" passThrough="false" intersect="true" displayName="true">
+	<location x="3661" y="2084" id="357" passThrough="false" intersect="true" displayName="true">
 		<name>Kathmandu House East</name>
 		<aliases>
 			<alias>ERC, Bldg 2.2 East</alias>
 		</aliases>
 	</location>
-	<location x="3619" y="2054" id="358" passThrough="false" intersect="true" displayName="true">
+	<location x="3580" y="2085" id="358" passThrough="false" intersect="true" displayName="true">
 		<name>Kathmandu House West</name>
 		<aliases>
 			<alias>ERC, Bldg 2.2 West</alias>
 		</aliases>
 	</location>
-	<location x="3680" y="2150" id="359" passThrough="false" intersect="true" displayName="true">
+	<location x="3671" y="2180" id="359" passThrough="false" intersect="true" displayName="true">
 		<name>Cuzco House East</name>
 		<aliases>
 			<alias>ERC, Bldg 2.3 East</alias>
 		</aliases>
 	</location>
-	<location x="3625" y="2150" id="360" passThrough="false" intersect="true" displayName="true">
+	<location x="3587" y="2180" id="360" passThrough="false" intersect="true" displayName="true">
 		<name>Cuzco House West</name>
 		<aliases>
 			<alias>ERC, Bldg 2.3 West</alias>
 		</aliases>
 	</location>
-	<location x="3689" y="2248" id="361" passThrough="false" intersect="true" displayName="true">
+	<location x="3682" y="2276" id="361" passThrough="false" intersect="true" displayName="true">
 		<name>Asante House East</name>
 		<aliases>
 			<alias>ERC, Bldg 2.4 East</alias>
 		</aliases>
 	</location>
-	<location x="3631" y="2238" id="362" passThrough="false" intersect="true" displayName="true">
+	<location x="3591" y="2269" id="362" passThrough="false" intersect="true" displayName="true">
 		<name>Asante House West</name>
 		<aliases>
 			<alias>ERC, Bldg 2.4 West</alias>
 		</aliases>
 	</location>
-	<location x="3627" y="2309" id="363" passThrough="false" intersect="true" displayName="true">
+	<location x="3598" y="2330" id="363" passThrough="false" intersect="true" displayName="true">
 		<name>Asante House Meeting Rooms</name>
 	</location>
-	<location x="3657" y="2337" id="364" passThrough="false" intersect="true" displayName="true">
+	<location x="3664" y="2358" id="364" passThrough="false" intersect="true" displayName="true">
 		<name>Great Hall</name>
 		<aliases>
 			<alias>International House Office</alias>
@@ -1901,56 +1892,56 @@
 			<alias>ERC, Great Hall</alias>
 		</aliases>
 	</location>
-	<location x="3625" y="1708" id="365" passThrough="false" intersect="true" displayName="true">
+	<location x="3587" y="1736" id="365" passThrough="false" intersect="true" displayName="true">
 		<name>ERC Administration North</name>
 	</location>
-	<location x="3660" y="1735" id="366" passThrough="false" intersect="true" displayName="true">
+	<location x="3635" y="1765" id="366" passThrough="false" intersect="true" displayName="true">
 		<name>ERC Administration South</name>
 	</location>
-	<location x="3451" y="1734" id="367" passThrough="false" intersect="true" displayName="true">
+	<location x="3404" y="1748" id="367" passThrough="false" intersect="true" displayName="true">
 		<name>Cafe Ventanas</name>
 		<aliases>
 			<alias>ERC, Bldg 6.1</alias>
 			<alias>ERC Dining</alias>
 		</aliases>
 	</location>
-	<location x="3315" y="1725" id="368" passThrough="false" intersect="true" displayName="true">
+	<location x="3287" y="1758" id="368" passThrough="false" intersect="true" displayName="true">
 		<name>Africa Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 4.1</alias>
 		</aliases>
 	</location>
-	<location x="3314" y="1822" id="369" passThrough="false" intersect="true" displayName="true">
+	<location x="3286" y="1850" id="369" passThrough="false" intersect="true" displayName="true">
 		<name>Asia Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 4.2</alias>
 		</aliases>
 	</location>
-	<location x="3312" y="1918" id="370" passThrough="false" intersect="true" displayName="true">
+	<location x="3284" y="1948" id="370" passThrough="false" intersect="true" displayName="true">
 		<name>Europe Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 4.3</alias>
 		</aliases>
 	</location>
-	<location x="3311" y="2015" id="371" passThrough="false" intersect="true" displayName="true">
+	<location x="3285" y="2045" id="371" passThrough="false" intersect="true" displayName="true">
 		<name>Latin America Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 4.4</alias>
 		</aliases>
 	</location>
-	<location x="3310" y="2112" id="372" passThrough="false" intersect="true" displayName="true">
+	<location x="3282" y="2143" id="372" passThrough="false" intersect="true" displayName="true">
 		<name>North America Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 4.5</alias>
 		</aliases>
 	</location>
-	<location x="3402" y="2150" id="373" passThrough="false" intersect="true" displayName="true">
+	<location x="3371" y="2184" id="373" passThrough="false" intersect="true" displayName="true">
 		<name>ERC Laundry South</name>
 		<aliases>
 			<alias>Bldg 4.6</alias>
 		</aliases>
 	</location>
-	<location x="3468" y="1967" id="374" passThrough="false" intersect="true" displayName="true">
+	<location x="3431" y="1996" id="374" passThrough="false" intersect="true" displayName="true">
 		<name>Earth Hall</name>
 		<aliases>
 			<alias>ERC Rresidence Life Office</alias>
@@ -1959,7 +1950,7 @@
 			<alias>Middle Earth</alias>
 		</aliases>
 	</location>
-	<location x="3521" y="1871" id="375" passThrough="false" intersect="true" displayName="true">
+	<location x="3496" y="1897" id="375" passThrough="false" intersect="true" displayName="true">
 		<name>Middle East Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 3.1</alias>
@@ -1989,5 +1980,47 @@
 	</location>
 	<location x="6584" y="5682" id="380" passThrough="false" intersect="true" displayName="true">
 		<name>Interstate 5</name>
+	</location>
+	<location x="4336" y="4793" id="381" passThrough="true" intersect="false" displayName="false">
+		<name>Gilman Drive Bridge East</name>
+	</location>
+	<location x="4311" y="4805" id="382" passThrough="true" intersect="false" displayName="false">
+		<name>Gilman Drive Bridge West</name>
+	</location>
+	<location x="6091" y="3769" id="383" passThrough="false" intersect="true" displayName="true">
+		<name>Matthews Apartments Building A</name>
+	</location>
+	<location x="6422" y="3883" id="384" passThrough="false" intersect="true" displayName="true">
+		<name>Matthews Apartments Building C</name>
+	</location>
+	<location x="6217" y="3945" id="385" passThrough="false" intersect="true" displayName="true">
+		<name>Matthews Apartments Building D</name>
+	</location>
+	<location x="6154" y="3914" id="386" passThrough="false" intersect="true" displayName="true">
+		<name>Matthews Apartments Building E</name>
+	</location>
+	<location x="6318" y="3818" id="387" passThrough="false" intersect="true" displayName="true">
+		<name>Foodworx</name>
+	</location>
+	<location x="3580" y="3658" id="388" passThrough="false" intersect="true" displayName="true">
+		<name>Mandler Hall</name>
+	</location>
+	<location x="3385" y="2479" id="392" passThrough="false" intersect="true" displayName="true">
+		<name>Thurgood Marshall Residence Halls</name>
+		<aliases>
+			<alias>Residence Halls, Marshall College</alias>
+		</aliases>
+	</location>
+	<location x="3489" y="2612" id="393" passThrough="false" intersect="true" displayName="true">
+		<name>Oceanview Terrace</name>
+		<aliases>
+			<alias>OVT</alias>
+		</aliases>
+	</location>
+	<location x="3570" y="2681" id="394" passThrough="true" intersect="false" displayName="false">
+		<name>OVT Bridge East</name>
+	</location>
+	<location x="3483" y="2634" id="395" passThrough="true" intersect="false" displayName="false">
+		<name>OVT Bridge West</name>
 	</location>
 </locations>

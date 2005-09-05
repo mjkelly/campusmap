@@ -1017,7 +1017,7 @@ MouseMotionListener{
 	{
 		String selected = null;
 		selected = JOptionPane.showInputDialog(parent, 
-				"Choose a path # between 0 and " + (paths.size() - 1), 
+				"Choose a path # between 1 and " + paths.size(), 
 				"Choose a path", JOptionPane.QUESTION_MESSAGE);
 		int pathNum = pathNumIndex;
 		try
@@ -1026,14 +1026,23 @@ MouseMotionListener{
 		}
 		catch(NumberFormatException e)
 		{
-			setStatusBarText("Please enter a integer value");
+			setStatusBarText("Invalid input: Please enter a integer value.");
+            return;
 		}
-		goToPathNumber(pathNum);
+        
+        // we do our own error checking here, because goToPathNumber
+        // is lower-level and uses array indices (and prints error messages
+        // accordingly)
+        if(pathNum < 1 || pathNum > paths.size())
+            setStatusBarText("Path number out of range!"
+                    + " Enter number between 1 and " + paths.size() + ".");
+        else
+            goToPathNumber(pathNum-1);
 	}
 	
 	/**
-	 * Go to the passed in path number
-	 * @param pathNum path number to go to.
+	 * Go to the given path number.
+	 * @param pathNum path number to go to, between 0 and paths.size() - 1.
 	 */
 	public void goToPathNumber(int pathNum)
 	{
@@ -1049,8 +1058,9 @@ MouseMotionListener{
 			repaint();
 		}
 		else
-			setStatusBarText( "PathNumber out of range!  " +
-					"Please enter a path between: 0 and " + (paths.size() -1));
+			System.err.println("goToPathNumber(): pathNum " + pathNum
+                    + " out of range! Pass a number between 0 and "
+                    + (paths.size()-1));
 	}
 	
 	
@@ -1099,7 +1109,7 @@ MouseMotionListener{
 	 */
 	public void printLocationsToFile()
 	{
-		final String LOCATION_FILE_HEADER = "Locations:";
+		final String LOCATION_FILE_HEADER = "Locations:\n";
 		final String WRITE_SUCCESS = "Locations written to text file: " + 
 			LOCATIONS_TXT_FILE + ".";
 		PrintStream outStream;
@@ -1116,6 +1126,9 @@ MouseMotionListener{
 			for(Location loc: sortedLocs)
 			{
 				outStream.println( loc.toString() );
+				for(String alias: loc.getAliases()){
+				    outStream.println("\t" + alias);
+				}
 			}
 			//close the file stream
 			outStream.close();

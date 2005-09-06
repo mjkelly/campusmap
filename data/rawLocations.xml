@@ -365,7 +365,7 @@
 			<alias>AP&amp;M</alias>
 		</aliases>
 	</location>
-	<location x="5695" y="3903" id="69" passThrough="false" intersect="true" displayName="true">
+	<location x="5694" y="3913" id="69" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg. 791</name>
 		<aliases>
 			<alias>Sixth College 791</alias>
@@ -380,7 +380,7 @@
 	<location x="5353" y="4756" id="71" passThrough="false" intersect="true" displayName="true">
 		<name>Ash</name>
 	</location>
-	<location x="5617" y="3877" id="72" passThrough="false" intersect="true" displayName="true">
+	<location x="5617" y="3887" id="72" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 790</name>
 		<aliases>
 			<alias>Sixth College 790</alias>
@@ -747,14 +747,14 @@
 	<location x="5668" y="3524" id="147" passThrough="false" intersect="true" displayName="true">
 		<name>520 University Center</name>
 	</location>
-	<location x="5670" y="4165" id="148" passThrough="false" intersect="true" displayName="true">
+	<location x="5668" y="4175" id="148" passThrough="false" intersect="true" displayName="true">
 		<name>789 Sixth College</name>
 		<aliases>
 			<alias>701A Roosevelt College</alias>
 			<alias>ERC 701A</alias>
 		</aliases>
 	</location>
-	<location x="5733" y="4169" id="149" passThrough="false" intersect="true" displayName="true">
+	<location x="5733" y="4179" id="149" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 797</name>
 		<aliases>
 			<alias>Sixth College 797</alias>
@@ -769,7 +769,7 @@
 	<location x="3977" y="2878" id="151" passThrough="false" intersect="true" displayName="true">
 		<name>Economics Building</name>
 	</location>
-	<location x="5772" y="3925" id="152" passThrough="false" intersect="true" displayName="true">
+	<location x="5770" y="3936" id="152" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 792</name>
 		<aliases>
 			<alias>Sixth College 792</alias>
@@ -822,7 +822,7 @@
 			<alias>Galbraith Hall</alias>
 		</aliases>
 	</location>
-	<location x="4669" y="3136" id="162" passThrough="false" intersect="true" displayName="true">
+	<location x="4657" y="3159" id="162" passThrough="false" intersect="true" displayName="true">
 		<name>Geisel Library</name>
 	</location>
 	<location x="5548" y="4759" id="163" passThrough="false" intersect="true" displayName="true">
@@ -954,7 +954,7 @@
 			<alias>NORPAX</alias>
 		</aliases>
 	</location>
-	<location x="5830" y="3991" id="187" passThrough="false" intersect="true" displayName="true">
+	<location x="5830" y="4001" id="187" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 793</name>
 		<aliases>
 			<alias>Sixth College 793</alias>
@@ -983,7 +983,7 @@
 			<alias>MTF</alias>
 		</aliases>
 	</location>
-	<location x="3736" y="5912" id="192" passThrough="false" intersect="true" displayName="true">
+	<location x="3741" y="5924" id="192" passThrough="false" intersect="true" displayName="true">
 		<name>Mandell Weiss Theatre</name>
 	</location>
 	<location x="4102" y="4067" id="193" passThrough="false" intersect="true" displayName="true">
@@ -1042,7 +1042,7 @@
 			<alias>Revelle Residence Hall Meteor</alias>
 		</aliases>
 	</location>
-	<location x="5848" y="4070" id="205" passThrough="false" intersect="true" displayName="true">
+	<location x="5849" y="4084" id="205" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 794</name>
 		<aliases>
 			<alias>Sixth College 794</alias>
@@ -1085,7 +1085,7 @@
 	<location x="1392" y="6550" id="212" passThrough="false" intersect="true" displayName="true">
 		<name>Nierenberg Hall</name>
 	</location>
-	<location x="5906" y="4139" id="213" passThrough="false" intersect="true" displayName="true">
+	<location x="5907" y="4146" id="213" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 795</name>
 		<aliases>
 			<alias>795 Sixth College</alias>
@@ -1110,7 +1110,7 @@
 			<alias>Satellite-Oceanography Facility</alias>
 		</aliases>
 	</location>
-	<location x="5816" y="4193" id="218" passThrough="false" intersect="true" displayName="true">
+	<location x="5815" y="4202" id="218" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 796</name>
 		<aliases>
 			<alias>Sixth College 796</alias>
@@ -1588,7 +1588,7 @@
 			<alias>OAR-2, Keck</alias>
 		</aliases>
 	</location>
-	<location x="5960" y="4128" id="311" passThrough="false" intersect="true" displayName="true">
+	<location x="5961" y="4135" id="311" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth College Dean Residence</name>
 		<aliases>
 			<alias>Dean&apos;s Residence, Sixth College</alias>
@@ -1603,7 +1603,7 @@
 			<alias>NTV</alias>
 		</aliases>
 	</location>
-	<location x="5644" y="4058" id="313" passThrough="false" intersect="true" displayName="true">
+	<location x="5642" y="4067" id="313" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth College 701</name>
 		<aliases>
 			<alias>788 Roosevelt College</alias>
@@ -1637,7 +1637,7 @@
 	<location x="4240" y="3140" id="322" passThrough="false" intersect="true" displayName="true">
 		<name>103A Marshall College</name>
 	</location>
-	<location x="5555" y="4147" id="323" passThrough="false" intersect="true" displayName="true">
+	<location x="5555" y="4149" id="323" passThrough="false" intersect="true" displayName="true">
 		<name>Gilman Parking Structure</name>
 	</location>
 	<location x="6552" y="2753" id="324" passThrough="false" intersect="true" displayName="true">
@@ -1666,7 +1666,7 @@
 			<alias>Student Lounge, SoM</alias>
 		</aliases>
 	</location>
-	<location x="3636" y="3227" id="328" passThrough="false" intersect="true" displayName="true">
+	<location x="3628" y="3269" id="328" passThrough="false" intersect="true" displayName="true">
 		<name>NMR Spectroscopy</name>
 		<aliases>
 			<alias>Bubbles</alias>
@@ -2027,5 +2027,20 @@
 	</location>
 	<location x="5381" y="2745" id="398" passThrough="false" intersect="true" displayName="true">
 		<name>Cal-(IT)2</name>
+	</location>
+	<location x="4850" y="3195" id="401" passThrough="true" intersect="false" displayName="false">
+		<name>Snake Path 1</name>
+	</location>
+	<location x="4863" y="3199" id="402" passThrough="true" intersect="false" displayName="false">
+		<name>Snake Path 2</name>
+	</location>
+	<location x="3962" y="5872" id="403" passThrough="false" intersect="true" displayName="true">
+		<name>Potiker Theatre</name>
+	</location>
+	<location x="3687" y="3805" id="405" passThrough="false" intersect="true" displayName="true">
+		<name>Ledden Hall</name>
+		<aliases>
+			<alias>HSS 2250</alias>
+		</aliases>
 	</location>
 </locations>

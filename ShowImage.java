@@ -22,7 +22,7 @@ import java.util.*;
  *
  */
 public class ShowImage extends JFrame{
-	
+	final static long serialVersionUID = 47;  //huh?
 	private ImageIcon img;
 	/**
 	 * For writing status text descriptions on current point and 
@@ -470,6 +470,8 @@ public class ShowImage extends JFrame{
  */
 class ScrollablePicture extends JLabel implements Scrollable, 
 MouseMotionListener{
+	final static long serialVersionUID = 37;  //huh?
+	
 	//XXX: Here are the path and location version numbers.  
 	final static int PATH_VERSION_NUMBER = 1;
 	final static int LOCATION_VERSION_NUMBER = 2;
@@ -1312,6 +1314,15 @@ MouseMotionListener{
 		private JButton save;
 		private JButton cancel;
 		ComponentEditor cpannel;
+		
+		/**
+		 * Constructor for the listner...saves values
+		 * @param locToAdd The location to add
+		 * @param caller Who called the listner
+		 * @param cpannel The component editor to call in order to do a save
+		 * @param save To determine the action
+		 * @param cancel To determine the action
+		 */
 		public LocationCreationChoiceListener(Location locToAdd, JDialog caller, 
 				ComponentEditor cpannel, JButton save, JButton cancel)
 		{	
@@ -1717,6 +1728,11 @@ MouseMotionListener{
 		}
 	}
 	
+	/**
+	 * Prompts for confirmation to load the optimized representation of
+	 * the data.  If user responds with yes, call the load routines
+	 * using the optimized data files.  
+	 */
 	public void readOptimize()
 	{
 		int confirmReturn = JOptionPane.showConfirmDialog(parent, 

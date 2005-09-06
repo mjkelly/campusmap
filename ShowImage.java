@@ -583,10 +583,8 @@ MouseMotionListener{
 		/* add the mouse-click handler */
 		addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
-				int x = e.getX();
-				int y = e.getY();
 				if(SwingUtilities.isLeftMouseButton(e)) {
-					/** CTRL + right click == select closest point **/
+					/** CTRL + left click == select closest point **/
 					if(e.isControlDown() /*&& !e.isAltDown()*/)
 					{
                         Point closestPoint = getClosestPoint(e.getPoint());
@@ -602,32 +600,25 @@ MouseMotionListener{
 				    }
 					else // plain left click (no modifiers)
 					{
-				        createNewPointInCurPath(new Point(x, y));
+				        createNewPointInCurPath(e.getPoint());
 					}
-
 				}
 				else if(SwingUtilities.isRightMouseButton(e)) {
                     // Left control-click ==> select closest location
                     // if only control is down
 				    if(e.isControlDown() && !e.isAltDown() && !e.isShiftDown()){
-                        double dist = -1.0;
-                        double minDist = -1.0;
-                        Location closestLoc = null;
-                        // select the location closest to the click
-                        for(Location l: locations){
-                            double dx = e.getX() - l.cord.x;
-                            double dy = e.getY() - l.cord.y;
-                            dist = Math.sqrt(dx*dx + dy*dy);
-                            if(minDist == -1.0 || minDist > dist){
-                                minDist = dist;
-                                closestLoc = l;
-                            }
-                        }
+				    	Location closestLoc = getClosestLocation(e.getPoint());
                         
                         // select the closest point we found
                         if(closestLoc != null){
                             iterateThroughPathsAtPoint(closestLoc.cord);
                         }
+				    }
+				    /** Ctrl + shift + right click ==> Move to closest point **/
+				    else if(e.isControlDown() && e.isShiftDown())
+				    {
+				    	Point closestPoint = getClosestPoint(e.getPoint());
+				    	changeCurSelectedPointCord(closestPoint);
 				    }
                     // Right ==> change coordinates
 				    // regular right click; no modifiers
@@ -645,6 +636,30 @@ MouseMotionListener{
 			}
 		});
 		
+	}
+	
+	/**
+	 * Returns the closest location to the passed point that is contained
+	 * in the collection of locations.
+	 * @param inputPoint Point to calculate distances to each location
+	 * @return The location closest to the passed in point
+	 */
+	public Location getClosestLocation(Point inputPoint)
+	{
+		double dist = -1.0;
+        double minDist = -1.0;
+        Location closestLoc = null;
+        // select the location closest to the click
+        for(Location l: locations){
+            double dx = inputPoint.x - l.cord.x;
+            double dy = inputPoint.y - l.cord.y;
+            dist = Math.sqrt(dx*dx + dy*dy);
+            if(minDist == -1.0 || minDist > dist){
+                minDist = dist;
+                closestLoc = l;
+            }
+        }
+        return closestLoc;
 	}
 	
 	/**
@@ -1713,9 +1728,7 @@ MouseMotionListener{
 		{
 			loadXMLLocations(ScrollablePicture.optLocFile);
 			loadXMLPaths(ScrollablePicture.optPathFile);
-			setStatusBarText("Data optimization completed, " +
-					"output written to: " + binaryPoints + ", " + 
-					binaryLocations + ", and " + binaryEdges);
+			setStatusBarText("Optimized data loaded");
 		}
 		else
 		{

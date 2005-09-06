@@ -244,7 +244,7 @@ public class ShowImage extends JFrame{
 		
 		// USED:
 		// A B C D E F G H I J K L M N O P Q R S T U V W X Y Z + -
-		//   Y Y Y Y Y Y   Y   Y Y Y Y Y Y Y   Y Y             Y Y
+		//   Y Y Y   Y Y   Y   Y Y Y Y Y Y Y   Y Y             Y Y
 		// IO
 		final int READ_KEY 				= KeyEvent.VK_O; 
 		final int WRITE_KEY 			= KeyEvent.VK_S;
@@ -260,7 +260,6 @@ public class ShowImage extends JFrame{
 		final int CENTER_KEY 			= KeyEvent.VK_C;
 		final int MANUAL_PLACE_KEY		= KeyEvent.VK_M;
 		// Locations
-		final int LOC_EDITOR_KEY 		= KeyEvent.VK_E;
 		final int EDIT_LOCATION			= KeyEvent.VK_T;
 		final int CREATE_LOCATION		= KeyEvent.VK_L;
 		final int SELECT_LOCATION		= KeyEvent.VK_G;
@@ -331,7 +330,7 @@ public class ShowImage extends JFrame{
 		/** Menu associated with locations **/
 		JMenu location = new JMenu("Locations");
 		locationEditor = location.add(makeJMenuItem("Locations Editor...", 
-				listener, LOC_EDITOR_KEY));
+				listener, 0));
 		editLocation = location.add(makeJMenuItem("Edit Current Location...", 
 				listener, EDIT_LOCATION));
 		selectLocation = location.add(makeJMenuItem(
@@ -970,11 +969,11 @@ MouseMotionListener{
 			{
 				manualPlaceDialog();
 			}
-			// F11: Location editor!
-			else if(c == KeyEvent.VK_F11)
-			{
-				locationEditor();
-			}
+//			// F11: Location editor!
+//			else if(c == KeyEvent.VK_F11)
+//			{
+//				locationEditor();
+//			}
 			// F12: Create new path
 			else if(c == KeyEvent.VK_F12)
 			{

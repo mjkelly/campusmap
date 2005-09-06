@@ -8,10 +8,10 @@
 		<point x="4843" y="4162"/>
 	</path>
 	<path>
-		<point x="4744" y="3912"/>
+		<point x="4732" y="3922"/>
 	</path>
 	<path>
-		<point x="4746" y="3871"/>
+		<point x="4736" y="3880"/>
 	</path>
 	<path>
 		<point x="5055" y="4097"/>
@@ -23,7 +23,7 @@
 		<point x="5174" y="4017"/>
 	</path>
 	<path>
-		<point x="5174" y="4128"/>
+		<point x="5170" y="4139"/>
 	</path>
 	<path>
 		<point x="5321" y="4035"/>
@@ -110,10 +110,10 @@
 		<point x="8726" y="4930"/>
 	</path>
 	<path>
-		<point x="5015" y="3972"/>
+		<point x="5012" y="3980"/>
 	</path>
 	<path>
-		<point x="5042" y="3964"/>
+		<point x="5042" y="3963"/>
 	</path>
 	<path>
 		<point x="8831" y="5023"/>
@@ -245,7 +245,7 @@
 		<point x="4876" y="4622"/>
 	</path>
 	<path>
-		<point x="5919" y="2366"/>
+		<point x="5923" y="2380"/>
 	</path>
 	<path>
 		<point x="3451" y="5094"/>
@@ -266,7 +266,7 @@
 		<point x="4001" y="4532"/>
 	</path>
 	<path>
-		<point x="5892" y="2497"/>
+		<point x="5889" y="2501"/>
 	</path>
 	<path>
 		<point x="787" y="7193"/>
@@ -281,7 +281,7 @@
 		<point x="4482" y="4468"/>
 	</path>
 	<path>
-		<point x="5155" y="3287"/>
+		<point x="5173" y="3343"/>
 	</path>
 	<path>
 		<point x="4050" y="3263"/>
@@ -320,7 +320,7 @@
 		<point x="1265" y="6359"/>
 	</path>
 	<path>
-		<point x="5666" y="2338"/>
+		<point x="5667" y="2393"/>
 	</path>
 	<path>
 		<point x="5989" y="3292"/>
@@ -347,31 +347,31 @@
 		<point x="3521" y="5073"/>
 	</path>
 	<path>
-		<point x="4864" y="3736"/>
+		<point x="4846" y="3743"/>
 	</path>
 	<path>
-		<point x="4868" y="3775"/>
+		<point x="4868" y="3787"/>
 	</path>
 	<path>
-		<point x="4828" y="3780"/>
+		<point x="4819" y="3792"/>
 	</path>
 	<path>
-		<point x="4849" y="3822"/>
+		<point x="4848" y="3833"/>
 	</path>
 	<path>
-		<point x="4815" y="3860"/>
+		<point x="4810" y="3873"/>
 	</path>
 	<path>
-		<point x="4798" y="3824"/>
+		<point x="4792" y="3834"/>
 	</path>
 	<path>
-		<point x="4755" y="3827"/>
+		<point x="4750" y="3836"/>
 	</path>
 	<path>
-		<point x="4771" y="3752"/>
+		<point x="4767" y="3757"/>
 	</path>
 	<path>
-		<point x="4740" y="3790"/>
+		<point x="4741" y="3805"/>
 	</path>
 	<path>
 		<point x="4226" y="5443"/>
@@ -386,7 +386,7 @@
 		<point x="4028" y="4360"/>
 	</path>
 	<path>
-		<point x="5338" y="4218"/>
+		<point x="5344" y="4225"/>
 	</path>
 	<path>
 		<point x="5541" y="3519"/>
@@ -407,10 +407,10 @@
 		<point x="3636" y="5093"/>
 	</path>
 	<path>
-		<point x="5202" y="2975"/>
+		<point x="5148" y="3039"/>
 	</path>
 	<path>
-		<point x="5665" y="3139"/>
+		<point x="5688" y="3161"/>
 	</path>
 	<path>
 		<point x="7943" y="5198"/>
@@ -476,7 +476,8 @@
 		<point x="3800" y="5694"/>
 	</path>
 	<path>
-		<point x="5748" y="2210"/>
+		<point x="5745" y="2257"/>
+		<point x="5753" y="2259"/>
 	</path>
 	<path>
 		<point x="3689" y="5151"/>
@@ -500,7 +501,7 @@
 		<point x="3688" y="3883"/>
 	</path>
 	<path>
-		<point x="5875" y="2136"/>
+		<point x="5899" y="2169"/>
 	</path>
 	<path>
 		<point x="5429" y="3546"/>
@@ -566,7 +567,7 @@
 		<point x="656" y="7718"/>
 	</path>
 	<path>
-		<point x="5557" y="3309"/>
+		<point x="5529" y="3297"/>
 	</path>
 	<path>
 		<point x="724" y="7788"/>
@@ -686,16 +687,16 @@
 		<point x="5277" y="3274"/>
 	</path>
 	<path>
-		<point x="5238" y="3371"/>
+		<point x="5237" y="3386"/>
 	</path>
 	<path>
-		<point x="5238" y="3371"/>
+		<point x="5237" y="3386"/>
 	</path>
 	<path>
-		<point x="4830" y="3536"/>
+		<point x="4896" y="3613"/>
 	</path>
 	<path>
-		<point x="4830" y="3536"/>
+		<point x="4896" y="3613"/>
 	</path>
 	<path>
 		<point x="4071" y="2005"/>
@@ -762,7 +763,7 @@
 		<point x="5470" y="4597"/>
 	</path>
 	<path>
-		<point x="5857" y="2278"/>
+		<point x="5877" y="2322"/>
 	</path>
 	<path>
 		<point x="4119" y="4304"/>
@@ -915,10 +916,10 @@
 		<point x="5592" y="3696"/>
 	</path>
 	<path>
-		<point x="5411" y="3301"/>
+		<point x="5418" y="3289"/>
 	</path>
 	<path>
-		<point x="5670" y="2739"/>
+		<point x="5681" y="2731"/>
 	</path>
 	<path>
 		<point x="4038" y="4979"/>
@@ -1029,7 +1030,7 @@
 		<point x="5335" y="4066"/>
 	</path>
 	<path>
-		<point x="5287" y="4148"/>
+		<point x="5288" y="4152"/>
 	</path>
 	<path>
 		<point x="5381" y="4046"/>
@@ -1038,7 +1039,7 @@
 		<point x="5369" y="3987"/>
 	</path>
 	<path>
-		<point x="5373" y="2981"/>
+		<point x="5391" y="3045"/>
 	</path>
 	<path>
 		<point x="3493" y="4751"/>
@@ -1134,10 +1135,10 @@
 		<point x="8079" y="3747"/>
 	</path>
 	<path>
-		<point x="5512" y="3933"/>
+		<point x="5522" y="3964"/>
 	</path>
 	<path>
-		<point x="5569" y="2955"/>
+		<point x="5604" y="2962"/>
 	</path>
 	<path>
 		<point x="3618" y="5512"/>
@@ -1339,9 +1340,9 @@
 		<point x="5604" y="3457"/>
 		<point x="5589" y="3459"/>
 		<point x="5568" y="3459"/>
-		<point x="5537" y="3459"/>
+		<point x="5499" y="3457"/>
 		<point x="5346" y="3447"/>
-		<point x="5302" y="3444"/>
+		<point x="5308" y="3444"/>
 		<point x="5244" y="3442"/>
 		<point x="5167" y="3440"/>
 		<point x="5112" y="3442"/>
@@ -1403,7 +1404,7 @@
 		<point x="5898" y="2801"/>
 		<point x="5898" y="2776"/>
 		<point x="5896" y="2749"/>
-		<point x="5895" y="2720"/>
+		<point x="5896" y="2728"/>
 		<point x="5894" y="2701"/>
 		<point x="5895" y="2679"/>
 		<point x="5897" y="2662"/>
@@ -1910,15 +1911,15 @@
 		<point x="4661" y="3698"/>
 		<point x="4661" y="3687"/>
 		<point x="4661" y="3677"/>
-		<point x="4661" y="3655"/>
-		<point x="4661" y="3631"/>
+		<point x="4661" y="3642"/>
+		<point x="4661" y="3618"/>
 		<point x="4661" y="3606"/>
 		<point x="4661" y="3582"/>
 		<point x="4661" y="3559"/>
 		<point x="4661" y="3530"/>
 		<point x="4661" y="3510"/>
-		<point x="4661" y="3489"/>
-		<point x="4661" y="3472"/>
+		<point x="4661" y="3497"/>
+		<point x="4661" y="3481"/>
 		<point x="4661" y="3456"/>
 		<point x="4661" y="3441"/>
 		<point x="4661" y="3430"/>
@@ -2673,13 +2674,18 @@
 		<point x="5071" y="2948"/>
 		<point x="5056" y="2968"/>
 		<point x="5048" y="2980"/>
-		<point x="5048" y="2990"/>
-		<point x="5048" y="3008"/>
-		<point x="5048" y="3057"/>
+		<point x="5048" y="2998"/>
+		<point x="5048" y="3023"/>
+		<point x="5047" y="3065"/>
 		<point x="5048" y="3082"/>
-		<point x="5048" y="3095"/>
-		<point x="5048" y="3111"/>
-		<point x="5048" y="3116"/>
+		<point x="5048" y="3099"/>
+		<point x="5049" y="3116"/>
+		<point x="5049" y="3148"/>
+		<point x="5048" y="3196"/>
+		<point x="5046" y="3221"/>
+		<point x="5041" y="3247"/>
+		<point x="5037" y="3271"/>
+		<point x="5034" y="3296"/>
 	</path>
 	<path>
 		<point x="3922" y="1107"/>
@@ -3929,8 +3935,8 @@
 		<point x="5424" y="3957"/>
 		<point x="5422" y="3948"/>
 		<point x="5420" y="3938"/>
-		<point x="5415" y="3909"/>
-		<point x="5406" y="3853"/>
+		<point x="5412" y="3890"/>
+		<point x="5403" y="3829"/>
 		<point x="5393" y="3781"/>
 		<point x="5381" y="3712"/>
 		<point x="5374" y="3664"/>
@@ -7135,5 +7141,752 @@
 		<point x="3544" y="4661"/>
 		<point x="3508" y="4663"/>
 		<point x="3482" y="4662"/>
+	</path>
+	<path>
+		<point x="5690" y="2954"/>
+		<point x="5700" y="2922"/>
+		<point x="5700" y="2895"/>
+		<point x="5701" y="2859"/>
+		<point x="5703" y="2828"/>
+		<point x="5705" y="2798"/>
+		<point x="5713" y="2779"/>
+		<point x="5732" y="2761"/>
+		<point x="5759" y="2749"/>
+		<point x="5782" y="2749"/>
+		<point x="5800" y="2760"/>
+		<point x="5812" y="2782"/>
+		<point x="5810" y="2797"/>
+		<point x="5801" y="2822"/>
+		<point x="5791" y="2850"/>
+		<point x="5784" y="2874"/>
+		<point x="5784" y="2882"/>
+		<point x="5786" y="2909"/>
+		<point x="5785" y="2922"/>
+	</path>
+	<path>
+		<point x="5690" y="2954"/>
+		<point x="5712" y="2941"/>
+		<point x="5729" y="2935"/>
+		<point x="5751" y="2929"/>
+		<point x="5770" y="2925"/>
+		<point x="5785" y="2922"/>
+	</path>
+	<path>
+		<point x="5785" y="2922"/>
+		<point x="5799" y="2940"/>
+		<point x="5804" y="2961"/>
+		<point x="5802" y="2980"/>
+	</path>
+	<path>
+		<point x="5802" y="2980"/>
+		<point x="5813" y="2972"/>
+		<point x="5827" y="2961"/>
+		<point x="5845" y="2953"/>
+		<point x="5865" y="2962"/>
+		<point x="5879" y="2970"/>
+		<point x="5891" y="2980"/>
+	</path>
+	<path>
+		<point x="5845" y="2953"/>
+		<point x="5866" y="2940"/>
+		<point x="5896" y="2926"/>
+	</path>
+	<path>
+		<point x="5799" y="2940"/>
+		<point x="5820" y="2949"/>
+		<point x="5845" y="2953"/>
+	</path>
+	<path>
+		<point x="5898" y="2879"/>
+		<point x="5861" y="2872"/>
+		<point x="5832" y="2862"/>
+		<point x="5811" y="2848"/>
+		<point x="5805" y="2838"/>
+		<point x="5801" y="2822"/>
+	</path>
+	<path>
+		<point x="5832" y="2862"/>
+		<point x="5811" y="2862"/>
+		<point x="5798" y="2864"/>
+		<point x="5784" y="2874"/>
+	</path>
+	<path>
+		<point x="5705" y="2798"/>
+		<point x="5685" y="2768"/>
+		<point x="5668" y="2737"/>
+		<point x="5644" y="2704"/>
+		<point x="5626" y="2674"/>
+		<point x="5624" y="2651"/>
+		<point x="5635" y="2638"/>
+		<point x="5662" y="2624"/>
+		<point x="5681" y="2617"/>
+		<point x="5715" y="2627"/>
+		<point x="5756" y="2634"/>
+		<point x="5789" y="2646"/>
+		<point x="5810" y="2662"/>
+		<point x="5823" y="2673"/>
+		<point x="5844" y="2693"/>
+		<point x="5858" y="2712"/>
+		<point x="5871" y="2723"/>
+		<point x="5896" y="2728"/>
+	</path>
+	<path>
+		<point x="5810" y="2662"/>
+		<point x="5798" y="2677"/>
+		<point x="5792" y="2689"/>
+		<point x="5787" y="2704"/>
+		<point x="5784" y="2729"/>
+		<point x="5782" y="2749"/>
+	</path>
+	<path>
+		<point x="5732" y="2761"/>
+		<point x="5727" y="2742"/>
+		<point x="5724" y="2725"/>
+		<point x="5723" y="2708"/>
+		<point x="5720" y="2693"/>
+		<point x="5716" y="2671"/>
+		<point x="5715" y="2650"/>
+		<point x="5715" y="2627"/>
+	</path>
+	<path>
+		<point x="5845" y="2953"/>
+		<point x="5854" y="2936"/>
+		<point x="5858" y="2914"/>
+		<point x="5861" y="2893"/>
+		<point x="5861" y="2872"/>
+	</path>
+	<path>
+		<point x="5624" y="2651"/>
+		<point x="5625" y="2629"/>
+		<point x="5625" y="2610"/>
+		<point x="5625" y="2591"/>
+		<point x="5620" y="2565"/>
+		<point x="5615" y="2545"/>
+		<point x="5621" y="2515"/>
+		<point x="5629" y="2494"/>
+		<point x="5659" y="2477"/>
+		<point x="5693" y="2473"/>
+		<point x="5728" y="2490"/>
+		<point x="5757" y="2503"/>
+		<point x="5784" y="2509"/>
+		<point x="5806" y="2525"/>
+		<point x="5820" y="2537"/>
+		<point x="5835" y="2552"/>
+		<point x="5855" y="2572"/>
+		<point x="5869" y="2589"/>
+		<point x="5879" y="2606"/>
+		<point x="5890" y="2619"/>
+	</path>
+	<path>
+		<point x="5705" y="2798"/>
+		<point x="5690" y="2806"/>
+		<point x="5675" y="2818"/>
+	</path>
+	<path>
+		<point x="5681" y="2617"/>
+		<point x="5695" y="2603"/>
+		<point x="5705" y="2586"/>
+		<point x="5713" y="2576"/>
+		<point x="5731" y="2542"/>
+		<point x="5742" y="2526"/>
+		<point x="5757" y="2503"/>
+	</path>
+	<path>
+		<point x="5621" y="2515"/>
+		<point x="5596" y="2496"/>
+		<point x="5569" y="2475"/>
+	</path>
+	<path>
+		<point x="5569" y="2475"/>
+		<point x="5589" y="2474"/>
+		<point x="5629" y="2476"/>
+		<point x="5661" y="2481"/>
+		<point x="5691" y="2467"/>
+		<point x="5710" y="2437"/>
+		<point x="5723" y="2405"/>
+		<point x="5723" y="2379"/>
+		<point x="5725" y="2342"/>
+		<point x="5758" y="2338"/>
+		<point x="5793" y="2338"/>
+		<point x="5802" y="2362"/>
+		<point x="5815" y="2382"/>
+		<point x="5832" y="2386"/>
+		<point x="5855" y="2402"/>
+		<point x="5871" y="2413"/>
+		<point x="5885" y="2429"/>
+		<point x="5884" y="2445"/>
+		<point x="5881" y="2463"/>
+		<point x="5866" y="2483"/>
+		<point x="5855" y="2493"/>
+		<point x="5845" y="2504"/>
+		<point x="5836" y="2513"/>
+		<point x="5826" y="2527"/>
+		<point x="5820" y="2537"/>
+	</path>
+	<path>
+		<point x="5884" y="2445"/>
+		<point x="5906" y="2448"/>
+		<point x="5918" y="2460"/>
+		<point x="5928" y="2468"/>
+		<point x="5933" y="2479"/>
+		<point x="5941" y="2495"/>
+		<point x="5944" y="2511"/>
+		<point x="5948" y="2535"/>
+		<point x="5948" y="2546"/>
+		<point x="5945" y="2563"/>
+		<point x="5938" y="2577"/>
+		<point x="5932" y="2592"/>
+		<point x="5923" y="2606"/>
+	</path>
+	<path>
+		<point x="5855" y="2402"/>
+		<point x="5869" y="2377"/>
+		<point x="5896" y="2355"/>
+		<point x="5916" y="2340"/>
+		<point x="5931" y="2315"/>
+	</path>
+	<path>
+		<point x="5793" y="2338"/>
+		<point x="5807" y="2300"/>
+		<point x="5817" y="2271"/>
+		<point x="5820" y="2249"/>
+		<point x="5837" y="2225"/>
+		<point x="5859" y="2213"/>
+		<point x="5880" y="2189"/>
+		<point x="5899" y="2169"/>
+	</path>
+	<path>
+		<point x="5837" y="2225"/>
+		<point x="5790" y="2233"/>
+		<point x="5773" y="2237"/>
+		<point x="5763" y="2247"/>
+		<point x="5753" y="2259"/>
+		<point x="5745" y="2268"/>
+		<point x="5736" y="2279"/>
+		<point x="5724" y="2293"/>
+		<point x="5723" y="2317"/>
+		<point x="5712" y="2332"/>
+		<point x="5725" y="2342"/>
+	</path>
+	<path>
+		<point x="5710" y="2437"/>
+		<point x="5698" y="2424"/>
+		<point x="5680" y="2407"/>
+		<point x="5667" y="2393"/>
+	</path>
+	<path>
+		<point x="5569" y="2475"/>
+		<point x="5601" y="2454"/>
+		<point x="5628" y="2437"/>
+		<point x="5648" y="2414"/>
+		<point x="5658" y="2402"/>
+		<point x="5667" y="2393"/>
+	</path>
+	<path>
+		<point x="5628" y="2437"/>
+		<point x="5632" y="2450"/>
+		<point x="5655" y="2455"/>
+		<point x="5674" y="2453"/>
+		<point x="5690" y="2447"/>
+		<point x="5710" y="2437"/>
+	</path>
+	<path>
+		<point x="5689" y="2318"/>
+	</path>
+	<path>
+		<point x="5712" y="2332"/>
+		<point x="5703" y="2328"/>
+		<point x="5689" y="2318"/>
+	</path>
+	<path>
+		<point x="5712" y="2332"/>
+	</path>
+	<path>
+		<point x="5807" y="2300"/>
+		<point x="5792" y="2322"/>
+		<point x="5776" y="2323"/>
+		<point x="5755" y="2320"/>
+		<point x="5740" y="2312"/>
+		<point x="5733" y="2299"/>
+		<point x="5736" y="2279"/>
+	</path>
+	<path>
+		<point x="5807" y="2300"/>
+		<point x="5843" y="2306"/>
+		<point x="5866" y="2315"/>
+		<point x="5877" y="2322"/>
+	</path>
+	<path>
+		<point x="5866" y="2483"/>
+		<point x="5872" y="2489"/>
+		<point x="5879" y="2495"/>
+		<point x="5889" y="2501"/>
+	</path>
+	<path>
+		<point x="5896" y="2355"/>
+		<point x="5910" y="2367"/>
+		<point x="5923" y="2380"/>
+	</path>
+	<path>
+		<point x="5681" y="2617"/>
+		<point x="5660" y="2609"/>
+		<point x="5640" y="2590"/>
+		<point x="5629" y="2577"/>
+		<point x="5620" y="2565"/>
+	</path>
+	<path>
+		<point x="5043" y="3204"/>
+		<point x="5103" y="3203"/>
+		<point x="5129" y="3203"/>
+		<point x="5168" y="3201"/>
+		<point x="5203" y="3200"/>
+		<point x="5228" y="3201"/>
+		<point x="5281" y="3202"/>
+		<point x="5313" y="3202"/>
+		<point x="5384" y="3203"/>
+		<point x="5425" y="3203"/>
+		<point x="5465" y="3204"/>
+		<point x="5505" y="3204"/>
+		<point x="5545" y="3203"/>
+		<point x="5558" y="3203"/>
+		<point x="5557" y="3188"/>
+		<point x="5557" y="3174"/>
+		<point x="5557" y="3158"/>
+		<point x="5557" y="3141"/>
+		<point x="5560" y="3126"/>
+		<point x="5560" y="3116"/>
+		<point x="5527" y="3117"/>
+		<point x="5495" y="3117"/>
+		<point x="5471" y="3117"/>
+		<point x="5448" y="3117"/>
+		<point x="5427" y="3116"/>
+		<point x="5401" y="3116"/>
+		<point x="5366" y="3115"/>
+		<point x="5336" y="3115"/>
+		<point x="5297" y="3116"/>
+		<point x="5265" y="3116"/>
+		<point x="5226" y="3116"/>
+		<point x="5197" y="3116"/>
+		<point x="5167" y="3115"/>
+		<point x="5139" y="3115"/>
+		<point x="5106" y="3117"/>
+		<point x="5082" y="3117"/>
+		<point x="5049" y="3116"/>
+	</path>
+	<path>
+		<point x="5690" y="2954"/>
+		<point x="5668" y="2973"/>
+		<point x="5655" y="2994"/>
+		<point x="5641" y="3014"/>
+		<point x="5624" y="3036"/>
+		<point x="5608" y="3055"/>
+		<point x="5599" y="3066"/>
+		<point x="5585" y="3079"/>
+		<point x="5576" y="3091"/>
+		<point x="5567" y="3106"/>
+		<point x="5560" y="3116"/>
+	</path>
+	<path>
+		<point x="5721" y="3376"/>
+		<point x="5690" y="3351"/>
+		<point x="5668" y="3329"/>
+		<point x="5646" y="3303"/>
+		<point x="5624" y="3280"/>
+		<point x="5602" y="3257"/>
+		<point x="5579" y="3233"/>
+		<point x="5565" y="3217"/>
+		<point x="5558" y="3203"/>
+	</path>
+	<path>
+		<point x="5129" y="3203"/>
+		<point x="5112" y="3221"/>
+		<point x="5087" y="3247"/>
+		<point x="5068" y="3267"/>
+		<point x="5034" y="3296"/>
+		<point x="5019" y="3314"/>
+		<point x="5001" y="3333"/>
+		<point x="4981" y="3352"/>
+		<point x="4961" y="3371"/>
+		<point x="4939" y="3393"/>
+		<point x="4918" y="3414"/>
+		<point x="4890" y="3443"/>
+		<point x="4864" y="3469"/>
+		<point x="4851" y="3482"/>
+		<point x="4835" y="3496"/>
+		<point x="4812" y="3522"/>
+		<point x="4795" y="3542"/>
+		<point x="4776" y="3562"/>
+		<point x="4761" y="3581"/>
+		<point x="4746" y="3599"/>
+		<point x="4740" y="3604"/>
+		<point x="4735" y="3600"/>
+		<point x="4711" y="3626"/>
+		<point x="4705" y="3622"/>
+		<point x="4689" y="3641"/>
+		<point x="4661" y="3642"/>
+	</path>
+	<path>
+		<point x="5167" y="3115"/>
+		<point x="5167" y="3135"/>
+		<point x="5168" y="3165"/>
+		<point x="5168" y="3185"/>
+		<point x="5168" y="3201"/>
+	</path>
+	<path>
+		<point x="5228" y="3201"/>
+		<point x="5227" y="3178"/>
+		<point x="5227" y="3157"/>
+		<point x="5226" y="3129"/>
+		<point x="5226" y="3116"/>
+	</path>
+	<path>
+		<point x="5560" y="3116"/>
+		<point x="5544" y="3128"/>
+		<point x="5527" y="3136"/>
+		<point x="5504" y="3151"/>
+		<point x="5481" y="3166"/>
+		<point x="5455" y="3181"/>
+		<point x="5425" y="3203"/>
+	</path>
+	<path>
+		<point x="5558" y="3203"/>
+		<point x="5540" y="3190"/>
+		<point x="5519" y="3172"/>
+		<point x="5491" y="3153"/>
+		<point x="5471" y="3141"/>
+		<point x="5449" y="3128"/>
+		<point x="5427" y="3116"/>
+	</path>
+	<path>
+		<point x="5471" y="3117"/>
+		<point x="5497" y="3094"/>
+		<point x="5524" y="3060"/>
+		<point x="5556" y="3025"/>
+		<point x="5589" y="2985"/>
+		<point x="5604" y="2962"/>
+	</path>
+	<path>
+		<point x="5655" y="2994"/>
+		<point x="5637" y="2980"/>
+		<point x="5617" y="2971"/>
+		<point x="5604" y="2962"/>
+	</path>
+	<path>
+		<point x="5608" y="3055"/>
+		<point x="5623" y="3073"/>
+		<point x="5637" y="3088"/>
+		<point x="5649" y="3106"/>
+		<point x="5656" y="3119"/>
+		<point x="5670" y="3138"/>
+		<point x="5688" y="3161"/>
+	</path>
+	<path>
+		<point x="5602" y="3257"/>
+		<point x="5624" y="3240"/>
+		<point x="5638" y="3230"/>
+		<point x="5653" y="3208"/>
+		<point x="5666" y="3191"/>
+		<point x="5679" y="3174"/>
+		<point x="5688" y="3161"/>
+	</path>
+	<path>
+		<point x="5608" y="3159"/>
+		<point x="5558" y="3203"/>
+	</path>
+	<path>
+		<point x="5608" y="3159"/>
+		<point x="5560" y="3116"/>
+	</path>
+	<path>
+		<point x="5557" y="3158"/>
+		<point x="5608" y="3159"/>
+	</path>
+	<path>
+		<point x="5608" y="3159"/>
+		<point x="5630" y="3159"/>
+		<point x="5653" y="3160"/>
+		<point x="5672" y="3161"/>
+		<point x="5688" y="3161"/>
+	</path>
+	<path>
+		<point x="5505" y="3204"/>
+		<point x="5500" y="3245"/>
+		<point x="5498" y="3284"/>
+		<point x="5499" y="3296"/>
+		<point x="5499" y="3344"/>
+		<point x="5499" y="3381"/>
+		<point x="5499" y="3400"/>
+		<point x="5499" y="3457"/>
+	</path>
+	<path>
+		<point x="5499" y="3296"/>
+		<point x="5516" y="3296"/>
+		<point x="5529" y="3297"/>
+	</path>
+	<path>
+		<point x="5428" y="3379"/>
+	</path>
+	<path>
+		<point x="5499" y="3381"/>
+		<point x="5471" y="3381"/>
+		<point x="5453" y="3380"/>
+		<point x="5428" y="3379"/>
+	</path>
+	<path>
+		<point x="5498" y="3284"/>
+		<point x="5480" y="3286"/>
+		<point x="5455" y="3287"/>
+		<point x="5435" y="3287"/>
+		<point x="5418" y="3289"/>
+	</path>
+	<path>
+		<point x="5425" y="3203"/>
+		<point x="5423" y="3217"/>
+		<point x="5421" y="3232"/>
+		<point x="5421" y="3248"/>
+		<point x="5418" y="3274"/>
+		<point x="5418" y="3289"/>
+	</path>
+	<path>
+		<point x="5308" y="3444"/>
+		<point x="5310" y="3383"/>
+		<point x="5313" y="3326"/>
+		<point x="5313" y="3276"/>
+		<point x="5313" y="3228"/>
+		<point x="5313" y="3228"/>
+		<point x="5313" y="3202"/>
+	</path>
+	<path>
+		<point x="5313" y="3276"/>
+		<point x="5295" y="3276"/>
+		<point x="5277" y="3274"/>
+	</path>
+	<path>
+		<point x="5228" y="3201"/>
+		<point x="5229" y="3220"/>
+		<point x="5230" y="3237"/>
+		<point x="5235" y="3249"/>
+		<point x="5235" y="3263"/>
+		<point x="5234" y="3282"/>
+		<point x="5232" y="3301"/>
+		<point x="5228" y="3326"/>
+		<point x="5217" y="3342"/>
+		<point x="5196" y="3346"/>
+		<point x="5173" y="3343"/>
+	</path>
+	<path>
+		<point x="5168" y="3201"/>
+		<point x="5168" y="3223"/>
+		<point x="5169" y="3251"/>
+		<point x="5173" y="3298"/>
+		<point x="5173" y="3317"/>
+		<point x="5173" y="3343"/>
+	</path>
+	<path>
+		<point x="5068" y="3267"/>
+		<point x="5081" y="3280"/>
+		<point x="5105" y="3291"/>
+		<point x="5135" y="3291"/>
+		<point x="5160" y="3291"/>
+		<point x="5173" y="3298"/>
+	</path>
+	<path>
+		<point x="5405" y="2676"/>
+		<point x="5397" y="2700"/>
+		<point x="5387" y="2725"/>
+		<point x="5381" y="2745"/>
+	</path>
+	<path>
+		<point x="5381" y="2745"/>
+	</path>
+	<path>
+		<point x="5139" y="3115"/>
+		<point x="5144" y="3082"/>
+		<point x="5148" y="3056"/>
+		<point x="5148" y="3039"/>
+	</path>
+	<path>
+		<point x="5147" y="2873"/>
+		<point x="5147" y="2907"/>
+		<point x="5145" y="2939"/>
+		<point x="5145" y="2966"/>
+		<point x="5145" y="2991"/>
+		<point x="5145" y="3013"/>
+		<point x="5148" y="3039"/>
+	</path>
+	<path>
+		<point x="5145" y="2966"/>
+		<point x="5126" y="2945"/>
+		<point x="5109" y="2943"/>
+		<point x="5089" y="2944"/>
+		<point x="5071" y="2948"/>
+	</path>
+	<path>
+		<point x="5171" y="2833"/>
+		<point x="5186" y="2842"/>
+		<point x="5205" y="2858"/>
+		<point x="5225" y="2876"/>
+		<point x="5249" y="2899"/>
+		<point x="5273" y="2926"/>
+		<point x="5299" y="2952"/>
+		<point x="5322" y="2979"/>
+		<point x="5335" y="3007"/>
+		<point x="5339" y="3045"/>
+		<point x="5339" y="3074"/>
+		<point x="5337" y="3097"/>
+		<point x="5336" y="3115"/>
+	</path>
+	<path>
+		<point x="5339" y="3045"/>
+		<point x="5356" y="3045"/>
+		<point x="5377" y="3045"/>
+		<point x="5391" y="3045"/>
+	</path>
+	<path>
+		<point x="5427" y="3981"/>
+		<point x="5473" y="3973"/>
+		<point x="5510" y="3966"/>
+		<point x="5522" y="3964"/>
+	</path>
+	<path>
+		<point x="5412" y="3890"/>
+		<point x="5444" y="3885"/>
+		<point x="5483" y="3877"/>
+		<point x="5503" y="3874"/>
+		<point x="5525" y="3870"/>
+		<point x="5543" y="3867"/>
+		<point x="5575" y="3862"/>
+		<point x="5603" y="3858"/>
+		<point x="5623" y="3854"/>
+	</path>
+	<path>
+		<point x="5503" y="3874"/>
+		<point x="5508" y="3894"/>
+		<point x="5512" y="3920"/>
+		<point x="5517" y="3945"/>
+		<point x="5522" y="3964"/>
+	</path>
+	<path>
+		<point x="4661" y="3481"/>
+		<point x="4681" y="3481"/>
+		<point x="4682" y="3484"/>
+		<point x="4693" y="3484"/>
+		<point x="4693" y="3497"/>
+		<point x="4705" y="3497"/>
+		<point x="4705" y="3508"/>
+		<point x="4715" y="3508"/>
+		<point x="4715" y="3521"/>
+		<point x="4726" y="3521"/>
+		<point x="4726" y="3528"/>
+		<point x="4748" y="3528"/>
+		<point x="4758" y="3538"/>
+		<point x="4769" y="3553"/>
+		<point x="4776" y="3562"/>
+	</path>
+	<path>
+		<point x="4851" y="3482"/>
+		<point x="4861" y="3492"/>
+		<point x="4873" y="3503"/>
+		<point x="4873" y="3543"/>
+		<point x="4898" y="3544"/>
+		<point x="4897" y="3584"/>
+		<point x="4896" y="3613"/>
+	</path>
+	<path>
+		<point x="4746" y="3599"/>
+		<point x="4787" y="3599"/>
+		<point x="4826" y="3599"/>
+		<point x="4832" y="3586"/>
+		<point x="4839" y="3575"/>
+		<point x="4849" y="3581"/>
+		<point x="4868" y="3595"/>
+		<point x="4896" y="3613"/>
+	</path>
+	<path>
+		<point x="4795" y="3542"/>
+		<point x="4823" y="3562"/>
+		<point x="4839" y="3575"/>
+	</path>
+	<path>
+		<point x="4835" y="3496"/>
+		<point x="4814" y="3494"/>
+		<point x="4794" y="3494"/>
+		<point x="4778" y="3495"/>
+		<point x="4766" y="3505"/>
+		<point x="4755" y="3514"/>
+		<point x="4748" y="3528"/>
+	</path>
+	<path>
+		<point x="4661" y="3412"/>
+		<point x="4690" y="3409"/>
+		<point x="4715" y="3409"/>
+		<point x="4736" y="3409"/>
+		<point x="4767" y="3409"/>
+		<point x="4802" y="3409"/>
+		<point x="4852" y="3411"/>
+		<point x="4902" y="3410"/>
+		<point x="4934" y="3411"/>
+		<point x="4957" y="3411"/>
+		<point x="4980" y="3416"/>
+		<point x="4996" y="3420"/>
+		<point x="5011" y="3425"/>
+		<point x="5018" y="3431"/>
+	</path>
+	<path>
+		<point x="4994" y="3500"/>
+		<point x="4988" y="3522"/>
+		<point x="4987" y="3544"/>
+		<point x="4987" y="3563"/>
+		<point x="4988" y="3581"/>
+		<point x="4991" y="3605"/>
+		<point x="4995" y="3629"/>
+		<point x="4997" y="3651"/>
+		<point x="5001" y="3666"/>
+		<point x="5007" y="3679"/>
+	</path>
+	<path>
+		<point x="4413" y="2894"/>
+		<point x="4446" y="2894"/>
+		<point x="4467" y="2895"/>
+		<point x="4488" y="2898"/>
+		<point x="4506" y="2905"/>
+		<point x="4520" y="2911"/>
+		<point x="4537" y="2924"/>
+		<point x="4547" y="2934"/>
+		<point x="4557" y="2947"/>
+		<point x="4570" y="2961"/>
+		<point x="4583" y="2973"/>
+		<point x="4595" y="2986"/>
+		<point x="4612" y="2999"/>
+		<point x="4628" y="3010"/>
+		<point x="4648" y="3017"/>
+		<point x="4674" y="3018"/>
+		<point x="4701" y="3018"/>
+		<point x="4727" y="3018"/>
+		<point x="4755" y="3018"/>
+		<point x="4780" y="3017"/>
+		<point x="4808" y="3020"/>
+		<point x="4828" y="3030"/>
+		<point x="4844" y="3038"/>
+		<point x="4874" y="3048"/>
+		<point x="4900" y="3056"/>
+		<point x="4926" y="3061"/>
+		<point x="4963" y="3063"/>
+		<point x="4989" y="3065"/>
+		<point x="5014" y="3065"/>
+		<point x="5035" y="3065"/>
+		<point x="5047" y="3065"/>
+	</path>
+	<path>
+		<point x="5049" y="3116"/>
+		<point x="5035" y="3114"/>
+		<point x="5008" y="3111"/>
+		<point x="4987" y="3107"/>
+		<point x="4960" y="3097"/>
+		<point x="4935" y="3090"/>
+		<point x="4909" y="3077"/>
+		<point x="4892" y="3069"/>
+		<point x="4864" y="3052"/>
+		<point x="4844" y="3038"/>
 	</path>
 </paths>

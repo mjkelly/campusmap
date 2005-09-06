@@ -2149,12 +2149,10 @@ MouseMotionListener{
 			System.err.println("Point passed to compare to is null!");
 			return -1;
 		}
-		for(int locIndex = 0; locIndex < locations.size(); locIndex++){
-			if ((getLocation(locIndex).cord).equals(pointToCompare))
-			{
-				return(locIndex);
-			}
-		}
+        for(Location l: locations)
+            if(l.cord.equals(pointToCompare))
+                return(locations.indexOf(l));  //we really should be just
+                                               // returning a loc object
 		return -1;
 	}
 	

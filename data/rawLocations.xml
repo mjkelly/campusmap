@@ -293,7 +293,7 @@
 			<alias>9310 Redwood Drive</alias>
 		</aliases>
 	</location>
-	<location x="2286" y="6271" id="57" passThrough="false" intersect="true" displayName="true">
+	<location x="2286" y="6274" id="57" passThrough="false" intersect="true" displayName="true">
 		<name>9321 Coast Apartments</name>
 		<aliases>
 			<alias>9321 Discovery Way</alias>
@@ -335,7 +335,7 @@
 			<alias>9366 Redwood Drive</alias>
 		</aliases>
 	</location>
-	<location x="2353" y="6000" id="64" passThrough="false" intersect="true" displayName="true">
+	<location x="2349" y="6000" id="64" passThrough="false" intersect="true" displayName="true">
 		<name>9369 Coast Apartments</name>
 		<aliases>
 			<alias>9369 Discovery Way</alias>
@@ -422,10 +422,11 @@
 			<alias>Biology Field Station - Storage and Restroom</alias>
 		</aliases>
 	</location>
-	<location x="4876" y="4622" id="81" passThrough="false" intersect="true" displayName="true">
-		<name>BSB</name>
+	<location x="4984" y="4658" id="81" passThrough="false" intersect="true" displayName="true">
+		<name>Basic Science Building</name>
 		<aliases>
 			<alias>Library Building, Biomedical Sciences and</alias>
+			<alias>BSB</alias>
 		</aliases>
 	</location>
 	<location x="5923" y="2380" id="82" passThrough="false" intersect="true" displayName="true">
@@ -447,7 +448,7 @@
 			<alias>Clinical Research</alias>
 		</aliases>
 	</location>
-	<location x="3857" y="3887" id="85" passThrough="false" intersect="true" displayName="true">
+	<location x="3834" y="3831" id="85" passThrough="false" intersect="true" displayName="true">
 		<name>Biology Building</name>
 		<aliases>
 			<alias>M2B</alias>
@@ -463,7 +464,7 @@
 			<alias>Revelle Residence Hall Blake</alias>
 		</aliases>
 	</location>
-	<location x="4001" y="4532" id="88" passThrough="false" intersect="true" displayName="true">
+	<location x="3958" y="4548" id="88" passThrough="false" intersect="true" displayName="true">
 		<name>Bonner Hall</name>
 	</location>
 	<location x="5889" y="2501" id="89" passThrough="false" intersect="true" displayName="true">
@@ -790,7 +791,7 @@
 			<alias>Mesa Housing Faculty Apartments - 6 Bldgs</alias>
 		</aliases>
 	</location>
-	<location x="4207" y="3667" id="156" passThrough="false" intersect="true" displayName="true">
+	<location x="4180" y="3690" id="156" passThrough="false" intersect="true" displayName="true">
 		<name>Ida and Cecil Green Faculty Club</name>
 	</location>
 	<location x="5252" y="5098" id="157" passThrough="false" intersect="true" displayName="true">
@@ -905,10 +906,10 @@
 			<alias>IMG Expansion</alias>
 		</aliases>
 	</location>
-	<location x="3863" y="2025" id="178" passThrough="false" intersect="true" displayName="true">
+	<location x="3865" y="1995" id="178" passThrough="false" intersect="true" displayName="true">
 		<name>Institute of the Americas Building</name>
 	</location>
-	<location x="3786" y="2069" id="179" passThrough="false" intersect="true" displayName="true">
+	<location x="3786" y="2071" id="179" passThrough="false" intersect="true" displayName="true">
 		<name>Copley International Conference Center</name>
 		<aliases>
 			<alias>Institute of the Americas, Copley International Conference Center</alias>
@@ -920,7 +921,7 @@
 			<alias>Institute of the Americas, Latin American Studies Building</alias>
 		</aliases>
 	</location>
-	<location x="3829" y="2191" id="181" passThrough="false" intersect="true" displayName="true">
+	<location x="3810" y="2212" id="181" passThrough="false" intersect="true" displayName="true">
 		<name>Robinson Building 1 - Administration</name>
 		<aliases>
 			<alias>Int&apos;l Relations and Pacific Studies - Administration</alias>
@@ -1178,7 +1179,7 @@
 		</aliases>
 		<keywords>food</keywords>
 	</location>
-	<location x="4071" y="2005" id="233" passThrough="false" intersect="true" displayName="true">
+	<location x="4054" y="2007" id="233" passThrough="false" intersect="true" displayName="true">
 		<name>Recreational and Intramural Athletic Complex</name>
 		<aliases>
 			<alias>RIMAC</alias>
@@ -1214,7 +1215,7 @@
 	<location x="4614" y="5227" id="239" passThrough="false" intersect="true" displayName="true">
 		<name>Information Center - Gilman Entrance</name>
 	</location>
-	<location x="4143" y="2219" id="240" passThrough="false" intersect="true" displayName="true">
+	<location x="4144" y="2228" id="240" passThrough="false" intersect="true" displayName="true">
 		<name>San Diego Supercomputer Center</name>
 		<aliases>
 			<alias>Supercomputer Center, San Dieg</alias>
@@ -1242,7 +1243,7 @@
 	<location x="5520" y="4859" id="245" passThrough="false" intersect="true" displayName="true">
 		<name>School of Medicine Building 4</name>
 	</location>
-	<location x="3988" y="2405" id="246" passThrough="false" intersect="true" displayName="true">
+	<location x="3989" y="2403" id="246" passThrough="false" intersect="true" displayName="true">
 		<name>Social Sciences Building</name>
 		<aliases>
 			<alias>SSB</alias>
@@ -1270,7 +1271,7 @@
 	<location x="3978" y="733" id="252" passThrough="false" intersect="true" displayName="true">
 		<name>Spanos Athletic Training Facility</name>
 	</location>
-	<location x="5470" y="4597" id="253" passThrough="false" intersect="true" displayName="true">
+	<location x="5474" y="4636" id="253" passThrough="false" intersect="true" displayName="true">
 		<name>Stein Clinical Research Building</name>
 		<aliases>
 			<alias>SCR</alias>
@@ -1809,13 +1810,13 @@
 			<alias>School of Medicine Module 872</alias>
 		</aliases>
 	</location>
-	<location x="3772" y="1770" id="352" passThrough="false" intersect="true" displayName="true">
+	<location x="3769" y="1770" id="352" passThrough="false" intersect="true" displayName="true">
 		<name>Mesa Verde Hall North</name>
 		<aliases>
 			<alias>ERC, Bldg 1.1 North</alias>
 		</aliases>
 	</location>
-	<location x="3765" y="1841" id="353" passThrough="false" intersect="true" displayName="true">
+	<location x="3769" y="1841" id="353" passThrough="false" intersect="true" displayName="true">
 		<name>Mesa Verde Hall South</name>
 		<aliases>
 			<alias>ERC, Bldg 1.1 South</alias>
@@ -1864,7 +1865,7 @@
 			<alias>ERC, Bldg 2.3 West</alias>
 		</aliases>
 	</location>
-	<location x="3682" y="2276" id="361" passThrough="false" intersect="true" displayName="true">
+	<location x="3680" y="2277" id="361" passThrough="false" intersect="true" displayName="true">
 		<name>Asante House East</name>
 		<aliases>
 			<alias>ERC, Bldg 2.4 East</alias>
@@ -1893,7 +1894,7 @@
 	<location x="3635" y="1765" id="366" passThrough="false" intersect="true" displayName="true">
 		<name>ERC Administration South</name>
 	</location>
-	<location x="3404" y="1748" id="367" passThrough="false" intersect="true" displayName="true">
+	<location x="3410" y="1768" id="367" passThrough="false" intersect="true" displayName="true">
 		<name>Cafe Ventanas</name>
 		<aliases>
 			<alias>ERC, Bldg 6.1</alias>
@@ -1906,19 +1907,19 @@
 			<alias>ERC, Bldg 4.1</alias>
 		</aliases>
 	</location>
-	<location x="3286" y="1850" id="369" passThrough="false" intersect="true" displayName="true">
+	<location x="3288" y="1853" id="369" passThrough="false" intersect="true" displayName="true">
 		<name>Asia Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 4.2</alias>
 		</aliases>
 	</location>
-	<location x="3284" y="1948" id="370" passThrough="false" intersect="true" displayName="true">
+	<location x="3285" y="1949" id="370" passThrough="false" intersect="true" displayName="true">
 		<name>Europe Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 4.3</alias>
 		</aliases>
 	</location>
-	<location x="3285" y="2045" id="371" passThrough="false" intersect="true" displayName="true">
+	<location x="3284" y="2045" id="371" passThrough="false" intersect="true" displayName="true">
 		<name>Latin America Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 4.4</alias>
@@ -1936,7 +1937,7 @@
 			<alias>Bldg 4.6</alias>
 		</aliases>
 	</location>
-	<location x="3431" y="1996" id="374" passThrough="false" intersect="true" displayName="true">
+	<location x="3431" y="1996" id="374" passThrough="true" intersect="true" displayName="true">
 		<name>Earth Hall</name>
 		<aliases>
 			<alias>ERC Rresidence Life Office</alias>
@@ -1945,7 +1946,7 @@
 			<alias>Middle Earth</alias>
 		</aliases>
 	</location>
-	<location x="3496" y="1897" id="375" passThrough="false" intersect="true" displayName="true">
+	<location x="3495" y="1901" id="375" passThrough="false" intersect="true" displayName="true">
 		<name>Middle East Hall</name>
 		<aliases>
 			<alias>ERC, Bldg 3.1</alias>
@@ -2042,5 +2043,14 @@
 		<aliases>
 			<alias>HSS 2250</alias>
 		</aliases>
+	</location>
+	<location x="911" y="8266" id="406" passThrough="true" intersect="true" displayName="true">
+		<name>To La Jolla Shores Beach</name>
+	</location>
+	<location x="5637" y="4697" id="407" passThrough="true" intersect="false" displayName="false">
+		<name>Villa La Jolla Drive Bridge East</name>
+	</location>
+	<location x="5602" y="4697" id="408" passThrough="true" intersect="false" displayName="false">
+		<name>Villa La Jolla Drive Bridge West</name>
 	</location>
 </locations>

@@ -655,7 +655,7 @@
 	<location x="5257" y="4817" id="126" passThrough="false" intersect="true" displayName="true">
 		<name>Club Med</name>
 	</location>
-	<location x="4254" y="3306" id="127" passThrough="false" intersect="true" displayName="true">
+	<location x="4268" y="3336" id="127" passThrough="false" intersect="true" displayName="true">
 		<name>Cognitive Science Building</name>
 		<aliases>
 			<alias>CSB</alias>
@@ -1011,7 +1011,7 @@
 	<location x="4305" y="2760" id="198" passThrough="false" intersect="true" displayName="true">
 		<name>Marshall College Residence Hall Center</name>
 	</location>
-	<location x="4193" y="2750" id="199" passThrough="false" intersect="true" displayName="true">
+	<location x="4265" y="2795" id="199" passThrough="false" intersect="true" displayName="true">
 		<name>Marshall Apartments II - 6 Bldgs</name>
 		<aliases>
 			<alias>Marshall Uppers</alias>
@@ -1030,7 +1030,7 @@
 			<alias>Mandler Hall (part of McGill Hall)</alias>
 		</aliases>
 	</location>
-	<location x="4018" y="3048" id="203" passThrough="false" intersect="true" displayName="true">
+	<location x="4037" y="3070" id="203" passThrough="false" intersect="true" displayName="true">
 		<name>Media Center</name>
 		<aliases>
 			<alias>Communication Building</alias>
@@ -1266,7 +1266,7 @@
 	<location x="8007" y="3635" id="249" passThrough="false" intersect="true" displayName="true">
 		<name>Shiley Eye Center</name>
 	</location>
-	<location x="4168" y="3209" id="250" passThrough="false" intersect="true" displayName="true">
+	<location x="4146" y="3211" id="250" passThrough="false" intersect="true" displayName="true">
 		<name>Solis Hall</name>
 	</location>
 	<location x="8230" y="5685" id="251" passThrough="false" intersect="true" displayName="true">
@@ -1780,7 +1780,7 @@
 			<alias>PFBH</alias>
 		</aliases>
 	</location>
-	<location x="3469" y="4798" id="347" passThrough="false" intersect="true" displayName="true">
+	<location x="3493" y="4751" id="347" passThrough="false" intersect="true" displayName="true">
 		<name>Natural Sciences Building</name>
 		<aliases>
 			<alias>NSB</alias>

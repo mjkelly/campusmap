@@ -29,7 +29,7 @@ require Exporter;
 # we use indexes in the application, then map them to the acual multiplier
 # values internally. Remember, these MUST be multiplier values, because the low-level
 # drawing routines use them to scale path/location draws.
-our @SCALES = (1, 0.5, 0.25, 0.125);
+our @SCALES = (1, 0.5, 0.25, 0.125, 0.0625);
 
 # map viewport sizes.
 our @SIZES = (
@@ -39,12 +39,16 @@ our @SIZES = (
 );
 
 # size of the base image, in pixels
-our $IMAGE_X = 7200;
-our $IMAGE_Y = 6600;
+#our $IMAGE_X = 7200;
+#our $IMAGE_Y = 6600;
+our $IMAGE_X = 9568;
+our $IMAGE_Y = 8277;
 
 # size of the thumbnail image
-our $THUMB_X = 144;
-our $THUMB_Y = 132;
+#our $THUMB_X = 144;
+#our $THUMB_Y = 132;
+our $THUMB_X = 150;
+our $THUMB_Y = 130;
 
 # store the ratio between the thumbnail and the main base image
 # (these two REALLY should be the same...)
@@ -64,10 +68,10 @@ our $_BASE_NAME		= 'base-images/map';
 # from the outside, and value is what is incorporated into the filename.
 # (There's no particular reason why they would be different.)
 our %maps = (
-	map => 'map',
+	visitor => 'visitor',
 );
 # if we get no input from the user, or it's invalid, which map do we choose?
-our $DEFAULT_MAP = 'map';
+our $DEFAULT_MAP = 'visitor';
 
 # match query-string arguments to template filenames
 our %TEMPLATES = (

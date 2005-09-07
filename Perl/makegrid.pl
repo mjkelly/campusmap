@@ -15,37 +15,45 @@ use warnings;
 
 use GD;
 
-my $debug = 1;
+my $debug = 0;
 
 my $width  = 200;
 my $height = 200;
 
-my @sizes = (
-	[7200, 6600],
-	[3600, 3300],
-	[1800, 1650],
-	[900,  825 ],
-);
+my $bx = 9568;
+my $by = 8277;
+
+my @scales = (1, 0.5, 0.25, 0.125, 0.0625);
+
+#my @sizes = (
+#	[7200, 6600],
+#	[3600, 3300],
+#	[1800, 1650],
+#	[900,  825 ],
+#);
 my $zoom = int(shift(@ARGV)) || 0;
 
 my $base_name  = 'map';
 
-#my $base_image = "grid_bases/scale-$zoom.gd2";
 my $base_image = "../color-map/scale-$zoom.gd2";
 my $out_dir = 'grid';
 
 my($x, $y);
 my $filename;
 
+my $maxx = int($bx*$scales[$zoom]);
+my $maxy = int($by*$scales[$zoom]);
+
 
 if($debug){
 	print "Reading from base image: $base_image\n";
+	print "Zoom level $zoom is ${maxx}x${maxy} px.\n";
 }
 
 $y = 0;
-while($y*$height < $sizes[$zoom][1]){
+while($y*$height < $maxy){
 	$x = 0;
-	while($x*$width < $sizes[$zoom][0]){
+	while($x*$width < $maxx){
 		printf("Opening @ (%d, %d)\n", $x*$width, $y*$height);
 
 		$filename = "$out_dir/$base_name-${zoom}[$y][$x].png";

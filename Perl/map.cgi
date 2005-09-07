@@ -7,7 +7,6 @@
 # TODO:
 #	- Create some kind of 'viewport' object to avoid passing around
 # 	  these huge, indecipherable (and frequently-changing!) lists.
-#	- move as many subroutines as possible out of this file
 #	- check loading and searching of $points: is it being done more often
 #	  than necessary on double fuzzy matches?
 #
@@ -48,7 +47,8 @@ $CGI::POST_MAX        = 1024; # 1k ought to be enough for anybody... ;)
 my $q = new CGI();
 
 # how far (in pixels) to pan when the user clicks "left", "right", "up", or
-# "down"
+# "down" (but panning in two directions at once would move sqrt($pan+$pan),
+# because I'm lazy)
 my $pan = 100;
 
 # -----------------------------------------------------------------
@@ -66,6 +66,8 @@ my $yoff   = asInt($q->param('yoff')   || 0);
 # this is undefined if no parameter was given (we go through hell later on to
 # find a good default)
 my $scale  = defined($q->param('scale')) ? asInt($q->param('scale')) : undef;
+# reset the scale if we get a bogus value
+$scale = 0 if( !defined($SCALES[$scale]) );
 # the size of the map display;  this is an index into MapGlobals::SIZES
 my $size   = asInt(defined($q->param('size')) ? $q->param('size') : 1);
 
@@ -83,14 +85,12 @@ my $thumby = defined($q->param('thumb.y')) ? asInt($q->param('thumb.y')) : undef
 # one or the other (map or thumb click offsets) should be undef
 
 # which template to use for output
-my $template = $q->param('mode') || '';
+my $template = getWords( $q->param('mode') || '' );
 # we only care about the word characters in the template name (yeah, this is for taint mode)
-$template = getWords($template);
 $template = $MapGlobals::DEFAULT_TEMPLATE if( !exists($MapGlobals::TEMPLATES{$template}) );
 
 # the base image
-my $mapname = $q->param('mapname') || '';
-$mapname = getWords($mapname);
+my $mapname = getWords( $q->param('mapname') || '' );
 $mapname = $MapGlobals::DEFAULT_MAP if(!exists($MapGlobals::maps{$mapname}) );
 
 # -----------------------------------------------------------------
@@ -457,7 +457,7 @@ if($template eq 'plain'){
 
 	# generate a temporary file on disk to store the map image
 	$tmpfile = new File::Temp(
-			TEMPLATE => 'ucsdmap-XXXXXX',
+			TEMPLATE => 'map-XXXXXX',
 			DIR => $MapGlobals::DYNAMIC_IMG_DIR,
 			SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
 			UNLINK => 0,
@@ -522,7 +522,7 @@ if($template eq 'plain'){
 	# I don't know -- which has higher cost: creating/deleting a file, or starting
 	# another perl process?
 	$tmpthumb = new File::Temp(
-			TEMPLATE => 'ucsdmap-XXXXXX',
+			TEMPLATE => 'thumb-XXXXXX',
 			DIR => $MapGlobals::DYNAMIC_IMG_DIR,
 			SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
 			UNLINK => 0,

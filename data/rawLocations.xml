@@ -202,10 +202,10 @@
 			<alias>Mesa Housing North - 3999</alias>
 		</aliases>
 	</location>
-	<location x="5012" y="3980" id="37" passThrough="false" intersect="true" displayName="true">
+	<location x="5013" y="3980" id="37" passThrough="false" intersect="true" displayName="true">
 		<name>400 University Center</name>
 	</location>
-	<location x="5042" y="3963" id="38" passThrough="false" intersect="true" displayName="true">
+	<location x="5039" y="3963" id="38" passThrough="false" intersect="true" displayName="true">
 		<name>401 University Center</name>
 	</location>
 	<location x="8831" y="5023" id="39" passThrough="false" intersect="true" displayName="true">
@@ -365,7 +365,7 @@
 			<alias>AP&amp;M</alias>
 		</aliases>
 	</location>
-	<location x="5694" y="3913" id="69" passThrough="false" intersect="true" displayName="true">
+	<location x="5692" y="3914" id="69" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg. 791</name>
 		<aliases>
 			<alias>Sixth College 791</alias>
@@ -380,7 +380,7 @@
 	<location x="5353" y="4756" id="71" passThrough="false" intersect="true" displayName="true">
 		<name>Ash</name>
 	</location>
-	<location x="5617" y="3887" id="72" passThrough="false" intersect="true" displayName="true">
+	<location x="5614" y="3887" id="72" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 790</name>
 		<aliases>
 			<alias>Sixth College 790</alias>
@@ -668,7 +668,7 @@
 			<alias>Student Crafts Center</alias>
 		</aliases>
 	</location>
-	<location x="5344" y="4225" id="129" passThrough="false" intersect="true" displayName="true">
+	<location x="5347" y="4231" id="129" passThrough="false" intersect="true" displayName="true">
 		<name>965 University Center</name>
 	</location>
 	<location x="5541" y="3519" id="130" passThrough="false" intersect="true" displayName="true">
@@ -770,7 +770,7 @@
 	<location x="3977" y="2878" id="151" passThrough="false" intersect="true" displayName="true">
 		<name>Economics Building</name>
 	</location>
-	<location x="5770" y="3936" id="152" passThrough="false" intersect="true" displayName="true">
+	<location x="5770" y="3939" id="152" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 792</name>
 		<aliases>
 			<alias>Sixth College 792</alias>
@@ -835,7 +835,7 @@
 	<location x="5377" y="5070" id="164" passThrough="false" intersect="true" displayName="true">
 		<name>Guava</name>
 	</location>
-	<location x="3805" y="4242" id="165" passThrough="false" intersect="true" displayName="true">
+	<location x="3802" y="4241" id="165" passThrough="false" intersect="true" displayName="true">
 		<name>Main Gymnasium</name>
 	</location>
 	<location x="3688" y="3883" id="166" passThrough="false" intersect="true" displayName="true">
@@ -946,7 +946,7 @@
 			<alias>Deep Sea Drilling Building C</alias>
 		</aliases>
 	</location>
-	<location x="4530" y="4076" id="185" passThrough="false" intersect="true" displayName="true">
+	<location x="4525" y="4091" id="185" passThrough="false" intersect="true" displayName="true">
 		<name>International Center</name>
 	</location>
 	<location x="1184" y="6287" id="186" passThrough="false" intersect="true" displayName="true">
@@ -955,7 +955,7 @@
 			<alias>NORPAX</alias>
 		</aliases>
 	</location>
-	<location x="5830" y="4001" id="187" passThrough="false" intersect="true" displayName="true">
+	<location x="5831" y="4003" id="187" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth- Bldg 793</name>
 		<aliases>
 			<alias>Sixth College 793</alias>
@@ -1074,7 +1074,7 @@
 			<alias>La Casa</alias>
 		</aliases>
 	</location>
-	<location x="3677" y="4242" id="210" passThrough="false" intersect="true" displayName="true">
+	<location x="3674" y="4250" id="210" passThrough="false" intersect="true" displayName="true">
 		<name>Natatorium</name>
 	</location>
 	<location x="730" y="7583" id="211" passThrough="false" intersect="true" displayName="true">
@@ -1133,7 +1133,7 @@
 			<alias>Scripps Building/Director&apos;s Office</alias>
 		</aliases>
 	</location>
-	<location x="3583" y="4561" id="221" passThrough="false" intersect="true" displayName="true">
+	<location x="3572" y="4560" id="221" passThrough="false" intersect="true" displayName="true">
 		<name>Pacific Hall</name>
 	</location>
 	<location x="6313" y="4071" id="222" passThrough="false" intersect="true" displayName="true">
@@ -1589,7 +1589,7 @@
 			<alias>OAR-2, Keck</alias>
 		</aliases>
 	</location>
-	<location x="5961" y="4135" id="311" passThrough="false" intersect="true" displayName="true">
+	<location x="5961" y="4138" id="311" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth College Dean Residence</name>
 		<aliases>
 			<alias>Dean&apos;s Residence, Sixth College</alias>
@@ -1604,7 +1604,7 @@
 			<alias>NTV</alias>
 		</aliases>
 	</location>
-	<location x="5642" y="4067" id="313" passThrough="false" intersect="true" displayName="true">
+	<location x="5643" y="4067" id="313" passThrough="false" intersect="true" displayName="true">
 		<name>Sixth College 701</name>
 		<aliases>
 			<alias>788 Roosevelt College</alias>

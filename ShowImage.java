@@ -472,10 +472,6 @@ class ScrollablePicture extends JLabel implements Scrollable,
 MouseMotionListener{
 	final static long serialVersionUID = 37;  //huh?
 	
-	//XXX: Here are the path and location version numbers.  
-	final static int PATH_VERSION_NUMBER = 1;
-	final static int LOCATION_VERSION_NUMBER = 2;
-	
 	private int maxUnitIncrement = 5;
 	private boolean missingPicture = false;
 	
@@ -503,9 +499,9 @@ MouseMotionListener{
 	private Point previouslySearchedPoint;
 	
 	// The index in the paths vector of the last used path out of
-	// a searched locations.  
+	// a searched locations.
 	private int lastVertex = 0;
-	
+
 	/*
 	 * Input/Output filenames
 	 */
@@ -708,7 +704,7 @@ MouseMotionListener{
 		// the Point to the path.  
 		if(curPath == null)
 		{
-			// Allocate new vector
+			// Create the new path storage
 			curPath = new Vector<Point>();
 		}
 

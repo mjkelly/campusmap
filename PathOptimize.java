@@ -501,7 +501,7 @@ public class PathOptimize
 			
 			
 			final int SIZE_OF_INT = 4;
-			final int NUM_BYTES_TO_WRITE_POINT = 2*SIZE_OF_INT;
+			final int POINT_SIZE = 2*SIZE_OF_INT;
 			
 			// Write out the # number of bytes per edge...(constant)
 			edgeOut.writeInt(
@@ -511,7 +511,7 @@ public class PathOptimize
 					// Number of points
 					4*SIZE_OF_INT +
 					// The Points + their buffer
-					NUM_BYTES_TO_WRITE_POINT*maxNumPointsPerEdge
+					POINT_SIZE*maxNumPointsPerEdge
 			);
 			
             // for each Edge
@@ -1459,7 +1459,11 @@ class PathPoint
 	}
 }
 
-
+/**
+ * A node in a graph, containing any number of vertices (Edge objects).
+ * This is the final in-memory representation of the path data, and a direct
+ * analog to the binary file format.
+ */
 class GraphPoint
 {
 	// Binary file identifier
@@ -1790,6 +1794,11 @@ class GraphPoint
 	}
 }
 
+/**
+ * A vertex between two GraphPoints, containing a list of intermediate
+ * displayable points (representing the physical path the edge takes).
+ *
+ */
 class Edge
 {
 	// Binary file identifier

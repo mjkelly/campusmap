@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <locations version="1.0">
-	<location x="4910" y="4113" id="1" passThrough="false" intersect="true" displayName="true">
+	<location x="4898" y="4085" id="1" passThrough="false" intersect="true" displayName="true">
 		<name>201 University Center</name>
 	</location>
 	<location x="4843" y="4162" id="2" passThrough="false" intersect="true" displayName="true">
@@ -28,7 +28,7 @@
 	<location x="5103" y="4080" id="6" passThrough="false" intersect="true" displayName="true">
 		<name>301A University Center</name>
 	</location>
-	<location x="5174" y="4017" id="7" passThrough="false" intersect="true" displayName="true">
+	<location x="5168" y="4025" id="7" passThrough="false" intersect="true" displayName="true">
 		<name>302 University Center</name>
 	</location>
 	<location x="5170" y="4139" id="8" passThrough="false" intersect="true" displayName="true">
@@ -43,7 +43,7 @@
 			<alias>University Center 309</alias>
 		</aliases>
 	</location>
-	<location x="5289" y="4007" id="10" passThrough="false" intersect="true" displayName="true">
+	<location x="5280" y="4007" id="10" passThrough="false" intersect="true" displayName="true">
 		<name>310 University Center</name>
 	</location>
 	<location x="7831" y="4806" id="11" passThrough="false" intersect="true" displayName="true">
@@ -392,31 +392,31 @@
 			<alias>Revelle Residence Hall Atlantis</alias>
 		</aliases>
 	</location>
-	<location x="6515" y="1983" id="74" passThrough="false" intersect="true" displayName="true">
+	<location x="6522" y="2016" id="74" passThrough="false" intersect="true" displayName="true">
 		<name>Biology Field Station - Froghouse 1</name>
 		<aliases>
 			<alias>Frog House, Biology Field Station</alias>
 		</aliases>
 	</location>
-	<location x="6428" y="1933" id="75" passThrough="false" intersect="true" displayName="true">
+	<location x="6435" y="1966" id="75" passThrough="false" intersect="true" displayName="true">
 		<name>Biology Field Station - Greenhouse 1</name>
 	</location>
-	<location x="6476" y="1934" id="76" passThrough="false" intersect="true" displayName="true">
+	<location x="6483" y="1965" id="76" passThrough="false" intersect="true" displayName="true">
 		<name>Biology Field Station - Greenhouse 2</name>
 	</location>
-	<location x="6474" y="1879" id="77" passThrough="false" intersect="true" displayName="true">
+	<location x="6481" y="1912" id="77" passThrough="false" intersect="true" displayName="true">
 		<name>Biology Field Station - Greenhouse 3</name>
 	</location>
-	<location x="6474" y="1993" id="78" passThrough="false" intersect="true" displayName="true">
+	<location x="6482" y="2026" id="78" passThrough="false" intersect="true" displayName="true">
 		<name>Biology Field Station - Laboratory</name>
 	</location>
-	<location x="6514" y="2004" id="79" passThrough="false" intersect="true" displayName="true">
+	<location x="6523" y="2036" id="79" passThrough="false" intersect="true" displayName="true">
 		<name>Biology Field Station - Shadehouse 2</name>
 		<aliases>
 			<alias>Biology Field Station - Shade House</alias>
 		</aliases>
 	</location>
-	<location x="6412" y="1993" id="80" passThrough="false" intersect="true" displayName="true">
+	<location x="6419" y="2024" id="80" passThrough="false" intersect="true" displayName="true">
 		<name>Biology Field Station - Storage</name>
 		<aliases>
 			<alias>Biology Field Station - Storage and Restroom</alias>
@@ -677,7 +677,7 @@
 	<location x="1450" y="6929" id="131" passThrough="false" intersect="true" displayName="true">
 		<name>Deep Sea Drilling East</name>
 	</location>
-	<location x="1307" y="6916" id="132" passThrough="false" intersect="true" displayName="true">
+	<location x="1310" y="6864" id="132" passThrough="false" intersect="true" displayName="true">
 		<name>Deep Sea Drilling West</name>
 	</location>
 	<location x="4022" y="5731" id="133" passThrough="false" intersect="true" displayName="true">
@@ -832,7 +832,7 @@
 			<alias>Medical Genetics Building</alias>
 		</aliases>
 	</location>
-	<location x="5376" y="5076" id="164" passThrough="false" intersect="true" displayName="true">
+	<location x="5377" y="5070" id="164" passThrough="false" intersect="true" displayName="true">
 		<name>Guava</name>
 	</location>
 	<location x="3805" y="4242" id="165" passThrough="false" intersect="true" displayName="true">
@@ -978,7 +978,7 @@
 			<alias>T-6333</alias>
 		</aliases>
 	</location>
-	<location x="5147" y="4611" id="191" passThrough="false" intersect="true" displayName="true">
+	<location x="5147" y="4623" id="191" passThrough="false" intersect="true" displayName="true">
 		<name>Medical Teaching Facility</name>
 		<aliases>
 			<alias>MTF</alias>
@@ -1003,7 +1003,7 @@
 			<alias>Marshall Lowers</alias>
 		</aliases>
 	</location>
-	<location x="3846" y="3080" id="196" passThrough="false" intersect="true" displayName="true">
+	<location x="3846" y="3082" id="196" passThrough="false" intersect="true" displayName="true">
 		<name>Marshall College Administration Building</name>
 		<aliases>
 			<alias>Marshall College Provost Office</alias>
@@ -1530,7 +1530,7 @@
 	<location x="3849" y="4789" id="297" passThrough="false" intersect="true" displayName="true">
 		<name>Urey Hall Office Addition</name>
 	</location>
-	<location x="5877" y="4741" id="298" passThrough="false" intersect="true" displayName="true">
+	<location x="5873" y="4720" id="298" passThrough="false" intersect="true" displayName="true">
 		<name>Veterans Administration Hospital</name>
 		<aliases>
 			<alias>Medical Center - Veterans Administration</alias>
@@ -1568,7 +1568,7 @@
 			<alias>Earl Warren Apartments</alias>
 		</aliases>
 	</location>
-	<location x="4038" y="4979" id="307" passThrough="false" intersect="true" displayName="true">
+	<location x="4028" y="4979" id="307" passThrough="false" intersect="true" displayName="true">
 		<name>York Hall</name>
 	</location>
 	<location x="1532" y="6377" id="308" passThrough="false" intersect="true" displayName="true">
@@ -1660,7 +1660,7 @@
 			<alias>WHEL Study</alias>
 		</aliases>
 	</location>
-	<location x="5201" y="4823" id="327" passThrough="false" intersect="true" displayName="true">
+	<location x="5202" y="4818" id="327" passThrough="false" intersect="true" displayName="true">
 		<name>Farris Student Lounge</name>
 		<aliases>
 			<alias>Club Med Student Lounge</alias>
@@ -1693,7 +1693,7 @@
 			<alias>Modular Office Building 3, Thornton</alias>
 		</aliases>
 	</location>
-	<location x="4974" y="4852" id="332" passThrough="false" intersect="true" displayName="true">
+	<location x="4984" y="4857" id="332" passThrough="false" intersect="true" displayName="true">
 		<name>W. M. Keck Building</name>
 		<aliases>
 			<alias>MRI Building, functional</alias>
@@ -1711,7 +1711,7 @@
 	<location x="6552" y="2612" id="334" passThrough="false" intersect="true" displayName="true">
 		<name>Campus Services Complex - Shops</name>
 	</location>
-	<location x="5346" y="5181" id="335" passThrough="false" intersect="true" displayName="true">
+	<location x="5328" y="5172" id="335" passThrough="false" intersect="true" displayName="true">
 		<name>Holly</name>
 		<aliases>
 			<alias>BIRN Module, 867 School of Medicine</alias>
@@ -2052,5 +2052,8 @@
 	</location>
 	<location x="5602" y="4697" id="408" passThrough="true" intersect="false" displayName="false">
 		<name>Villa La Jolla Drive Bridge West</name>
+	</location>
+	<location x="5057" y="5062" id="409" passThrough="false" intersect="true" displayName="true">
+		<name>School of Pharmacy &amp; Pharmaceutical Sciences</name>
 	</location>
 </locations>

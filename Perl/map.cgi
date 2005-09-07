@@ -27,6 +27,7 @@ use CGI;
 use File::Temp ();
 use HTML::Template;
 use GD;
+use POSIX qw(strftime);
 
 # import lots of stuff from lots of different places...
 use MapGlobals qw(TRUE FALSE INFINITY between asInt round getWords @SIZES @SCALES);
@@ -67,13 +68,13 @@ my $yoff   = asInt($q->param('yoff')   || 0);
 # find a good default)
 my $scale  = defined($q->param('scale')) ? asInt($q->param('scale')) : undef;
 # reset the scale if we get a bogus value
-$scale = 0 if( !defined($SCALES[$scale]) );
+$scale = 0 if( defined($scale) && !exists($SCALES[$scale]) );
 # the size of the map display;  this is an index into MapGlobals::SIZES
-my $size   = asInt(defined($q->param('size')) ? $q->param('size') : 1);
+my $size   = defined($q->param('size')) ? asInt($q->param('size')) : $MapGlobals::DEFAULT_SIZE;
 
 # how fast do you walk?
 # in minutes per mile.
-my $mpm    = asInt($q->param('mpm'))  || 15;
+my $mpm    = asInt($q->param('mpm'))  || $MapGlobals::DEFAULT_MPM;
 
 # click offsets from the map
 my $mapx = defined($q->param('map.x')) ? asInt($q->param('map.x')) : undef;
@@ -91,7 +92,7 @@ $template = $MapGlobals::DEFAULT_TEMPLATE if( !exists($MapGlobals::TEMPLATES{$te
 
 # the base image
 my $mapname = getWords( $q->param('mapname') || '' );
-$mapname = $MapGlobals::DEFAULT_MAP if(!exists($MapGlobals::maps{$mapname}) );
+$mapname = $MapGlobals::DEFAULT_MAP if(!exists($MapGlobals::MAPS{$mapname}) );
 
 # -----------------------------------------------------------------
 # Do startup stuff: load data, convert some of the input data, initialize
@@ -344,13 +345,15 @@ else{
 		}
 	}
 
-	if($src_found){
-		$xoff = $locations->{'ByID'}{$from}{'x'};
-		$yoff = $locations->{'ByID'}{$from}{'y'};
-	}
-	elsif($dst_found){
-		$xoff = $locations->{'ByID'}{$to}{'x'};
-		$yoff = $locations->{'ByID'}{$to}{'y'};
+	if(!$xoff && !$yoff){
+		if($src_found){
+			$xoff = $locations->{'ByID'}{$from}{'x'};
+			$yoff = $locations->{'ByID'}{$from}{'y'};
+		}
+		elsif($dst_found){
+			$xoff = $locations->{'ByID'}{$to}{'x'};
+			$yoff = $locations->{'ByID'}{$to}{'y'};
+		}
 	}
 
 	# use the default scale
@@ -372,27 +375,6 @@ if(!$xoff && !$yoff){
 	$yoff = $MapGlobals::DEFAULT_YOFF;
 }
 
-# integrate the image click offsets (if the image was clicked to recenter)
-if( defined($mapx) && defined($mapy) ){
-	# adjust the map offsets so they work from the center of the screen
-	$mapx -= $width/2;
-	$mapy -= $height/2;
-
-	# now adjust our absolute x/y offsets to take into account the last click location
-	$xoff += $mapx/$SCALES[$scale];
-	$yoff += $mapy/$SCALES[$scale];
-}
-# if we got a thumbnail click, it's a little easier
-elsif( defined($thumbx) && defined($thumbx) ){
-	$xoff = int($thumbx/$MapGlobals::RATIO_X);
-	$yoff = int($thumby/$MapGlobals::RATIO_Y);
-}
-
-# make sure the x/y offsets are in range, and correct them if they aren't
-# (but only AFTER we remember them for the links dependent on the current, unadjusted state)
-$xoff = between(0, $MapGlobals::IMAGE_X, $xoff);
-$yoff = between(0, $MapGlobals::IMAGE_Y, $yoff);
-
 # these coordinates are the "visible" x/y offsets: that is, the center of what
 # you actually see on the map (which can't be _too_ close to the edges of the
 # map). e.g., even if the "real" center is at (0,0), these will be at (width/2,
@@ -401,6 +383,31 @@ $yoff = between(0, $MapGlobals::IMAGE_Y, $yoff);
 # offsets, anything that PRESERVES it should use the regular ones.
 my $norm_xoff = between(($width/$SCALES[$scale])/2, $MapGlobals::IMAGE_X - ($width/$SCALES[$scale])/2, $xoff);
 my $norm_yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SCALES[$scale])/2, $yoff);
+
+# integrate the image click offsets (if the image was clicked to recenter)
+if( defined($mapx) && defined($mapy) ){
+	# adjust the map offsets so they work from the center of the screen
+	$mapx -= $width/2;
+	$mapy -= $height/2;
+
+	# now adjust our absolute x/y offsets to take into account the last click location
+	$xoff = $norm_xoff + $mapx/$SCALES[$scale];
+	$yoff = $norm_yoff + $mapy/$SCALES[$scale];
+}
+# if we got a thumbnail click, it's a little easier
+elsif( defined($thumbx) && defined($thumbx) ){
+	$xoff = int($thumbx/$MapGlobals::RATIO_X);
+	$yoff = int($thumby/$MapGlobals::RATIO_Y);
+}
+
+# and now that we _changed_ them, we've got to make sure the offsets are
+# in-bounds again: $xoff and $yoff just have to be somewhere inside the map;
+# $norm_xoff and $norm_yoff must be valid locations for the center of the
+# screen (just like before)
+$xoff = between(0, $MapGlobals::IMAGE_X, $xoff);
+$yoff = between(0, $MapGlobals::IMAGE_Y, $yoff);
+$norm_xoff = between(($width/$SCALES[$scale])/2, $MapGlobals::IMAGE_X - ($width/$SCALES[$scale])/2, $xoff);
+$norm_yoff = between(($height/$SCALES[$scale])/2, $MapGlobals::IMAGE_Y - ($height/$SCALES[$scale])/2, $yoff);
 
 # these are coordinates of the upper-left-hand corner, used by low-level
 # drawing functions.
@@ -414,13 +421,13 @@ $rawyoff = between(0, $MapGlobals::IMAGE_Y - $height, $rawyoff);
 # -----------------------------------------------------------------
 # Open the map image and draw to it. Note that the draw statements are ordered
 # so that the various elements on the map will be layered correctly -- they are
-# NOT necesarily in a logical order.
+# NOT necesarily in logical order.
 # -----------------------------------------------------------------
 
 # if we're using the plain template, write output images
 my($tmpfile, $tmpthumb);
 my($pathImgRect);
-if($template eq 'plain'){
+if($template eq 'plain' || $template eq 'print'){
 
 	# get the image of the appropriate scale from disk, and grab only
 	# what we need by size and offset
@@ -468,11 +475,96 @@ if($template eq 'plain'){
 	binmode($tmpfile);
 	print $tmpfile $im->png();
 	close($tmpfile);
+}
 
+# -----------------------------------------------------------------
+# If we're in print view, draw the two close-up views.
+# -----------------------------------------------------------------
+my($little_window_src, $little_window_dst);
+if($template eq 'print'){
+	if($src_found){
+		my $x = $locations->{'ByID'}{$from}{'x'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_X/2;
+		my $y = $locations->{'ByID'}{$from}{'y'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_Y/2;
 
-	# -----------------------------------------------------------------
-	# Draw to the thumbnail.
-	# -----------------------------------------------------------------
+		# get the image of the appropriate scale from disk, and grab only
+		# what we need by size and offset
+		my $src_im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($mapname, $MapGlobals::LITTLE_WINDOW_SCALE),
+			$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y);
+
+		my $src_color = $src_im->colorAllocate(@MapGlobals::SRC_COLOR);
+		my $path_color = $src_im->colorAllocate(@MapGlobals::PATH_COLOR);
+		my $bg_color = $src_im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
+
+		# draw the path
+		if($havePath){
+			foreach my $line (@$pathPoints){
+				MapGraphics::drawLines($line, $src_im, $MapGlobals::PATH_THICKNESS, $path_color, $x, $y,
+					$MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
+			}
+		}
+
+		# draw the location
+		MapGraphics::drawLocation($locations->{'ByID'}{$from}, $src_im, $src_color, $src_color, $bg_color,
+			$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
+	
+
+		# write out the images
+		$little_window_src = new File::Temp(
+				TEMPLATE => 'zoom-XXXXXX',
+				DIR => $MapGlobals::DYNAMIC_IMG_DIR,
+				SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
+				UNLINK => 0,
+			);
+		chmod(0644, $little_window_src->filename);
+		binmode($little_window_src);
+		print $little_window_src $src_im->png();
+		close($little_window_src);
+	}
+
+	if($dst_found){
+		my $x = $locations->{'ByID'}{$to}{'x'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_X/2;
+		my $y = $locations->{'ByID'}{$to}{'y'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_Y/2;
+
+		# get the image of the appropriate scale from disk, and grab only
+		# what we need by size and offset
+		my $dst_im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($mapname, $MapGlobals::LITTLE_WINDOW_SCALE),
+			$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y);
+
+		my $dst_color = $dst_im->colorAllocate(@MapGlobals::DST_COLOR);
+		my $path_color = $dst_im->colorAllocate(@MapGlobals::PATH_COLOR);
+		my $bg_color = $dst_im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
+
+		# draw the path
+		if($havePath){
+			foreach my $line (@$pathPoints){
+				MapGraphics::drawLines($line, $dst_im, $MapGlobals::PATH_THICKNESS, $path_color, $x, $y,
+					$MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
+			}
+		}
+
+		# draw the location
+		MapGraphics::drawLocation($locations->{'ByID'}{$to}, $dst_im, $dst_color, $dst_color, $bg_color,
+			$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
+	
+
+		# write out the images
+		$little_window_dst = new File::Temp(
+				TEMPLATE => 'zoom-XXXXXX',
+				DIR => $MapGlobals::DYNAMIC_IMG_DIR,
+				SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
+				UNLINK => 0,
+			);
+		chmod(0644, $little_window_dst->filename);
+		binmode($little_window_dst);
+		print $little_window_dst $dst_im->png();
+		close($little_window_dst);
+	}
+}
+
+# -----------------------------------------------------------------
+# Draw to the thumbnail.
+# -----------------------------------------------------------------
+if($template eq 'plain'){
 
 	# grab the thumbnail from disk
 	my $thumb = GD::Image->newFromGd2($MapGlobals::THUMB_FILE);
@@ -539,8 +631,9 @@ if($template eq 'plain'){
 		close($edgeFH);
 	}
 }
+
 # if we're using the javascript template, write scaled path images
-elsif ($template eq 'js'){
+if ($template eq 'js'){
 
 	if($havePath){
 
@@ -600,16 +693,31 @@ my $tmpl = HTML::Template->new(
 	global_vars => 1
 );
 
-# this is stuff for the plain view
-# XXX: merge the code for these two views.
-if($template eq 'plain'){
+# link to the print view
+$tmpl->param( PRINT_URL => 
+	"$MapGlobals::SELF?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff, $scale, $size, $mpm, 'print'));
+
+# this is stuff for the plain view -- and the print view is just another plain
+# view without widgets
+# TODO: merge the code for these two views.
+if($template eq 'plain' || $template eq 'print'){
 
 	# basic info: who we are, where to find images, etc
 	$tmpl->param( SELF => $MapGlobals::SELF ); # whoooooooooo are you?
 
 	# filenames for the temporary thumb and map files
 	$tmpl->param( IMG_VIEW => $tmpfile->filename );
-	$tmpl->param( IMG_THUMB => $tmpthumb->filename );
+	if($template eq 'plain'){
+		$tmpl->param( IMG_THUMB => $tmpthumb->filename );
+	}
+	elsif($template eq 'print'){
+		if($src_found){
+			$tmpl->param( IMG_SRC => $little_window_src->filename );
+		}
+		if($dst_found){
+			$tmpl->param( IMG_DST => $little_window_dst->filename );
+		}
+	}
 
 	# static content directories
 	$tmpl->param( HTML_DIR => $MapGlobals::HTML_BASE );
@@ -669,6 +777,9 @@ if($template eq 'plain'){
 	$tmpl->param( TXT_DST => $toTxtSafe );
 	$tmpl->param( TXT_DST_OFFICIAL => CGI::escapeHTML($locations->{'ByID'}{$to}{'Name'}) );
 	$tmpl->param( TXT_ERROR => $ERROR );
+	if($template eq 'print'){
+		$tmpl->param( TXT_NOW => strftime("%r %A, %B %d, %Y", localtime()) );
+	}
 
 	# this is tells whether we're actually displaying a path between two separate locations
 	$tmpl->param( GOT_PATH => $havePath );
@@ -763,10 +874,6 @@ elsif ($template eq 'js'){
 	#$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
 
 }
-# XXX: theoretical print view?
-#elsif ($template eq 'print'){
-#
-#}
 
 # -----------------------------------------------------------------
 # Everything is finally sent to the browser

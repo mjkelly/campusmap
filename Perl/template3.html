@@ -145,8 +145,10 @@
 
 					<input type="submit" name="submit" value="Recalculate" />
 				</form>
-
 			</TMPL_IF>
+
+			<p><a href="<TMPL_VAR NAME=PRINT_URL>" target="_blank">[Print]</a></p>
+
 			<TMPL_IF NAME=TXT_ERROR>
 				<p><b><TMPL_VAR NAME=TXT_ERROR></b></p>
 			</TMPL_IF>

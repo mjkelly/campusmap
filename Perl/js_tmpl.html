@@ -25,6 +25,7 @@
 <script type="text/javascript" src="<TMPL_VAR NAME=HTML_DIR>/menus.js"></script>
 <script type="text/javascript">
 	// set global variables through the template
+	var self			= "<TMPL_VAR NAME=SELF>";
 	var zoomButtonURL		= "<TMPL_VAR NAME=IMG_DIR>/zoom-level.png";
 	var zoomButtonSelectedURL	= "<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png";
 	var pathsDir			= "<TMPL_VAR NAME=PATHS_DIR>";
@@ -130,6 +131,9 @@
 					<input type="submit" value="Recalculate" class="operaDoesNotInheritProperly" />
 					</form>
 			</TMPL_IF>
+
+			<p><a href="javascript:goPrint();">[Print]</a></p>
+
 			<TMPL_IF NAME=TXT_ERROR>
 				<p><b><TMPL_VAR NAME=TXT_ERROR></b></p>
 			</TMPL_IF>

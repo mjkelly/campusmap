@@ -977,6 +977,43 @@ function Viewport(x, y, width, height, curZoom, curMap){
 }
 
 /******************************************************************
+* Go to the print screen.
+******************************************************************/
+function goPrint(){
+	window.open(printURL());
+	//alert("Go here: " + printURL());
+}
+
+/******************************************************************
+* Return the URL that leads to the print screen for the current map state.
+******************************************************************/
+function printURL(){
+	return state(
+		(locationList['src'] ? locationList['src'].name : null),
+		(locationList['dst'] ? locationList['dst'].name : null),
+		view.curX, view.curY, view.curZoom, null, document.main.mpm.value,
+		'print'
+	);
+}
+
+/******************************************************************
+* Return the URL representing the current given map state. All arguments are
+* mostly what they seem. You needn't think about how the scale affects the X/Y
+* offsets, escaping location names, etc. Just call it. It's all under control.
+* Trust me.
+******************************************************************/
+function state(from, to, x, y, scale, size, mpm, mode){
+	return self + '?'
+		+ (from ? 'from=' + escape(from) : '')
+		+ (to ? '&to=' + escape(to) : '')
+		+ (x ? '&xoff=' + ((x + view.width/2) / scales[view.curZoom]) : '')
+		+ (y ? '&yoff=' + ((y + view.height/2) / scales[view.curZoom]) : '')
+		+ (scale ? '&scale=' + scale : '') 
+		+ (mpm ? '&mpm=' + document.main.mpm.value : '')
+		+ (mode ? '&mode=' + mode : '');
+}
+
+/******************************************************************
 * Recalculate how long it takes a person to walk The Path.
 ******************************************************************/
 function calcTime(prevDist, mpm){

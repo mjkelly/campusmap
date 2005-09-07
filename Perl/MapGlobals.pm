@@ -24,6 +24,32 @@ require Exporter;
 @EXPORT = qw();
 
 # -----------------------------------------------------------------
+# Defaults.
+# -----------------------------------------------------------------
+# NOTE: Many of these values are indices into arrays or hashes declared later.
+# Look at the corresponding array/hash and they'll make more sense.
+
+# index into @SIZES when it's not specified
+our $DEFAULT_SIZE = 1;
+
+# if we get no input from the user, or it's invalid, which map do we choose?
+# this is a key in %MAPS.
+our $DEFAULT_MAP = 'visitor';
+
+# key into %TEMPLATES
+our $DEFAULT_TEMPLATE = 'js';
+
+# where to center when there isn't any selection.
+# (4608, 3172) is Geisel Library
+our $DEFAULT_XOFF  = 4608;
+our $DEFAULT_YOFF  = 3172;
+our $DEFAULT_SCALE = 4; #index into @SCALES
+
+# the default number of minutes it takes to walk one mile, if the user doesn't
+# specify
+our $DEFAULT_MPM = 20;
+
+# -----------------------------------------------------------------
 # Sizes.
 # -----------------------------------------------------------------
 # we use indexes in the application, then map them to the acual multiplier
@@ -31,27 +57,32 @@ require Exporter;
 # drawing routines use them to scale path/location draws.
 our @SCALES = (1, 0.5, 0.25, 0.125, 0.0625);
 
-# map viewport sizes.
+# map viewport sizes, in pixels.
 our @SIZES = (
 	[400, 300],
 	[500, 375],
 	[640, 480],
 );
 
+# the size of the little print-view windows for the source and destination
+# locations, in pixels
+our $LITTLE_WINDOW_X = 150;
+our $LITTLE_WINDOW_Y = 150;
+# how far do we zoom in? (index into @SCALES)
+our $LITTLE_WINDOW_SCALE = 0;
+
 # size of the base image, in pixels
-#our $IMAGE_X = 7200;
-#our $IMAGE_Y = 6600;
 our $IMAGE_X = 9568;
 our $IMAGE_Y = 8277;
 
-# size of the thumbnail image
-#our $THUMB_X = 144;
-#our $THUMB_Y = 132;
+# size of the thumbnail image, in pixels. This is not necessarily passed
+# through to the templates, but is used for drawing the locations and viewport
+# on the thumb image
 our $THUMB_X = 150;
 our $THUMB_Y = 130;
 
 # store the ratio between the thumbnail and the main base image
-# (these two REALLY should be the same...)
+# (these two should be the same or very very close...)
 our $RATIO_X = $THUMB_X / $IMAGE_X;
 our $RATIO_Y = $THUMB_Y / $IMAGE_Y;
 
@@ -61,65 +92,59 @@ our $RATIO_Y = $THUMB_Y / $IMAGE_Y;
 # the name of the main interface script, used for form actions, etc
 our $SELF		= 'map.cgi';
 
-# some names for the various base images.
+# prefix for the base images (relative to the script)
 our $_BASE_NAME		= 'base-images/map';
 
 # The series of scaled base images we may use. The key is what is passed in
 # from the outside, and value is what is incorporated into the filename.
-# (There's no particular reason why they would be different.)
-our %maps = (
+# (There's no particular reason why they would be different, but there they
+# are.)
+our %MAPS = (
 	visitor => 'visitor',
 );
-# if we get no input from the user, or it's invalid, which map do we choose?
-our $DEFAULT_MAP = 'visitor';
 
 # match query-string arguments to template filenames
 our %TEMPLATES = (
 	plain => 'template3.html',
-#	print => 'print_tmpl.html',
 	js => 'js_tmpl.html',
+	print => 'print_tmpl.html',
 );
-our $DEFAULT_TEMPLATE = 'js';
 
 # where static content is stored
-our $HTML_BASE		= '../../ucsdmap';
-##our $HTML_BASE		= '..';
+our $HTML_BASE		= '../../ucsdmap';		# url
+##our $HTML_BASE		= '..';			# url
 
-our $CSS_DIR		= "$HTML_BASE/css";
-our $STATIC_IMG_DIR	= "$HTML_BASE/images";
-our $DYNAMIC_IMG_DIR	= "$HTML_BASE/dynamic";
-our $PATH_IMG_DIR	= $DYNAMIC_IMG_DIR . '/paths';
-our $GRID_IMG_DIR	= $STATIC_IMG_DIR . '/grid';
+# subdirectories of $HTML base for specific types of data
+our $CSS_DIR		= $HTML_BASE . '/css';		# url
+our $STATIC_IMG_DIR	= $HTML_BASE . '/images';	# url
+our $DYNAMIC_IMG_DIR	= $HTML_BASE . '/dynamic';	# path
+our $PATH_IMG_DIR	= $DYNAMIC_IMG_DIR . '/paths';	# url
+our $GRID_IMG_DIR	= $STATIC_IMG_DIR . '/grid';	# url
 
 # where binary input files are stored
-our $DATA_DIR		= '.';
+our $DATA_DIR		= 'data';				# path
 # locations of the binary files that contain the graph of paths
-our $POINT_FILE		= "$DATA_DIR/binPointData.dat";
-our $LOCATION_FILE	= "$DATA_DIR/binLocationData.dat";
-our $EDGE_FILE		= "$DATA_DIR/binEdgeData.dat";
+our $POINT_FILE		= $DATA_DIR . '/binPointData.dat';	# path
+our $LOCATION_FILE	= $DATA_DIR . '/binLocationData.dat';	# path
+our $EDGE_FILE		= $DATA_DIR . '/binEdgeData.dat';	# path
 
-our $THUMB_FILE = 'thumbnail.gd2';
+# where the thumbnail base image is
+our $THUMB_FILE = 'thumbnail.gd2';	# path
 
 # -----------------------------------------------------------------
 # Graphics.
 # -----------------------------------------------------------------
-# how many pixels (on the largest base map) equal one meter
-# From tests, we've determined that 288696.00 px is approximately 0.72 mi.
-# that gives us ~400967 px per mile.
+# how many pixels (on the base map) equal one $UNIT
 our $PIXELS_PER_UNIT = 4010;
 # an abbreviation of the unit we're using (m for meters, mi for miles, etc)
 our $UNITS = "mi";
 
-# where to center when there isn't any selection.
-# (2184, 3264) is Geisel Library
-our $DEFAULT_XOFF  = 2184;
-our $DEFAULT_YOFF  = 3264;
-our $DEFAULT_SCALE = 3; #index into @SCALES
 # this is the scale we use when we're zoomed to a single
 # location (a real one). also an index into @SCALES.
 our $SINGLE_LOC_SCALE = 1;
 
-# how wide the font that we use for drawling location names is, in pixels
+# how wide the font that we use for drawling location names is, in pixels.
+# Used inside MapGraphics.pm.
 our $FONT_WIDTH = 7;
 our $FONT_HEIGHT = 13;
 
@@ -169,7 +194,7 @@ our $PATH_MAX_AGE	= 10*60;
 # Given a scale, return the path to the GD2 base image at that scale.
 # Does NOT check if the file exists.
 # Args:
-#	- the name of the map, as passed in by the user (a key into %maps)
+#	- the name of the map, as passed in by the user (a key into %MAPS)
 #	- the scale, as an array offset
 # Returns:
 #	- the path to the GD2 base image at that scale. File might
@@ -177,8 +202,8 @@ our $PATH_MAX_AGE	= 10*60;
 ###################################################################
 sub getGd2Filename{
 	my ($map, $scale) = (@_);
-	warn "RETURNING: " . $_BASE_NAME . '-' . $maps{$map} . '-' . $scale . '.gd2';
-	return $_BASE_NAME . '-' . $maps{$map} . '-' . $scale . '.gd2';
+	warn "RETURNING: " . $_BASE_NAME . '-' . $MAPS{$map} . '-' . $scale . '.gd2';
+	return $_BASE_NAME . '-' . $MAPS{$map} . '-' . $scale . '.gd2';
 }
 
 ###################################################################

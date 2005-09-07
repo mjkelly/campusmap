@@ -1,0 +1,24 @@
+<!--
+	Descripton of the location data type. All location input files must
+	conform to this DTD. The editor's behavior on invalid input is not
+	defined.
+-->
+
+<!ELEMENT locations (location+)>
+<!ATTLIST locations version CDATA #REQUIRED>
+
+<!ELEMENT location (name, aliases?, keywords?, code?)>
+<!ATTLIST location x CDATA #REQUIRED>
+<!ATTLIST location y CDATA #REQUIRED>
+<!ATTLIST location id CDATA #REQUIRED>
+<!ATTLIST location passThrough (true|false) #REQUIRED>
+<!ATTLIST location intersect (true|false) #REQUIRED>
+<!ATTLIST location displayName (true|false) #REQUIRED>
+
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT aliases (alias+)>
+<!ELEMENT alias (#PCDATA)>
+<!ELEMENT keywords (#PCDATA)>
+<!ELEMENT code (#PCDATA)>
+
+<!-- eof -->

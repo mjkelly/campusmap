@@ -1,4 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE locations SYSTEM 'locations.dtd'>
+
 <locations version="1.0">
 	<location x="4898" y="4085" id="1" passThrough="false" intersect="true" displayName="true">
 		<name>201 University Center</name>

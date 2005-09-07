@@ -1,0 +1,14 @@
+<!--
+	Descripton of the path data type. All path input files must conform to
+	this DTD. The editor's behavior on invalid input is not defined.
+-->
+
+<!ELEMENT paths (path+)>
+
+<!ELEMENT path (point+)>
+
+<!ELEMENT point EMPTY>
+<!ATTLIST point x CDATA #REQUIRED>
+<!ATTLIST point y CDATA #REQUIRED>
+
+<!-- eof -->

@@ -627,7 +627,6 @@ MouseMotionListener{
 						// Change current point's coordinates
 						changeCurSelectedPointCord(e.getPoint());					
 				    }
-
 				}
 				// If you use any other buttton on your mouse...
 				else{
@@ -712,23 +711,18 @@ MouseMotionListener{
 			// Allocate new vector
 			curPath = new Vector<Point>();
 		}
-		
-		//add the point to the current path
-		curPath.add(pointToAdd);
-		
-		// Set the element focus to the last element (the one just created)
-		setPointNumIndexToEnd();
-		
-		// and redraw immediately to see the changes
-		repaint();
-		
+
+		//add the point to the current path (at the next possible index)
+		// Increment the pointNumIndex to set focus to the newly created point
+		curPath.add(++pointNumIndex, pointToAdd);
+
 		// update the status bar
 		setDefaultStatusBar();
-		
-		//set focus (listeners) back onto the picture
-		this.requestFocus();
+
+		// and redraw immediately to see the changes
+		repaint();
 	}
-	
+
 	/**
 	 * Get the current point!
 	 * @return The current point or null if the current path has no points
@@ -1927,7 +1921,7 @@ MouseMotionListener{
         setDefaultStatusBar();
         repaint();
     }
-    
+
     /**
      * Load paths from an XML file.
      * @param pathFile the pathfile to load

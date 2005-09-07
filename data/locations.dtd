@@ -4,7 +4,7 @@
 	defined.
 -->
 
-<!ELEMENT locations (location+)>
+<!ELEMENT locations (location*)>
 <!ATTLIST locations version CDATA #REQUIRED>
 
 <!ELEMENT location (name, aliases?, keywords?, code?)>

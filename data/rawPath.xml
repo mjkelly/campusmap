@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE locations SYSTEM 'paths.dtd'>
+<!DOCTYPE paths SYSTEM 'paths.dtd'>
 
-<paths>
+<paths version="1.0">
 	<path>
 		<point x="4898" y="4085"/>
 	</path>

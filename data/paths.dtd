@@ -3,7 +3,8 @@
 	this DTD. The editor's behavior on invalid input is not defined.
 -->
 
-<!ELEMENT paths (path+)>
+<!ELEMENT paths (path*)>
+<!ATTLIST paths version CDATA #REQUIRED>
 
 <!ELEMENT path (point+)>
 

@@ -78,7 +78,10 @@ public class XMLFileIO {
 		final String TAB = "\t";
     	// Write out the prolog
     	out.write("<?xml version='1.0' encoding='UTF-8' ?>\n");
-    	
+        
+        // and the doctype
+        out.write("<!DOCTYPE locations SYSTEM 'locations.dtd'>\n\n");
+        
     	// Write out the main Location wrapper
     	out.write("<locations version=\"1.0\">\n");
     	
@@ -189,10 +192,12 @@ public class XMLFileIO {
     	// Write out the locations
     	try{
         	final String TAB = "\t";
-        	out.write("<?xml version='1.0' encoding='UTF-8' ?>\n\n");
+        	out.write("<?xml version='1.0' encoding='UTF-8' ?>\n");
         	
+            out.write("<!DOCTYPE paths SYSTEM 'paths.dtd'>\n\n");
+            
         	// Open the container for all the paths
-    		out.write("<paths>\n");
+    		out.write("<paths version=\"1.0\">\n");
     		
     		// for each path in the set of paths
     		for(Vector<Point> path : paths)

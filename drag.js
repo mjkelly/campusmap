@@ -13,6 +13,7 @@
 TODO:
 	- reinstate bgLayer, or some method of aborting drags that go beyond
 	  the window.
+	- move all base-image dependent stuff to one easy-to-find place
 
 BUGS:
 	- Opera: Opera counts obscured layers in page sizing. This makes the scroll
@@ -81,7 +82,7 @@ var buttonIncrement = 10;
 
 // the size multipliers of the various zoom levels.
 // scales[0] should always be 1.
-var scales = new Array(1, 0.5, 0.25, 0.125);
+var scales = new Array(1, 0.5, 0.25, 0.125, 0.0625);
 // an array of Map objects, representing the possible base images
 var maps;
 
@@ -163,7 +164,7 @@ function dragInit(){
 	// in the filename
 	// (yes, they really should be the same)
 	// TODO: make them that way
-	maps['map'] = new Map('colormap', 0, 0, 7200, 6600);
+	maps['visitor'] = new Map('visitor', 0, 0, 9568, 8277);
 
 	// build the zoom buttons
 	var zoomHTML = "";

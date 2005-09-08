@@ -133,7 +133,8 @@
 			</TMPL_IF>
 
 			<p><a href="javascript:goPrint();">[Print]</a></p>
-			<p><a href="javascript:goStatic();">[Static Link To This View]</a></p>
+			<!-- <p><a href="javascript:goStatic();">[Static Link To This View]</a></p> -->
+			<p><a id="staticLink" href="">[Static Link To This View]</a></p>
 
 			<TMPL_IF NAME=TXT_ERROR>
 				<p><b><TMPL_VAR NAME=TXT_ERROR></b></p>
@@ -246,6 +247,8 @@
 						<TMPL_VAR NAME=PATH_DIST>,
 						<TMPL_VAR NAME=PATH_SRC>, <TMPL_VAR NAME=PATH_DST>);
 				</TMPL_IF>
+
+				linkInit();
 			</script>
 
 		</div>

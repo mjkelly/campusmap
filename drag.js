@@ -89,6 +89,8 @@ var maps;
 var locationList = new Array();
 var pathObj;
 
+var staticLinkHref;
+
 /******************************************************************
 * Initialize the map: set key handlers, initialize global variables, create
 * zoom levels and the zoom control bar, etc. This function should be called
@@ -174,6 +176,19 @@ function dragInit(){
 			+ '" width="30" height="20" border="0" /></a><br />';
 	}
 	document.getElementById("zoomSelect").innerHTML = zoomHTML;
+
+}
+
+/******************************************************************
+* Initialize stuff for the static link.
+******************************************************************/
+function linkInit(){
+	// no matter how you get to the link, at some point one of these will
+	// fire and update the static link
+	document.getElementById("staticLink").onfocus = setStaticLink;
+	document.getElementById("staticLink").onmouseover = setStaticLink;
+	document.getElementById("staticLink").onclick = setStaticLink;
+	setStaticLink();
 }
 
 /******************************************************************
@@ -723,7 +738,6 @@ function Path(x, y, width, height, dist, src, dst){
 * levels, etc. UI-level functions (like panLeft(), zoomIn(), etc) are not here
 * -- they are global functions.
 ******************************************************************/
-// Constructor: 
 function Viewport(x, y, width, height, curZoom, curMap){
 	var zoomFactor = scales[curZoom] / scales[0];
 
@@ -1013,6 +1027,14 @@ function printURL(){
 		view.curX, view.curY, view.curZoom, null, document.main.mpm.value,
 		'print'
 	);
+}
+
+/******************************************************************
+* Update the "static link to this page" link.
+******************************************************************/
+function setStaticLink(){
+	//alert("Setting static link");
+	document.getElementById("staticLink").href = currentURL();
 }
 
 /******************************************************************

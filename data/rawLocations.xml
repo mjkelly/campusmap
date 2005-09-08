@@ -105,7 +105,7 @@
 			<alias>Mesa Housing North - 3867</alias>
 		</aliases>
 	</location>
-	<location x="8211" y="4789" id="20" passThrough="false" intersect="true" displayName="true">
+	<location x="8210" y="4794" id="20" passThrough="false" intersect="true" displayName="true">
 		<name>3875 Mesa Housing</name>
 		<aliases>
 			<alias>Mesa Housing North - 3875</alias>
@@ -596,7 +596,7 @@
 		<name>Center Hall</name>
 		<code>CENTR</code>
 	</location>
-	<location x="8390" y="5330" id="113" passThrough="false" intersect="true" displayName="true">
+	<location x="8386" y="5308" id="113" passThrough="false" intersect="true" displayName="true">
 		<name>Central Mesa Housing - 23 Bldgs</name>
 	</location>
 	<location x="4224" y="5015" id="114" passThrough="false" intersect="true" displayName="true">
@@ -720,13 +720,13 @@
 		</aliases>
 		<code>EBU2</code>
 	</location>
-	<location x="7943" y="5198" id="138" passThrough="false" intersect="true" displayName="true">
+	<location x="7940" y="5197" id="138" passThrough="false" intersect="true" displayName="true">
 		<name>Early Childhood Education Center A</name>
 	</location>
 	<location x="8056" y="5190" id="139" passThrough="false" intersect="true" displayName="true">
 		<name>Early Childhood Education Center B</name>
 	</location>
-	<location x="7912" y="5252" id="140" passThrough="false" intersect="true" displayName="true">
+	<location x="7916" y="5249" id="140" passThrough="false" intersect="true" displayName="true">
 		<name>Early Childhood Education Center C</name>
 	</location>
 	<location x="8056" y="5257" id="141" passThrough="false" intersect="true" displayName="true">
@@ -1320,7 +1320,7 @@
 		</aliases>
 		<code>SOLIS</code>
 	</location>
-	<location x="8230" y="5685" id="251" passThrough="false" intersect="true" displayName="true">
+	<location x="8220" y="5680" id="251" passThrough="false" intersect="true" displayName="true">
 		<name>Mesa Housing South (all units)</name>
 	</location>
 	<location x="3978" y="733" id="252" passThrough="false" intersect="true" displayName="true">

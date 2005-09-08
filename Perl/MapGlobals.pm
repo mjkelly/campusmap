@@ -69,7 +69,7 @@ our @SIZES = (
 our $LITTLE_WINDOW_X = 150;
 our $LITTLE_WINDOW_Y = 150;
 # how far do we zoom in? (index into @SCALES)
-our $LITTLE_WINDOW_SCALE = 0;
+our $LITTLE_WINDOW_SCALE = 1;
 
 # size of the base image, in pixels
 our $IMAGE_X = 9568;

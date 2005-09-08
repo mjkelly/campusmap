@@ -981,7 +981,26 @@ function Viewport(x, y, width, height, curZoom, curMap){
 ******************************************************************/
 function goPrint(){
 	window.open(printURL());
-	//alert("Go here: " + printURL());
+}
+
+/******************************************************************
+* Go to a static page that duplicates the current view, so you can give a link
+* to what you're looking at.
+******************************************************************/
+function goStatic(){
+	document.location = currentURL();
+}
+
+/******************************************************************
+* Return the URL that duplicates the current view.
+******************************************************************/
+function currentURL(){
+	return state(
+		(locationList['src'] ? locationList['src'].name : null),
+		(locationList['dst'] ? locationList['dst'].name : null),
+		view.curX, view.curY, view.curZoom, null, document.main.mpm.value,
+		'js'
+	);
 }
 
 /******************************************************************
@@ -1004,13 +1023,15 @@ function printURL(){
 ******************************************************************/
 function state(from, to, x, y, scale, size, mpm, mode){
 	return self + '?'
-		+ (from ? 'from=' + escape(from) : '')
-		+ (to ? '&to=' + escape(to) : '')
-		+ (x ? '&xoff=' + ((x + view.width/2) / scales[view.curZoom]) : '')
-		+ (y ? '&yoff=' + ((y + view.height/2) / scales[view.curZoom]) : '')
-		+ (scale ? '&scale=' + scale : '') 
-		+ (mpm ? '&mpm=' + document.main.mpm.value : '')
-		+ (mode ? '&mode=' + mode : '');
+		+ ((from != null) ? 'from=' + escape(from) : '')
+		+ ((to != null) ? '&to=' + escape(to) : '')
+		// offsets are adjusted for zoom level, and converted to point to the center
+		// of the current view instead of the upper-left
+		+ ((x != null) ? '&xoff=' + Math.floor((x + view.width/2) / scales[view.curZoom]) : '')
+		+ ((y != null) ? '&yoff=' + Math.floor((y + view.height/2) / scales[view.curZoom]) : '')
+		+ ((scale != null) ? '&scale=' + scale : '') 
+		+ ((mpm != null) ? '&mpm=' + document.main.mpm.value : '')
+		+ ((mode != null) ? '&mode=' + mode : '');
 }
 
 /******************************************************************

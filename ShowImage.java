@@ -2376,6 +2376,7 @@ MouseMotionListener{
 		final Color IN_FOCUS_PATH = Color.GREEN;
 		final Color OUT_OF_FOCUS_PATH = Color.RED;
 		final Color LOCATION_COLOR = Color.MAGENTA;
+		final Color LOCATION_SELECTED_COLOR = Color.CYAN;
 		
 		// first we paint ourselves according to our parent;
 		// this should take care of drawing the actual image
@@ -2451,14 +2452,19 @@ MouseMotionListener{
 			// path
 			prev = null;
 		}
-		g.setColor(LOCATION_COLOR);
-		
+
 		// Draw the names of all the locations
-		for(int locIndex = 0; locIndex < locations.size(); locIndex++)
+		for(Location l: locations)
 		{
-			int x = getLocation(locIndex).cord.x;
-			int y = getLocation(locIndex).cord.y;
-			g.drawString( getLocation(locIndex).getName(), x, y);
+			// draw in a different color if this location is on top
+			// of the currently selected point (and don't even bother
+			// if we're on an empty path)
+			if(pointNumIndex != -1 && l.cord.equals(getCurrentPoint()))
+				g.setColor(LOCATION_SELECTED_COLOR);
+			else
+				g.setColor(LOCATION_COLOR);
+			
+			g.drawString(l.getName(), l.cord.x, l.cord.y);
 		}
 		
 	}

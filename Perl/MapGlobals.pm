@@ -135,7 +135,7 @@ our $THUMB_FILE = 'thumbnail.gd2';	# path
 # Graphics.
 # -----------------------------------------------------------------
 # how many pixels (on the base map) equal one $UNIT
-our $PIXELS_PER_UNIT = 4010;
+our $PIXELS_PER_UNIT = 3894;
 # an abbreviation of the unit we're using (m for meters, mi for miles, etc)
 our $UNITS = "mi";
 

@@ -676,17 +676,12 @@ MouseMotionListener{
         	for(Point p : path)
         	{
         		dx = inputPoint.x - p.x;
-        		if(dx > minDist)
-        			continue;
-        		dy = inputPoint.y - p.y;
-        		if(dy > minDist)
-        			continue;
-        		dist = Math.sqrt(dx*dx + dy*dy);  //pathag
-        		if(minDist == -1.0 || minDist > dist)
-        		{
-        			minDist = dist;
-        			closestPoint = p;
-        		}
+                dy = inputPoint.y - p.y;
+                dist = Math.sqrt(dx*dx + dy*dy);
+                if(minDist == -1.0 || minDist > dist){
+                    minDist = dist;
+                    closestPoint = p;
+                }
         	}
         return closestPoint;
 	}
@@ -710,7 +705,7 @@ MouseMotionListener{
 
 		//add the point to the current path (at the next possible index)
 		// Increment the pointNumIndex to set focus to the newly created point
-		curPath.add(++pointNumIndex, pointToAdd);
+		curPath.add(++pointNumIndex, new Point(pointToAdd));
 
 		// update the status bar
 		setDefaultStatusBar();
@@ -741,48 +736,38 @@ MouseMotionListener{
 	}
 	
 	/**
-	 * Change the coordinates of the currently selected point to the passed
-	 * in point.
-	 * <p>
-	 * 2 cases:<br>
-	 * 1:  Location exists at the previous point:<br>
-	 * Move the location and all points that it intersects with to the
-	 * new point<br><br>
-	 * 2:  Location does not exist at the previous point:<br>
-	 * Move the previous point to the new point
+	 * Change the coordinates of the currently selected point to the passed in
+	 * point. Any other points at the same location are also moved, and if a
+	 * location exists at the original point, it is moved as well.
 	 * 
 	 * @param pointToMoveTo The point to move the current point to
 	 */
 	public void changeCurSelectedPointCord(Point pointToMoveTo)
 	{
+		// (findLocationAtPoint returns an index if found, -1 if not found.)
+		int locIndex = findLocationAtPoint(getCurrentPoint()); 
+		// if there's a location at this point, move it as well 
+		if(locIndex >= 0)
+			getLocation(locIndex).cord.setLocation(pointToMoveTo);
 		
-		int locIndex = -1;
-		// check if there's an existing point
-		// findLocationAtPoint returns an index if found, -1 if not found.
-		locIndex = findLocationAtPoint(getCurrentPoint()); 
+		// Get the old point -- The point before the move...
+		Point curPoint = getCurrentPoint();
 		
-		//When we find a location at the point.  
-		if(locIndex >= 0){
-			// Get the old point -- The point before the move...
-			Point oldPoint = new Point(getCurrentPoint());
-			// move the location
-			Location toMove = locations.get(locIndex);
-			toMove.cord = pointToMoveTo;
-			// Move all points connected to the location
-			for(Vector<Point> path: paths)  // For each path in set of paths
-				for(Point ptInPath: path)   // For each point in path
-					// If a point is equal to the old point
-					if(ptInPath.equals(oldPoint))
-					{
-						// Move point in path to new point
-						ptInPath.setLocation(pointToMoveTo);
-					}
+		// Move all _other_ points that are in the same location
+		// as the selected point
+		for(Vector<Point> path: paths){  // For each path in set of paths
+			for(Point ptInPath: path){   // For each point in path
+				// if the point in the path isn't actually the selected point,
+				// and is in the same location
+				if(ptInPath != curPoint && ptInPath.equals(curPoint)){
+					// Move point in path to new point
+					ptInPath.setLocation(pointToMoveTo);
+				}
+			}
 		}
-		else  // no location...just move the point
-		{
-			// move the point
-			getCurrentPoint().setLocation(pointToMoveTo);
-		}
+		// finally, move the selected point itself
+		curPoint.setLocation(pointToMoveTo);
+		
 		// set statusbar text
 		setDefaultStatusBar();
 		repaint();

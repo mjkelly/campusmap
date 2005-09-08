@@ -219,7 +219,7 @@
 			<alias>Mesa Housing North - 4043</alias>
 		</aliases>
 	</location>
-	<location x="8891" y="5107" id="40" passThrough="false" intersect="true" displayName="true">
+	<location x="8893" y="5107" id="40" passThrough="false" intersect="true" displayName="true">
 		<name>4051 Mesa Housing</name>
 		<aliases>
 			<alias>Mesa Housing North - 4051</alias>
@@ -258,7 +258,7 @@
 			<alias>Mesa Housing North - 4091</alias>
 		</aliases>
 	</location>
-	<location x="9064" y="5059" id="47" passThrough="false" intersect="true" displayName="true">
+	<location x="9066" y="5059" id="47" passThrough="false" intersect="true" displayName="true">
 		<name>4099 Mesa Housing</name>
 		<aliases>
 			<alias>Mesa Housing North - 4099</alias>
@@ -288,7 +288,7 @@
 	<location x="5631" y="3776" id="55" passThrough="false" intersect="true" displayName="true">
 		<name>Outback Adventures</name>
 	</location>
-	<location x="2315" y="6369" id="56" passThrough="false" intersect="true" displayName="true">
+	<location x="2314" y="6368" id="56" passThrough="false" intersect="true" displayName="true">
 		<name>9310 Coast Apartments</name>
 		<aliases>
 			<alias>9310 Redwood Drive</alias>
@@ -803,7 +803,7 @@
 			<alias>8645 Discovery Way</alias>
 		</aliases>
 	</location>
-	<location x="7589" y="4963" id="155" passThrough="false" intersect="true" displayName="true">
+	<location x="7568" y="4958" id="155" passThrough="false" intersect="true" displayName="true">
 		<name>Faculty Apartments at Mesa Housing</name>
 		<aliases>
 			<alias>Mesa Housing Faculty Apartments - 6 Bldgs</alias>

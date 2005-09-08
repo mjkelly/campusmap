@@ -141,14 +141,16 @@ public class PathOptimize
     	/**
     	 * Data is now all stored in the pathPoints vector
     	 */
-    	System.err.println("done.");
+    	System.err.println("done: " + pathOp.pathPoints.size() + " points.");
 
 		System.err.print("\tCollapsing duplicate PathPoints.....");
     	//Collapse all duplications of PathPoints.  
     	pathOp.condensePathPoints();
-		System.err.println("done.");
+		System.err.println("done: " + pathOp.pathPoints.size() 
+				+ " points after collapsing.");
     	
 		System.err.print("\tHandeling intersection of paths.....");
+
     	/**
     	 * Create new pathPoints at intersections and redirect "links" of 
     	 * the points that caused the intersections to the intersection
@@ -1635,13 +1637,12 @@ class GraphPoint
 	    		out.writeInt( edges.get(i).ID );
 				if(PathOptimize.debugBinaryGraphPoints)
 					System.err.println("Edge ID: " + edges.get(i).ID);
-	    		
 			}
             
     		
 			// write the ID of the associated location, if there is one;
 			// if there isn't, use 0 (all IDs are > 0)
-			if(locLabel != null){
+			if(locLabel != null && locLabel.isDisplayName()){
 				if(PathOptimize.debugBinaryGraphPoints)
 					System.err.println("Location ID: " + locLabel.ID);
 				out.writeInt(locLabel.ID);
@@ -1658,7 +1659,12 @@ class GraphPoint
                 // GraphPoints without locations are always PassThrough
 				if(PathOptimize.debugBinaryGraphPoints)
 					System.err.println("PassThrough: true");
-				out.writeByte(1);
+				// For no-display locations...
+				if(locLabel != null)
+					// write out the passThrough property
+					out.writeByte( locLabel.isCanPassThrough() ? 1 : 0);
+				else  // write default
+					out.writeByte(1);
 			}
 			
 			if(PathOptimize.debugBinaryGraphPoints)
@@ -1679,7 +1685,8 @@ class GraphPoint
 	public void binaryWriteLocation(DataOutputStream out)
 	{
 		// don't do anything if the graphpoint isn't attached to a location
-		if(locLabel == null)
+		// or the location isn't wanted for display
+		if(locLabel == null || !locLabel.isDisplayName())
 			return;
 	
 		try{

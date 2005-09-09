@@ -81,8 +81,9 @@ var buttonDelay = 15;
 var buttonIncrement = 10;
 
 // the size multipliers of the various zoom levels.
-// scales[0] should always be 1.
-var scales = new Array(1, 0.5, 0.25, 0.125, 0.0625);
+// scales[0] should always be 1. <--- XXX: ?
+//var scales = new Array(1, 0.5, 0.25, 0.125, 0.0625);
+var scales = new Array(0.5, 0.25, 0.125, 0.0625);
 // an array of Map objects, representing the possible base images
 var maps;
 

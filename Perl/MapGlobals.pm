@@ -43,7 +43,7 @@ our $DEFAULT_TEMPLATE = 'js';
 # (4608, 3172) is Geisel Library
 our $DEFAULT_XOFF  = 4608;
 our $DEFAULT_YOFF  = 3172;
-our $DEFAULT_SCALE = 4; #index into @SCALES
+our $DEFAULT_SCALE = 3; #index into @SCALES
 
 # the default number of minutes it takes to walk one mile, if the user doesn't
 # specify
@@ -55,7 +55,8 @@ our $DEFAULT_MPM = 20;
 # we use indexes in the application, then map them to the acual multiplier
 # values internally. Remember, these MUST be multiplier values, because the low-level
 # drawing routines use them to scale path/location draws.
-our @SCALES = (1, 0.5, 0.25, 0.125, 0.0625);
+#our @SCALES = (1, 0.5, 0.25, 0.125, 0.0625);
+our @SCALES = (0.5, 0.25, 0.125, 0.0625);
 
 # map viewport sizes, in pixels.
 our @SIZES = (

@@ -12,6 +12,7 @@
 		<name>214 University Center</name>
 		<aliases>
 			<alias>Chancellor&apos;s Complex 214</alias>
+			<alias>Academic Senate</alias>
 		</aliases>
 	</location>
 	<location x="4736" y="3880" id="4" passThrough="false" intersect="true" displayName="true">
@@ -581,7 +582,7 @@
 		<name>Canyonview Aquatic and Climbing Wall Facility</name>
 	</location>
 	<location x="5814" y="3334" id="109" passThrough="false" intersect="true" displayName="true">
-		<name>Canyonview Rec/Athletics Administration</name>
+		<name>Canyonview Rec/Athletics Administration (Construction)</name>
 		<aliases>
 			<alias>Canyonview Recreation/Athletics Administration</alias>
 		</aliases>
@@ -608,25 +609,25 @@
 			<alias>Revelle Residence Hall Challenger</alias>
 		</aliases>
 	</location>
-	<location x="4846" y="3743" id="116" passThrough="false" intersect="true" displayName="true">
+	<location x="4847" y="3741" id="116" passThrough="false" intersect="true" displayName="true">
 		<name>104 University Center</name>
 		<aliases>
 			<alias>104 Chancellor&apos;s Complex</alias>
 		</aliases>
 	</location>
-	<location x="4868" y="3787" id="117" passThrough="false" intersect="true" displayName="true">
+	<location x="4851" y="3789" id="117" passThrough="false" intersect="true" displayName="true">
 		<name>105 University Center</name>
 		<aliases>
 			<alias>105 Chancellor&apos;s Complex</alias>
 		</aliases>
 	</location>
-	<location x="4819" y="3792" id="118" passThrough="false" intersect="true" displayName="true">
+	<location x="4818" y="3792" id="118" passThrough="false" intersect="true" displayName="true">
 		<name>106 University Center</name>
 		<aliases>
 			<alias>Chancellor&apos;s Complex 106</alias>
 		</aliases>
 	</location>
-	<location x="4848" y="3833" id="119" passThrough="false" intersect="true" displayName="true">
+	<location x="4840" y="3832" id="119" passThrough="false" intersect="true" displayName="true">
 		<name>107 University Center</name>
 		<aliases>
 			<alias>Chancellor&apos;s Complex 107</alias>
@@ -638,7 +639,7 @@
 			<alias>108 Chancellor&apos;s Complex</alias>
 		</aliases>
 	</location>
-	<location x="4792" y="3834" id="121" passThrough="false" intersect="true" displayName="true">
+	<location x="4790" y="3836" id="121" passThrough="false" intersect="true" displayName="true">
 		<name>109 University Center</name>
 		<aliases>
 			<alias>109 Chancellor&apos;s Complex</alias>
@@ -650,13 +651,13 @@
 			<alias>110 Chancellor&apos;s Complex</alias>
 		</aliases>
 	</location>
-	<location x="4767" y="3757" id="123" passThrough="false" intersect="true" displayName="true">
+	<location x="4762" y="3760" id="123" passThrough="false" intersect="true" displayName="true">
 		<name>111 University Center</name>
 		<aliases>
 			<alias>Chancellor&apos;s Complex 111</alias>
 		</aliases>
 	</location>
-	<location x="4741" y="3805" id="124" passThrough="false" intersect="true" displayName="true">
+	<location x="4738" y="3804" id="124" passThrough="false" intersect="true" displayName="true">
 		<name>University Center 112</name>
 		<aliases>
 			<alias>Chancellor&apos;s Complex 112</alias>
@@ -914,14 +915,14 @@
 			<alias>Revelle Laboratory 4000</alias>
 		</aliases>
 	</location>
-	<location x="5452" y="4750" id="176" passThrough="false" intersect="true" displayName="true">
+	<location x="5443" y="4750" id="176" passThrough="false" intersect="true" displayName="true">
 		<name>School of Medicine Building 2</name>
 		<aliases>
 			<alias>Internal Medical Group</alias>
 			<alias>IMG</alias>
 		</aliases>
 	</location>
-	<location x="5437" y="4843" id="177" passThrough="false" intersect="true" displayName="true">
+	<location x="5434" y="4849" id="177" passThrough="false" intersect="true" displayName="true">
 		<name>School of Medicine Building 1</name>
 		<aliases>
 			<alias>Internal Medical Group Expansion</alias>

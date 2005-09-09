@@ -19,6 +19,11 @@
 
 <script type="text/javascript">
 	var hidden;
+
+	/* if you're looking at this source from a browser, I'll bet you're
+	 * wondering why it's written this way :) */
+	var showToggle = (<TMPL_IF NAME=SRC_FOUND>1<TMPL_ELSE>0</TMPL_IF>||<TMPL_IF NAME=DST_FOUND>1<TMPL_ELSE>0</TMPL_IF>);
+
 	function toggle(){
 		hidden ? show() : hide();
 	}
@@ -52,7 +57,16 @@
 		</div>
 		<div id="printHeaderCenter">
 			<strong><TMPL_VAR NAME=TXT_NOW></strong><br />
-			<a id="toggle_button" href="javascript:toggle()">[Hide Close-Ups]</a>
+			<div id="toggle_div" style="display: none;">
+				<a id="toggle_button" href="javascript:toggle()">[Hide Close-Ups]</a>
+			</div>
+			<script type="text/javascript">
+				// this looks cheap, but it degrades nicely: if
+				// javascript isn't enabled, you don't see an
+				// inoperative button
+				if(showToggle)
+					document.getElementById("toggle_div").style.display = "inline";
+			</script>
 		</div>
 	</div>
 

@@ -169,7 +169,7 @@ public class ComponentEditor extends JPanel implements FieldEditor
 		}
 		/**
 		 * On action performed, send a saveVariables request.
-		 * @param ActionEvent e An action
+		 * @param e An action
 		 */
 		public void actionPerformed(ActionEvent e)
 		{

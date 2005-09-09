@@ -1314,7 +1314,7 @@ MouseMotionListener{
 				cpannel.saveVariables();
 				locations.add(locationToAdd);
 				parent.statusBar.setText("Location " + locationToAdd.toString() 
-						+ "added.");
+						+ " added.");
 			}
 			else if(e.getSource() == cancel)
 			{

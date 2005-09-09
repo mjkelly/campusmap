@@ -2370,13 +2370,16 @@ MouseMotionListener{
 	 * @param g The graphics component
 	 **/
 	public void paintComponent(Graphics g){
-		g.setFont(new Font("Times New Roman", 0, 10));
 		// Constants for colors dependant on dot/line status
 		final Color LASTPLACED_DOT = Color.BLUE;
 		final Color IN_FOCUS_PATH = Color.GREEN;
 		final Color OUT_OF_FOCUS_PATH = Color.RED;
 		final Color LOCATION_COLOR = Color.MAGENTA;
 		final Color LOCATION_SELECTED_COLOR = Color.CYAN;
+		final Font LOCATION_FONT =
+			new Font("Times New Roman", Font.PLAIN, 10);
+		final Font LOCATION_SELECTED_FONT =
+			new Font("Times New Roman", Font.BOLD, 12);
 		
 		// first we paint ourselves according to our parent;
 		// this should take care of drawing the actual image
@@ -2387,11 +2390,13 @@ MouseMotionListener{
 		
 		// Set the default color to red (OUT_OF_FOCUS)
 		g.setColor(OUT_OF_FOCUS_PATH);
+		g.setFont(LOCATION_FONT);
 		
 		// Declare a current and previous point.  
 		Point cur = null;
 		Point prev = null;
 		// draw all the dots that are VISIBLE
+		
 		
 		// For every path in the paths array...
 		for(int pathsIndex = 0; pathsIndex<paths.size(); pathsIndex++)
@@ -2454,19 +2459,37 @@ MouseMotionListener{
 		}
 
 		// Draw the names of all the locations
-		for(Location l: locations)
+		Location curLoc = null;
+		g.setFont(LOCATION_FONT);
+		g.setColor(LOCATION_COLOR);
+		
+		for(Location loc: locations)
 		{
-			// draw in a different color if this location is on top
-			// of the currently selected point (and don't even bother
-			// if we're on an empty path)
-			if(pointNumIndex != -1 && l.cord.equals(getCurrentPoint()))
-				g.setColor(LOCATION_SELECTED_COLOR);
+			// if this is the current location, save it
+			// for later
+			if(pointNumIndex != -1
+					&& curLoc == null
+					&& loc.cord.equals(getCurrentPoint()))
+			{
+				curLoc = loc;
+				continue;
+			}
+			// otherwise, draw the location name
 			else
-				g.setColor(LOCATION_COLOR);
-			
-			g.drawString(l.getName(), l.cord.x, l.cord.y);
+			{
+				g.drawString(loc.getName(),
+						loc.cord.x, loc.cord.y);
+			}
 		}
 		
+		// draw the current location on top of all the others
+		if(curLoc != null)
+		{
+			g.setFont(LOCATION_SELECTED_FONT);
+			g.setColor(LOCATION_SELECTED_COLOR);
+			g.drawString(curLoc.getName(),
+					curLoc.cord.x, curLoc.cord.y);
+		}
 	}
 	
 	

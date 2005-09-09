@@ -20,10 +20,13 @@ the end of Summer Session I and the beginning of Fall 2005.) Crossed-off items
 have been completed.</p>
 
 <ul>
-	<li><b>Complete path data.</b> The current path data is for
+	<li><strike><b>Complete path data.</b> The current path data is for
 	demonstration only and is in no way complete. Now that we have obtained
 	a vector version of the base map we wish to use, we can create our base
-	images and enter full path and location data. </li>
+	images and enter full path and location data.</strike> A detailed data
+	set has been entered. What remains is to tweak the data, and connect a
+	few remaining locations.</li>
+
 
 	<li><strike><b>A better base map.</b> The current map is the visitor map
 	PDF. (It even still has the key in the upper right-hand corner!) We
@@ -54,14 +57,16 @@ have been completed.</p>
 	a sub-map (complete with all the features of the existing map --
 	locations, path finding, etc) of the inside of that building.</li>
 
-	<li><b>Maps of other locations.</b> With the editor, it is easy to add
-	path data to any map.</li>
+	<li><b>Maps of other locations.</b> For instance, an individual college
+	could have more detailed path information covering just their area of
+	campus. The map application is flexible, however, and the editor makes
+	it easy to add path data to <i>any</i> map, not just one of UCSD.</li>
 
 	<li><b>Integration with other applications.</b> Each location may have
 	an associated building code, so it is easy for external applications
-	that know building codes to build URLs for the map. I.e., to show the
-	path between CENTR and PCYNH, you simply add the following to the map
-	URL: &quot;?from=<b>CENTR</b>&amp;to=<b>PCYNH</b>&quot;.</li>
+	that know building codes to build URLs for the map. As an example, to
+	show the path between CENTR and PCYNH, you simply access
+	<i>map.cgi?from=<b>CENTR</b>&amp;to=<b>PCYNH</b></i>.</li>
 
 </ul>
 

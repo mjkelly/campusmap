@@ -275,7 +275,7 @@ if($havePath){
 
 		# if we created a cache file, we're responsible for clearing
 		# out any old ones too
-		MapGlobals::reaper($MapGlobals::CACHE_DIR, $MapGlobals::CACHE_EXPIRY, '.cache');
+		##MapGlobals::reaper($MapGlobals::CACHE_DIR, $MapGlobals::CACHE_EXPIRY, '.cache');
 	}
 	
 	# adjust the pixel distance to the unit we're using to display it (mi, ft, etc)
@@ -654,7 +654,7 @@ if ($template eq 'js'){
 
 			if(! -e MapGlobals::getPathFilename($from, $to, $i) ){
 				# since we're creating new ones, delete old path files
-				MapGlobals::reaper($MapGlobals::PATH_IMG_DIR, $MapGlobals::PATH_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
+				##MapGlobals::reaper($MapGlobals::PATH_IMG_DIR, $MapGlobals::PATH_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
 
 				#print "generating scale $i: $curScale\n";
 				

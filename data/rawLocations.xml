@@ -529,19 +529,19 @@
 			<alias>CRF</alias>
 		</aliases>
 	</location>
-	<location x="6566" y="2933" id="97" passThrough="false" intersect="true" displayName="true">
+	<location x="6575" y="2949" id="97" passThrough="false" intersect="true" displayName="true">
 		<name>Campus Services Complex - Building A</name>
 	</location>
-	<location x="6485" y="2811" id="98" passThrough="false" intersect="true" displayName="true">
+	<location x="6493" y="2829" id="98" passThrough="false" intersect="true" displayName="true">
 		<name>Campus Services Complex - Building B</name>
 	</location>
-	<location x="6485" y="2619" id="99" passThrough="false" intersect="true" displayName="true">
+	<location x="6492" y="2643" id="99" passThrough="false" intersect="true" displayName="true">
 		<name>Campus Services Complex - Building C</name>
 	</location>
-	<location x="6488" y="2427" id="100" passThrough="false" intersect="true" displayName="true">
+	<location x="6496" y="2446" id="100" passThrough="false" intersect="true" displayName="true">
 		<name>Campus Services Complex - Building D</name>
 	</location>
-	<location x="6541" y="2488" id="101" passThrough="false" intersect="true" displayName="true">
+	<location x="6541" y="2514" id="101" passThrough="false" intersect="true" displayName="true">
 		<name>Campus Services Complex - Building H</name>
 	</location>
 	<location x="5286" y="4088" id="103" passThrough="false" intersect="true" displayName="true">
@@ -568,12 +568,12 @@
 	<location x="5667" y="2393" id="107" passThrough="false" intersect="true" displayName="true">
 		<name>Canyon Vista</name>
 		<aliases>
-			<alias>Earl&apos;s Place</alias>
 			<alias>Warren Residence Life Office</alias>
 			<alias>Warren Apartments F/Dining Facility</alias>
 			<alias>Canyon Vista Dining Facility</alias>
 			<alias>Canyon Vista Administration Building</alias>
 		</aliases>
+		<keywords>food</keywords>
 	</location>
 	<location x="6006" y="3350" id="108" passThrough="false" intersect="true" displayName="true">
 		<name>Canyonview Aquatic and Climbing Wall Facility</name>
@@ -662,9 +662,11 @@
 	</location>
 	<location x="4226" y="5443" id="125" passThrough="false" intersect="true" displayName="true">
 		<name>Che Cafe</name>
+		<keywords>food</keywords>
 	</location>
 	<location x="5257" y="4817" id="126" passThrough="false" intersect="true" displayName="true">
 		<name>Club Med</name>
+		<keywords>food</keywords>
 	</location>
 	<location x="4268" y="3336" id="127" passThrough="false" intersect="true" displayName="true">
 		<name>Cognitive Science Building</name>
@@ -730,7 +732,7 @@
 	<location x="8056" y="5257" id="141" passThrough="false" intersect="true" displayName="true">
 		<name>Early Childhood Education Center D</name>
 	</location>
-	<location x="6554" y="2315" id="142" passThrough="false" intersect="true" displayName="true">
+	<location x="6586" y="2347" id="142" passThrough="false" intersect="true" displayName="true">
 		<name>Environmental Management Facility</name>
 		<aliases>
 			<alias>MHF</alias>
@@ -1096,11 +1098,9 @@
 			<alias>Tuolumne Apartments</alias>
 		</aliases>
 	</location>
-	<location x="3516" y="3791" id="208" passThrough="false" intersect="true" displayName="true">
+	<location x="3515" y="3792" id="208" passThrough="false" intersect="true" displayName="true">
 		<name>Stewart Commons</name>
 		<aliases>
-			<alias>El Mercado Restaurant</alias>
-			<alias>Sierra Summit</alias>
 			<alias>Muir College Commons</alias>
 		</aliases>
 	</location>
@@ -1201,6 +1201,7 @@
 			<alias>Revelle Plaza Cafe</alias>
 			<alias>Revelle College Commons</alias>
 		</aliases>
+		<keywords>food</keywords>
 	</location>
 	<location x="5232" y="3491" id="227" passThrough="false" intersect="true" displayName="true">
 		<name>Powell Structural Systems Lab Expansion</name>
@@ -1229,7 +1230,7 @@
 	<location x="7978" y="3727" id="234" passThrough="false" intersect="true" displayName="true">
 		<name>A. Ratner Childrens Eye Center</name>
 	</location>
-	<location x="3786" y="4365" id="235" passThrough="false" intersect="true" displayName="true">
+	<location x="3788" y="4367" id="235" passThrough="false" intersect="true" displayName="true">
 		<name>Recreation Gymnasium</name>
 		<aliases>
 			<alias>Gymnasium, Recreational</alias>
@@ -1308,7 +1309,7 @@
 		<name>Sequoyah Hall</name>
 		<code>SEQUO</code>
 	</location>
-	<location x="8050" y="3654" id="249" passThrough="false" intersect="true" displayName="true">
+	<location x="8051" y="3659" id="249" passThrough="false" intersect="true" displayName="true">
 		<name>Shiley Eye Center</name>
 	</location>
 	<location x="4146" y="3211" id="250" passThrough="false" intersect="true" displayName="true">
@@ -1344,7 +1345,11 @@
 		<name>Student Center A</name>
 	</location>
 	<location x="4182" y="4273" id="257" passThrough="false" intersect="true" displayName="true">
-		<name>Student Center - Porter&apos;s Pub and Stage</name>
+		<name>Porter&apos;s Pub</name>
+		<aliases>
+			<alias>Student Center - Porter&apos;s Pub and Stage</alias>
+		</aliases>
+		<keywords>food</keywords>
 	</location>
 	<location x="4149" y="4190" id="258" passThrough="false" intersect="true" displayName="true">
 		<name>Student Center A - Student Resources</name>
@@ -1443,7 +1448,7 @@
 			<alias>Discovery Way, 8606</alias>
 		</aliases>
 	</location>
-	<location x="3541" y="329" id="276" passThrough="false" intersect="true" displayName="true">
+	<location x="3515" y="358" id="276" passThrough="false" intersect="true" displayName="true">
 		<name>Torrey Pines Center North</name>
 		<aliases>
 			<alias>10300 North Torrey Pines Road</alias>
@@ -1546,7 +1551,7 @@
 			<alias>UCSD Extension Complex - Building J</alias>
 		</aliases>
 	</location>
-	<location x="3370" y="2765" id="291" passThrough="false" intersect="true" displayName="true">
+	<location x="3368" y="2768" id="291" passThrough="false" intersect="true" displayName="true">
 		<name>University Extension - Building K</name>
 		<aliases>
 			<alias>UCSD Extension Complex - Building K</alias>
@@ -1704,7 +1709,7 @@
 	<location x="5555" y="4149" id="323" passThrough="false" intersect="true" displayName="true">
 		<name>Gilman Parking Structure</name>
 	</location>
-	<location x="6552" y="2753" id="324" passThrough="false" intersect="true" displayName="true">
+	<location x="6559" y="2784" id="324" passThrough="false" intersect="true" displayName="true">
 		<name>Electric Shop</name>
 		<aliases>
 			<alias>Campus Services Complex - Electric Shop</alias>
@@ -1765,13 +1770,13 @@
 			<alias>Magnetic Resonance Imaging, functional</alias>
 		</aliases>
 	</location>
-	<location x="6637" y="2493" id="333" passThrough="false" intersect="true" displayName="true">
+	<location x="6645" y="2490" id="333" passThrough="false" intersect="true" displayName="true">
 		<name>CSC Service Building</name>
 		<aliases>
 			<alias>Campus Services Complex - Fleet Services Building</alias>
 		</aliases>
 	</location>
-	<location x="6552" y="2612" id="334" passThrough="false" intersect="true" displayName="true">
+	<location x="6557" y="2628" id="334" passThrough="false" intersect="true" displayName="true">
 		<name>Campus Services Complex - Shops</name>
 	</location>
 	<location x="5328" y="5172" id="335" passThrough="false" intersect="true" displayName="true">
@@ -1820,8 +1825,8 @@
 			<alias>University Center Building 312</alias>
 		</aliases>
 	</location>
-	<location x="5288" y="4152" id="343" passThrough="false" intersect="true" displayName="true">
-		<name>University Center 967</name>
+	<location x="5287" y="4155" id="343" passThrough="false" intersect="true" displayName="true">
+		<name>967 University Center</name>
 		<aliases>
 			<alias>CREATE Module</alias>
 		</aliases>
@@ -1965,6 +1970,7 @@
 			<alias>ERC, Bldg 6.1</alias>
 			<alias>ERC Dining</alias>
 		</aliases>
+		<keywords>food</keywords>
 	</location>
 	<location x="3287" y="1758" id="368" passThrough="false" intersect="true" displayName="true">
 		<name>Africa Hall</name>
@@ -2023,7 +2029,7 @@
 			<alias>ERC, Bldg 3.3</alias>
 		</aliases>
 	</location>
-	<location x="8079" y="3747" id="377" passThrough="false" intersect="true" displayName="true">
+	<location x="8162" y="3758" id="377" passThrough="false" intersect="true" displayName="true">
 		<name>Hamilton Glaucoma and Jacobs Retina Center</name>
 	</location>
 	<location x="5522" y="3964" id="378" passThrough="false" intersect="true" displayName="true">
@@ -2064,6 +2070,7 @@
 	</location>
 	<location x="6318" y="3818" id="387" passThrough="false" intersect="true" displayName="true">
 		<name>Foodworx</name>
+		<keywords>food</keywords>
 	</location>
 	<location x="3580" y="3658" id="388" passThrough="false" intersect="true" displayName="true">
 		<name>Mandler Hall</name>
@@ -2083,6 +2090,7 @@
 		<aliases>
 			<alias>OVT</alias>
 		</aliases>
+		<keywords>food</keywords>
 	</location>
 	<location x="3570" y="2681" id="394" passThrough="true" intersect="false" displayName="false">
 		<name>OVT Bridge East</name>
@@ -2132,6 +2140,7 @@
 	</location>
 	<location x="4057" y="4311" id="410" passThrough="false" intersect="true" displayName="true">
 		<name>Grove Cafe</name>
+		<keywords>food</keywords>
 	</location>
 	<location x="4022" y="4226" id="411" passThrough="false" intersect="true" displayName="true">
 		<name>Student Radio Station, KSDT</name>
@@ -2144,6 +2153,7 @@
 	</location>
 	<location x="4092" y="4233" id="414" passThrough="false" intersect="true" displayName="true">
 		<name>Food Co-op</name>
+		<keywords>food</keywords>
 	</location>
 	<location x="4112" y="4206" id="415" passThrough="false" intersect="true" displayName="true">
 		<name>AS Soft Reserves</name>
@@ -2190,5 +2200,21 @@
 	</location>
 	<location x="5023" y="3605" id="428" passThrough="false" intersect="true" displayName="true">
 		<name>501A University Center</name>
+	</location>
+	<location x="1636" y="7363" id="429" passThrough="false" intersect="true" displayName="true">
+		<name>Splash</name>
+		<keywords>food</keywords>
+	</location>
+	<location x="766" y="7541" id="430" passThrough="false" intersect="true" displayName="true">
+		<name>Snackropolis</name>
+		<keywords>food</keywords>
+	</location>
+	<location x="3514" y="3808" id="431" passThrough="false" intersect="true" displayName="true">
+		<name>Sierra Summit</name>
+		<keywords>food</keywords>
+	</location>
+	<location x="3497" y="3792" id="432" passThrough="false" intersect="true" displayName="true">
+		<name>El Mercado</name>
+		<keywords>food</keywords>
 	</location>
 </locations>

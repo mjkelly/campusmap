@@ -63,14 +63,18 @@ ShortestPath::find($locations->{'ByID'}{$id}{'PointID'}, $points);
 
 # check the distances of every location-point from the given one
 my($pid, $dist);
-my $count = 0;
+my @disco;
 foreach(keys %{$locations->{'ByID'}}){
 	$pid = $locations->{'ByID'}{$_}{'PointID'};
 	$dist = $points->{$pid}{'Distance'};
 	if($dist == INFINITY){
-		print "\t$_ ($locations->{'ByID'}{$_}{'Name'})\n";
-		$count++;
+		push(@disco, $_);
 	}
+}
+
+my $count = scalar @disco;
+foreach (sort {$locations->{'ByID'}{$a}{'Name'} cmp $locations->{'ByID'}{$b}{'Name'}} @disco){
+	print "\t$locations->{'ByID'}{$_}{'Name'} ($_)\n";
 }
 
 # print some stats

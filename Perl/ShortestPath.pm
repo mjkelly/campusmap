@@ -13,11 +13,11 @@ use strict;
 use warnings;
 
 use MapGlobals qw(TRUE FALSE INFINITY min max);
-use MapGraphics;
+#use MapGraphics;
 use Heap::Elem::GraphPoint;
 use Heap::Fibonacci;
 
-use GD;
+#use GD;
 
 ###################################################################
 # Create a hash of minimum distances with Dijkstra's algorithm.

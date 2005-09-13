@@ -2180,6 +2180,12 @@
 	<location x="5057" y="5062" id="409" passThrough="false" intersect="true" displayName="true">
 		<name>School of Pharmacy &amp; Pharmaceutical Sciences</name>
 	</location>
+	<location x="5503" y="3713" id="463" passThrough="false" intersect="true" displayName="false">
+		<name>VAF-nopassthrough</name>
+	</location>
+	<location x="5620" y="3768" id="464" passThrough="false" intersect="true" displayName="false">
+		<name>VAF-nopassthrough-2</name>
+	</location>
 	<location x="4057" y="4311" id="410" passThrough="false" intersect="true" displayName="true">
 		<name>Grove Cafe</name>
 		<keywords>food</keywords>
@@ -2340,5 +2346,9 @@
 	<location x="9004" y="3350" id="461" passThrough="false" intersect="true" displayName="true">
 		<name>Parking Lot P705</name>
 		<keywords>parking_a parking_b parking_s</keywords>
+	</location>
+	<location x="4905" y="3756" id="465" passThrough="false" intersect="true" displayName="true">
+		<name>Parking, Myers Drive</name>
+		<keywords>visitorparking</keywords>
 	</location>
 </locations>

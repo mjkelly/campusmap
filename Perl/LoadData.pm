@@ -290,7 +290,7 @@ sub readByte{
 # Args:
 #	- the filehandle to the edge file
 #	- the size of each edge object on disk
-#	- the ID of the edge file to load
+#	- the ID of the edge file to load (1-based)
 ###################################################################
 sub loadEdge{
 	my($fh, $size, $id) = @_;

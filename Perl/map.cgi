@@ -267,6 +267,8 @@ if($havePath){
 		$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
 		($edgeFH, $edgeSize) = LoadData::initEdgeFile($MapGlobals::EDGE_FILE);
 
+		# this is Dijkstra's, and it takes most of the entire map.cgi
+		# runtime if it runs.
 		ShortestPath::find($startID, $points);
 
 		($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $edgeFH, $edgeSize,
@@ -656,7 +658,7 @@ if ($template eq 'js'){
 				# since we're creating new ones, delete old path files
 				##MapGlobals::reaper($MapGlobals::PATH_IMG_DIR, $MapGlobals::PATH_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
 
-				#print "generating scale $i: $curScale\n";
+				warn "generating scale $i: $curScale\n";
 				
 				my $im = GD::Image->new($pathWidth*$curScale, $pathHeight*$curScale);
 				my $bg_color = $im->colorAllocate(0, 0, 0);

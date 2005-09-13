@@ -1,4 +1,4 @@
-    // vim: tabstop=4 shiftwidth=4 textwidth=79 expandtab
+// vim: tabstop=4 shiftwidth=4 textwidth=79 expandtab
 /*-----------------------------------------------------------------
  * $Id$
  * Editor for map path data.

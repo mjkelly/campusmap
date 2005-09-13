@@ -1,3 +1,4 @@
+// vim: tabstop=4 shiftwidth=4 textwidth=79 expandtab
 /**
  * $Id$
  * 
@@ -149,7 +150,7 @@ public class PathOptimize
 		System.err.println("done: " + pathOp.pathPoints.size() 
 				+ " points after collapsing.");
     	
-		System.err.print("\tHandeling intersection of paths.....");
+		System.err.print("\tHandling intersection of paths.....");
 
     	/**
     	 * Create new pathPoints at intersections and redirect "links" of 
@@ -167,6 +168,10 @@ public class PathOptimize
 				" and writing path and location objects.....");
     	pathOp.convertGraphPointsToPoints();
     	pathOp.writePoints(outPathFile, outLocFile);
+		System.err.println("done.");
+
+        System.err.print("Ensuring all ID numbers are contiguous and minimal...");
+        pathOp.checkIDs();
 		System.err.println("done.");
 		
 		System.err.print("\tWriting out to binary files.....");
@@ -193,7 +198,12 @@ public class PathOptimize
     	outPaths      = new Vector <Vector<Point>> ();
     	outLocations  = new Vector <Location>      ();
 		outEdges      = new Vector <Edge>          ();
-		
+
+		// reset ID numbers so they're not inflated if PathOptimize is called
+		// more than once
+		Edge.resetIDCount();
+		GraphPoint.resetIDCount();
+
 		if(!debugOn)
 		{
 			// Assign all debug flags to false
@@ -419,7 +429,27 @@ public class PathOptimize
 //		ScrollablePicture.writeData(pathFileName, locFileName, 
 //				outPaths, outLocations);
 	}
-    
+
+	/**
+	 * Make sure certain IDs are minimal and contiguous. This means that they
+     * start at 1 and have no gaps. Currently we only check Edge IDs, because
+     * they're the only ones stored in constant-record-width files, where it
+     * actually matters.
+	 */
+    public void checkIDs(){
+        int id = 1;
+        for(Edge e: outEdges){
+            if(e.ID != id){
+                System.err.println("Edge ID " + e.ID + " (at index " + id
+                    + ") is incongruous! THIS IS A BUG!");
+                System.err.println("Only the first error is reported.");
+                System.err.println("Ending integrity check.");
+                return;
+            }
+            id++;
+        }
+    }
+
 	/**
 	 * Write data to disk in binary format, suitable for reading from
      * the web-based frontend.
@@ -1503,6 +1533,14 @@ class GraphPoint
 		// Set the ID and increment the static variable for the next ID
 		ID = IDcount++;
 	}
+
+	/**
+	 * Reset the ID count, ensuring all GraphPoints get correct 1-based ID
+	 * numbers.
+	 */
+	public static void resetIDCount(){
+		IDcount =  1;
+	}
 	
 	/**
 	 * Returns an edge at the specified index of the GraphPoint.  
@@ -1843,6 +1881,14 @@ class Edge
 	 */
 	public void discard(){
 		IDcount--;
+	}
+
+	/**
+	 * Reset the ID count, ensuring all Edges get correct 1-based ID
+	 * numbers.
+	 */
+	public static void resetIDCount(){
+		IDcount =  1;
 	}
 	
 	/**

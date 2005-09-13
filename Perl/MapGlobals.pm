@@ -70,7 +70,7 @@ our @SIZES = (
 our $LITTLE_WINDOW_X = 150;
 our $LITTLE_WINDOW_Y = 150;
 # how far do we zoom in? (index into @SCALES)
-our $LITTLE_WINDOW_SCALE = 1;
+our $LITTLE_WINDOW_SCALE = 0;
 
 # size of the base image, in pixels
 our $IMAGE_X = 9568;
@@ -203,7 +203,6 @@ our $PATH_MAX_AGE	= 10*60;
 ###################################################################
 sub getGd2Filename{
 	my ($map, $scale) = (@_);
-	warn "RETURNING: " . $_BASE_NAME . '-' . $MAPS{$map} . '-' . $scale . '.gd2';
 	return $_BASE_NAME . '-' . $MAPS{$map} . '-' . $scale . '.gd2';
 }
 

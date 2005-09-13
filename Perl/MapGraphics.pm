@@ -13,7 +13,8 @@ use strict;
 use warnings;
 
 use GD;
-use MapGlobals qw(min max);
+use File::Temp;
+use MapGlobals qw(min max @SCALES);
 
 ###################################################################
 # Draw the given edge to a GD image in the given color.
@@ -71,28 +72,6 @@ sub drawEdge{
 	}
 
 	return ( xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax );
-}
-
-###################################################################
-# Um... draw... all... the... edges.
-# XXX: DEPRECATED by the new way of loading edges on-demand.
-#
-# Args:
-#	- a hashref containing all the edges on the map
-#	- the GD image to print to
-#	- the GD color object to use for the location's name
-#	- the GD color object to use for the the location's dot
-#	- X offset of the image we're drawing on (relative to original image)
-#	- Y offset of the image we're drawing on (relative to original image)
-#	- the width of the image we're drawing on (relative to original image)
-#	- the height of the image we're drawing on (relative to original image)
-#	- the scale multiplier (output image scale over original image scale)
-###################################################################
-sub drawAllEdges{
-	my($edges, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale) = (@_);
-	foreach (values %$edges){
-		drawEdge($_, $im, $thickness, $color, $xoff, $yoff, $w, $h, $scale);
-	}
 }
 
 ###################################################################
@@ -265,6 +244,280 @@ sub drawLinesRaw{
 		#warn "drawing: (" . ($curpt->{'x'} - $xoff) . ", " . ($curpt->{'y'} - $yoff) . ")\n";
 		$prevpt = $curpt;
 	}
+}
+
+###################################################################
+# Create thumbnail image representing the given state. Notice that this isn't a
+# "draw*" function, because it doesn't draw to an existing GD image -- it
+# creates its own.
+# Args:
+#	- ID of source location, or undef if there is none
+#	- ID of destination location, or undef if there is none
+#	- the current scale, as an index
+#	- the width of the viewport
+#	- the height of the viewport
+#	- the effective X offset (this is norm_xoff in map.cgi)
+#	- the effective Y offset (this is norm_yoff in map.cgi)
+#	- locations hashref
+# Returns:
+#	- the name of the temporary file
+###################################################################
+sub makeThumbnail{
+	my($from, $to, $scale, $w, $h, $norm_xoff, $norm_yoff, $locations) = @_;
+
+	# grab the thumbnail from disk
+	my $thumb = GD::Image->newFromGd2($MapGlobals::THUMB_FILE);
+
+	# store the ratio between the thumbnail and the main base image
+	# (these two REALLY should be the same...)
+	my $ratio_x = $MapGlobals::THUMB_X / $MapGlobals::IMAGE_X;
+	my $ratio_y = $MapGlobals::THUMB_Y / $MapGlobals::IMAGE_Y;
+
+	# this is the color in which we draw the edge-of-view lines
+	my $thumb_src_color = $thumb->colorAllocate(@MapGlobals::SRC_COLOR);
+	my $thumb_dst_color = $thumb->colorAllocate(@MapGlobals::DST_COLOR);
+	my $thumb_rect_color = $thumb->colorAllocate(@MapGlobals::RECT_COLOR);
+
+	# the outline of the current view
+	$thumb->rectangle(
+		($norm_xoff - ($w/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
+		($norm_yoff - ($h/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
+		($norm_xoff + ($w/$SCALES[$scale])/2)*$MapGlobals::RATIO_X - 1,
+		($norm_yoff + ($h/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y - 1,
+		$thumb_rect_color
+	);
+
+	# dots for the start and end locations
+	if(defined($from)){
+		$thumb->filledRectangle(
+			$locations->{'ByID'}{$from}{'x'}*$MapGlobals::RATIO_X - 1,
+			$locations->{'ByID'}{$from}{'y'}*$MapGlobals::RATIO_Y - 1,
+			$locations->{'ByID'}{$from}{'x'}*$MapGlobals::RATIO_X + 1,
+			$locations->{'ByID'}{$from}{'y'}*$MapGlobals::RATIO_Y + 1,
+			$thumb_src_color,
+		);
+	}
+
+	if(defined($to)){
+		$thumb->filledRectangle(
+			$locations->{'ByID'}{$to}{'x'}*$MapGlobals::RATIO_X - 1,
+			$locations->{'ByID'}{$to}{'y'}*$MapGlobals::RATIO_Y - 1,
+			$locations->{'ByID'}{$to}{'x'}*$MapGlobals::RATIO_X + 1,
+			$locations->{'ByID'}{$to}{'y'}*$MapGlobals::RATIO_Y + 1,
+			$thumb_dst_color,
+		);
+	}
+
+	# now make a temporary file to put this image in
+	# XXX: eventually just make this a separate CGI script?
+	# I don't know -- which has higher cost: creating/deleting a file, or starting
+	# another perl process?
+	my $tmpthumb = new File::Temp(
+		TEMPLATE => 'thumb-XXXXXX',
+		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
+		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
+		UNLINK => 0,
+	);
+	chmod(0644, $tmpthumb->filename);
+
+	# write out the finished thumbnail to the file
+	binmode($tmpthumb);
+	print $tmpthumb $thumb->png();
+	close($tmpthumb);
+
+	return $tmpthumb->filename;
+}
+
+###################################################################
+# Make a small temporary image zoomed on a specific location, and return the
+# filename of the image so created.
+#
+# Args:
+#	- locations hashref
+#	- pathpoints arrayref (as from ShortestPath::pathPoints() or
+#	  LoadData::loadCache()), or undef if there is no path to print
+#	- the name of the current map (key into %MapGlobals::MAPS)
+#	- ID of the location to zoom in on
+#	- arrayref specifying the color to use to print the location.
+#	  (i.e., [255, 0, 0] for red, [200, 200, 200] for gray, etc.)
+# Returns:
+#	- filename of the temporary image created
+###################################################################
+sub makeZoomImage{
+	my($locations, $pathPoints, $mapname, $id, $color) = @_;
+	my $x = $locations->{'ByID'}{$id}{'x'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_X/2;
+	my $y = $locations->{'ByID'}{$id}{'y'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_Y/2;
+
+	# get the image of the appropriate scale from disk, and grab only
+	# what we need by size and offset
+	my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($mapname, $MapGlobals::LITTLE_WINDOW_SCALE),
+		$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y);
+
+	my $loc_color = $im->colorAllocate(@$color);
+	my $path_color = $im->colorAllocate(@MapGlobals::PATH_COLOR);
+	my $bg_color = $im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
+
+	# draw the path
+	if(defined($pathPoints)){
+		foreach my $line (@$pathPoints){
+			MapGraphics::drawLines($line, $im, $MapGlobals::PATH_THICKNESS, $path_color, $x, $y,
+				$MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
+		}
+	}
+
+	# draw the location
+	MapGraphics::drawLocation($locations->{'ByID'}{$id}, $im, $loc_color, $loc_color, $bg_color,
+		$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
+
+
+	# write out the images
+	my $file = new File::Temp(
+		TEMPLATE => 'zoom-XXXXXX',
+		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
+		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
+		UNLINK => 0,
+	);
+	chmod(0644, $file->filename);
+	binmode($file);
+	print $file $im->png();
+	close($file);
+	
+	return $file->filename;
+}
+
+###################################################################
+# Write the main map window. This is the guts of the 'plain' view.
+# Creates a temporary file to store the image, and returns that filename.
+#
+# Args (yeah, I know, there are a lot...)
+#	- locations hashref
+#	- path points arrayref (from LoadData::loadCache()), or undef if there
+#	  is no path to print
+#	- the name of the current map (%MapGlobals::MAP key)
+#	- ID of source location, or undef if none
+#	- ID of destination location, or undef if none
+#	- width of the viewport
+#	- height of the viewport
+#	- raw X offset (upper-left corner, in scaled pixels)
+#	- raw Y offset (upper-left corner, in scaled pixels)
+#	- current scale (index)
+# Returns:
+#	- the filename of the created image
+###################################################################
+sub makeMapImage{
+	my($locations, $pathPoints, $mapname, $from, $to, $width, $height, $rawxoff, $rawyoff, $scale) = @_;
+	# get the image of the appropriate scale from disk, and grab only
+	# what we need by size and offset
+	my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($mapname, $scale),
+		$rawxoff, $rawyoff, $width, $height);
+
+	my $src_color = $im->colorAllocate(@MapGlobals::SRC_COLOR);
+	my $dst_color = $im->colorAllocate(@MapGlobals::DST_COLOR);
+	my $path_color = $im->colorAllocate(@MapGlobals::PATH_COLOR);
+	my $bg_color = $im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
+
+	# uncomment to draw ALL locations
+	#MapGraphics::drawAllLocations($locations, $im, $src_color, $src_color, $bg_color, $rawxoff, $rawyoff,
+	#				$width, $height, $SCALES[$scale]);
+
+	# if we had a path to draw, now's the time to do it
+	if(defined($pathPoints)){
+		foreach my $line (@$pathPoints){
+			MapGraphics::drawLines($line, $im, $MapGlobals::PATH_THICKNESS, $path_color, $rawxoff, $rawyoff,
+				$width, $height, $SCALES[$scale]);
+		}
+	}
+
+	# draw the source and destination locations, if they've been found
+	if(defined($from)){
+		MapGraphics::drawLocation($locations->{'ByID'}{$from}, $im, $src_color, $src_color, $bg_color,
+			$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
+	}
+	if(defined($to)){
+		MapGraphics::drawLocation($locations->{'ByID'}{$to}, $im, $dst_color, $dst_color, $bg_color,
+			$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
+	}
+
+
+	# generate a temporary file on disk to store the map image
+	my $tmpfile = new File::Temp(
+		TEMPLATE => 'map-XXXXXX',
+		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
+		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
+		UNLINK => 0,
+	);
+	chmod(0644, $tmpfile->filename);
+
+	# print the data out to a temporary file
+	binmode($tmpfile);
+	print $tmpfile $im->png();
+	close($tmpfile);
+
+	return $tmpfile->filename;
+}
+
+
+###################################################################
+# Create all the transparent path images for a given path.
+#
+# Args:
+#	- source location ID
+#	- destination location ID
+#	- hashref representing the path's bounding rectangle (from loadCache()
+#	  or pathPoints())
+#	- arrayref of path points (also from loadCache() or pathPoints())
+# Returns:
+#	- a bounding rectangle for the _path image_, at the base (scale = 1)
+#	  level. This is NOT necessarily the same as the bounding rectangle
+#	  for the path itself!
+###################################################################
+sub makePathImages{
+	my($from, $to, $rect, $pathPoints) = @_;
+
+	# a little padding 
+	my $padding = 32;
+	# if we have a path between two locations, write the path images
+	
+	my $pathImgRect = {
+		xmin => $rect->{'xmin'} - $padding,
+		ymin => $rect->{'ymin'} - $padding,
+		xmax => $rect->{'xmax'} + $padding,
+		ymax => $rect->{'ymax'} + $padding,
+	};
+	my $pathWidth = $pathImgRect->{'xmax'} - $pathImgRect->{'xmin'};
+	my $pathHeight = $pathImgRect->{'ymax'} - $pathImgRect->{'ymin'};
+
+	my $curScale;
+	for my $i (0 .. $#SCALES){
+		$curScale = $SCALES[$i];
+
+		if(! -e MapGlobals::getPathFilename($from, $to, $i) ){
+			# since we're creating new ones, delete old path files
+			##MapGlobals::reaper($MapGlobals::PATH_IMG_DIR, $MapGlobals::PATH_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
+
+			warn "generating scale $i: $curScale\n";
+			
+			my $im = GD::Image->new($pathWidth*$curScale, $pathHeight*$curScale);
+			my $bg_color = $im->colorAllocate(0, 0, 0);
+			$im->transparent($bg_color);
+			my $path_color = $im->colorAllocate(@MapGlobals::PATH_COLOR);
+
+			foreach my $line (@$pathPoints){
+				MapGraphics::drawLinesRaw($line, $im,
+					$MapGlobals::PATH_THICKNESS, $path_color,
+					$rect->{'xmin'} - $padding,
+					$rect->{'ymin'} - $padding,
+					$pathWidth, $pathHeight, $curScale);
+			}
+
+			open(OUTFILE, '>', MapGlobals::getPathFilename($from, $to, $i)) or die "cannot open output file: $!\n";
+			binmode(OUTFILE);
+			print OUTFILE $im->png();
+			close(OUTFILE);
+		}
+	}
+
+	return $pathImgRect;
 }
 
 1;

@@ -334,6 +334,10 @@ else{
 		# if we found a good 'to' location, run shortest path stuff
 		# so we can display distances
 		if($src_found){
+			# XXX: we don't need to load $points twice, but we _do_
+			# need to clear the data added by find(). what to do?
+			# probably modify find(). that'll be good for future
+			# possible FastCGI integration, too.
 			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
 			ShortestPath::find($startID, $points);
 		}
@@ -428,55 +432,13 @@ $rawyoff = between(0, $MapGlobals::IMAGE_Y - $height, $rawyoff);
 
 # if we're using the plain template, write output images
 my($tmpfile, $tmpthumb);
-my($pathImgRect);
 if($template eq 'plain' || $template eq 'print'){
+	$tmpfile = MapGraphics::makeMapImage($locations,
+		$havePath ? $pathPoints : undef, $mapname,
+		$src_found ? $from : undef,
+		$dst_found ? $to : undef,
+		$width, $height, $rawxoff, $rawyoff, $scale);
 
-	# get the image of the appropriate scale from disk, and grab only
-	# what we need by size and offset
-	my $im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($mapname, $scale),
-		$rawxoff, $rawyoff, $width, $height);
-
-	my $src_color = $im->colorAllocate(@MapGlobals::SRC_COLOR);
-	my $dst_color = $im->colorAllocate(@MapGlobals::DST_COLOR);
-	my $path_color = $im->colorAllocate(@MapGlobals::PATH_COLOR);
-	my $bg_color = $im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
-
-	# uncomment to draw ALL locations
-	#MapGraphics::drawAllLocations($locations, $im, $src_color, $src_color, $bg_color, $rawxoff, $rawyoff,
-	#				$width, $height, $SCALES[$scale]);
-
-	# if we had a path to draw, now's the time to do it
-	if($havePath){
-		foreach my $line (@$pathPoints){
-			MapGraphics::drawLines($line, $im, $MapGlobals::PATH_THICKNESS, $path_color, $rawxoff, $rawyoff,
-				$width, $height, $SCALES[$scale]);
-		}
-	}
-
-	# draw the source and destination locations, if they've been found
-	if($src_found){
-		MapGraphics::drawLocation($locations->{'ByID'}{$from}, $im, $src_color, $src_color, $bg_color,
-			$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
-	}
-	if($dst_found){
-		MapGraphics::drawLocation($locations->{'ByID'}{$to}, $im, $dst_color, $dst_color, $bg_color,
-			$rawxoff, $rawyoff, $width, $height, $SCALES[$scale]);
-	}
-
-
-	# generate a temporary file on disk to store the map image
-	$tmpfile = new File::Temp(
-			TEMPLATE => 'map-XXXXXX',
-			DIR => $MapGlobals::DYNAMIC_IMG_DIR,
-			SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
-			UNLINK => 0,
-		);
-	chmod(0644, $tmpfile->filename);
-
-	# print the data out to a temporary file
-	binmode($tmpfile);
-	print $tmpfile $im->png();
-	close($tmpfile);
 }
 
 # -----------------------------------------------------------------
@@ -485,207 +447,44 @@ if($template eq 'plain' || $template eq 'print'){
 my($little_window_src, $little_window_dst);
 if($template eq 'print'){
 	if($src_found){
-		my $x = $locations->{'ByID'}{$from}{'x'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_X/2;
-		my $y = $locations->{'ByID'}{$from}{'y'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_Y/2;
-
-		# get the image of the appropriate scale from disk, and grab only
-		# what we need by size and offset
-		my $src_im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($mapname, $MapGlobals::LITTLE_WINDOW_SCALE),
-			$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y);
-
-		my $src_color = $src_im->colorAllocate(@MapGlobals::SRC_COLOR);
-		my $path_color = $src_im->colorAllocate(@MapGlobals::PATH_COLOR);
-		my $bg_color = $src_im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
-
-		# draw the path
-		if($havePath){
-			foreach my $line (@$pathPoints){
-				MapGraphics::drawLines($line, $src_im, $MapGlobals::PATH_THICKNESS, $path_color, $x, $y,
-					$MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
-			}
-		}
-
-		# draw the location
-		MapGraphics::drawLocation($locations->{'ByID'}{$from}, $src_im, $src_color, $src_color, $bg_color,
-			$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
-	
-
-		# write out the images
-		$little_window_src = new File::Temp(
-				TEMPLATE => 'zoom-XXXXXX',
-				DIR => $MapGlobals::DYNAMIC_IMG_DIR,
-				SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
-				UNLINK => 0,
-			);
-		chmod(0644, $little_window_src->filename);
-		binmode($little_window_src);
-		print $little_window_src $src_im->png();
-		close($little_window_src);
+		$little_window_src = MapGraphics::makeZoomImage($locations, $havePath ? $pathPoints : undef,
+			$mapname, $from, \@MapGlobals::SRC_COLOR);
 	}
-
 	if($dst_found){
-		my $x = $locations->{'ByID'}{$to}{'x'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_X/2;
-		my $y = $locations->{'ByID'}{$to}{'y'}*$SCALES[$MapGlobals::LITTLE_WINDOW_SCALE] - $MapGlobals::LITTLE_WINDOW_Y/2;
-
-		# get the image of the appropriate scale from disk, and grab only
-		# what we need by size and offset
-		my $dst_im = GD::Image->newFromGd2Part(MapGlobals::getGd2Filename($mapname, $MapGlobals::LITTLE_WINDOW_SCALE),
-			$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y);
-
-		my $dst_color = $dst_im->colorAllocate(@MapGlobals::DST_COLOR);
-		my $path_color = $dst_im->colorAllocate(@MapGlobals::PATH_COLOR);
-		my $bg_color = $dst_im->colorAllocate(@MapGlobals::LOC_BG_COLOR);
-
-		# draw the path
-		if($havePath){
-			foreach my $line (@$pathPoints){
-				MapGraphics::drawLines($line, $dst_im, $MapGlobals::PATH_THICKNESS, $path_color, $x, $y,
-					$MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
-			}
-		}
-
-		# draw the location
-		MapGraphics::drawLocation($locations->{'ByID'}{$to}, $dst_im, $dst_color, $dst_color, $bg_color,
-			$x, $y, $MapGlobals::LITTLE_WINDOW_X, $MapGlobals::LITTLE_WINDOW_Y, $SCALES[$MapGlobals::LITTLE_WINDOW_SCALE]);
-	
-
-		# write out the images
-		$little_window_dst = new File::Temp(
-				TEMPLATE => 'zoom-XXXXXX',
-				DIR => $MapGlobals::DYNAMIC_IMG_DIR,
-				SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
-				UNLINK => 0,
-			);
-		chmod(0644, $little_window_dst->filename);
-		binmode($little_window_dst);
-		print $little_window_dst $dst_im->png();
-		close($little_window_dst);
+		$little_window_dst = MapGraphics::makeZoomImage($locations, $havePath ? $pathPoints : undef,
+			$mapname, $to, \@MapGlobals::DST_COLOR);
 	}
 }
 
 # -----------------------------------------------------------------
-# Draw to the thumbnail.
+# Create the thumbnail (if we're in the plain view).
 # -----------------------------------------------------------------
 if($template eq 'plain'){
 
-	# grab the thumbnail from disk
-	my $thumb = GD::Image->newFromGd2($MapGlobals::THUMB_FILE);
+	# yes, I'm using ternary operators in the middle of a function call. hah.
+	$tmpthumb = MapGraphics::makeThumbnail($src_found ? $from : undef, $dst_found ? $to : undef,
+		$scale, $width, $height, $norm_xoff, $norm_yoff, $locations);
 
-	# store the ratio between the thumbnail and the main base image
-	# (these two REALLY should be the same...)
-	my $ratio_x = $MapGlobals::THUMB_X / $MapGlobals::IMAGE_X;
-	my $ratio_y = $MapGlobals::THUMB_Y / $MapGlobals::IMAGE_Y;
-
-	# this is the color in which we draw the edge-of-view lines
-	my $thumb_src_color = $thumb->colorAllocate(@MapGlobals::SRC_COLOR);
-	my $thumb_dst_color = $thumb->colorAllocate(@MapGlobals::DST_COLOR);
-	my $thumb_rect_color = $thumb->colorAllocate(@MapGlobals::RECT_COLOR);
-
-	# the outline of the current view
-	$thumb->rectangle(
-		($norm_xoff - ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X,
-		($norm_yoff - ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y,
-		($norm_xoff + ($width/$SCALES[$scale])/2)*$MapGlobals::RATIO_X - 1,
-		($norm_yoff + ($height/$SCALES[$scale])/2)*$MapGlobals::RATIO_Y - 1,
-		$thumb_rect_color
-	);
-
-	# dots for the start and end locations
-	if($src_found){
-		$thumb->filledRectangle(
-			$locations->{'ByID'}{$from}{'x'}*$MapGlobals::RATIO_X - 1,
-			$locations->{'ByID'}{$from}{'y'}*$MapGlobals::RATIO_Y - 1,
-			$locations->{'ByID'}{$from}{'x'}*$MapGlobals::RATIO_X + 1,
-			$locations->{'ByID'}{$from}{'y'}*$MapGlobals::RATIO_Y + 1,
-			$thumb_src_color,
-		);
-	}
-
-	if($dst_found){
-		$thumb->filledRectangle(
-			$locations->{'ByID'}{$to}{'x'}*$MapGlobals::RATIO_X - 1,
-			$locations->{'ByID'}{$to}{'y'}*$MapGlobals::RATIO_Y - 1,
-			$locations->{'ByID'}{$to}{'x'}*$MapGlobals::RATIO_X + 1,
-			$locations->{'ByID'}{$to}{'y'}*$MapGlobals::RATIO_Y + 1,
-			$thumb_dst_color,
-		);
-	}
-
-	# now make a temporary file to put this image in
-	# XXX: eventually just make this a separate CGI script?
-	# I don't know -- which has higher cost: creating/deleting a file, or starting
-	# another perl process?
-	$tmpthumb = new File::Temp(
-			TEMPLATE => 'thumb-XXXXXX',
-			DIR => $MapGlobals::DYNAMIC_IMG_DIR,
-			SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
-			UNLINK => 0,
-		);
-	chmod(0644, $tmpthumb->filename);
-
-	# write out the finished thumbnail to the file
-	binmode($tmpthumb);
-	print $tmpthumb $thumb->png();
-	close($tmpthumb);
-
-	# while we're at it, close the edge file that was opened with initEdgeFile
-	if( defined($edgeFH) ){
-		close($edgeFH);
+}
+# -----------------------------------------------------------------
+# Create the path images (if we're in javascript view).
+# -----------------------------------------------------------------
+my($pathImgRect);
+# if we're using the javascript template, write scaled path images
+if ($template eq 'js'){
+	if($havePath){
+		# create the path images for this path at all scales
+		$pathImgRect = MapGraphics::makePathImages($from, $to, $rect, $pathPoints);
 	}
 }
 
-# if we're using the javascript template, write scaled path images
-if ($template eq 'js'){
-
-	if($havePath){
-
-		# a little padding 
-		my $padding = 8;
-		# if we have a path between two locations, write the path images
-		my $curScale;
-		
-		$pathImgRect->{'xmin'} = $rect->{'xmin'} - $padding;
-		$pathImgRect->{'ymin'} = $rect->{'ymin'} - $padding;
-		$pathImgRect->{'xmax'} = $rect->{'xmax'} + $padding;
-		$pathImgRect->{'ymax'} = $rect->{'ymax'} + $padding;
-		my $pathWidth = $pathImgRect->{'xmax'} - $pathImgRect->{'xmin'};
-		my $pathHeight = $pathImgRect->{'ymax'} - $pathImgRect->{'ymin'};
-
-		for my $i (0..$#SCALES){
-			$curScale = $SCALES[$i];
-
-			if(! -e MapGlobals::getPathFilename($from, $to, $i) ){
-				# since we're creating new ones, delete old path files
-				##MapGlobals::reaper($MapGlobals::PATH_IMG_DIR, $MapGlobals::PATH_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
-
-				warn "generating scale $i: $curScale\n";
-				
-				my $im = GD::Image->new($pathWidth*$curScale, $pathHeight*$curScale);
-				my $bg_color = $im->colorAllocate(0, 0, 0);
-				$im->transparent($bg_color);
-				my $path_color = $im->colorAllocate(@MapGlobals::PATH_COLOR);
-
-				foreach my $line (@$pathPoints){
-					MapGraphics::drawLinesRaw($line, $im,
-						$MapGlobals::PATH_THICKNESS, $path_color,
-						$rect->{'xmin'} - $padding,
-						$rect->{'ymin'} - $padding,
-						$pathWidth, $pathHeight, $curScale);
-				}
-
-				open(OUTFILE, '>', MapGlobals::getPathFilename($from, $to, $i)) or die "cannot open output file: $!\n";
-				binmode(OUTFILE);
-				print OUTFILE $im->png();
-				close(OUTFILE);
-			}
-		}
-	}
-
+# close the edge file that was opened with initEdgeFile
+if( defined($edgeFH) ){
+	close($edgeFH);
 }
 
 # -----------------------------------------------------------------
 # Feed the values into the template.
-# (A LOT of these are commented-out because we don't use them right now.)
 # -----------------------------------------------------------------
 
 # now we slam everything into a template and print it out
@@ -695,55 +494,71 @@ my $tmpl = HTML::Template->new(
 	global_vars => 1
 );
 
+
+# basic info: who we are, where to find images, etc
+$tmpl->param( SELF => $MapGlobals::SELF ); # whoooooooooo are you?
+
+# paths
+$tmpl->param( HTML_DIR => $MapGlobals::HTML_BASE );
+$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
+$tmpl->param( CSS_DIR => $MapGlobals::CSS_DIR );
+
+# info about current state
+$tmpl->param( SCALE => $scale );
+$tmpl->param( SIZE => $size );
+$tmpl->param( MPM => $mpm );
+$tmpl->param( MODE => $template );
+$tmpl->param( XOFF => $xoff );
+$tmpl->param( YOFF => $yoff );
+$tmpl->param( WIDTH => $width );
+$tmpl->param( HEIGHT => $height );
+$tmpl->param( MAP_NAME => $mapname );
+
+# user's input text
+$tmpl->param( TXT_SRC => $fromTxtSafe );
+$tmpl->param( TXT_DST => $toTxtSafe );
+
+# official name of the from/to locations, OR the input text (same as TXT_SRC
+# and TXT_DST) if there are no from/to locations
+$tmpl->param( TXT_SRC_OFFICIAL => $from
+	? CGI::escapeHTML($locations->{'ByID'}{$from}{'Name'})
+	: $fromTxtSafe );
+$tmpl->param( TXT_DST_OFFICIAL => $to
+	? CGI::escapeHTML($locations->{'ByID'}{$to}{'Name'})
+	: $toTxtSafe );
+
+# this is the big list of locations (<option> tags)
+$tmpl->param( LOCATION_OPT =>  $loc_opt);
+
+# helper and error text
+$tmpl->param( TXT_ERROR => $ERROR );
+$tmpl->param( SRC_HELP => $src_help );
+$tmpl->param( DST_HELP => $dst_help );
+
+# boolean values, for whatever strange logic we may need inside the template
+$tmpl->param( SRC_FOUND => $src_found );
+$tmpl->param( DST_FOUND => $dst_found );
+$tmpl->param( PATH_FOUND => $havePath );
+
+# this is tells whether we're actually displaying a path between two separate locations
+$tmpl->param( GOT_PATH => $havePath );
+$tmpl->param( DISTANCE => sprintf("%.02f", $dist || 0) );
+$tmpl->param( TIME => formatTime(($dist||0)*$mpm) );
+
 # link to the print view
 $tmpl->param( PRINT_URL => 
 	"$MapGlobals::SELF?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff, $scale, $size, $mpm, 'print'));
 
-# this is stuff for the plain view -- and the print view is just another plain
-# view without widgets
-# TODO: merge the code for these two views.
-if($template eq 'plain' || $template eq 'print'){
-
-	# basic info: who we are, where to find images, etc
-	$tmpl->param( SELF => $MapGlobals::SELF ); # whoooooooooo are you?
-
+# the simple interface
+if($template eq 'plain'){
 	# filenames for the temporary thumb and map files
-	$tmpl->param( IMG_VIEW => $tmpfile->filename );
-	if($template eq 'plain'){
-		$tmpl->param( IMG_THUMB => $tmpthumb->filename );
-	}
-	elsif($template eq 'print'){
-		if($src_found){
-			$tmpl->param( IMG_SRC => $little_window_src->filename );
-		}
-		if($dst_found){
-			$tmpl->param( IMG_DST => $little_window_dst->filename );
-		}
-	}
-
-	# static content directories
-	$tmpl->param( HTML_DIR => $MapGlobals::HTML_BASE );
-	$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
-	$tmpl->param( CSS_DIR => $MapGlobals::CSS_DIR );
-
-	# add info about current state
-	$tmpl->param( SCALE => $scale );
-	$tmpl->param( SIZE => $size );
-	$tmpl->param( MPM => $mpm );
-	$tmpl->param( MODE => $template );
-	$tmpl->param( XOFF => $xoff );
-	$tmpl->param( YOFF => $yoff );
-	$tmpl->param( WIDTH => $width );
-	$tmpl->param( HEIGHT => $height );
-	#$tmpl->param( THUMB_WIDTH => $MapGlobals::THUMB_X );
-	#$tmpl->param( THUMB_HEIGHT => $MapGlobals::THUMB_Y );
+	$tmpl->param( IMG_VIEW => $tmpfile );
+	$tmpl->param( IMG_THUMB => $tmpthumb );
 
 	$tmpl->param( ZOOM_WIDGET =>
 		listZoomLevels($fromTxtURL, $toTxtURL, $xoff, $yoff, $scale, $size, $mpm, $template));
 
-	$tmpl->param( LOCATION_OPT =>  $loc_opt);
-
-	# the strings representing the state of various buttons
+	# URLs for various operations
 	$tmpl->param( UP_URL => 
 		"$MapGlobals::SELF?" . state($fromTxtURL, $toTxtURL, $norm_xoff, $norm_yoff - $pan/$SCALES[$scale], $scale, $size, $mpm, $template));
 	$tmpl->param( DOWN_URL => 
@@ -772,84 +587,26 @@ if($template eq 'plain' || $template eq 'print'){
 
 	$tmpl->param( RECENTER_URL => 
 		"$MapGlobals::SELF?" . state($fromTxtURL, $toTxtURL, undef, undef, undef, $size, $mpm, $template));
-
-	# text
-	$tmpl->param( TXT_SRC => $fromTxtSafe );
-	$tmpl->param( TXT_SRC_OFFICIAL => CGI::escapeHTML($locations->{'ByID'}{$from}{'Name'}) );
-	$tmpl->param( TXT_DST => $toTxtSafe );
-	$tmpl->param( TXT_DST_OFFICIAL => CGI::escapeHTML($locations->{'ByID'}{$to}{'Name'}) );
-	$tmpl->param( TXT_ERROR => $ERROR );
-	if($template eq 'print'){
-		$tmpl->param( TXT_NOW => strftime("%r %A, %B %d, %Y", localtime()) );
-	}
-
-	# this is tells whether we're actually displaying a path between two separate locations
-	$tmpl->param( GOT_PATH => $havePath );
-	$tmpl->param( DISTANCE => sprintf("%.02f", $dist || 0) );
-	$tmpl->param( TIME => formatTime(($dist||0)*$mpm) );
-
-	# a bunch of boolean values, for whatever strange logic we may need inside the template
-	$tmpl->param( SRC_FOUND => $src_found );
-	$tmpl->param( DST_FOUND => $dst_found );
-
-	# helper text for searching
-	$tmpl->param( SRC_HELP => $src_help );
-	$tmpl->param( DST_HELP => $dst_help );
-	#$tmpl->param( SRC_OR_DST_FOUND => ($src_found || $dst_found) );
-	#$tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
-	#$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
-
 }
-# output variables for the javascript template
-elsif ($template eq 'js'){
-
-	# basic info: who we are, where to find images, etc
-	$tmpl->param( SELF => $MapGlobals::SELF ); # whoooooooooo are you?
-
-	$tmpl->param( HTML_DIR => $MapGlobals::HTML_BASE );
-	$tmpl->param( IMG_DIR => $MapGlobals::STATIC_IMG_DIR );
-	$tmpl->param( PATHS_DIR => $MapGlobals::PATH_IMG_DIR );
+# the javascript draggy view
+elsif($template eq 'js'){
+	# more directories to store our stuff
 	$tmpl->param( GRID_DIR => $MapGlobals::GRID_IMG_DIR );
-	$tmpl->param( CSS_DIR => $MapGlobals::CSS_DIR );
+	$tmpl->param( PATHS_DIR => $MapGlobals::PATH_IMG_DIR );
 
-	$tmpl->param( SCALE => $scale );
-	$tmpl->param( SIZE => $size );
-	$tmpl->param( WIDTH => $width );
-	$tmpl->param( HEIGHT => $height );
-	$tmpl->param( MPM => $mpm );
-	$tmpl->param( MODE => $template );
-	$tmpl->param( MAP_NAME => $mapname );
-	$tmpl->param( XOFF => $xoff );
-	$tmpl->param( YOFF => $yoff );
-
-	# text
-	$tmpl->param( TXT_SRC => $fromTxtSafe );
-	$tmpl->param( TXT_SRC_OFFICIAL => CGI::escapeHTML($locations->{'ByID'}{$from}{'Name'}) );
-	$tmpl->param( TXT_DST => $toTxtSafe );
-	$tmpl->param( TXT_DST_OFFICIAL => CGI::escapeHTML($locations->{'ByID'}{$to}{'Name'}) );
-	$tmpl->param( TXT_ERROR => $ERROR );
-	# helper text for searching
-	$tmpl->param( SRC_HELP => $src_help );
-	$tmpl->param( DST_HELP => $dst_help );
-
-	$tmpl->param( LOCATION_OPT =>  $loc_opt);
-
-	$tmpl->param( SRC_FOUND => $src_found );
+	# we need info about each location if it's found
 	if($src_found){
 		$tmpl->param( SRC_NAME => $locations->{'ByID'}{$from}{'Name'} );
 		$tmpl->param( SRC_X => $locations->{'ByID'}{$from}{'x'} );
 		$tmpl->param( SRC_Y => $locations->{'ByID'}{$from}{'y'} );
-		#$tmpl->param( GOTO_SRC_URL => "javascript:centerOnLocation('src');" );
 	}
-	$tmpl->param( DST_FOUND => $dst_found );
 	if($dst_found){
 		$tmpl->param( DST_NAME => $locations->{'ByID'}{$to}{'Name'} );
 		$tmpl->param( DST_X => $locations->{'ByID'}{$to}{'x'} );
 		$tmpl->param( DST_Y => $locations->{'ByID'}{$to}{'y'} );
-		#$tmpl->param( GOTO_DST_URL => "javascript:centerOnLocation('dst');" );
 	}
 
-	$tmpl->param( PATH_FOUND => $havePath );
+	# info about the path
 	if($havePath){
 		$tmpl->param( PATH_X => $pathImgRect->{'xmin'} );
 		$tmpl->param( PATH_Y => $pathImgRect->{'ymin'} );
@@ -859,23 +616,24 @@ elsif ($template eq 'js'){
 		$tmpl->param( PATH_SRC => $from );
 		$tmpl->param( PATH_DST => $to );
 	}
-
-	# this is tells whether we're actually displaying a path between two separate locations
-	$tmpl->param( DISTANCE => sprintf("%.02f", $dist || 0) );
-	$tmpl->param( TIME => formatTime(($dist||0)*$mpm) );
-
-	# a bunch of boolean values, for whatever strange logic we may need inside the template
-	$tmpl->param( SRC_FOUND => $src_found );
-	$tmpl->param( DST_FOUND => $dst_found );
-
-	# helper text for searching
-	$tmpl->param( SRC_HELP => $src_help );
-	$tmpl->param( DST_HELP => $dst_help );
-	#$tmpl->param( SRC_OR_DST_FOUND => ($src_found || $dst_found) );
-	#$tmpl->param( SRC_AND_DST_FOUND => ($src_found && $dst_found) );
-	#$tmpl->param( SRC_AND_DST_BLANK => ($fromTxt eq '' && $toTxt eq '') );
-
 }
+# the print screen
+elsif($template eq 'print'){
+	# close-up views of each location, if applicable
+	if($src_found){
+		$tmpl->param( IMG_SRC => $little_window_src );
+	}
+	if($dst_found){
+		$tmpl->param( IMG_DST => $little_window_dst );
+	}
+
+	# what's the time?
+	$tmpl->param( TXT_NOW => strftime("%r %A, %B %d, %Y", localtime()) );
+
+	# main view, just like the plain template
+	$tmpl->param( IMG_VIEW => $tmpfile );
+}
+
 
 # -----------------------------------------------------------------
 # Everything is finally sent to the browser

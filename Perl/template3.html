@@ -47,7 +47,12 @@
 						<option value="">(None)</option>
 						<option value="" disabled="disabled">----------------</option>
 						<option value="keyword: food">Closest Food</option>
-						<option value="keyword: parking">Closest Parking</option>
+						<option value="" disabled="disabled">----------------</option>
+						<option value="" disabled="disabled">Closest Parking...</option>
+						<option value="keyword: parking_s">S Permit</option>
+						<option value="keyword: parking_b">B Permit</option>
+						<option value="keyword: parking_a">A Permit</option>
+						<option value="keyword: visitorparking">Free/Metered</option>
 						<option value="" disabled="disabled">----------------</option>
 						<TMPL_VAR NAME=LOCATION_OPT>
 					</select>
@@ -65,7 +70,12 @@
 					<option value="">(None)</option>
 					<option value="" disabled="disabled">----------------</option>
 					<option value="keyword: food">Closest Food</option>
-					<option value="keyword: parking">Closest Parking</option>
+					<option value="" disabled="disabled">----------------</option>
+					<option value="" disabled="disabled">Closest Parking...</option>
+					<option value="keyword: parking_s">S Permit</option>
+					<option value="keyword: parking_b">B Permit</option>
+					<option value="keyword: parking_a">A Permit</option>
+					<option value="keyword: visitorparking">Free/Metered</option>
 					<option value="" disabled="disabled">----------------</option>
 					<TMPL_VAR NAME=LOCATION_OPT>
 				</select>
@@ -111,16 +121,18 @@
 			<!-- status text -->
 
 			<TMPL_IF NAME=SRC_FOUND>
-				<p><span id="fromTxt">
-					<a href="<TMPL_VAR NAME=GOTO_SRC_URL>"><b>From</b>: <TMPL_VAR NAME=TXT_SRC></a>
-				</span></p>
+				<p>
+					<span id="fromTxt"><a href="<TMPL_VAR NAME=GOTO_SRC_URL>"><b>From</b>: <TMPL_VAR NAME=TXT_SRC></a></span>
+					<a href="<TMPL_VAR NAME=GOTO_SRC_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/center-on-this-location-2-sm.png" /></a>
+				</p>
 			<TMPL_ELSE>
 				<p><TMPL_VAR NAME=SRC_HELP></p>
 			</TMPL_IF>
 			<TMPL_IF NAME=DST_FOUND>
-				<p><span id="toTxt">
-					<a href="<TMPL_VAR NAME=GOTO_DST_URL>"><b>To</b>: <TMPL_VAR NAME=TXT_DST></a>
-				</span></p>
+				<p>
+					<span id="toTxt"><a href="<TMPL_VAR NAME=GOTO_DST_URL>"><b>To</b>: <TMPL_VAR NAME=TXT_DST></a></span>
+					<a href="<TMPL_VAR NAME=GOTO_DST_URL>"><img src="<TMPL_VAR NAME=IMG_DIR>/center-on-this-location-2-sm.png" /></a>
+				</p>
 			<TMPL_ELSE>
 				<p><TMPL_VAR NAME=DST_HELP></p>
 			</TMPL_IF>
@@ -155,10 +167,9 @@
 
 			<p>
 				<b>Note:</b>
-				The current path data is incomplete. Therefore,
-				paths between locations may not be optimal, and
-				many locations are disconnected. (See also the
-				<a href="/about/plans.shtml">Plans</a> page.)
+				Parking locations are not yet complete. Paths
+				are for educational purposes only.
+
 				If you have JavaScript enabled, you may also
 				wish to try the <a href="<TMPL_VAR
 				NAME=SELF>?mode=js">JavaScript interface</a>.

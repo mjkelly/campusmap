@@ -7,6 +7,10 @@ body{
 	color: black;
 }
 
+img {
+	border: 0px;
+}
+
 /* in opera, <input>s and <select>s don't take the font-size of <body>. feh. */
 .operaDoesNotInheritProperly{
 	font-family: arial, helvetica, sans-serif;

@@ -1708,6 +1708,7 @@
 	</location>
 	<location x="5555" y="4149" id="323" passThrough="false" intersect="true" displayName="true">
 		<name>Gilman Parking Structure</name>
+		<keywords>parking_s parking_b parking_a visitorparking</keywords>
 	</location>
 	<location x="6559" y="2784" id="324" passThrough="false" intersect="true" displayName="true">
 		<name>Electric Shop</name>
@@ -1786,10 +1787,11 @@
 		</aliases>
 	</location>
 	<location x="3404" y="2253" id="336" passThrough="false" intersect="true" displayName="true">
-		<name>Pangea</name>
+		<name>Pangea Parking Structure</name>
 		<aliases>
 			<alias>Parking Structure, North Torrey Pines Road</alias>
 		</aliases>
+		<keywords>parking_s parking_b parking_a visitorparking</keywords>
 	</location>
 	<location x="5287" y="5184" id="337" passThrough="false" intersect="true" displayName="true">
 		<name>Ivy</name>
@@ -2216,5 +2218,127 @@
 	<location x="3497" y="3792" id="432" passThrough="false" intersect="true" displayName="true">
 		<name>El Mercado</name>
 		<keywords>food</keywords>
+	</location>
+	<location x="3886" y="734" id="433" passThrough="false" intersect="true" displayName="true">
+		<name>Parking, North Point</name>
+		<keywords>parking_a parking_b parking_s</keywords>
+	</location>
+	<location x="3399" y="1535" id="434" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P355</name>
+		<keywords>parking_a parking_b parking_s</keywords>
+	</location>
+	<location x="3683" y="1573" id="435" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P351</name>
+	</location>
+	<location x="3739" y="1288" id="436" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P357</name>
+	</location>
+	<location x="3463" y="1174" id="437" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P356</name>
+		<keywords>parking_s parking_b parking_a</keywords>
+	</location>
+	<location x="3384" y="3358" id="438" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P208</name>
+	</location>
+	<location x="3745" y="3361" id="439" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P207</name>
+		<keywords>parking_b parking_a</keywords>
+	</location>
+	<location x="4054" y="3688" id="440" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P206</name>
+		<keywords>visitorparking</keywords>
+	</location>
+	<location x="3739" y="4121" id="442" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P201</name>
+		<keywords>visitorparking</keywords>
+	</location>
+	<location x="3569" y="5304" id="443" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P104</name>
+		<keywords>parking_a</keywords>
+	</location>
+	<location x="3536" y="5419" id="444" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P103</name>
+		<keywords>parking_b parking_a</keywords>
+	</location>
+	<location x="3473" y="5213" id="445" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P104 North</name>
+		<keywords>visitorparking</keywords>
+	</location>
+	<location x="4838" y="5215" id="446" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P604</name>
+		<keywords>parking_b parking_a</keywords>
+	</location>
+	<location x="5197" y="5507" id="447" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P608</name>
+		<keywords>parking_b parking_a</keywords>
+	</location>
+	<location x="5169" y="4904" id="448" passThrough="false" intersect="true" displayName="true">
+		<name>Parking, Osler Lane</name>
+		<keywords>visitorparking</keywords>
+	</location>
+	<location x="5289" y="4395" id="449" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P602</name>
+		<keywords>parking_a visitorparking</keywords>
+	</location>
+	<location x="6258" y="4411" id="450" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P406</name>
+		<keywords>parking_a parking_b parking_s</keywords>
+	</location>
+	<location x="5087" y="2842" id="451" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P503</name>
+		<keywords>parking_a visitorparking</keywords>
+	</location>
+	<location x="5272" y="2463" id="452" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P502</name>
+		<keywords>parking_b parking_a</keywords>
+	</location>
+	<location x="5453" y="2597" id="453" passThrough="false" intersect="true" displayName="true">
+		<name>Parking, Equality Lane</name>
+		<keywords>visitorparking</keywords>
+	</location>
+	<location x="5898" y="2835" id="454" passThrough="true" intersect="true" displayName="true">
+		<name>Parking Lot P504</name>
+		<aliases>
+			<alias>Parking, Justice Lane</alias>
+		</aliases>
+		<keywords>parking_a parking_b parking_s visitorparking</keywords>
+	</location>
+	<location x="6402" y="3093" id="455" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P665</name>
+		<aliases>
+			<alias>Parking Lot P510</alias>
+		</aliases>
+		<keywords>parking_b parking_a visitorparking</keywords>
+	</location>
+	<location x="6662" y="2872" id="456" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P507</name>
+		<keywords>visitorparking</keywords>
+	</location>
+	<location x="7036" y="3199" id="457" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P701</name>
+		<keywords>parking_a parking_b parking_s</keywords>
+	</location>
+	<location x="7936" y="3010" id="458" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P702</name>
+		<keywords>parking_a parking_b parking_s</keywords>
+	</location>
+	<location x="8584" y="3522" id="459" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P703</name>
+		<keywords>parking_a parking_b parking_s</keywords>
+	</location>
+	<location x="8959" y="3645" id="460" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P704</name>
+		<keywords>parking_a parking_b parking_s</keywords>
+	</location>
+	<location x="9004" y="3350" id="461" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P705</name>
+		<keywords>parking_a parking_b parking_s</keywords>
+	</location>
+	<location x="6497" y="3688" id="462" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P750</name>
+		<aliases>
+			<alias>Parking Lot P401</alias>
+		</aliases>
+		<keywords>parking_a parking_b parking_s</keywords>
 	</location>
 </locations>

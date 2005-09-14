@@ -1645,8 +1645,35 @@ class GraphPoint
 				System.err.println("Connections/weights/edges: " +edges.size());
 			out.writeInt(edges.size());
 			
-			// for each Edge connected to this GraphPoint
+			// write the ID of the associated location, if there is one;
+            // if there isn't, use 0 (all IDs are > 0)
+            if(locLabel != null && locLabel.isDisplayName()){
+                if(PathOptimize.debugBinaryGraphPoints)
+                    System.err.println("Location ID: " + locLabel.ID);
+                out.writeInt(locLabel.ID);
+                if(PathOptimize.debugBinaryGraphPoints)
+                    System.err.println("PassThrough: "
+                            + locLabel.isCanPassThrough());
+                out.writeByte( locLabel.isCanPassThrough() ? 1 : 0 );
+            }
+            else
+            {
+                out.writeInt(0);
+                if(PathOptimize.debugBinaryGraphPoints)
+                    System.err.println("Location ID: 0");
+                // GraphPoints without locations are always PassThrough
+                if(PathOptimize.debugBinaryGraphPoints)
+                    System.err.println("PassThrough: true");
+                // For no-display locations...
+                if(locLabel != null)
+                    // write out the passThrough property
+                    out.writeByte( locLabel.isCanPassThrough() ? 1 : 0);
+                else  // write default
+                    out.writeByte(1);
+            }
             
+            
+			// for each Edge connected to this GraphPoint
 			for(int i = 0; i < edges.size(); i++)
 			{
 				if(PathOptimize.debugBinaryGraphPoints)
@@ -1675,34 +1702,6 @@ class GraphPoint
 	    		out.writeInt( edges.get(i).ID );
 				if(PathOptimize.debugBinaryGraphPoints)
 					System.err.println("Edge ID: " + edges.get(i).ID);
-			}
-            
-    		
-			// write the ID of the associated location, if there is one;
-			// if there isn't, use 0 (all IDs are > 0)
-			if(locLabel != null && locLabel.isDisplayName()){
-				if(PathOptimize.debugBinaryGraphPoints)
-					System.err.println("Location ID: " + locLabel.ID);
-				out.writeInt(locLabel.ID);
-				if(PathOptimize.debugBinaryGraphPoints)
-					System.err.println("PassThrough: "
-							+ locLabel.isCanPassThrough());
-                out.writeByte( locLabel.isCanPassThrough() ? 1 : 0 );
-			}
-			else
-			{
-                out.writeInt(0);
-				if(PathOptimize.debugBinaryGraphPoints)
-					System.err.println("Location ID: 0");
-                // GraphPoints without locations are always PassThrough
-				if(PathOptimize.debugBinaryGraphPoints)
-					System.err.println("PassThrough: true");
-				// For no-display locations...
-				if(locLabel != null)
-					// write out the passThrough property
-					out.writeByte( locLabel.isCanPassThrough() ? 1 : 0);
-				else  // write default
-					out.writeByte(1);
 			}
 			
 			if(PathOptimize.debugBinaryGraphPoints)

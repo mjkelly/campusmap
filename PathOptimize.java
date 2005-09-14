@@ -1640,10 +1640,6 @@ class GraphPoint
 			out.writeInt(ID);
             out.writeInt(point.x);
             out.writeInt(point.y);
-	    	// output number of connections/weights/edges
-			if(PathOptimize.debugBinaryGraphPoints)
-				System.err.println("Connections/weights/edges: " +edges.size());
-			out.writeInt(edges.size());
 			
 			// write the ID of the associated location, if there is one;
             // if there isn't, use 0 (all IDs are > 0)
@@ -1672,6 +1668,10 @@ class GraphPoint
                     out.writeByte(1);
             }
             
+            // output number of connections/weights/edges
+            if(PathOptimize.debugBinaryGraphPoints)
+                System.err.println("Connections/weights/edges: " +edges.size());
+            out.writeInt(edges.size());
             
 			// for each Edge connected to this GraphPoint
 			for(int i = 0; i < edges.size(); i++)

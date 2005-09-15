@@ -29,12 +29,6 @@ use constant {
 	DEBUG => 0,	# whether to print lots of debugging info when reading
 };
 
-# a cache for edges, so we don't hit the disk more than once for the same edge
-my %_edge_cache = ();
-
-# info about the edge file, so edges can be loaded singly by loadEdge()
-my($_edge_fh, $_edge_size);
-
 ###################################################################
 # Load GraphPoints from a binary disk file.
 # This also adds fields to the GraphPoints that are not represented on disk,
@@ -278,92 +272,107 @@ sub readByte{
 	return ord($buf);
 }
 
-###################################################################
-# Load an edge of a given ID from the edge file. Objects are of constant
-# length, so it's a simple matter of seeking to the correct spot in the file.
-# This function is kind of a closure -- it uses three variables (a filehandle
-# to the edge file, the size of each edge file, and a cache of already-loaded
-# edges) to preserve its state between calls.
-#
-# Args:
-#	- the ID of the edge file to load (1-based)
-###################################################################
-sub loadEdge{
-	my($id) = @_;
 
-	# ensure that the filehandle is open and initialized to the edge file.
-	if( !defined($_edge_fh) || !defined($_edge_size) ){
-		# if not, initialize $_edge_fh and $_edge_size
-		_initEdgeFile($MapGlobals::EDGE_FILE);
-	}
-
-
-	# check first if the edge is in memory
-	if( exists($_edge_cache{$id}) ){
-		plog("Loading edge ID $id from memory\n");
-		return $_edge_cache{$id};
-	}
-	plog("Loading edge ID $id from disk\n");
-
-	# seek to the beginning of this edge, as determined by its ID
-	my $offset = INT + ($_edge_size*($id-1));
-	print STDERR "Loading Edge ID $id. Edge size is $_edge_size. Seeking to: $offset\n" if DEBUG;
-	seek($_edge_fh, $offset, SEEK_SET);
-	
-	# initialize a new hash to hold this Edge
-	my $edge = {};
-
-	# load the static-length part of the edge file
-	my $buf;
-	read($_edge_fh, $buf, 4*INT);
-	my($ID, $numPoints);
-	($ID, $edge->{'StartPoint'}, $edge->{'EndPoint'}, $numPoints) = unpack("NNNN", $buf);
-	$edge->{'ID'} = $ID;
-
-	if(DEBUG){
-		print STDERR "----\n";
-		print STDERR "Edge ID: $ID\n";
-		print STDERR "StartPoint ID: $edge->{'StartPoint'}\n";
-		print STDERR "EndPoint ID: $edge->{'EndPoint'}\n";
-		print STDERR "Number of points: $numPoints\n";
-	}
-
-	# initialize this Edge's path to an empty array
-	$edge->{'Path'} = ();
-	my ($x, $y);
-	for my $i (1..$numPoints){
-		# read in (x,y) coordinates
-		read($_edge_fh, $buf, 2*INT);
-		($x, $y) = unpack("NN", $buf);
-
-		print STDERR "Path Point: ($x, $y)\n" if DEBUG;
-
-		# add those coordinates to this Edge's path
-		push(@{$edge->{'Path'}}, {
-			x => $x,
-			y => $y,
-		});
-	}
-	print STDERR "---end---\n" if DEBUG;
-
-	# save this edge in memory for later access, if we need it
-	$_edge_cache{$id} = $edge;
-
-	return $edge;
-}
 
 ###################################################################
-# Initalize a filehandle to the edge binary file, so loadEdge() can do its
-# magic.
-#
-# Args:
-#	- filename of the edge file
+# A closure for _initEdgeFile and loadEdge(), because they need to share data
+# and retain state between calls.
 ###################################################################
-sub _initEdgeFile{
-	my($filename) = @_;
+{
+	# a cache for edges, so we don't hit the disk more than once for the same edge
+	my %_edge_cache = ();
 
-	open($_edge_fh, '<', $filename) or die "_initEdgeFile(): Cannot open edge file $filename: $!\n";
-	$_edge_size = readInt($_edge_fh);
+	# info about the edge file, so edges can be loaded singly by loadEdge()
+	my($_edge_fh, $_edge_size);
+
+	###################################################################
+	# Initalize a filehandle to the edge binary file, so loadEdge() can do its
+	# magic.
+	#
+	# Args:
+	#	- filename of the edge file
+	###################################################################
+	sub _initEdgeFile{
+		my($filename) = @_;
+
+		open($_edge_fh, '<', $filename) or die "_initEdgeFile(): Cannot open edge file $filename: $!\n";
+		$_edge_size = readInt($_edge_fh);
+
+	}
+
+	###################################################################
+	# Load an edge of a given ID from the edge file. Objects are of constant
+	# length, so it's a simple matter of seeking to the correct spot in the file.
+	# This function is kind of a closure -- it uses three variables (a filehandle
+	# to the edge file, the size of each edge file, and a cache of already-loaded
+	# edges) to preserve its state between calls.
+	#
+	# Args:
+	#	- the ID of the edge file to load (1-based)
+	###################################################################
+	sub loadEdge{
+		my($id) = @_;
+
+		# ensure that the filehandle is open and initialized to the edge file.
+		if( !defined($_edge_fh) || !defined($_edge_size) ){
+			# if not, initialize $_edge_fh and $_edge_size
+			_initEdgeFile($MapGlobals::EDGE_FILE);
+		}
+
+
+		# check first if the edge is in memory
+		if( exists($_edge_cache{$id}) ){
+			plog("Loading edge ID $id from memory\n");
+			return $_edge_cache{$id};
+		}
+		plog("Loading edge ID $id from disk\n");
+
+		# seek to the beginning of this edge, as determined by its ID
+		my $offset = INT + ($_edge_size*($id-1));
+		print STDERR "Loading Edge ID $id. Edge size is $_edge_size. Seeking to: $offset\n" if DEBUG;
+		seek($_edge_fh, $offset, SEEK_SET);
+		
+		# initialize a new hash to hold this Edge
+		my $edge = {};
+
+		# load the static-length part of the edge file
+		my $buf;
+		read($_edge_fh, $buf, 4*INT);
+		my($ID, $numPoints);
+		($ID, $edge->{'StartPoint'}, $edge->{'EndPoint'}, $numPoints) = unpack("NNNN", $buf);
+		$edge->{'ID'} = $ID;
+
+		if(DEBUG){
+			print STDERR "----\n";
+			print STDERR "Edge ID: $ID\n";
+			print STDERR "StartPoint ID: $edge->{'StartPoint'}\n";
+			print STDERR "EndPoint ID: $edge->{'EndPoint'}\n";
+			print STDERR "Number of points: $numPoints\n";
+		}
+
+		# initialize this Edge's path to an empty array
+		$edge->{'Path'} = ();
+		my ($x, $y);
+		for my $i (1..$numPoints){
+			# read in (x,y) coordinates
+			read($_edge_fh, $buf, 2*INT);
+			($x, $y) = unpack("NN", $buf);
+
+			print STDERR "Path Point: ($x, $y)\n" if DEBUG;
+
+			# add those coordinates to this Edge's path
+			push(@{$edge->{'Path'}}, {
+				x => $x,
+				y => $y,
+			});
+		}
+		print STDERR "---end---\n" if DEBUG;
+
+		# save this edge in memory for later access, if we need it
+		$_edge_cache{$id} = $edge;
+
+		return $edge;
+	}
 
 }
 

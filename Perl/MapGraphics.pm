@@ -1,6 +1,6 @@
-#!/usr/bin/perl
+# vim: tabstop=4 shiftwidth=4
 # -----------------------------------------------------------------
-# MapGraphics.pl -- Functions for manipulating the map image.
+# MapGraphics.pm -- Functions for manipulating the map image.
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 #
@@ -14,7 +14,7 @@ use warnings;
 
 use GD;
 use File::Temp;
-use MapGlobals qw(min max @SCALES);
+use MapGlobals qw(min max @SCALES plog);
 
 ###################################################################
 # Draw the given edge to a GD image in the given color.
@@ -474,6 +474,8 @@ sub makeMapImage{
 sub makePathImages{
 	my($from, $to, $rect, $pathPoints) = @_;
 
+	plog("Making path image for $from --> $to.\n");
+
 	# a little padding 
 	my $padding = 32;
 	# if we have a path between two locations, write the path images
@@ -495,7 +497,7 @@ sub makePathImages{
 			# since we're creating new ones, delete old path files
 			##MapGlobals::reaper($MapGlobals::PATH_IMG_DIR, $MapGlobals::PATH_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
 
-			warn "generating scale $i: $curScale\n";
+			#warn "generating scale $i: $curScale\n";
 			
 			my $im = GD::Image->new($pathWidth*$curScale, $pathHeight*$curScale);
 			my $bg_color = $im->colorAllocate(0, 0, 0);
@@ -510,10 +512,12 @@ sub makePathImages{
 					$pathWidth, $pathHeight, $curScale);
 			}
 
-			open(OUTFILE, '>', MapGlobals::getPathFilename($from, $to, $i)) or die "cannot open output file: $!\n";
+			my $fname = MapGlobals::getPathFilename($from, $to, $i);
+			open(OUTFILE, '>', $fname) or die "Cannot open output path file '$fname': $!\n";
 			binmode(OUTFILE);
 			print OUTFILE $im->png();
 			close(OUTFILE);
+			chmod(0644, $fname);
 		}
 	}
 

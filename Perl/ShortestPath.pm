@@ -1,3 +1,4 @@
+# vim: tabstop=4 shiftwidth=4
 # -----------------------------------------------------------------
 # ShortestPath.pm -- Routines dealing with the algorithmic process of finding
 # the shortest path to a given point on a graph.
@@ -12,12 +13,10 @@ package ShortestPath;
 use strict;
 use warnings;
 
-use MapGlobals qw(TRUE FALSE INFINITY min max);
-#use MapGraphics;
+use MapGlobals qw(TRUE FALSE INFINITY min max plog);
 use Heap::Elem::GraphPoint;
+use Heap::Elem::Dijkstra;
 use Heap::Fibonacci;
-
-#use GD;
 
 ###################################################################
 # Create a hash of minimum distances with Dijkstra's algorithm.
@@ -31,76 +30,107 @@ use Heap::Fibonacci;
 sub find{
 	my($startID, $points) = (@_);
 
+	plog("Running Dijkstra's algorithm.\n");
+
 	my($s, $v, $w);
+	my($vp, $wp);
 	my $smallestIndex;
 	my $connID;
 	# this should be bigger than any other "real" distance, yet it should be small
 	# enough that any other real distance plus this one does NOT cause integer
 	# overflow.
 	my $KONSTANT = 1e7;
+	# this is either 0 or $KONSTANT, depending on context
+	my $K;
+
+	#my $fibheap = makeMinHeap($weights);
+	my $weights = makeWeightHash($points);
+	my $fibheap = makeMinHeap($weights);
 
 	# translate the starting ID into an actual graph point
 	$s = $points->{$startID};
+	# the start location is quite close to itself :)
+	$weights->{$startID}{'Distance'} = 0;
 
-	my $fibheap = makeMinHeap($points);
-
-	$s->{'Distance'} = 0;
+	#warn "Dijkstra's algorithm:\n";
 
 	while(1){
 		# get the smallest unknown vertex.
 		# we end when we run out of elements in the tree.
+		# $v is a Dijkstra cache object
+		# $vp is a GraphPoint
 		if( !defined( $v = $fibheap->extract_top() ) ){
+			#warn "oh noes! we're done!\n";
 			last;
 		}
+		$vp = $points->{$v->{'PointID'}};
+
 		# $v is now a known vertex
 		$v->{'Known'} = TRUE;
 
 		# loop over all points adjacent to $v
-		for $connID ( keys %{$v->{'Connections'}} ){
+		my @conns = keys %{$points->{$v->{'PointID'}}{'Connections'}};
+		#warn "Connections: (@conns)\n";
+		for $connID ( @conns ){
 			# assign the adjacent point to $w
-			# $w is a GraphPoint
-			$w = $points->{$connID};
+			# $w is a Dijkstra cache object
+			# $wp is a GraphPoint
+			$w = $weights->{$connID};
+			$wp = $points->{$w->{'PointID'}};
 
 			# if $w hasn't been visited yet
 			if( !$w->{'Known'} ){
-				if( $w->{'PassThrough'} == 0 )
-				{
-					# if v's distance + the distance between v and w is less
-					# than w's distance
-					if($v->{'Distance'} + $KONSTANT + $v->{'Connections'}{$connID}{'Weight'} <
-						$w->{'Distance'})
-					{
-						$w->{'Distance'} = $v->{'Distance'} + $KONSTANT
-							+ $v->{'Connections'}{$connID}{'Weight'};
+				# $K is non-zero only if the location is no-pass-through
+				$K = ( $wp->{'PassThrough'} == 0 ) ? $KONSTANT : 0;
 
-						# indicate where we got this path
-						$w->{'From'} = $v;
+				# if we found a shorter distance...
+				if($v->{'Distance'} + $K
+					+ $vp->{'Connections'}{$connID}{'Weight'} < $w->{'Distance'}) {
 
-						# we changed the value, so the tree must be notified
-						$fibheap->decrease_key($w);
-					}
-				}
-				else{
-					# if v's distance + the distance between v and w is less
-					# than w's distance
-					if($v->{'Distance'} + $v->{'Connections'}{$connID}{'Weight'} <
-						$w->{'Distance'})
-					{
-						$w->{'Distance'} = $v->{'Distance'}
-							+ $v->{'Connections'}{$connID}{'Weight'};
+					# reset the distance to this lower value
+					$w->{'Distance'} = $v->{'Distance'} + $K
+						+ $vp->{'Connections'}{$connID}{'Weight'};
 
-						# indicate where we got this path
-						$w->{'From'} = $v;
+					# keep track where we came from
+					$w->{'From'} = $v->{'PointID'};
 
-						# we changed the value, so the tree must be notified
-						$fibheap->decrease_key($w);
-					}
+					# we changed the value, so the tree must be notified
+					$fibheap->decrease_key($w);
 				}
 			}
-
 		}
-
 	}
+
+	#warn "POST-DIJKSTRA:\n";
+	#foreach( values %$weights ){
+	#	warn "$_->{'PointID'}: d = $_->{'Distance'}, f = $_->{'From'}\n";
+	#	if( !defined($_->{'From'}) && $_->{'Distance'} != INFINITY){
+	#		warn "^^^ THIS IS THE START LOCATION.\n";
+	#	}
+	#}
+
+	return $weights;
+}
+
+###################################################################
+# Make a hash of Dijkstra objects to hold the 'distance' and 'from' pointers of
+# each GraphPoint.
+# Args: none
+# Returns:
+#	- a hashref of virgin Dijkstra objects, indexed by GraphPoint ID
+###################################################################
+sub makeWeightHash{
+	my($points) = (@_);
+	my $weights = {};
+	foreach ( values %$points ){
+		$weights->{$_->{'ID'}} = Heap::Elem::Dijkstra->new(
+			PointID => $_->{'ID'},
+			Distance => INFINITY,
+			From => 0,
+			Known => FALSE,
+		);
+	}
+	return ($weights);
 }
 
 ###################################################################
@@ -126,6 +156,7 @@ sub makeMinHeap{
 # to find() to create the hashref of GraphPoints.)
 #
 # XXX: Does this even still work? I haven't used it in a long time.
+# TODO: Grep for any calls to this function (there shouldn't be any), and remove it.
 #
 # Args:
 #	- a hashref of GraphPoint objects
@@ -152,9 +183,8 @@ sub pathTo{
 # rectangle necessary to view the entire path, as well as the distance of the
 # path (in pixels).
 # Args:
-#	- a hashref of GraphPoints that has been modified by
-#	  ShortestPath::find() (i.e., the 'Distance' and 'From' fields have been
-#	  set)
+#	- a hashref of GraphPoints
+#	- the distances and from pointers set by Dijkstra's algorithm
 #	- an open filehandle to the Edge file (from LoadData::initEdgeFile())
 #	- the length of each edge record (also from LoadData::initEdgeFile())
 #	- hashref to to the 'source' GraphPoint
@@ -168,7 +198,10 @@ sub pathTo{
 #	  be fed to MapGraphics::drawLines().
 ###################################################################
 sub pathPoints{
-	my($points, $edgeFH, $edgeSize, $source, $target) = (@_);
+	my($points, $weights, $edgeFH, $edgeSize, $source, $target) = (@_);
+
+	# target Dijkstra cache object
+	my $td = $weights->{$target->{'ID'}};
 
 	my $dist = 0;
 	my @pathPoints;
@@ -179,7 +212,7 @@ sub pathPoints{
 	my $ymax = max($source->{'y'}, $target->{'y'});
 
 	# abort right now if we find a disconnected node
-	if( $target->{'Distance'} >= INFINITY ){
+	if( $td->{'Distance'} == INFINITY ){
 		return(
 			undef, 
 			{ xmin => $xmin, ymin => $ymin, xmax => $xmax, ymax => $ymax },
@@ -189,16 +222,16 @@ sub pathPoints{
 
 	# follow 'from' links until we reach the original point
 	my $conn;
-	while( defined($target->{'From'}{'ID'}) ){
+	while( $td->{'From'} ){
 		my $subPath = [];
 
-		$conn = $target->{'Connections'}{$target->{'From'}{'ID'}};
-		#my $thisEdge = $edges->{$conn->{'EdgeID'}};
+		$conn = $target->{'Connections'}{$td->{'From'}};
 		my $thisEdge = LoadData::loadEdge( $edgeFH, $edgeSize, $conn->{'EdgeID'} );
 		$dist += $conn->{'Weight'};
 
 		# keep following the trail back to its source
-		$target = $target->{'From'};
+		$target = $points->{$td->{'From'}};
+		$td = $weights->{$target->{'ID'}};
 
 		# cycle through each point in this edge
 		foreach my $curpt ( @{$thisEdge->{'Path'}} ){
@@ -236,13 +269,13 @@ sub pathPoints{
 #	- the shortest distance between the two points, in pixels.
 ###################################################################
 sub distTo{
-	my($points, $target) = (@_);
+	my($points, $weights, $target) = (@_);
 	my $dist = 0;
 
-	while( defined($target->{'From'}{'ID'}) ){
-		$dist += $target->{'Connections'}{$target->{'From'}{'ID'}}{'Weight'};
+	while( defined($weights->{$target->{'ID'}}{'From'}) ){
+		$dist += $target->{'Connections'}{$weights->{$target->{'ID'}}{'From'}}{'Weight'};
 		# keep following the trail back to its source
-		$target = $target->{'From'};
+		$target = $points->{$weights->{$target->{'ID'}}{'From'}};
 	}
 	return $dist;
 }

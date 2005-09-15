@@ -1,3 +1,4 @@
+# vim: tabstop=4 shiftwidth=4
 # -----------------------------------------------------------------
 # MapGlobals.pm -- Global variables and a few general-purpose 
 # subroutines.
@@ -20,7 +21,7 @@ use constant{
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(TRUE FALSE INFINITY between max min asInt round getWords @SIZES @SCALES);
+@EXPORT_OK = qw(TRUE FALSE INFINITY between max min asInt round getWords @SIZES @SCALES plog);
 @EXPORT = qw();
 
 # -----------------------------------------------------------------
@@ -92,6 +93,11 @@ our $RATIO_Y = $THUMB_Y / $IMAGE_Y;
 # -----------------------------------------------------------------
 # the name of the main interface script, used for form actions, etc
 our $SELF		= 'map.cgi';
+
+# where we redirect stdout
+our $LOG_FILE	= 'map_log.txt';
+# log messages must be at least this level to be printed to the log file
+our $LOG_LEVEL	= 1;
 
 # prefix for the base images (relative to the script)
 our $_BASE_NAME		= 'base-images/map';
@@ -190,6 +196,7 @@ our $PATH_MAX_AGE	= 10*60;
 # -----------------------------------------------------------------
 # Functions
 # -----------------------------------------------------------------
+my $_logfh;
 
 ###################################################################
 # Given a scale, return the path to the GD2 base image at that scale.
@@ -219,7 +226,21 @@ sub getGd2Filename{
 ###################################################################
 sub getCacheName{
 	my($from, $to) = (asInt(shift()), asInt(shift()));
-	return $CACHE_DIR . '/' . min($from, $to) . '-' . max($from, $to) . '.cache';
+	return $CACHE_DIR . '/' . min($from, $to) . '-' . max($from, $to) . '.path';
+}
+
+###################################################################
+# Given a GraphPoint ID, return the name of the cache file that would store the
+# result of Dijkstra's algorithm with that GraphPoint at the center.
+#
+#  Args:
+#	- a GraphPoint ID
+# Returns:
+#	- the name of the Dijkstra cache file for the given GraphPoint
+###################################################################
+sub getDijkstraCacheName{
+	my $id = asInt(shift());
+	return "$CACHE_DIR/$id.full";
 }
 
 
@@ -374,3 +395,60 @@ sub getWords{
 	$str =~ /^(\w+)/;
 	return $1 || '';
 }
+
+###################################################################
+# Print to the log file. Messages printed directly by the system, not through
+# plog(), should be prepended with "=== ".
+# EITHER:
+#	- the string to print
+# OR:
+#	- the log level
+#	- a string to print
+#	- [...]
+#
+# E.g., these are good:
+# plog("Foo!");
+# plog(1, "Foo");
+# plog(1, "Foo", "Bar", "baz");
+#
+# But these are not:
+# plog(1);
+# plog("Foo", "Bar");
+#
+###################################################################
+sub plog{
+	# log level of the message defaults to 1, or the first argument
+	# if more than one was passed
+	my $level = 1;
+	if(@_ > 1){
+		my $level = int shift;
+	}
+
+	# logging must be at least the level of the message, or nothing happens
+	if($LOG_LEVEL >= $level){
+		# open the log file if it's not open already
+		if(! defined($_log_fh) ){
+			open($_log_fh, '>>', $LOG_FILE);
+
+			# set $_log_fh to be unbuffered
+			my $prev_fh = select($_log_fh);
+			$| = 1;
+			select($prev_fh);
+
+			print $_log_fh "=== Opened log file at " . scalar localtime() . "\n";
+		}
+		print  $_log_fh (@_);
+	}
+}
+
+###################################################################
+# Any cleanup for this module.
+###################################################################
+END{
+	if( defined($_log_fh) ){
+		print $_log_fh "=== Closed log file at " . scalar localtime() . "\n";
+		close($_log_fh);
+	}
+}
+
+1;

@@ -1,3 +1,4 @@
+# vim: tabstop=4 shiftwidth=4
 # -----------------------------------------------------------------
 # LoadData.pm -- Load binary data output from PathOptimize.java into
 # into Perl data structures for manipulation.
@@ -18,7 +19,7 @@ require Exporter;
 use strict;
 use warnings;
 use Text::WagnerFischer qw(distance);
-use MapGlobals qw(TRUE FALSE INFINITY);
+use MapGlobals qw(TRUE FALSE INFINITY plog);
 use Heap::Elem::GraphPoint;
 use Fcntl qw(:seek);
 
@@ -27,6 +28,9 @@ use constant {
 	BYTE => 1,	# the size of a byte, in bytes ;)
 	DEBUG => 0,	# whether to print lots of debugging info when reading
 };
+
+# a cache for edges, so we don't hit the disk more than once for the same edge
+my %_edge_cache = ();
 
 ###################################################################
 # Load GraphPoints from a binary disk file.
@@ -41,6 +45,11 @@ use constant {
 sub loadPoints{
 	my($filename) = @_;
 
+	# how big is the constant part of each point, in bytes?
+	my $PT_SIZE = 5*INT + BYTE;
+	# how big is each connection? (inside the point)
+	my $CONN_SIZE = 3*INT;
+
 	# buffer for input
 	my $buf;
 
@@ -52,86 +61,68 @@ sub loadPoints{
 
 	open(INPUT, '<', $filename) or die "Cannot open $filename for reading: $!\n";
 
-	# hash we build up for each new point
-	# loop while we can read an ID from disk (terminate on EOF)
-	while( defined(my $ID = readInt(*INPUT)) ){
-		print STDERR "Read point ID $ID\n" if DEBUG;
+	# temp variables to store incoming fields
+	my($id, $x, $y, $locid, $pass, $conns);
+	my($connID, $connWeight, $connEID);
 
-		# this is where we put all the values we read off disk
-		my %newpt = ();
+	# read until we hit eof
+	while( read(INPUT, $buf, $PT_SIZE) == $PT_SIZE ){
 
-		# set its 'ID' attribute
-		$newpt{'ID'} = $ID;
+		# we read the constant-length part of the point in one block, so now we
+		# break it into its constituent values
+		($id, $x, $y, $locid, $pass, $conns) = unpack("NNNNcN", $buf);
 
-		# just in case we want coords without having to cycle through
-		# connections
-		$newpt{'x'} = readInt(*INPUT);
-		$newpt{'y'} = readInt(*INPUT);
+		print STDERR "Read point ID $id\n" if DEBUG;
 
-		# get the number of connections
-		my $conns = readInt(*INPUT);
-		print STDERR "$conns connections.\n" if DEBUG;
+		my %newpt = (
+			ID => $id,
+			x => $x,
+			y => $y,
+			LocationID => $locid,
+			PassThrough => $pass,
+			Connections => {},
+		);
+
+		print STDERR "Coords: ($x, $y)\n" if DEBUG;
+		print STDERR "Location ID: $newpt{'LocationID'}\n" if DEBUG;
+		print STDERR "PassThrough: $newpt{'PassThrough'}\n" if DEBUG;
+		print STDERR "Connections: $conns\n" if DEBUG;
 
 		# make 'Connections' an array in the current point object
 		$newpt{'Connections'} = {};
 
-		$newpt{'ConnectionsArray'} = [];
-
 		# loop as many times as there are connections
-		
 		for my $i (1..$conns){
-			print STDERR "---Start connection---\n" if DEBUG;
-			
-			# read connection ID
-			my $connID = readInt(*INPUT);
+			print STDERR "\t---Start connection---\n" if DEBUG;
+			# load each connection as a block
+			read(INPUT, $buf, $CONN_SIZE);
+			($connID, $connWeight, $connEID) = unpack("NNN", $buf);
 
-			# read weight
-			my $weight = readInt(*INPUT);
+			print STDERR "\tConnection ID: $connID\n" if DEBUG;
+			print STDERR "\tWeight: $connWeight\n" if DEBUG;
+			print STDERR "\tEdge ID: $connEID\n" if DEBUG;
 
-			# read edge ID
-			my $edgeID = readInt(*INPUT);
-
-			print STDERR "Connection ID: $connID\n" if DEBUG;
-			print STDERR "Weight: $weight\n" if DEBUG;
-			print STDERR "Edge ID: $edgeID\n" if DEBUG;
-
-			# put all these elements (connection ID, weight, edge ID) into
-			# a hash, which in turn is stored in another hash by connection ID;
+			# put all these elements (connection ID, weight, edge ID) into a
+			# hash, which in turn is stored in another hash by connection ID;
 			# if we have a collision, we store the one with the lower weight
-			# (collisions mean there are two paths between two given points, and
-			# we'll NEVER, in our shortest-path algorithms, want to take the
-			# longer one. we only keep it for completeness.)
+			# (collisions mean there are two paths between two given points,
+			# and we'll NEVER, in our shortest-path algorithms, want to take
+			# the longer one.)
 			if( !exists($newpt{'Connections'}{$connID})
-				|| $newpt{'Connections'}{$connID}{'Weight'} > $weight)
+				|| $newpt{'Connections'}{$connID}{'Weight'} > $connWeight)
 			{
 				$newpt{'Connections'}{$connID} = {
 					ConnectionID => $connID,
-					Weight => $weight,
-					EdgeID => $edgeID,
+					Weight => $connWeight,
+					EdgeID => $connEID,
 				};
 			}
-
-			# then, we add a reference to this connection to an
-			# array of connections
-			push( @{$newpt{'ConnectionsArray'}},
-				$newpt{'Connections'}{$connID});
 		}
 
-		# read the location ID
-		$newpt{'LocationID'} = readInt(*INPUT);
-		# and any binary flags
-		$newpt{'PassThrough'} = readByte(*INPUT);
-
-		# now we initialize fields for shortest-path calculations
-		$newpt{'Known'} = FALSE;
-		$newpt{'Distance'} = INFINITY;
-		$newpt{'From'} = undef;
-
-		print STDERR "Location ID: $newpt{'LocationID'}\n" if DEBUG;
 		print STDERR "---end---\n" if DEBUG;
 
 		# finally, we stick all of this into our $points hashref
-		$points->{$ID} = Heap::Elem::GraphPoint->new(%newpt);
+		$points->{$id} = Heap::Elem::GraphPoint->new(%newpt);
 		
 	}
 
@@ -159,6 +150,8 @@ sub loadPoints{
 ###################################################################
 sub loadLocations{
 	my($filename) = @_;
+
+	plog("Loading locations\n");
 
 	my $buf;
 	my $unpacked;
@@ -249,7 +242,7 @@ sub loadLocations{
 sub readInt{
 	my $buf;
 	if(! read(shift, $buf, INT) ){
-		return undef;
+		return;
 	}
 	return unpack("N", $buf);
 }
@@ -276,7 +269,7 @@ sub writeInt{
 sub readByte{
 	my $buf;
 	if(! read(shift(), $buf, BYTE) ){
-		return undef;
+		return;
 	}
 	# since it's only one byte, we don't have to worry about network byte order
 	return ord($buf);
@@ -295,32 +288,44 @@ sub readByte{
 sub loadEdge{
 	my($fh, $size, $id) = @_;
 
+
+	# check first if the edge is in memory
+	if( exists($_edge_cache{$id}) ){
+		plog("Loading edge ID $id from memory\n");
+		return $_edge_cache{$id};
+	}
+	plog("Loading edge ID $id from disk\n");
+
+	# seek to the beginning of this edge, as determined by its ID
 	my $offset = INT + ($size*($id-1));
 	print STDERR "Loading Edge ID $id. Edge size is $size. Seeking to: $offset\n" if DEBUG;
 	seek($fh, $offset, SEEK_SET);
 	
 	# initialize a new hash to hold this Edge
 	my $edge = {};
-	my $ID = readInt($fh);
+
+	# load the static-length part of the edge file
+	my $buf;
+	read($fh, $buf, 4*INT);
+	my($ID, $numPoints);
+	($ID, $edge->{'StartPoint'}, $edge->{'EndPoint'}, $numPoints) = unpack("NNNN", $buf);
 	$edge->{'ID'} = $ID;
-	print STDERR "----\n" if DEBUG;
-	print STDERR "Edge ID: $ID\n" if DEBUG;
 
-	# the IDs of the GraphPoints at the start and end of this Edge
-	$edge->{'StartPoint'} = readInt($fh);
-	$edge->{'EndPoint'} = readInt($fh);
-	print STDERR "StartPoint ID: $edge->{'StartPoint'}\n" if DEBUG;
-	print STDERR "EndPoint ID: $edge->{'EndPoint'}\n" if DEBUG;
-
-	my $numPoints = readInt($fh);
-	print STDERR "Number of points: $numPoints\n" if DEBUG;
+	if(DEBUG){
+		print STDERR "----\n";
+		print STDERR "Edge ID: $ID\n";
+		print STDERR "StartPoint ID: $edge->{'StartPoint'}\n";
+		print STDERR "EndPoint ID: $edge->{'EndPoint'}\n";
+		print STDERR "Number of points: $numPoints\n";
+	}
 
 	# initialize this Edge's path to an empty array
 	$edge->{'Path'} = ();
+	my ($x, $y);
 	for my $i (1..$numPoints){
 		# read in (x,y) coordinates
-		my $x = readInt($fh);
-		my $y = readInt($fh);
+		read($fh, $buf, 2*INT);
+		($x, $y) = unpack("NN", $buf);
 
 		print STDERR "Path Point: ($x, $y)\n" if DEBUG;
 
@@ -331,6 +336,9 @@ sub loadEdge{
 		});
 	}
 	print STDERR "---end---\n" if DEBUG;
+
+	# save this edge in memory for later access, if we need it
+	$_edge_cache{$id} = $edge;
 
 	return $edge;
 }
@@ -395,7 +403,7 @@ sub readJavaString{
 # TODO: add detailed description of file format.
 #
 # Args:
-#	- the filename to write to
+#	- the location IDs of the two endpoints of the path
 #	- the distance between the two points, in pixels
 #	- the viewing rectangle: that is, the minimum and maximum x and y
 #	  coordinates of the points making up the path (yes, we could calculate
@@ -405,7 +413,11 @@ sub readJavaString{
 # Returns: n/a
 ###################################################################
 sub writeCache{
-	my ($file, $dist, $rect, $pathPoints) = @_;
+	my ($from, $to, $dist, $rect, $pathPoints) = @_;
+
+	my $file = MapGlobals::getCacheName($from, $to);
+
+	plog( "Writing path cache for $from/$to to $file.\n" );
 
 	# dist is 0 if it's undefined
 	$dist ||= 0;
@@ -441,18 +453,24 @@ sub writeCache{
 		}
 	}
 	close(CACHE);
+	chmod(0644, $file);
 }
 
 ###################################################################
 # Load a given file as a cache of the points on the shortest path between two
 # locations. The file is in a binary format described by writeCache().
 # Args:
-#	- the name of the cache file to load
+#	- the location IDs of the two endpoints of the path
 # Returns:
 #	- the same as ShortestPath::pathPoints().
 ###################################################################
 sub loadCache{
-	my ($file) = @_;
+	my($from, $to) = @_;
+	#my ($file) = @_;
+	my $file = MapGlobals::getCacheName($from, $to);
+
+	# if the file doesn't exist, return empty-handed
+	return if(! -e $file );
 
 	my $now = time();
 	print STDERR "LOADING FROM CACHE...\n" if DEBUG;
@@ -461,6 +479,8 @@ sub loadCache{
 	# stupid hack to get around systems that may have 'noatime' set (such
 	# as Gentoo machines, by default).
 	utime($now, $now, $file);
+
+	plog( "Loading path cache for $from/$to from $file.\n" );
 
 	open(CACHE, '<', $file) or die "Cannot open cache file $file for reading: $!\n";
 	# the distance of the path
@@ -503,6 +523,78 @@ sub loadCache{
 
 	close(CACHE);
 	return($dist, \%rect, \@points);
+}
+
+###################################################################
+# Save the results of Dijkstra's algorithm to a file.
+# Args:
+#	- a hashref of Dijkstra cache objects, as generated by
+#	  ShortestPath::find().
+#	- the ID of the GraphPoint that serves as the center of the given
+#	  Dijkstra cache hashref.
+###################################################################
+sub writeDijkstraCache{
+	my($weights, $id) = @_;
+	my $filename = MapGlobals::getDijkstraCacheName($id);
+
+	plog( "Writing Dijkstra cache for $id.\n" );
+
+	open(OUT, '>', $filename) or die "Cannot open cache file for writing: $!\n";
+	binmode(OUT);
+	foreach( values %$weights ){
+		print OUT pack("NNN", $_->{'PointID'}, $_->{'Distance'}, $_->{'From'})
+		#writeInt( *OUT, $_->{'PointID'} );
+		#writeInt( *OUT, $_->{'Distance'} );
+		#writeInt( *OUT, ($_->{'From'} || 0) );
+	}
+	close(OUT);
+	chmod(0644, $filename);
+}
+
+###################################################################
+# Try to read a cache of Dijkstra's algorithm for the given GraphPoint and
+# return the result, or undef if there's no cache.
+#
+# Args:
+#	- ID of the GraphPoint that serves as the center of the Dijkstra cache
+# Returns:
+#	- a hashref of Dijkstra cache objects, or undef if the cache file
+#	  doesn't exist
+###################################################################
+sub readDijkstraCache{
+	my($id) = @_;
+	my $filename = MapGlobals::getDijkstraCacheName($id);
+
+	# abort if the file doesn't exist
+	return if(! -e $filename );
+
+	my $weights = {};
+	my $pointID;
+	my $d;
+
+	# otherwise, we open the file and load from the cache
+	plog( "Reading Dijkstra cache for $id.\n" );
+	open(IN, '<', $filename) or die "Cannot open cache file for reading: $!\n";
+	binmode(IN);
+
+	my $buf;
+	my($pid, $dist, $from);
+	# keep reading till we hit eof
+	while( read(IN, $buf, 3*INT) == 3*INT ){
+		# read the three ints in as a block
+		($pid, $dist, $from) = unpack("NNN", $buf);
+		# make a new Dijkstra cache object
+		$weights->{$pid} = Heap::Elem::Dijkstra->new(
+			PointID => $pid,
+			Distance => $dist,
+			From => $from,
+			Known => TRUE,
+		);
+	}
+
+	close(IN);
+	return $weights;
+
 }
 
 ###################################################################

@@ -1,3 +1,4 @@
+# vim: tabstop=4 shiftwidth=4
 # -----------------------------------------------------------------
 # InterfaceLib.pm -- Functions for the interface. Many generate HTML to feed to
 # the template.
@@ -95,7 +96,7 @@ sub listZoomLevels{
 #	  search term
 ###################################################################
 sub buildHelpText{
-	my ($fromTxt, $toTxt, $mpm, $mode, $locations, $points, $ids) = (@_);
+	my ($fromTxt, $toTxt, $mpm, $mode, $locations, $points, $weights, $ids) = (@_);
 
 	# figure out which kind of help we're giving
 	# one of $fromTxt and $toTxt will be undef. whichever one is,
@@ -106,7 +107,7 @@ sub buildHelpText{
 	if( defined($points) ){
 		foreach (@$ids){
 			my $target = $points->{$locations->{'ByID'}{$_->{'id'}}{'PointID'}};
-			$_->{'dist'} = ShortestPath::distTo($points, $target);
+			$_->{'dist'} = ShortestPath::distTo($points, $weights, $target);
 		}
 	}
 
@@ -128,7 +129,7 @@ sub buildHelpText{
 #	  search term
 ###################################################################
 sub buildKeywordText{
-	my ($fromTxt, $toTxt, $mpm, $mode, $locations, $points, $ids) = (@_);
+	my ($fromTxt, $toTxt, $mpm, $mode, $locations, $points, $weights, $ids) = (@_);
 
 	# internally-defined maximum number of locations to list
 	my $max = 10;
@@ -142,7 +143,7 @@ sub buildKeywordText{
 	if( defined($points) ){
 		foreach (@$ids){
 			my $target = $points->{$locations->{'ByID'}{$_->{'id'}}{'PointID'}};
-			$_->{'dist'} = ShortestPath::distTo($points, $target);
+			$_->{'dist'} = ShortestPath::distTo($points, $weights, $target);
 		}
 
 		# now we sort by those distances

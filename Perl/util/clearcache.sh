@@ -9,16 +9,20 @@
 #
 # Thu Sep  8 23:07:03 PDT 2005
 # -----------------------------------------------------------------
-cache_suffix='.cache'
+path_cache_suffix='.path'
+full_cache_suffix='.full'
 img_suffix='.png'
 
 cache=~/www/cgi-bin/ucsdmap/cache
 path=~/www/ucsdmap/dynamic/paths
 dyn=~/www/ucsdmap/dynamic
 
-echo "From ${cache}:"
-ls -l ${cache}/*${cache_suffix}
-rm -f ${cache}/*${cache_suffix}
+echo "From ${cache} (path):"
+ls -l ${cache}/*${path_cache_suffix}
+rm -f ${cache}/*${path_cache_suffix}
+echo "From ${cache} (full):"
+ls -l ${cache}/*${full_cache_suffix}
+rm -f ${cache}/*${full_cache_suffix}
 echo "From ${path}:"
 ls -l ${path}/*${img_suffix}
 rm -f ${path}/*${img_suffix}

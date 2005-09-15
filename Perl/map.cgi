@@ -1,4 +1,5 @@
 #!/usr/bin/perl -T
+# vim: tabstop=4 shiftwidth=4
 # -----------------------------------------------------------------
 # map.cgi -- The user interface for the UCSDMap.
 #
@@ -7,8 +8,6 @@
 # TODO:
 #	- Create some kind of 'viewport' object to avoid passing around
 # 	  these huge, indecipherable (and frequently-changing!) lists.
-#	- check loading and searching of $points: is it being done more often
-#	  than necessary on double fuzzy matches?
 #
 # $Id$
 # -----------------------------------------------------------------
@@ -23,6 +22,7 @@ use lib qw(
 	./lib
 );
 
+use FCGI;
 use CGI;
 use File::Temp ();
 use HTML::Template;
@@ -30,12 +30,20 @@ use GD;
 use POSIX qw(strftime);
 
 # import lots of stuff from lots of different places...
-use MapGlobals qw(TRUE FALSE INFINITY between asInt round getWords @SIZES @SCALES);
+use MapGlobals qw(TRUE FALSE INFINITY between asInt round getWords @SIZES @SCALES plog);
 use LoadData qw(nameNormalize findLocation findKeyword isKeyword getKeyText);
 use MapGraphics;
 use ShortestPath;
 use InterfaceLib qw(state listZoomLevels buildHelpText buildKeywordText
 	buildLocationOptions buildLocationList pickZoom formatTime);
+
+
+# we always need all the locations, so load them off disk
+my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
+
+# these may or may not be loaded later on
+my($points, $edgeFH, $edgeSize);
+my %dijkstra = ();
 
 # -----------------------------------------------------------------
 # Basic setup.
@@ -45,16 +53,23 @@ use InterfaceLib qw(state listZoomLevels buildHelpText buildKeywordText
 $CGI::DISABLE_UPLOADS = 1;
 $CGI::POST_MAX        = 1024; # 1k ought to be enough for anybody... ;)
 
-my $q = new CGI();
 
 # how far (in pixels) to pan when the user clicks "left", "right", "up", or
 # "down" (but panning in two directions at once would move sqrt($pan+$pan),
 # because I'm lazy)
 my $pan = 100;
 
+# start the FastCGI event loop
+#my $fcgi = FCGI::Request();
+#while( $fcgi->Accept() >= 0 ){
+
+
 # -----------------------------------------------------------------
 # Get input parameters.
 # -----------------------------------------------------------------
+
+my $q = new CGI($ENV{'QUERY_STRING'});
+
 # source and destination location names
 my $fromTxt = $q->param('from') || shift(@ARGV) || '';
 my $toTxt   = $q->param('to')   || shift(@ARGV) || '';
@@ -98,12 +113,6 @@ $mapname = $MapGlobals::DEFAULT_MAP if(!exists($MapGlobals::MAPS{$mapname}) );
 # Do startup stuff: load data, convert some of the input data, initialize
 # variables, etc.
 # -----------------------------------------------------------------
-
-# we always need all the locations, so load them off disk
-my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
-
-# these may or may not be loaded later on
-my($points, $edgeFH, $edgeSize);
 
 # HTML-safe versions of the from and to text
 my $fromTxtSafe = CGI::escapeHTML($fromTxt);
@@ -255,29 +264,33 @@ my $rect;
 my $pathPoints;
 if($havePath){
 
-	# first, check if there's a cache file for the path we want
-	my $cachefile = MapGlobals::getCacheName($from, $to);
+	# try to load a path-specific cache
+	if( !( ($dist, $rect, $pathPoints) = LoadData::loadCache($from, $to) ) ){
 
-	if( -e $cachefile ){
-		# yay! we have a cache file. life is good. :)
-		($dist, $rect, $pathPoints) = LoadData::loadCache($cachefile);
-	}
-	else{
-		# nothing cached, load everything from disk :(
+		# if we can't do that, load all points
 		$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
 		($edgeFH, $edgeSize) = LoadData::initEdgeFile($MapGlobals::EDGE_FILE);
 
-		# this is Dijkstra's, and it takes most of the entire map.cgi
-		# runtime if it runs.
-		ShortestPath::find($startID, $points);
+		# see if the result of Dijkstra's algorithm was cached for this point
+		if( !defined( $dijkstra{$startID})
+				&& !defined( $dijkstra{$startID} = LoadData::readDijkstraCache($startID) ) ){
+			# well, looks like we've actually got to run Dijkstra's algorithm.
+			# this will take a long time.
+			$dijkstra{$startID} = ShortestPath::find($startID, $points);
+			LoadData::writeDijkstraCache($dijkstra{$startID}, $startID);
+		}
 
-		($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $edgeFH, $edgeSize,
+		# we got the result of Dijkstra's algorithm somehow (either by cache or
+		# calculation). now we trace the path between the two locations.
+		($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $dijkstra{$startID}, $edgeFH, $edgeSize,
 			$points->{$startID}, $points->{$endID});
-		LoadData::writeCache($cachefile, $dist, $rect, $pathPoints);
 
-		# if we created a cache file, we're responsible for clearing
-		# out any old ones too
-		##MapGlobals::reaper($MapGlobals::CACHE_DIR, $MapGlobals::CACHE_EXPIRY, '.cache');
+		# cache this specific path so we don't have to calculate it again in the near future
+		LoadData::writeCache($from, $to, $dist, $rect, $pathPoints);
+	
+		# if we created a path cache file, we're responsible for clearing out
+		# any old ones too
+		MapGlobals::reaper($MapGlobals::CACHE_DIR, $MapGlobals::CACHE_EXPIRY, '.path');
 	}
 	
 	# adjust the pixel distance to the unit we're using to display it (mi, ft, etc)
@@ -298,6 +311,8 @@ if($havePath){
 			$xoff, $yoff, $width, $height, $rect, \@SCALES);
 	}
 }
+
+
 # if we don't have a full path, check if we have a single location,
 # and center on that
 else{
@@ -312,16 +327,20 @@ else{
 		# if we found a good 'from' location, run shortest path stuff
 		# so we can display distances
 		if($dst_found){
-			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
-			ShortestPath::find($endID, $points);
+			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE) unless defined($points);
+			# get the result of Dijkstra's somehow
+			if( !defined( $dijkstra{$endID})
+				&& !defined($dijkstra{$endID} = LoadData::readDijkstraCache($endID)) ){
+				$dijkstra{$endID} = ShortestPath::find($endID, $points);
+			}
 		}
 		if($src_keyword){
 			$src_help = "<p><b>Closest matches for $fromTxtSafe...</b></p>"
-				. buildKeywordText(undef, $toTxtURL, $mpm, $template, $locations, $points, \@fromids);
+				. buildKeywordText(undef, $toTxtURL, $mpm, $template, $locations, $points, $dijkstra{$endID}, \@fromids);
 		}
 		else{
 			$src_help = "<p><b>Start location &quot;$fromTxtSafe&quot; not found.</b></p>"
-				. buildHelpText(undef, $toTxtURL, $mpm, $template, $locations, $points, \@fromids);
+				. buildHelpText(undef, $toTxtURL, $mpm, $template, $locations, $points, $dijkstra{$endID}, \@fromids);
 		}
 	}
 
@@ -334,20 +353,19 @@ else{
 		# if we found a good 'to' location, run shortest path stuff
 		# so we can display distances
 		if($src_found){
-			# XXX: we don't need to load $points twice, but we _do_
-			# need to clear the data added by find(). what to do?
-			# probably modify find(). that'll be good for future
-			# possible FastCGI integration, too.
-			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
-			ShortestPath::find($startID, $points);
+			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE) unless defined($points);
+			# get the result of Dijkstra's somehow
+			if( !defined($dijkstra{$startID} = LoadData::readDijkstraCache($startID)) ){
+				$dijkstra{$startID} = ShortestPath::find($startID, $points);
+			}
 		}
 		if($dst_keyword){
 			$dst_help = "<p><b>Closest matches for $toTxtSafe...</b></p>"
-				. buildKeywordText($fromTxtURL, undef, $mpm, $template, $locations, $points, \@toids);
+				. buildKeywordText($fromTxtURL, undef, $mpm, $template, $locations, $points, $dijkstra{$startID}, \@toids);
 		}
 		else{
 			$dst_help = "<p><b>Destination location &quot;$toTxtSafe&quot; not found.</b></p>"
-				. buildHelpText($fromTxtURL, undef, $mpm, $template, $locations, $points, \@toids);
+				. buildHelpText($fromTxtURL, undef, $mpm, $template, $locations, $points, $dijkstra{$startID}, \@toids);
 		}
 	}
 
@@ -481,6 +499,7 @@ if ($template eq 'js'){
 # close the edge file that was opened with initEdgeFile
 if( defined($edgeFH) ){
 	close($edgeFH);
+	undef $edgeFH ;
 }
 
 # -----------------------------------------------------------------
@@ -640,5 +659,8 @@ elsif($template eq 'print'){
 # -----------------------------------------------------------------
 
 print "Content-type: text/html\n\n" . $tmpl->output();
+
+#}
+# end FastCGI event loop
 
 # that's all, folks!

@@ -27,6 +27,8 @@
 
 			<div id="headerMiddleTop">
 				Enter a start and destination location to find the shortest path between the two, or select only one to zoom to that location.
+
+				If you have JavaScript enabled, you can try the <a href="<TMPL_VAR NAME=SELF>?mode=js">JavaScript interface</a>.
 			</div>
 
 			<div id="headerLeftBottom">
@@ -45,14 +47,6 @@
 					<br />
 					<select tabindex="3" id="from_selector" name="from_selector" class="operaDoesNotInheritProperly">
 						<option value="">(None)</option>
-						<option value="" disabled="disabled">----------------</option>
-						<option value="keyword: food">Closest Food</option>
-						<option value="" disabled="disabled">----------------</option>
-						<option value="" disabled="disabled">Closest Parking...</option>
-						<option value="keyword: parking_s">S Permit</option>
-						<option value="keyword: parking_b">B Permit</option>
-						<option value="keyword: parking_a">A Permit</option>
-						<option value="keyword: visitorparking">Free/Metered</option>
 						<option value="" disabled="disabled">----------------</option>
 						<TMPL_VAR NAME=LOCATION_OPT>
 					</select>
@@ -169,10 +163,6 @@
 				<b>Note:</b>
 				Parking locations are not yet complete. Paths
 				are for educational purposes only.
-
-				If you have JavaScript enabled, you may also
-				wish to try the <a href="<TMPL_VAR
-				NAME=SELF>?mode=js">JavaScript interface</a>.
 			</p>
 
 			<!-- end status text -->

@@ -3,13 +3,13 @@
 
 <locations version="1.0">
 	<location x="4898" y="4085" id="1" passThrough="false" intersect="true" displayName="true">
-		<name>201 University Center</name>
+		<name>University Center, 201</name>
 	</location>
 	<location x="4843" y="4162" id="2" passThrough="false" intersect="true" displayName="true">
-		<name>202 University Center</name>
+		<name>University Center, 202</name>
 	</location>
 	<location x="4732" y="3922" id="3" passThrough="false" intersect="true" displayName="true">
-		<name>214 University Center</name>
+		<name>University Center, 214</name>
 		<aliases>
 			<alias>Chancellor&apos;s Complex 214</alias>
 			<alias>Academic Senate</alias>
@@ -18,26 +18,26 @@
 	<location x="4736" y="3880" id="4" passThrough="false" intersect="true" displayName="true">
 		<name>215 University Center</name>
 		<aliases>
-			<alias>215 Chancellor&apos;s Complex</alias>
+			<alias>Chancellor&apos;s Complex, 215</alias>
 		</aliases>
 	</location>
 	<location x="5037" y="4110" id="5" passThrough="false" intersect="true" displayName="true">
-		<name>301 University Ctr</name>
+		<name>University Ctr, 301</name>
 		<aliases>
 			<alias>Registrar</alias>
 			<alias>University Center 301</alias>
 		</aliases>
 	</location>
 	<location x="5092" y="4089" id="6" passThrough="false" intersect="true" displayName="true">
-		<name>301A University Center</name>
+		<name>University Center, 301A</name>
 	</location>
 	<location x="5168" y="4025" id="7" passThrough="false" intersect="true" displayName="true">
-		<name>302 University Center</name>
+		<name>University Center, 302</name>
 	</location>
 	<location x="5172" y="4169" id="8" passThrough="false" intersect="true" displayName="true">
 		<name>Cancer Research Facility</name>
 		<aliases>
-			<alias>303 University Center</alias>
+			<alias>University Center, 303</alias>
 		</aliases>
 	</location>
 	<location x="5329" y="4043" id="9" passThrough="false" intersect="true" displayName="true">
@@ -1090,7 +1090,7 @@
 		</aliases>
 	</location>
 	<location x="4247" y="3036" id="206" passThrough="false" intersect="true" displayName="true">
-		<name>101 Marshall College</name>
+		<name>Marshall College, 101</name>
 	</location>
 	<location x="3337" y="3914" id="207" passThrough="false" intersect="true" displayName="true">
 		<name>Muir College Apartments</name>
@@ -1698,13 +1698,13 @@
 		<name>Preuss School - Building F</name>
 	</location>
 	<location x="4253" y="3094" id="320" passThrough="false" intersect="true" displayName="true">
-		<name>102 Marshall College</name>
+		<name>Marshall College, 102</name>
 	</location>
 	<location x="4226" y="3128" id="321" passThrough="false" intersect="true" displayName="true">
-		<name>103 Marshall College</name>
+		<name>Marshall College, 103</name>
 	</location>
 	<location x="4240" y="3140" id="322" passThrough="false" intersect="true" displayName="true">
-		<name>103A Marshall College</name>
+		<name>Marshall College, 103A</name>
 	</location>
 	<location x="5555" y="4149" id="323" passThrough="false" intersect="true" displayName="true">
 		<name>Gilman Parking Structure</name>
@@ -2350,5 +2350,9 @@
 	<location x="4905" y="3756" id="465" passThrough="false" intersect="true" displayName="true">
 		<name>Parking, Myers Drive</name>
 		<keywords>visitorparking</keywords>
+	</location>
+	<location x="3439" y="5644" id="466" passThrough="false" intersect="true" displayName="true">
+		<name>Parking Lot P102</name>
+		<keywords>parking_b parking_a parking_s</keywords>
 	</location>
 </locations>

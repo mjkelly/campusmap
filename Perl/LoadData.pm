@@ -32,6 +32,9 @@ use constant {
 # a cache for edges, so we don't hit the disk more than once for the same edge
 my %_edge_cache = ();
 
+# info about the edge file, so edges can be loaded singly by loadEdge()
+my($_edge_fh, $_edge_size);
+
 ###################################################################
 # Load GraphPoints from a binary disk file.
 # This also adds fields to the GraphPoints that are not represented on disk,
@@ -276,17 +279,23 @@ sub readByte{
 }
 
 ###################################################################
-# Load an edge of a given ID from the edge file. Objects are of 
-# constant length, so it's a simple matter of seeking to the
-# correct spot in the file.
+# Load an edge of a given ID from the edge file. Objects are of constant
+# length, so it's a simple matter of seeking to the correct spot in the file.
+# This function is kind of a closure -- it uses three variables (a filehandle
+# to the edge file, the size of each edge file, and a cache of already-loaded
+# edges) to preserve its state between calls.
 #
 # Args:
-#	- the filehandle to the edge file
-#	- the size of each edge object on disk
 #	- the ID of the edge file to load (1-based)
 ###################################################################
 sub loadEdge{
-	my($fh, $size, $id) = @_;
+	my($id) = @_;
+
+	# ensure that the filehandle is open and initialized to the edge file.
+	if( !defined($_edge_fh) || !defined($_edge_size) ){
+		# if not, initialize $_edge_fh and $_edge_size
+		_initEdgeFile($MapGlobals::EDGE_FILE);
+	}
 
 
 	# check first if the edge is in memory
@@ -297,16 +306,16 @@ sub loadEdge{
 	plog("Loading edge ID $id from disk\n");
 
 	# seek to the beginning of this edge, as determined by its ID
-	my $offset = INT + ($size*($id-1));
-	print STDERR "Loading Edge ID $id. Edge size is $size. Seeking to: $offset\n" if DEBUG;
-	seek($fh, $offset, SEEK_SET);
+	my $offset = INT + ($_edge_size*($id-1));
+	print STDERR "Loading Edge ID $id. Edge size is $_edge_size. Seeking to: $offset\n" if DEBUG;
+	seek($_edge_fh, $offset, SEEK_SET);
 	
 	# initialize a new hash to hold this Edge
 	my $edge = {};
 
 	# load the static-length part of the edge file
 	my $buf;
-	read($fh, $buf, 4*INT);
+	read($_edge_fh, $buf, 4*INT);
 	my($ID, $numPoints);
 	($ID, $edge->{'StartPoint'}, $edge->{'EndPoint'}, $numPoints) = unpack("NNNN", $buf);
 	$edge->{'ID'} = $ID;
@@ -324,7 +333,7 @@ sub loadEdge{
 	my ($x, $y);
 	for my $i (1..$numPoints){
 		# read in (x,y) coordinates
-		read($fh, $buf, 2*INT);
+		read($_edge_fh, $buf, 2*INT);
 		($x, $y) = unpack("NN", $buf);
 
 		print STDERR "Path Point: ($x, $y)\n" if DEBUG;
@@ -344,22 +353,18 @@ sub loadEdge{
 }
 
 ###################################################################
-# open a file handle to the edges file, and return the size
-# of each edge object (which is constant for all edges).
+# Initalize a filehandle to the edge binary file, so loadEdge() can do its
+# magic.
+#
 # Args:
 #	- filename of the edge file
-# Returns:
-#	- filehandle to the opened file
-#	- the (constant) size of each edge object in the file
 ###################################################################
-sub initEdgeFile{
+sub _initEdgeFile{
 	my($filename) = @_;
-	my $fh;
 
-	open($fh, '<', $filename) or die "Cannot open edge file $filename: $!\n";
-	my $size = readInt($fh);
+	open($_edge_fh, '<', $filename) or die "_initEdgeFile(): Cannot open edge file $filename: $!\n";
+	$_edge_size = readInt($_edge_fh);
 
-	return($fh, $size);
 }
 
 ###################################################################
@@ -565,6 +570,7 @@ sub readDijkstraCache{
 	my($id) = @_;
 	my $filename = MapGlobals::getDijkstraCacheName($id);
 
+	plog( "Dijkstra cache for $id at $filename?\n" );
 	# abort if the file doesn't exist
 	return if(! -e $filename );
 
@@ -934,6 +940,91 @@ sub isKeyword{
 sub getKeyText{
 	my $str = shift();
 	return nameNormalize(substr($str, 8));
+}
+
+###################################################################
+# Get me the distance, bounding rectangle, and list of points of the path
+# between two locations. I don't care how you do it, just get it here on my
+# desk.
+#
+# Args:
+#	- source Location hashref
+#	- destination Location hashref
+#	- a hashref that *might* contain the result of a Dijkstra's algo run. this
+#	  may be modified, but the caller shouldn't care.
+#	- a hashref of GraphPoints. this may be undef if it hasn't naturally been
+#	  filled already: if necessary, it will be loaded.
+#
+# Returns:
+#	- the distance of the path, in pixels
+#	- the bounding rectangle for the path
+#	- a list of points on the path (an arrayref of hashrefs containing keys 'x'
+#	  and 'y')
+#	- the $points argument, possibly modified
+#
+###################################################################
+sub loadShortestPath{
+	my($fromref, $toref, $dijk, $points) = @_;
+
+	# location IDs
+	my($from, $to) = ($fromref->{'ID'}, $toref->{'ID'});
+	# GraphPoint IDs
+	my($startID, $endID) = ($fromref->{'PointID'}, $toref->{'PointID'});
+
+	# this is what we return. it will all be defined somewhere in this jungle
+	# of a subroutine.
+	my($dist, $rect, $pathPoints);
+
+	# try to load a path-specific cache
+	if( !( ($dist, $rect, $pathPoints) = LoadData::loadCache($from, $to) ) ){
+
+		# if we can't do that, load all points; we'll need them later no matter
+		# what happens
+		$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
+
+		# did we have to use the end location as the start location to find the cache file?
+		my $flip = 0;
+
+		# check for Dijkstra caches, first in memory, then on disk.
+		if( defined( $dijk->{$startID}) ){ }
+		elsif( defined( $dijk->{$endID}) ){
+			$flip = 1;
+		}
+		elsif( defined( $dijk->{$startID} = LoadData::readDijkstraCache($startID) ) ){ }
+		elsif( defined( $dijk->{$endID} = LoadData::readDijkstraCache($endID) ) ){
+			$flip = 1;
+		}
+		# if we didn't get a cache file, we have to run Dijkstra's algorithm.
+		else{
+			$dijk->{$startID} = ShortestPath::find($startID, $points);
+			LoadData::writeDijkstraCache($dijk->{$startID}, $startID);
+		}
+
+		# if we had to look at the destination ID in order to get the cache, we have to flip
+		# the source and destination IDs
+		if($flip){
+				my $tmp = $startID;
+				$startID = $endID;
+				$endID = $tmp;
+				plog("Flipping source and destination.\n");
+		}
+
+		# we got the result of Dijkstra's algorithm somehow (either by cache or
+		# calculation). now we trace the path between the two locations.
+		($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $dijk->{$startID},
+			$points->{$startID}, $points->{$endID});
+
+		# cache this specific path so we don't have to calculate it again in the near future
+		LoadData::writeCache($from, $to, $dist, $rect, $pathPoints);
+	
+		# if we created a path cache file, we're responsible for clearing out
+		# any old ones too
+		MapGlobals::reaper($MapGlobals::CACHE_DIR, $MapGlobals::CACHE_EXPIRY, '.path');
+	}
+
+	# if we loaded that cache, we're done. that was easy!
+	return ($dist, $rect, $pathPoints, $points);
+
 }
 
 1;

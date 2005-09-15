@@ -22,8 +22,8 @@ use lib qw(
 	./lib
 );
 
-use FCGI;
 use CGI;
+use FCGI;
 use File::Temp ();
 use HTML::Template;
 use GD;
@@ -42,7 +42,7 @@ use InterfaceLib qw(state listZoomLevels buildHelpText buildKeywordText
 my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
 
 # these may or may not be loaded later on
-my($points, $edgeFH, $edgeSize);
+my($points);
 my %dijkstra = ();
 
 # -----------------------------------------------------------------
@@ -60,9 +60,8 @@ $CGI::POST_MAX        = 1024; # 1k ought to be enough for anybody... ;)
 my $pan = 100;
 
 # start the FastCGI event loop
-#my $fcgi = FCGI::Request();
-#while( $fcgi->Accept() >= 0 ){
-
+my $fcgi = FCGI::Request();
+while( $fcgi->Accept() >= 0 ){
 
 # -----------------------------------------------------------------
 # Get input parameters.
@@ -263,35 +262,10 @@ my $dist = 0;
 my $rect;
 my $pathPoints;
 if($havePath){
-
-	# try to load a path-specific cache
-	if( !( ($dist, $rect, $pathPoints) = LoadData::loadCache($from, $to) ) ){
-
-		# if we can't do that, load all points
-		$points	= LoadData::loadPoints($MapGlobals::POINT_FILE);
-		($edgeFH, $edgeSize) = LoadData::initEdgeFile($MapGlobals::EDGE_FILE);
-
-		# see if the result of Dijkstra's algorithm was cached for this point
-		if( !defined( $dijkstra{$startID})
-				&& !defined( $dijkstra{$startID} = LoadData::readDijkstraCache($startID) ) ){
-			# well, looks like we've actually got to run Dijkstra's algorithm.
-			# this will take a long time.
-			$dijkstra{$startID} = ShortestPath::find($startID, $points);
-			LoadData::writeDijkstraCache($dijkstra{$startID}, $startID);
-		}
-
-		# we got the result of Dijkstra's algorithm somehow (either by cache or
-		# calculation). now we trace the path between the two locations.
-		($dist, $rect, $pathPoints) = ShortestPath::pathPoints($points, $dijkstra{$startID}, $edgeFH, $edgeSize,
-			$points->{$startID}, $points->{$endID});
-
-		# cache this specific path so we don't have to calculate it again in the near future
-		LoadData::writeCache($from, $to, $dist, $rect, $pathPoints);
 	
-		# if we created a path cache file, we're responsible for clearing out
-		# any old ones too
-		MapGlobals::reaper($MapGlobals::CACHE_DIR, $MapGlobals::CACHE_EXPIRY, '.path');
-	}
+	# get the path between the two locations
+	($dist, $rect, $pathPoints, $points) = LoadData::loadShortestPath(
+		$locations->{'ByID'}{$from}, $locations->{'ByID'}{$to}, \%dijkstra, $points);
 	
 	# adjust the pixel distance to the unit we're using to display it (mi, ft, etc)
 	if(defined($dist)){
@@ -330,8 +304,9 @@ else{
 			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE) unless defined($points);
 			# get the result of Dijkstra's somehow
 			if( !defined( $dijkstra{$endID})
-				&& !defined($dijkstra{$endID} = LoadData::readDijkstraCache($endID)) ){
+					&& !defined($dijkstra{$endID} = LoadData::readDijkstraCache($endID)) ){
 				$dijkstra{$endID} = ShortestPath::find($endID, $points);
+				LoadData::writeDijkstraCache($dijkstra{$endID}, $endID);
 			}
 		}
 		if($src_keyword){
@@ -355,8 +330,10 @@ else{
 		if($src_found){
 			$points	= LoadData::loadPoints($MapGlobals::POINT_FILE) unless defined($points);
 			# get the result of Dijkstra's somehow
-			if( !defined($dijkstra{$startID} = LoadData::readDijkstraCache($startID)) ){
+			if( !defined( $dijkstra{$startID})
+					&& !defined($dijkstra{$startID} = LoadData::readDijkstraCache($startID)) ){
 				$dijkstra{$startID} = ShortestPath::find($startID, $points);
+				LoadData::writeDijkstraCache($dijkstra{$startID}, $startID);
 			}
 		}
 		if($dst_keyword){
@@ -494,12 +471,6 @@ if ($template eq 'js'){
 		# create the path images for this path at all scales
 		$pathImgRect = MapGraphics::makePathImages($from, $to, $rect, $pathPoints);
 	}
-}
-
-# close the edge file that was opened with initEdgeFile
-if( defined($edgeFH) ){
-	close($edgeFH);
-	undef $edgeFH ;
 }
 
 # -----------------------------------------------------------------
@@ -660,7 +631,6 @@ elsif($template eq 'print'){
 
 print "Content-type: text/html\n\n" . $tmpl->output();
 
-#}
-# end FastCGI event loop
+} # end FastCGI event loop
 
 # that's all, folks!

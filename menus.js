@@ -21,13 +21,17 @@ function menuInit(fromID, toID, fromListID, toListID, fromTxt, toTxt){
 	m_toList = document.getElementById(toListID);
 	updateListWithText(fromTxt, toTxt);
 
-	m_fromList.onchange = updateText;
-	m_toList.onchange = updateText;
+	m_fromList.onchange = updateFromText;
+	m_toList.onchange = updateToText;
 }
 
-/* set the text from the menu selection */
-function updateText(){
+/* set the text from the menu selection (from) */
+function updateFromText(){
 	m_from.value = m_fromList.value;
+}
+
+/* set the text from the menu selection (to) */
+function updateToText(){
 	m_to.value = m_toList.value;
 }
 

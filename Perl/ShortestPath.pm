@@ -185,8 +185,6 @@ sub pathTo{
 # Args:
 #	- a hashref of GraphPoints
 #	- the distances and from pointers set by Dijkstra's algorithm
-#	- an open filehandle to the Edge file (from LoadData::initEdgeFile())
-#	- the length of each edge record (also from LoadData::initEdgeFile())
 #	- hashref to to the 'source' GraphPoint
 #	- hashref to to the 'destination' GraphPoint
 # Returns:
@@ -198,7 +196,7 @@ sub pathTo{
 #	  be fed to MapGraphics::drawLines().
 ###################################################################
 sub pathPoints{
-	my($points, $weights, $edgeFH, $edgeSize, $source, $target) = (@_);
+	my($points, $weights, $source, $target) = (@_);
 
 	# target Dijkstra cache object
 	my $td = $weights->{$target->{'ID'}};
@@ -226,7 +224,7 @@ sub pathPoints{
 		my $subPath = [];
 
 		$conn = $target->{'Connections'}{$td->{'From'}};
-		my $thisEdge = LoadData::loadEdge( $edgeFH, $edgeSize, $conn->{'EdgeID'} );
+		my $thisEdge = LoadData::loadEdge($conn->{'EdgeID'});
 		$dist += $conn->{'Weight'};
 
 		# keep following the trail back to its source

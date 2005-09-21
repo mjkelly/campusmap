@@ -14,6 +14,7 @@ use warnings;
 
 use GD;
 use File::Temp;
+use File::Basename;
 use MapGlobals qw(min max @SCALES plog);
 
 ###################################################################
@@ -314,7 +315,7 @@ sub makeThumbnail{
 	# another perl process?
 	my $tmpthumb = new File::Temp(
 		TEMPLATE => 'thumb-XXXXXX',
-		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
+		DIR => $MapGlobals::DYNAMIC_IMG_PATH,
 		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
 		UNLINK => 0,
 	);
@@ -325,7 +326,7 @@ sub makeThumbnail{
 	print $tmpthumb $thumb->png();
 	close($tmpthumb);
 
-	return $tmpthumb->filename;
+	return $MapGlobals::DYNAMIC_IMG_DIR . '/' . basename($tmpthumb->filename);
 }
 
 ###################################################################
@@ -373,7 +374,7 @@ sub makeZoomImage{
 	# write out the images
 	my $file = new File::Temp(
 		TEMPLATE => 'zoom-XXXXXX',
-		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
+		DIR => $MapGlobals::DYNAMIC_IMG_PATH,
 		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
 		UNLINK => 0,
 	);
@@ -382,7 +383,7 @@ sub makeZoomImage{
 	print $file $im->png();
 	close($file);
 	
-	return $file->filename;
+	return $MapGlobals::DYNAMIC_IMG_DIR . '/' . basename($file->filename);
 }
 
 ###################################################################
@@ -442,7 +443,7 @@ sub makeMapImage{
 	# generate a temporary file on disk to store the map image
 	my $tmpfile = new File::Temp(
 		TEMPLATE => 'map-XXXXXX',
-		DIR => $MapGlobals::DYNAMIC_IMG_DIR,
+		DIR => $MapGlobals::DYNAMIC_IMG_PATH,
 		SUFFIX => $MapGlobals::DYNAMIC_IMG_SUFFIX,
 		UNLINK => 0,
 	);
@@ -453,7 +454,7 @@ sub makeMapImage{
 	print $tmpfile $im->png();
 	close($tmpfile);
 
-	return $tmpfile->filename;
+	return $MapGlobals::DYNAMIC_IMG_DIR . '/' . basename($tmpfile->filename);
 }
 
 
@@ -495,7 +496,7 @@ sub makePathImages{
 
 		if(! -e MapGlobals::getPathFilename($from, $to, $i) ){
 			# since we're creating new ones, delete old path files
-			##MapGlobals::reaper($MapGlobals::PATH_IMG_DIR, $MapGlobals::PATH_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
+			##MapGlobals::reaper($MapGlobals::PATH_IMG_PATH, $MapGlobals::PATH_MAX_AGE, $MapGlobals::DYNAMIC_IMG_SUFFIX);
 
 			#warn "generating scale $i: $curScale\n";
 			

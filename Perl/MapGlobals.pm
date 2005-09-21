@@ -118,14 +118,18 @@ our %TEMPLATES = (
 );
 
 # where static content is stored
-our $HTML_BASE		= '../../ucsdmap';		# url
-##our $HTML_BASE		= '..';			# url
+##our $HTML_BASE		= '../../ucsdmap';		# url
+##our $HTML_PATH		= '../../ucsdmap';		# path
+our $HTML_BASE		= '.';					# url
+our $HTML_PATH		= '/home/mkelly/web/public/campusmap';	# path
 
 # subdirectories of $HTML base for specific types of data
 our $CSS_DIR		= $HTML_BASE . '/css';		# url
 our $STATIC_IMG_DIR	= $HTML_BASE . '/images';	# url
 our $DYNAMIC_IMG_DIR	= $HTML_BASE . '/dynamic';	# path
+our $DYNAMIC_IMG_PATH	= $HTML_PATH . '/dynamic';	# path
 our $PATH_IMG_DIR	= $DYNAMIC_IMG_DIR . '/paths';	# url
+our $PATH_IMG_PATH	= $DYNAMIC_IMG_PATH . '/paths';	# url
 our $GRID_IMG_DIR	= $STATIC_IMG_DIR . '/grid';	# url
 
 # where binary input files are stored
@@ -260,7 +264,7 @@ sub getPathFilename{
 	$src = asInt($src);
 	$dst = asInt($dst);
 	$zoom = asInt($zoom);
-	return $PATH_IMG_DIR
+	return $PATH_IMG_PATH
 		. '/im-' . min($src, $dst) . '-' . max($src, $dst) . '-' . $zoom . '.png';
 }
 

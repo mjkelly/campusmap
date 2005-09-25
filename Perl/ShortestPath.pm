@@ -270,7 +270,7 @@ sub distTo{
 	my($points, $weights, $target) = (@_);
 	my $dist = 0;
 
-	while( defined($weights->{$target->{'ID'}}{'From'}) ){
+	while( $weights->{$target->{'ID'}}{'From'} ){
 		$dist += $target->{'Connections'}{$weights->{$target->{'ID'}}{'From'}}{'Weight'};
 		# keep following the trail back to its source
 		$target = $points->{$weights->{$target->{'ID'}}{'From'}};

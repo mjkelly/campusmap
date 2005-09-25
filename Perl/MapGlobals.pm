@@ -112,7 +112,7 @@ our %MAPS = (
 
 # match query-string arguments to template filenames
 our %TEMPLATES = (
-	plain => 'template3.html',
+	plain => 'plain_tmpl.html',
 	js => 'js_tmpl.html',
 	print => 'print_tmpl.html',
 );

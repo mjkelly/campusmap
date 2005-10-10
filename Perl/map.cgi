@@ -61,7 +61,9 @@ my $pan = 100;
 
 # start the FastCGI event loop
 my $fcgi = FCGI::Request();
+my $reqno = 0;
 while( $fcgi->Accept() >= 0 ){
+	$reqno++;
 
 # -----------------------------------------------------------------
 # Get input parameters.
@@ -487,6 +489,9 @@ my $tmpl = HTML::Template->new(
 
 # basic info: who we are, where to find images, etc
 $tmpl->param( SELF => $MapGlobals::SELF ); # whoooooooooo are you?
+
+# uncomment this to make sure FastCGI is working, if necessary
+#$tmpl->param( TXT_DEBUG => "[#$reqno]" );
 
 # paths
 $tmpl->param( HTML_DIR => $MapGlobals::HTML_BASE );

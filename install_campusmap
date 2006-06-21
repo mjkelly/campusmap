@@ -1,0 +1,52 @@
+#
+# Some basic install directions/suggestions for installing campusmap on a new server.
+#
+# Wed Jun 21 02:22:47 PDT 2006
+
+Step #1: Subversion checkout
+    Check out CampusMap from subversion:
+    http://michaelkelly.org/svn/CampusMap
+
+Step #2: CPAN install
+cpan> install Text::WagnerFischer
+cpan> install Heap::Fibonacci
+cpan> install HTML::Template
+cpan> install GD
+
+Step #3: Get the scripts working
+Do basic apache config stuff to get cgi-bin working.
+
+Link in the following from subversion...
+disconnected.pl     -> /Perl/util/disconnected.pl
+lib/                -> /Perl  
+js_tmpl.html        -> /Perl/js_tmpl.html
+#map.cgi             -> /Perl/map.cgi
+    Due to apache2 config problem, copy this file.
+plain_tmpl.html     -> /Perl/plain_tmpl.html
+print_tmpl.html     -> /Perl/print_tmpl.html
+
+Create the following folders:
+cache
+data
+
+Copy the following from subversion...
+/data/*.dat data/
+
+This can be tested by going to http://server.../cgi-bin/map.cgi
+
+Step #4: Link in the pretty stuff + images
+mkdir public_html/ucsdmap
+
+Link in the following from subversion
+drag.js     -> /drag.js
+menus.js    -> /menus.js
+
+BLAH!  The static stuff we need is all over the place.  This needs to be fixed.
+I just copied it all straight over.
+
+Other notes:
+create a /dynamic folder in the static directory (and chmod 777)
+chmod 777 on /cache
+
+You must have base-images for the plain interface and printing.
+Also required is thumbnail.gd2

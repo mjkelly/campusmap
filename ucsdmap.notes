@@ -1,10 +1,2 @@
-Google maps:
-	http://jgwebber.blogspot.com/2005/02/mapping-google.html
-
-Notes on setting up a CVS server:
-	http://www.novajo.ca/cvs.html
-	http://www.linuxdevcenter.com/pub/a/linux/2002/01/17/cvsadmin.html
-
-
 Convert a PDF to a PNG:
 	gs -sDEVICE=pngalpha -sOutputFile="UCSDmap%d.png" -r240x240 -dBATCH -dNOPAUSE -c save pop -f UCSDmap.pdf

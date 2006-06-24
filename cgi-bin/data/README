@@ -1,0 +1,7 @@
+This is the data directory.  
+The following three files should be present:
+	binEdgeData.dat
+	binLocationData.dat
+	binPointData.dat
+
+Copy or symlink them from /data in subversion.

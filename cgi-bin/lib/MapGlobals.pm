@@ -118,8 +118,8 @@ our %TEMPLATES = (
 );
 
 # where static content is stored
-our $HTML_BASE		= '../../ucsdmap';		# url
-our $HTML_PATH		= '../../ucsdmap';		# path
+our $HTML_BASE		= '../../campusmap';		# url
+our $HTML_PATH		= '../../campusmap';		# path
 ##our $HTML_BASE		= '.';					# url
 ##our $HTML_PATH		= '/home/mkelly/web/public/campusmap';	# path
 

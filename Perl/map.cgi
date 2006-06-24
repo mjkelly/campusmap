@@ -23,7 +23,7 @@ use lib qw(
 );
 
 use CGI;
-use FCGI;
+#use FCGI;
 use File::Temp ();
 use HTML::Template;
 use GD;
@@ -36,6 +36,10 @@ use MapGraphics;
 use ShortestPath;
 use InterfaceLib qw(state listZoomLevels buildHelpText buildKeywordText
 	buildLocationOptions buildLocationList pickZoom formatTime);
+
+use Carp ();
+local $SIG{__WARN__} = \&Carp::cluck;
+local $SIG{__DIE__} = \&Carp::croak;
 
 
 # we always need all the locations, so load them off disk
@@ -60,10 +64,10 @@ $CGI::POST_MAX        = 1024; # 1k ought to be enough for anybody... ;)
 my $pan = 100;
 
 # start the FastCGI event loop
-my $fcgi = FCGI::Request();
-my $reqno = 0;
-while( $fcgi->Accept() >= 0 ){
-	$reqno++;
+#my $fcgi = FCGI::Request();
+#my $reqno = 0;
+#while( $fcgi->Accept() >= 0 ){
+#	$reqno++;
 
 # -----------------------------------------------------------------
 # Get input parameters.
@@ -636,6 +640,6 @@ elsif($template eq 'print'){
 
 print "Content-type: text/html\n\n" . $tmpl->output();
 
-} # end FastCGI event loop
+#} # end FastCGI event loop
 
 # that's all, folks!

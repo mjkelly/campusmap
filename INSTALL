@@ -1,0 +1,20 @@
+Quick Installation Instructions (for new svn layout)
+===============================
+
+$SVN  = your svn local copy
+$HTML = static HTML directory for CampusMap
+$CGI  = cgi-bin directory for CampusMap
+
+svn co http://michaelkelly.org/svn/CampusMap $SVN
+
+cp -R $SVN/trunk/html $HTML
+cp -R $SVN/trunk/cgi-bin $CGI
+cp $SVN/trunk/data/bin*.dat $CGI/data
+
+chmod +x $CGI/map.cgi
+chown www:www $CGI/cache          *OR* chmod 777 $CGI/cache
+chown www:www $HTML/dynamic       *OR* chmod 777 $HTML/dynamic
+chown www:www $HTML/dynamic/paths *OR* chmod 777 $HTML/dynamic/paths
+
+Set $HTML_BASE and $HTML_PATH appropriately in $CGI/campusmap/lib/MapGlobals.pm
+

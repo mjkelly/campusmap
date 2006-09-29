@@ -28,14 +28,25 @@ Part I: Creation and modification of raw data
 
 Displays an image (map) to the user.  Allows the user to place points and location on top of the map.
 Mouse keys:
-	Left-click:  Add a new node to the end of the current path (and select the
-	             new node).
-	Right-click: Reposition the currently selected node. If a location exists at
+
+Left:
+	No-mod:	     Add a new node to the end of the current path (and select the new node).
+	Ctrl:        Select closest point (and path).
+	Ctrl+Shift:  Create a new point on top of the closest point. Maintain path focus.
+
+	Right-click: 
+	No-mod:      Reposition the currently selected node. If a location exists at
 	             that point, it will be deleted (if the text field is empty), or
 	             renamed (if the text field is filled before the click).
-	Other-click: (This means middle-click, in practice.) Opens up a dialog box to select a location to connect to.
-				 On clicking of a location name from the list, a new point is created
-				 at that location (linking the location to the currently selected path)
+	Ctrl:        Select closest location (and path).
+	Ctrl+Shift:  Reposition the currently selected node to the closest point.
+
+	Other-click: 
+	No-mod:      (This means middle-click, in practice.) 
+                     Opens up a dialog box to select a location to connect to.
+                     On clicking of a location name from the list, a new point is created
+                     at that location (linking the location to the currently selected path)
+
 The following function keys are used to manipulate the data:
 	F1: Remove active node/location.
 	F2: Switch to previous path.

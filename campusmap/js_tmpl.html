@@ -4,65 +4,65 @@
 <head>
 <title>CampusMap</title>
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
-<link rel="stylesheet" href="<TMPL_VAR NAME=CSS_DIR>/main.css" />
-<link rel="stylesheet" href="<TMPL_VAR NAME=CSS_DIR>/js.css" />
+<link rel="stylesheet" href="{{ css_dir }}/main.css" />
+<link rel="stylesheet" href="{{ css_dir }}>/js.css" />
 <link rel="SHORTCUT ICON" href="/favicon.ico" />
 
 <style type="text/css">
 	/* CSS set by the template */
 	#locButton_src {
-		background-image: url('<TMPL_VAR NAME=IMG_DIR>/green-dot-simple.png');
+		background-image: url('{{ img_dir }}/green-dot-simple.png');
 	}
 	#locButton_dst {
-		background-image: url('<TMPL_VAR NAME=IMG_DIR>/red-dot-simple.png');
+		background-image: url('{{ img_dir }}/red-dot-simple.png');
 	}
 </style>
 
 </head>
 <body id="theBody">
 
-<script type="text/javascript" src="<TMPL_VAR NAME=HTML_DIR>/drag.js"></script>
-<script type="text/javascript" src="<TMPL_VAR NAME=HTML_DIR>/menus.js"></script>
+<script type="text/javascript" src="{{ html_dir }}/drag.js"></script>
+<script type="text/javascript" src="{{ html_dir }}/menus.js"></script>
 <script type="text/javascript">
 	// set global variables through the template
-	var self			= "<TMPL_VAR NAME=SELF>";
-	var zoomButtonURL		= "<TMPL_VAR NAME=IMG_DIR>/zoom-level.png";
-	var zoomButtonSelectedURL	= "<TMPL_VAR NAME=IMG_DIR>/zoom-level-selected.png";
-	var pathsDir			= "<TMPL_VAR NAME=PATHS_DIR>";
-	var gridDir			= "<TMPL_VAR NAME=GRID_DIR>";
-	var imageDir			= "<TMPL_VAR NAME=IMG_DIR>";
+	var self			= "{{ self }}";
+	var zoomButtonURL		= "{{ img_dir }}/zoom-level.png";
+	var zoomButtonSelectedURL	= "{{ img_dir }}/zoom-level-selected.png";
+	var pathsDir			= "{{ paths_dir }}";
+	var gridDir			= "{{ grid_dir }}";
+	var imageDir			= "{{ img_dir }}";
 </script>
 
 <div id="container">
 	<div id="header">
 		<div id="headerLeft">
 			<div id="headerLeftTop">
-				<img src="<TMPL_VAR NAME=IMG_DIR>/maplogo_small.png"
+				<img src="{{ img_dir }}/maplogo_small.png"
 					width="151" height="77" alt="Logo" />
 			</div>
 			<div id="headerMiddleTop">
 				Welcome to the UCSD Campus Map.  <br />Enter two locations to find the shortest path between them, or select only one to zoom to that location.
 				<br />
-				(<a href="<TMPL_VAR NAME=HTML_DIR>/about/interface.shtml">More about the interface</a>)
+				(<a href="{{ html_dir }}/about/interface.shtml">More about the interface</a>)
 			</div>
 
 			<div id="headerLeftBottom">
 				<!-- for input forms -->
-				<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self" name="main">
+				<form method="get" action="{{ self }}" target="_self" name="main">
 				<!-- remember zoom level and window size when searching --> 
-				<input type="hidden" name="size" value="<TMPL_VAR NAME=SIZE>" />
-				<input type="hidden" name="mpm" value="<TMPL_VAR NAME=MPM>" />
-				<input type="hidden" name="mode" value="<TMPL_VAR NAME=MODE>" />
+				<input type="hidden" name="size" value="{{ size }}" />
+				<input type="hidden" name="mpm" value="{{ mpm }}" />
+				<input type="hidden" name="mode" value="{{ mode }}" />
 
 				<div id="headerLeftBottomLeft">
 					<!-- 'start' location input -->
 					<label for="from">Start:</label>
-					<input tabindex="1" id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="<TMPL_VAR NAME=TXT_SRC>" />
+					<input tabindex="1" id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="{{ txt_src }}" />
 					<br />
 					<select tabindex="3" id="from_selector" name="from_selector" class="operaDoesNotInheritProperly">
 						<option value="">(None)</option>
 						<option value="" disabled="disabled">----------------</option>
-						<TMPL_VAR NAME=LOCATION_OPT>
+						{{ location_opt }}
 					</select>
 				</div>
 				<div id="headerLeftBottomRight">
@@ -72,7 +72,7 @@
 
 				<!-- 'end' location input -->
 				<label for="to">End:</label>
-				<input tabindex="2" id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="<TMPL_VAR NAME=TXT_DST>" />
+				<input tabindex="2" id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="{{ txt_dst }}" />
 				<br />
 				<select tabindex="4" id="to_selector" name="to_selector" class="operaDoesNotInheritProperly">
 					<option value="">(None)</option>
@@ -85,7 +85,7 @@
 					<option value="keyword: parking_a">A Permit</option>
 					<option value="keyword: visitorparking">Free/Metered</option>
 					<option value="" disabled="disabled">----------------</option>
-					<TMPL_VAR NAME=LOCATION_OPT>
+					{{ location_opt }}
 				</select>
 
 				</form>
@@ -112,43 +112,43 @@
 	<div id="display">
 		<div id="displayLeft">
 			<!-- status text -->
-			<TMPL_IF NAME=SRC_FOUND>
+            {% if src_found %}
 				<p>
-					<span id="fromTxt"><a href="javascript:centerOnLocation('src')"><b>From</b>: <TMPL_VAR NAME=TXT_SRC></a></span>
-					<a href="javascript:centerOnLocation('src')"><img src="<TMPL_VAR NAME=IMG_DIR>/center-on-this-location-2-sm.png" /></a>
+					<span id="fromTxt"><a href="javascript:centerOnLocation('src')"><b>From</b>: {{ txt_src }}</a></span>
+					<a href="javascript:centerOnLocation('src')"><img src="{{ img_dir }}/center-on-this-location-2-sm.png" /></a>
 				</p>
-			<TMPL_ELSE>
-				<p><TMPL_VAR NAME=SRC_HELP></p>
-			</TMPL_IF>
-			<TMPL_IF NAME=DST_FOUND>
+            {% else %}
+				<p>{{ src_help }}</p>
+            {% endif %}
+            {% if dst_found %}
 				<p>
-					<span id="toTxt"><a href="javascript:centerOnLocation('dst')"><b>To</b>: <TMPL_VAR NAME=TXT_DST></a></span>
-					<a href="javascript:centerOnLocation('dst')"><img src="<TMPL_VAR NAME=IMG_DIR>/center-on-this-location-2-sm.png" /></a>
+					<span id="toTxt"><a href="javascript:centerOnLocation('dst')"><b>To</b>: {{ txt_dst }}</a></span>
+					<a href="javascript:centerOnLocation('dst')"><img src="{{ img_dir }}/center-on-this-location-2-sm.png" /></a>
 				</p>
-			<TMPL_ELSE>
-				<p><TMPL_VAR NAME=DST_HELP></p>
-			</TMPL_IF>
+            {% else %}
+				<p>{{ dst_help }}</p>
+            {% endif %}
 
-			<TMPL_IF NAME=PATH_FOUND>
-				<p><b>Distance</b>: <TMPL_VAR NAME=DISTANCE> mi</p>
-				<p><b>Time</b>: <span id="time"><TMPL_VAR NAME=TIME></span> min</p>
+            {% if path_found %}
+				<p><b>Distance</b>: {{ distance }} mi</p>
+				<p><b>Time</b>: <span id="time">{{ time }}</span> min</p>
 
-					<form action="<TMPL_VAR NAME=SELF>" method="get" onsubmit="return calcTime('<TMPL_VAR NAME=PATH_DIST>', document.getElementById('howFast').value)">
+					<form action="{{ self }}" method="get" onsubmit="return calcTime('{{ path_dist }}', document.getElementById('howFast').value)">
 					It takes me
-					<input id="howFast" class="operaDoesNotInheritProperly" type="text" size="3" name="mpm" value="<TMPL_VAR NAME=MPM>" />
+					<input id="howFast" class="operaDoesNotInheritProperly" type="text" size="3" name="mpm" value="{{ mpm }}" />
 					minutes to walk one mile.
 
 					<input type="submit" value="Recalculate" class="operaDoesNotInheritProperly" />
 					</form>
-			</TMPL_IF>
+            {% endif %}
 
 			<p><a href="javascript:goPrint();">[Printable View]</a></p>
 			<!-- <p><a href="javascript:goStatic();">[Static Link To This View]</a></p> -->
 			<p><a id="staticLink" href="">[Static Link To This View]</a></p>
 
-			<TMPL_IF NAME=TXT_ERROR>
-				<p><b><TMPL_VAR NAME=TXT_ERROR></b></p>
-			</TMPL_IF>
+            {% if txt_error %}
+				<p><b>{{ txt_error }}</b></p>
+            {% endif %}
 
 			<p>
 				<b>Note:</b>
@@ -168,17 +168,17 @@
 			<!-- this is the directional control pad -->
 			<tr>
 				<td>&nbsp;</td>
-				<td><a href="javascript:panUp()"><img src="<TMPL_VAR NAME=IMG_DIR>/up.png" width="20" height="20" border="0" alt="Up" /></a></td>
+				<td><a href="javascript:panUp()"><img src="{{ img_dir }}/up.png" width="20" height="20" border="0" alt="Up" /></a></td>
 				<td>&nbsp;</td>
 			</tr>
 			<tr>
-				<td><a href="javascript:panLeft()"><img src="<TMPL_VAR NAME=IMG_DIR>/left.png" width="20" height="20" border="0" alt="Left" /></a></td>
-				<td><a href="javascript:centerView()"><img src="<TMPL_VAR NAME=IMG_DIR>/center.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
-				<td><a href="javascript:panRight()"><img src="<TMPL_VAR NAME=IMG_DIR>/right.png" width="20" height="20" border="0" alt="Right" /></a></td>
+				<td><a href="javascript:panLeft()"><img src="{{ img_dir }}/left.png" width="20" height="20" border="0" alt="Left" /></a></td>
+				<td><a href="javascript:centerView()"><img src="{{ img_dir }}/center.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
+				<td><a href="javascript:panRight()"><img src="{{ img_dir }}/right.png" width="20" height="20" border="0" alt="Right" /></a></td>
 			</tr>
 			<tr>
 				<td>&nbsp;</td>
-				<td><a href="javascript:panDown()"><img src="<TMPL_VAR NAME=IMG_DIR>/down.png" width="20" height="20" border="0" alt="Down" /></a></td>
+				<td><a href="javascript:panDown()"><img src="{{ img_dir }}/down.png" width="20" height="20" border="0" alt="Down" /></a></td>
 				<td>&nbsp;</td>
 			</tr>
 			<tr>
@@ -186,7 +186,7 @@
 			</tr>
 			<!-- this is the zoom widget -->
 			<tr>
-				<td colspan="3" align="center"><a href="javascript:zoomIn()"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
+				<td colspan="3" align="center"><a href="javascript:zoomIn()"><img src="{{ img_dir }}/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
 			</tr>
 			<tr>
 				<!-- this is filled in by JS -->
@@ -194,7 +194,7 @@
 				</td>
 			</tr>
 			<tr>
-				<td colspan="3" align="center"><a href="javascript:zoomOut()"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
+				<td colspan="3" align="center"><a href="javascript:zoomOut()"><img src="{{ img_dir }}/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
 			</tr>
 			</table>
 			<!-- end div buttons -->
@@ -220,25 +220,25 @@
 
 			<script type="text/javascript">
 				menuInit('from', 'to', 'from_selector', 'to_selector',
-					"<TMPL_VAR NAME=TXT_SRC_OFFICIAL>", "<TMPL_VAR NAME=TXT_DST_OFFICIAL>");
+					"{{ txt_src_official }}", "{{ txt_dst_official }}");
 				dragInit();
-				<TMPL_IF NAME=SRC_FOUND>
-					new Location("<TMPL_VAR NAME=SRC_NAME>", <TMPL_VAR NAME=SRC_X>, <TMPL_VAR NAME=SRC_Y>, 'src');
-				</TMPL_IF>
-				<TMPL_IF NAME=DST_FOUND>
-					new Location("<TMPL_VAR NAME=DST_NAME>", <TMPL_VAR NAME=DST_X>, <TMPL_VAR NAME=DST_Y>, 'dst');
-				</TMPL_IF>
+                {% if src_found %}
+					new Location("{{ src_name }}", {{ src_x }}, {{ src_y }}, 'src');
+                {% endif %}
+                {% if dst_found %}
+					new Location("{{ dst_name }}", {{ dst_x }}, {{ dst_y }}, 'dst');
+                {% endif %}
 
-				new Viewport(<TMPL_VAR NAME=XOFF>, <TMPL_VAR NAME=YOFF>,
-					<TMPL_VAR NAME=WIDTH>, <TMPL_VAR NAME=HEIGHT>,
-					<TMPL_VAR NAME=SCALE>, "<TMPL_VAR NAME=MAP_NAME>");
+				new Viewport({{ xoff }}, {{ yoff }},
+					{{ width }}, {{ height }},
+					{{ scale }}, "{{ map_name }}");
 
-				<TMPL_IF NAME=PATH_FOUND>
-					new Path(<TMPL_VAR NAME=PATH_X>, <TMPL_VAR NAME=PATH_Y>,
-						<TMPL_VAR NAME=PATH_W>, <TMPL_VAR NAME=PATH_H>,
-						<TMPL_VAR NAME=PATH_DIST>,
-						<TMPL_VAR NAME=PATH_SRC>, <TMPL_VAR NAME=PATH_DST>);
-				</TMPL_IF>
+                {% if path_found %}
+					new Path({{ path_x }}, {{ path_y }},
+						{{ path_w }}, {{ path_h }},
+						{{ path_dist }},
+						{{ path_src }}, {{ path_dst }});
+                {% endif %}
 
 				linkInit();
 			</script>
@@ -253,8 +253,8 @@
 			<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#49;&#107;&#101;&#108;&#108;&#121;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">Michael Kelly</a> and
 			<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#100;&#108;&#105;&#110;&#100;&#113;&#117;&#105;&#64;&#117;&#99;&#115;&#100;&#46;&#101;&#100;&#117;">David Lindquist</a>.
 			CampusMap is not affiliated with University of California, San Diego.
-			<a href="<TMPL_VAR NAME=HTML_DIR>/about/">More information.</a>
-			<TMPL_VAR NAME=TXT_DEBUG>
+			<a href="{{ html_dir }}/about/">More information.</a>
+			{{ txt_debug }}
 		</p>
 	</div>
 </div>

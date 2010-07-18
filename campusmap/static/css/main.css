@@ -1,0 +1,128 @@
+body{
+	margin-top: 0px;
+	margin-bottom: 0px;
+	background: #339;
+	font-family: arial, helvetica, sans-serif;
+	font-size: 12px;
+	color: black;
+}
+
+img {
+	border: 0px;
+}
+
+/* in opera, <input>s and <select>s don't take the font-size of <body>. feh. */
+.operaDoesNotInheritProperly{
+	font-family: arial, helvetica, sans-serif;
+	font-size: 12px;
+}
+
+#container{
+	width: 760px;
+	margin: 0 auto;
+	background: white;
+	border: 5px solid white;
+}
+
+#header{
+	width: 100%;
+}
+
+#headerLeft{
+	width: 560px;
+	float: left;
+}
+
+#headerMiddleTop{
+	margin: 20px;
+}
+
+/* this is the logo */
+#headerLeftTop{
+	margin-left: 10px;
+	margin-bottom: 4px;
+	margin-right: 20px;
+	float: left;
+}
+
+#headerLeftBottom{
+	text-align: left;
+	clear: left;
+}
+
+/* this is the 'start' field */
+#headerLeftBottomLeft{
+	float: left;
+	margin-left: 10px;
+	margin-right: 20px;
+}
+
+/* this is the submit button */
+#headerLeftBottomRight{
+	float: right;
+	vertical-align: middle;
+	text-align: left;
+	margin-right: 5px;
+}
+
+#headerRight{
+	float: right;
+	width: 150px;
+}
+
+#display{
+	width: 100%;
+	clear: both;
+}
+
+#displayLeft{
+	float: left;
+	width: 180px;
+}
+
+#displayMap{
+	float: left;
+	margin-top: 3px;
+}
+
+#buttons{
+	float: left;
+	width: 70px;
+	margin-top: 20px;
+	margin-left: 5px;
+	text-align: center;
+}
+
+#footer{
+	clear: both;
+	width: 100%;
+	text-align: center;
+	font-size: 75%;
+}
+
+#thumb{
+	border: 1px solid black;
+}
+
+#fromTxt, #fromTxt a:link, #fromTxt a:visited, #fromTxt a:hover, #fromTxt a:active{ 
+	border-bottom: 2px solid #00ff00;
+	line-height: 18px;
+	display: inline;
+	text-decoration: none;
+	color: black;
+}
+
+#toTxt, #toTxt a:link, #toTxt a:visited, #toTxt a:hover, #toTxt a:active{ 
+	border-bottom: 2px solid #ff0000;
+	line-height: 18px;
+	display: inline;
+	text-decoration: none;
+	color: black;
+}
+
+#mapImage {
+	border: 1px solid black;
+	overflow: hidden;
+	/* we set the width and height later with template variables */
+}
+

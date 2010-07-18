@@ -1,0 +1,38 @@
+body {
+	background: white;
+}
+
+table  {
+	margin: 0px;
+}
+
+#printLeft {
+	float: left;
+	width: 220px;
+	height: 100%;
+	clear: left;
+}
+
+#printRight {
+	float: left;
+}
+
+#printHeader {
+	margin: 10px;
+	text-align: top;
+	width: 100%;
+}
+
+#printHeaderLeft {
+	float: left;
+}
+
+#printHeaderCenter {
+	float: left;
+	margin: 20px;
+}
+
+#printFooter {
+	text-align: center;
+	font-size: 75%;
+}

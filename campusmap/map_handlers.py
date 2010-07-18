@@ -28,6 +28,7 @@ class ViewHandler(webapp.RequestHandler):
         html_dir = html_base
         css_dir = html_base + '/css'
         img_dir = html_base + '/img'
+        js_dir = html_base + '/js'
 
         # # subdirectories of $HTML base for specific types of data
         # CSS_DIR         = $HTML_BASE . '/css'
@@ -48,6 +49,7 @@ class ViewHandler(webapp.RequestHandler):
             'html_dir': html_dir,
             'css_dir': css_dir,
             'img_dir': img_dir,
+            'js_dir': js_dir,
         }
         path = os.path.join(os.path.dirname(__file__), 'js_tmpl.html')
         self.response.out.write(template.render(path, template_values))

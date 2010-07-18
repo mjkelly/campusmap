@@ -36,12 +36,10 @@
 <div id="container">
 	<div id="header">
 		<div id="headerLeft">
-
 			<div id="headerLeftTop">
 				<img src="<TMPL_VAR NAME=IMG_DIR>/maplogo_small.png"
 					width="151" height="77" alt="Logo" />
 			</div>
-
 			<div id="headerMiddleTop">
 				Welcome to the UCSD Campus Map.  <br />Enter two locations to find the shortest path between them, or select only one to zoom to that location.
 				<br />
@@ -49,7 +47,6 @@
 			</div>
 
 			<div id="headerLeftBottom">
-
 				<!-- for input forms -->
 				<form method="get" action="<TMPL_VAR NAME=SELF>" target="_self" name="main">
 				<!-- remember zoom level and window size when searching --> 
@@ -93,14 +90,11 @@
 
 				</form>
 				<!-- this ends the main input form -->
-
 			</div>
-
 		</div>
 
 		<div id="headerRight">
 			<!-- google ads! -->
-
 			<script type="text/javascript"><!--                                                                                                           
 			google_ad_client = "pub-2325658500204571";                                                                                                    
 			google_ad_width = 125;                                                                                                                        
@@ -112,17 +106,12 @@
 			<script type="text/javascript"                                                                                                                
 			src="http://pagead2.googlesyndication.com/pagead/show_ads.js">                                                                               
 			</script>
-
 			<!-- end google ads! -->
 		</div>
-
 	</div>
-
 	<div id="display">
-
 		<div id="displayLeft">
 			<!-- status text -->
-
 			<TMPL_IF NAME=SRC_FOUND>
 				<p>
 					<span id="fromTxt"><a href="javascript:centerOnLocation('src')"><b>From</b>: <TMPL_VAR NAME=TXT_SRC></a></span>
@@ -174,12 +163,10 @@
 			&nbsp;
 		</div>
 
-
 		<div id="buttons">
 			<table border="0" cellspacing="0" cellpadding="0" align="center">
 			<!-- this is the directional control pad -->
 			<tr>
-
 				<td>&nbsp;</td>
 				<td><a href="javascript:panUp()"><img src="<TMPL_VAR NAME=IMG_DIR>/up.png" width="20" height="20" border="0" alt="Up" /></a></td>
 				<td>&nbsp;</td>
@@ -189,7 +176,6 @@
 				<td><a href="javascript:centerView()"><img src="<TMPL_VAR NAME=IMG_DIR>/center.png" width="20" height="20" border="0" alt="Re-center" /></a></td>
 				<td><a href="javascript:panRight()"><img src="<TMPL_VAR NAME=IMG_DIR>/right.png" width="20" height="20" border="0" alt="Right" /></a></td>
 			</tr>
-
 			<tr>
 				<td>&nbsp;</td>
 				<td><a href="javascript:panDown()"><img src="<TMPL_VAR NAME=IMG_DIR>/down.png" width="20" height="20" border="0" alt="Down" /></a></td>
@@ -198,7 +184,6 @@
 			<tr>
 				<td colspan="3">&nbsp;</td>
 			</tr>
-
 			<!-- this is the zoom widget -->
 			<tr>
 				<td colspan="3" align="center"><a href="javascript:zoomIn()"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-plus.png" width="30" height="30" border="0" alt="Zoom in" /></a></td>
@@ -209,7 +194,6 @@
 				</td>
 			</tr>
 			<tr>
-
 				<td colspan="3" align="center"><a href="javascript:zoomOut()"><img src="<TMPL_VAR NAME=IMG_DIR>/zoom-minus.png" width="30" height="30" border="0" alt="Zoom out" /></a></td>
 			</tr>
 			</table>
@@ -219,31 +203,20 @@
 		<div id="displayMap">
 			<noscript>
 				<div id="noscript">
-					It appears you do not have JavaScript enabled. In order to use the Fancy JavaScript Interface&trade;, you must enable JavaScript. If you cannot or do not wish to do this, you can always use the <a href="<TMPL_VAR NAME=SELF>?mode=plain">plain CGI interface</a>.
+					It appears you do not have JavaScript enabled. Sorry, you need it to use the fancy flashy interface.
 				</div>
 			</noscript>
-			<!--
-			<layer id="bgLayer">
-			</layer>
-			-->
 
-				<div id="mapContainer">
-
-					<!-- don't change this ordering. in IE,
-					ordering is significant (last on top)
-					-->
-					<div id="draggy">
-						<div id="map">
-						</div>
-						<div id="path">
-						</div>
-						<div id="locations">
-						</div>
-					</div>
-
+			<div id="mapContainer">
+				<!-- don't change this ordering. in IE,
+				ordering is significant (last on top)
+				-->
+				<div id="draggy">
+					<div id="map"></div>
+					<div id="path"></div>
+					<div id="locations"></div>
 				</div>
-
-
+			</div>
 
 			<script type="text/javascript">
 				menuInit('from', 'to', 'from_selector', 'to_selector',

@@ -21,10 +21,34 @@ from google.appengine.ext.webapp import util
 import os
 import urllib
 
+
 class ViewHandler(webapp.RequestHandler):
     def get(self, _unused):
+        html_base = '/static'
+        html_dir = html_base
+        css_dir = html_base + '/css'
+        img_dir = html_base + '/img'
+
+        # # subdirectories of $HTML base for specific types of data
+        # CSS_DIR         = $HTML_BASE . '/css'
+        # STATIC_IMG_DIR  = $HTML_BASE . '/images'
+        # DYNAMIC_IMG_DIR = $HTML_BASE . '/dynamic'
+        # DYNAMIC_IMG_PATH        = $HTML_PATH . '/dynamic'
+        # PATH_IMG_DIR    = $DYNAMIC_IMG_DIR . '/paths'
+        # PATH_IMG_PATH   = $DYNAMIC_IMG_PATH . '/paths'
+        # GRID_IMG_DIR    = $STATIC_IMG_DIR . '/grid'
+        #
+        # # where binary input files are stored
+        # DATA_DIR                = 'data'
+        # # locations of the binary files that contain the graph of paths
+        # POINT_FILE              = $DATA_DIR . '/binPointData.dat'
+        # LOCATION_FILE   = $DATA_DIR . '/binLocationData.dat'
+        # EDGE_FILE               = $DATA_DIR . '/binEdgeData.dat'
         template_values = {
-            'greeting': 'Hello!'}
+            'html_dir': html_dir,
+            'css_dir': css_dir,
+            'img_dir': img_dir,
+        }
         path = os.path.join(os.path.dirname(__file__), 'js_tmpl.html')
         self.response.out.write(template.render(path, template_values))
 

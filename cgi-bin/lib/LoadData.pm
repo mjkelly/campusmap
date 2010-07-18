@@ -69,7 +69,7 @@ sub loadPoints{
 		# break it into its constituent values
 		($id, $x, $y, $locid, $pass, $conns) = unpack("NNNNcN", $buf);
 
-		print STDERR "Read point ID $id\n" if DEBUG;
+		print STDERR "Read point ID $id\n" if DEBUG > 1;
 
 		my %newpt = (
 			ID => $id,
@@ -80,24 +80,24 @@ sub loadPoints{
 			Connections => {},
 		);
 
-		print STDERR "Coords: ($x, $y)\n" if DEBUG;
-		print STDERR "Location ID: $newpt{'LocationID'}\n" if DEBUG;
-		print STDERR "PassThrough: $newpt{'PassThrough'}\n" if DEBUG;
-		print STDERR "Connections: $conns\n" if DEBUG;
+		print STDERR "Coords: ($x, $y)\n" if DEBUG > 2;
+		print STDERR "Location ID: $newpt{'LocationID'}\n" if DEBUG > 2;
+		print STDERR "PassThrough: $newpt{'PassThrough'}\n" if DEBUG > 2;
+		print STDERR "Connections: $conns\n" if DEBUG > 2;
 
 		# make 'Connections' an array in the current point object
 		$newpt{'Connections'} = {};
 
 		# loop as many times as there are connections
 		for my $i (1..$conns){
-			print STDERR "\t---Start connection---\n" if DEBUG;
+			print STDERR "\t---Start connection---\n" if DEBUG > 2;
 			# load each connection as a block
 			read(INPUT, $buf, $CONN_SIZE);
 			($connID, $connWeight, $connEID) = unpack("NNN", $buf);
 
-			print STDERR "\tConnection ID: $connID\n" if DEBUG;
-			print STDERR "\tWeight: $connWeight\n" if DEBUG;
-			print STDERR "\tEdge ID: $connEID\n" if DEBUG;
+			print STDERR "\tConnection ID: $connID\n" if DEBUG > 2;
+			print STDERR "\tWeight: $connWeight\n" if DEBUG > 2;
+			print STDERR "\tEdge ID: $connEID\n" if DEBUG > 2;
 
 			# put all these elements (connection ID, weight, edge ID) into a
 			# hash, which in turn is stored in another hash by connection ID;
@@ -116,7 +116,7 @@ sub loadPoints{
 			}
 		}
 
-		print STDERR "---end---\n" if DEBUG;
+		print STDERR "---end---\n" if DEBUG > 2;
 
 		# finally, we stick all of this into our $points hashref
 		$points->{$id} = Heap::Elem::GraphPoint->new(%newpt);
@@ -511,11 +511,11 @@ sub loadCache{
 	$rect{'ymin'} = readInt(*CACHE);
 	$rect{'xmax'} = readInt(*CACHE);
 	$rect{'ymax'} = readInt(*CACHE);
-	print STDERR "bounding rectangle: ($rect{'xmin'}, $rect{'ymin'}) - ($rect{'xmax'}, $rect{'ymax'})\n" if DEBUG;
+	print STDERR "bounding rectangle: ($rect{'xmin'}, $rect{'ymin'}) - ($rect{'xmax'}, $rect{'ymax'})\n" if DEBUG > 1;
 
 	# the number of point pairs in the file
 	my $numPoints = readInt(*CACHE);
-	print STDERR "number of points: $numPoints\n" if DEBUG;
+	print STDERR "number of points: $numPoints\n" if DEBUG > 1;
 
 	my @points;
 	my ($x, $y);
@@ -528,7 +528,7 @@ sub loadCache{
 		for(1..$sublength){
 			$x = readInt(*CACHE);
 			$y = readInt(*CACHE);
-			print STDERR "\t($x, $y)\n" if DEBUG;
+			print STDERR "\t($x, $y)\n" if DEBUG > 2;
 			push(@$subpoints, { x => $x, y => $y });
 		}
 
@@ -995,16 +995,23 @@ sub loadShortestPath{
 		my $flip = 0;
 
 		# check for Dijkstra caches, first in memory, then on disk.
-		if( defined( $dijk->{$startID}) ){ }
+		if( defined( $dijk->{$startID}) ){
+            print STDERR "Loaded $startID (start) from memory\n" if DEBUG;
+        }
 		elsif( defined( $dijk->{$endID}) ){
+            print STDERR "Loaded $endID (end) from memory\n" if DEBUG;
 			$flip = 1;
 		}
-		elsif( defined( $dijk->{$startID} = LoadData::readDijkstraCache($startID) ) ){ }
+		elsif( defined( $dijk->{$startID} = LoadData::readDijkstraCache($startID) ) ){
+            print STDERR "Loaded $endID (start) from disk\n" if DEBUG;
+        }
 		elsif( defined( $dijk->{$endID} = LoadData::readDijkstraCache($endID) ) ){
+            print STDERR "Loaded $endID (end) from disk\n" if DEBUG;
 			$flip = 1;
 		}
 		# if we didn't get a cache file, we have to run Dijkstra's algorithm.
 		else{
+            print STDERR "Calculating shortest path for $startID $endID\n" if DEBUG;
 			$dijk->{$startID} = ShortestPath::find($startID, $points);
 			LoadData::writeDijkstraCache($dijk->{$startID}, $startID);
 		}

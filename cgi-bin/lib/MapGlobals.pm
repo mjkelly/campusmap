@@ -118,10 +118,12 @@ our %TEMPLATES = (
 );
 
 # where static content is stored
-our $HTML_BASE		= '../../campusmap';		# url
-our $HTML_PATH		= '../../campusmap';		# path
+##our $HTML_BASE		= '../../campusmap';		# url
+##our $HTML_PATH		= '../../campusmap';		# path
 ##our $HTML_BASE		= '.';					# url
 ##our $HTML_PATH		= '/home/mkelly/web/public/campusmap';	# path
+our $HTML_BASE		= '/~mkelly/campusmap-html';					# url
+our $HTML_PATH		= '/usr/lib/cgi-bin/campusmap/git/html';	# path
 
 # subdirectories of $HTML base for specific types of data
 our $CSS_DIR		= $HTML_BASE . '/css';		# url

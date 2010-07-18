@@ -25,7 +25,7 @@ class ViewHandler(webapp.RequestHandler):
     def get(self, _unused):
         template_values = {
             'greeting': 'Hello!'}
-       path = os.path.join(os.path.dirname(__file__), 'js_tmpl.html')
+        path = os.path.join(os.path.dirname(__file__), 'js_tmpl.html')
         self.response.out.write(template.render(path, template_values))
 
     def post(self):

@@ -24,6 +24,21 @@ import urllib
 
 class ViewHandler(webapp.RequestHandler):
     def get(self, _unused):
+        self.display()
+
+    def post(self, _unused):
+        self.display()
+
+    def display(self):
+        default_xoff  = 4608
+        default_yoff  = 3172
+        # is the difference between these?
+        default_scale = 3
+        default_size = 1
+        default_mpm = 20
+        # fixed.
+        default_mode = 'js'
+
         html_base = '/static'
         html_dir = html_base
         css_dir = html_base + '/css'
@@ -50,10 +65,13 @@ class ViewHandler(webapp.RequestHandler):
             'css_dir': css_dir,
             'img_dir': img_dir,
             'js_dir': js_dir,
+
+            'self': '/map',
+
+            'size': self.request.get("size") or default_size,
+            'mpm': self.request.get("mpm") or default_mpm,
+            'mode': self.request.get("mode") or default_mode
         }
         path = os.path.join(os.path.dirname(__file__), 'js_tmpl.html')
         self.response.out.write(template.render(path, template_values))
-
-    def post(self):
-        self.response.out.write('ok')
 

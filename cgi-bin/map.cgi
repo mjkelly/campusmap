@@ -18,7 +18,6 @@ use warnings;
 # the first line is for packages installed on the server.
 # the second is for all our own libraries
 use lib qw(
-	/home/jedimike/perl/lib/perl5/site_perl/5.8.3
 	./lib
 );
 

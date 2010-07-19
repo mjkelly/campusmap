@@ -50,14 +50,13 @@
 				<!-- for input forms -->
 				<form method="get" action="{{ self }}" target="_self" name="main">
 				<!-- remember zoom level and window size when searching --> 
-				<input type="hidden" name="size" value="{{ size }}" />
-				<input type="hidden" name="mpm" value="{{ mpm }}" />
-				<input type="hidden" name="mode" value="{{ mode }}" />
+				<input type="hidden" name="size" value="{{ size|escape }}" />
+				<input type="hidden" name="mpm" value="{{ mpm|escape }}" />
 
 				<div id="headerLeftBottomLeft">
 					<!-- 'start' location input -->
 					<label for="from">Start:</label>
-					<input tabindex="1" id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="{{ txt_src }}" />
+					<input tabindex="1" id="from" class="operaDoesNotInheritProperly" type="text" name="from" value="{{ txt_src|escape }}" />
 					<br />
 					<select tabindex="3" id="from_selector" name="from_selector" class="operaDoesNotInheritProperly">
 						<option value="">(None)</option>
@@ -72,7 +71,7 @@
 
 				<!-- 'end' location input -->
 				<label for="to">End:</label>
-				<input tabindex="2" id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="{{ txt_dst }}" />
+				<input tabindex="2" id="to" class="operaDoesNotInheritProperly" type="text" name="to" value="{{ txt_dst|escape }}" />
 				<br />
 				<select tabindex="4" id="to_selector" name="to_selector" class="operaDoesNotInheritProperly">
 					<option value="">(None)</option>

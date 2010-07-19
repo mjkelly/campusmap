@@ -36,7 +36,7 @@ class MainHandler(webapp.RequestHandler):
 
 def main():
     application = webapp.WSGIApplication([('/', MainHandler),
-                                          ("/map/(.*)", map_handlers.ViewHandler)],
+                                          ("/map", map_handlers.ViewHandler)],
                                          debug=True)
     util.run_wsgi_app(application)
 

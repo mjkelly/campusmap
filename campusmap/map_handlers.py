@@ -23,10 +23,10 @@ import urllib
 
 
 class ViewHandler(webapp.RequestHandler):
-    def get(self, _unused):
+    def get(self):
         self.display()
 
-    def post(self, _unused):
+    def post(self):
         self.display()
 
     def display(self):
@@ -36,8 +36,6 @@ class ViewHandler(webapp.RequestHandler):
         default_scale = 3
         default_size = 1
         default_mpm = 20
-        # fixed.
-        default_mode = 'js'
 
         html_base = '/static'
         html_dir = html_base
@@ -70,7 +68,9 @@ class ViewHandler(webapp.RequestHandler):
 
             'size': self.request.get("size") or default_size,
             'mpm': self.request.get("mpm") or default_mpm,
-            'mode': self.request.get("mode") or default_mode
+
+            'txt_src': self.request.get('from'),
+            'txt_dst': self.request.get('to'),
         }
         path = os.path.join(os.path.dirname(__file__), 'js_tmpl.html')
         self.response.out.write(template.render(path, template_values))

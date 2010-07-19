@@ -113,7 +113,7 @@
 			<!-- status text -->
             {% if src_found %}
 				<p>
-					<span id="fromTxt"><a href="javascript:centerOnLocation('src')"><b>From</b>: {{ txt_src }}</a></span>
+					<span id="fromTxt"><a href="javascript:centerOnLocation('src')"><b>From</b>: {{ txt_src|escape }}</a></span>
 					<a href="javascript:centerOnLocation('src')"><img src="{{ img_dir }}/center-on-this-location-2-sm.png" /></a>
 				</p>
             {% else %}
@@ -121,7 +121,7 @@
             {% endif %}
             {% if dst_found %}
 				<p>
-					<span id="toTxt"><a href="javascript:centerOnLocation('dst')"><b>To</b>: {{ txt_dst }}</a></span>
+					<span id="toTxt"><a href="javascript:centerOnLocation('dst')"><b>To</b>: {{ txt_dst|escape }}</a></span>
 					<a href="javascript:centerOnLocation('dst')"><img src="{{ img_dir }}/center-on-this-location-2-sm.png" /></a>
 				</p>
             {% else %}
@@ -134,7 +134,7 @@
 
 					<form action="{{ self }}" method="get" onsubmit="return calcTime('{{ path_dist }}', document.getElementById('howFast').value)">
 					It takes me
-					<input id="howFast" class="operaDoesNotInheritProperly" type="text" size="3" name="mpm" value="{{ mpm }}" />
+					<input id="howFast" class="operaDoesNotInheritProperly" type="text" size="3" name="mpm" value="{{ mpm|escape }}" />
 					minutes to walk one mile.
 
 					<input type="submit" value="Recalculate" class="operaDoesNotInheritProperly" />

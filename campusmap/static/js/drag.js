@@ -943,12 +943,12 @@ function Viewport(x, y, width, height, curZoom, curMap){
 		// close to the current view
 
 		// a small string that's not dependent on the loop variables
-		var middleStr = '/' + view.map.name + '-' + view.curZoom + '[';
+		var middleStr = '/' + view.curZoom + '-';
 
 		for(numX = x0; numX < x1; numX++) {
 			for(numY = y0; numY < y1; numY++) {
 				str += '<div class="mapBox" style="background-image: url(\''
-					+ gridDir + middleStr + numY + '][' + numX + '].png\');left: '
+					+ gridDir + middleStr + numY + '-' + numX + '.png\');left: '
 					+ numX*squareWidth + 'px;' + 'top: '
 					+ numY*squareHeight + 'px;" ondrag="return false;"></div>';
 			}

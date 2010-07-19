@@ -38,13 +38,10 @@ class ViewHandler(webapp.RequestHandler):
         # is the difference between these?
         default_scale = 3
         default_size = 1
+
         default_mpm = 20
 
         html_base = '/static'
-        html_dir = html_base
-        css_dir = html_base + '/css'
-        img_dir = html_base + '/img'
-        js_dir = html_base + '/js'
 
         fh = open(locations_html)
         locations = fh.read()
@@ -66,10 +63,12 @@ class ViewHandler(webapp.RequestHandler):
         # LOCATION_FILE   = $DATA_DIR . '/binLocationData.dat'
         # EDGE_FILE               = $DATA_DIR . '/binEdgeData.dat'
         template_values = {
-            'html_dir': html_dir,
-            'css_dir': css_dir,
-            'img_dir': img_dir,
-            'js_dir': js_dir,
+            'html_dir': html_base,
+            'css_dir': html_base + '/css',
+            'img_dir': html_base + '/img',
+            'js_dir': html_base + '/js',
+            'grid_dir': html_base + '/tiles',
+            'paths_dir': html_base + '/paths',
 
             'self': '/map',
 
@@ -78,6 +77,21 @@ class ViewHandler(webapp.RequestHandler):
 
             'txt_src': self.request.get('from'),
             'txt_dst': self.request.get('to'),
+
+            # TODO: need to calculate these
+            'txt_src_official' : '',
+            'txt_dst_official' : '',
+
+            # TODO: make these persist properly across pageloads
+            'xoff' : default_xoff,
+            'yoff' : default_yoff,
+
+            # TODO: what _are_ these?
+            'width': 500,
+            'height': 375,
+            'scale': default_scale,
+            # TODO: should be totally deprecated
+            'map_name': 'visitor',
         
             'location_opt': locations,
         }

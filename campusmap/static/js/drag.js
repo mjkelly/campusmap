@@ -992,13 +992,6 @@ function Viewport(x, y, width, height, curZoom, curMap){
 }
 
 /******************************************************************
-* Go to the print screen.
-******************************************************************/
-function goPrint(){
-	window.open(printURL());
-}
-
-/******************************************************************
 * Go to a static page that duplicates the current view, so you can give a link
 * to what you're looking at.
 ******************************************************************/
@@ -1015,18 +1008,6 @@ function currentURL(){
 		(locationList['dst'] ? locationList['dst'].name : null),
 		view.curX, view.curY, view.curZoom, null, document.main.mpm.value,
 		'js'
-	);
-}
-
-/******************************************************************
-* Return the URL that leads to the print screen for the current map state.
-******************************************************************/
-function printURL(){
-	return state(
-		(locationList['src'] ? locationList['src'].name : null),
-		(locationList['dst'] ? locationList['dst'].name : null),
-		view.curX, view.curY, view.curZoom, null, document.main.mpm.value,
-		'print'
 	);
 }
 

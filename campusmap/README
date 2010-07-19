@@ -1,0 +1,8 @@
+This is the App Engine version of CampusMap.
+
+This version uses entirely pre-generated paths. No online Dijkstra's algorithm
+at all (partly because we can't generate images with App Engine). The list of
+locations must also be converted to html for inclusion in the main page.
+
+To prepare the static content, run offline-paths.pl and offline-locations.pl,
+in /cgi-bin.

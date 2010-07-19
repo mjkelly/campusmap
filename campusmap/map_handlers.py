@@ -30,6 +30,9 @@ class ViewHandler(webapp.RequestHandler):
         self.display()
 
     def display(self):
+        main_tmpl = 'js_tmpl.html'
+        locations_html = 'locations.html'
+
         default_xoff  = 4608
         default_yoff  = 3172
         # is the difference between these?
@@ -42,6 +45,10 @@ class ViewHandler(webapp.RequestHandler):
         css_dir = html_base + '/css'
         img_dir = html_base + '/img'
         js_dir = html_base + '/js'
+
+        fh = open(locations_html)
+        locations = fh.read()
+        fh.close()
 
         # # subdirectories of $HTML base for specific types of data
         # CSS_DIR         = $HTML_BASE . '/css'
@@ -71,7 +78,9 @@ class ViewHandler(webapp.RequestHandler):
 
             'txt_src': self.request.get('from'),
             'txt_dst': self.request.get('to'),
+        
+            'location_opt': locations,
         }
-        path = os.path.join(os.path.dirname(__file__), 'js_tmpl.html')
+        path = os.path.join(os.path.dirname(__file__), main_tmpl)
         self.response.out.write(template.render(path, template_values))
 

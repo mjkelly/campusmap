@@ -21,6 +21,7 @@ from google.appengine.ext.webapp import util
 import os
 import urllib
 
+import campusmap
 
 class ViewHandler(webapp.RequestHandler):
     def get(self):
@@ -30,37 +31,21 @@ class ViewHandler(webapp.RequestHandler):
         self.display()
 
     def display(self):
-        main_tmpl = 'js_tmpl.html'
-        locations_html = 'locations.html'
-
-        default_xoff  = 4608
-        default_yoff  = 3172
-
-        # default zoom level
-        default_scale = 3
-        # default viewport size (index into old defaults; not currently used)
-        default_size = 1
-        # default walk sped (minutes per mile)
-        default_mpm = 20
-
-        html_base = '/static'
-
-        fh = open(locations_html)
-        locations = fh.read()
-        fh.close()
+        # this is the core map logic
+        m = campusmap.Map()
 
         template_values = {
-            'html_dir': html_base,
-            'css_dir': html_base + '/css',
-            'img_dir': html_base + '/img',
-            'js_dir': html_base + '/js',
-            'grid_dir': html_base + '/tiles',
-            'paths_dir': html_base + '/paths',
+            'html_dir': m.html_base,
+            'css_dir': m.html_base + '/css',
+            'img_dir': m.html_base + '/img',
+            'js_dir': m.html_base + '/js',
+            'grid_dir': m.html_base + '/tiles',
+            'paths_dir': m.html_base + '/paths',
 
             'self': '/map',
 
-            'size': self.request.get("size") or default_size,
-            'mpm': self.request.get("mpm") or default_mpm,
+            'size': self.request.get("size") or m.default_size,
+            'mpm': self.request.get("mpm") or m.default_mpm,
 
             'txt_src': self.request.get('from'),
             'txt_dst': self.request.get('to'),
@@ -70,17 +55,17 @@ class ViewHandler(webapp.RequestHandler):
             'txt_dst_official' : '',
 
             # TODO: make these persist properly across pageloads
-            'xoff' : default_xoff,
-            'yoff' : default_yoff,
+            'xoff' : m.default_xoff,
+            'yoff' : m.default_yoff,
 
             'width': 500,
             'height': 375,
-            'scale': default_scale,
+            'scale': m.default_scale,
             # TODO: should be totally deprecated
             'map_name': 'visitor',
         
-            'location_opt': locations,
+            'location_opt': m.locations,
         }
-        path = os.path.join(os.path.dirname(__file__), main_tmpl)
+        path = os.path.join(os.path.dirname(__file__), m.main_tmpl)
         self.response.out.write(template.render(path, template_values))
 

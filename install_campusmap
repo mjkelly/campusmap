@@ -7,11 +7,11 @@ Step #1: Subversion checkout
     Check out CampusMap from subversion:
     http://michaelkelly.org/svn/CampusMap
 
-Step #2: CPAN install
+Step #2: CPAN install.
 cpan> install Text::WagnerFischer
 cpan> install Heap::Fibonacci
 cpan> install HTML::Template
-cpan> install GD
+cpan> install GD    # Note: Ubuntu users may need to install libgd2-xpm-dev first.
 
 Step #3: Get the scripts working
 Do basic apache config stuff to get cgi-bin working.

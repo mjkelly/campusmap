@@ -34,6 +34,9 @@ class ViewHandler(webapp.RequestHandler):
         # this is the core map logic
         m = campusmap.Map()
 
+        src = self.request.get("from")
+        dst = self.request.get("to")
+
         template_values = {
             'html_dir': m.html_base,
             'css_dir': m.html_base + '/css',
@@ -47,8 +50,8 @@ class ViewHandler(webapp.RequestHandler):
             'size': self.request.get("size") or m.default_size,
             'mpm': self.request.get("mpm") or m.default_mpm,
 
-            'txt_src': self.request.get('from'),
-            'txt_dst': self.request.get('to'),
+            'txt_src': src,
+            'txt_dst': dst,
 
             # TODO: need to calculate these
             'txt_src_official' : '',

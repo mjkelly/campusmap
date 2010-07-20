@@ -43,3 +43,10 @@ class Map:
         self.locations = fh.read()
         fh.close()
 
+    def isKeyword(self, s):
+        """Return if s is a location keyword.
+
+        E.g., closest food, closest parking, etc.
+        """
+        return s.lower().startswith('keyword:')
+        

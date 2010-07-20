@@ -20,6 +20,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 import os
 import urllib
+import re
 
 class Map:
     _locations_html = 'locations.html'
@@ -50,3 +51,6 @@ class Map:
         """
         return s.lower().startswith('keyword:')
         
+    def nameNormalize(self, s):
+        """Normalize s: remove all non-alphanumeric and lowercase."""
+        return re.sub(r'\W', '', 'fo bar:').lower()

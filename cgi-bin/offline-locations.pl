@@ -1,11 +1,9 @@
 #!/usr/bin/perl -T
 # vim: tabstop=4 shiftwidth=4
 # -----------------------------------------------------------------
-# map.cgi -- The user interface for the UCSDMap.
+# offline-locations.pl -- Build location menu contents from location data file.
 #
 # Copyright 2005 Michael Kelly and David Lindquist
-#
-# $Id$
 # -----------------------------------------------------------------
 
 use strict;

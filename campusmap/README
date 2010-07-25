@@ -1,8 +1,20 @@
+BACKGROUND
+----------
+
 This is the App Engine version of CampusMap.
 
 This version uses entirely pre-generated paths. No online Dijkstra's algorithm
 at all (partly because we can't generate images with App Engine). The list of
 locations must also be converted to html for inclusion in the main page.
 
-To prepare the static content, run offline-paths.pl and offline-locations.pl,
-in /cgi-bin.
+INSTRUCTIONS
+------------
+
+To prepare static content:
+
+- run /cgi-bin/offline-locations.pl. This generates the static HTML for the
+  'locations' menu snippet.
+- run /cgi-bin/offline-paths.pl. This will take a LONG time (hours) and create
+  a lot of data (~1GB). This generates the path images for all pairs of
+  locations at all zoom levels. This obviates the need to ever run an online
+  shortest-path calculation online.

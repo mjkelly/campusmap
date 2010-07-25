@@ -38,37 +38,49 @@ my $locations = LoadData::loadLocations($MapGlobals::LOCATION_FILE);
 my $points = LoadData::loadPoints($MapGlobals::POINT_FILE);
 my %dijkstra = ();
 
-my %pairs = ();
-
 my @keys = keys(%{$locations->{'ByID'}});
+@keys = sort {int($a) <=> int($b)} @keys;
+
+my $md_dir = 'paths-metadata';
+mkdir($md_dir);
+
+my $total = (@keys*(@keys-1))/2;
+my $count = 0;
+
+print "keys = @keys\n\n";
 
 for my $id0 (@keys) {
     for my $id1 (@keys) {
         $id0 = int($id0);
         $id1 = int($id1);
-        if ($id0 > $id1) {
-            my $tmp = $id1;
-            $id1 = $id0;
-            $id0 = $tmp;
-            print "swapping $id0 $id1\n";
-        }
-        elsif ($id0 == $id1) {
-            next;
-        }
-        if (defined($pairs{"$id0-$id1"})) {
-            print "Already did $id0 $id1\n";
-            next;
-        }
+        #print "---> $id0 $id1\n";
 
-        $pairs{"$id0-$id1"} = 1;
-        print "$id0 $id1\n";
+        # This is the only non-obvious part: We restrict ourselves to (id0,id1)
+        # pairs where id0 < id1. This eliminates duplicate paths (i.e., 1->4 vs
+        # 4->1) and paths where the source and destination are the same (i.e.,
+        # 1->1, 4->4).
+        if ($id0 >= $id1) {
+            next;
+        }
+        $count++;
+        print "$count/$total: $id0 $id1\n";
 
         my ($dist, $rect, $pathPoints, $points) = LoadData::loadShortestPath($locations->{'ByID'}{$id0},
                                                                           $locations->{'ByID'}{$id1},
                                                                           \%dijkstra,
                                                                           $points);
         my $pathImgRect = MapGraphics::makePathImages($id0, $id1, $rect, $pathPoints);
-        print "d = ", length(%dijkstra), "\n";
+        #print "d = ", length(%dijkstra), "\n";
+        open(METADATA, '>', "$md_dir/$id0-$id1");
+        for my $k (keys(%$rect)) {
+            print METADATA "rect_$k=", $rect->{$k}, "\n";
+        }
+        for my $k (keys(%$pathImgRect)) {
+            print METADATA "path_img_rect_$k=", $pathImgRect->{$k}, "\n";
+        }
+        $dist = -1 if (!defined($dist));
+        print METADATA "dist=$dist\n";
+        close(METADATA);
     }
 }
 

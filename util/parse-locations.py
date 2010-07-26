@@ -9,23 +9,23 @@ import xml.dom.minidom
 import pickle
 
 class Location(object):
+    valid_attributes = ['id', 
+        'x', 
+        'y', 
+        'name', 
+        'passThrough', 
+        'intersect', 
+        'displayName', 
+        'aliases',
+        'keywords',
+        'code']
+
     def __init__(self):
         pass
 
     def __setattr__(self, name, value):
-        valid_attributes = [ 'id', 
-            'x', 
-            'y', 
-            'name', 
-            'passThrough', 
-            'intersect', 
-            'displayName', 
-            'aliases',
-            'keywords',
-            'code' 
-        ]
 
-        if not name in valid_attributes:
+        if not name in self.valid_attributes:
             raise RuntimeError('Unknown attribute: %s' % name)
         self.__dict__[name] = value
 
@@ -34,6 +34,14 @@ class Location(object):
 
     def __repr__(self):
         return self.__str__()
+
+    def to_dict(self):
+        d = {} 
+        for attr in self.valid_attributes:
+            if hasattr(self, attr):
+                d[attr] = getattr(self, attr)
+        return d
+        
 
 class Point(object):
     def __init__(self, x, y):
@@ -136,25 +144,32 @@ def main():
     print 'Loaded %d paths.' % len(paths)   
 
     # This datastructure is much like the one we use in the old map.cgi. It
-    # contains multipe references to Location objects (one possibly in each
-    # field).
+    # contains multipe references to locations (one possibly in each field).
     loc_lookup = {'ByKeyword': {}, 'ByID': {}, 'ByCode': {}}
-    for l in locations:
-        if l.displayName:
-            loc_lookup['ByID'][int(l.id)] = l
 
-            if hasattr(l, 'code'):
-                loc_lookup['ByCode'][str(l.code)] = l
+    # We build a datastructure referencing dicts instead of Location objects
+    # for easier pickling and unpickling.
+    loc_dicts = [l.to_dict() for l in locations]
 
-            if hasattr(l, 'keywords'):
-                for keyword in l.keywords.split(' '):
+    print "Building lookup data structure..."
+    for l in loc_dicts:
+        if l['displayName']:
+            loc_lookup['ByID'][l['id']] = l
+
+            if 'code' in l:
+                loc_lookup['ByCode'][l['code']] = l
+
+            if 'keywords' in l:
+                for keyword in l['keywords'].split(' '):
                     if keyword not in loc_lookup['ByKeyword']:
-                        loc_lookup['ByKeyword'][str(keyword)] = []
-                    loc_lookup['ByKeyword'][str(keyword)].append(l)
+                        loc_lookup['ByKeyword'][keyword] = []
+                    loc_lookup['ByKeyword'][keyword].append(l)
 
+    print "Pickling..."
     fh = open(opts.output, 'w')
     pickle.dump(loc_lookup, fh)
     fh.close()
+    print "Done."
 
 if __name__ == '__main__':
     main()

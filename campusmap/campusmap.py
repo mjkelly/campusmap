@@ -21,9 +21,11 @@ from google.appengine.ext.webapp import util
 import os
 import urllib
 import re
+import pickle
 
 class Map:
     _locations_html = 'locations.html'
+    _locations_dat = 'locations.pickle'
 
     main_tmpl = 'js_tmpl.html'
 
@@ -41,7 +43,11 @@ class Map:
 
     def __init__(self):
         fh = open(self._locations_html)
-        self.locations = fh.read()
+        self.locations_menu = fh.read()
+        fh.close()
+
+        fh = open(self._locations_dat)
+        self.locations = pickle.load(fh)
         fh.close()
 
     def isKeyword(self, s):

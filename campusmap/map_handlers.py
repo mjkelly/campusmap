@@ -20,6 +20,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 import os
 import urllib
+import logging
 
 import campusmap
 
@@ -36,6 +37,23 @@ class ViewHandler(webapp.RequestHandler):
 
         src = self.request.get("from")
         dst = self.request.get("to")
+
+        logging.info("Search for src=%r, dst=%r", src, dst)
+
+        src_loc = {'name': ''}
+        dst_loc = {'name': ''}
+        if src:
+            if int(src) in m.locations['ByID']:
+                src_loc = m.locations['ByID'][int(src)]
+                logging.info("Found src_loc = %s", src_loc)
+            else:
+                logging.info("Can't find src=%r", src)
+        if dst:
+            if int(dst) in m.locations['ByID']:
+                dst_loc = m.locations['ByID'][int(dst)]
+                logging.info("Found dst_loc = %s", dst_loc)
+            else:
+                logging.info("Can't find src=%r", dst)
 
         template_values = {
             'html_dir': m.html_base,
@@ -54,8 +72,8 @@ class ViewHandler(webapp.RequestHandler):
             'txt_dst': dst,
 
             # TODO: need to calculate these
-            'txt_src_official' : '',
-            'txt_dst_official' : '',
+            'txt_src_official' : src_loc['name'],
+            'txt_dst_official' : dst_loc['name'],
 
             # TODO: make these persist properly across pageloads
             'xoff' : m.default_xoff,
@@ -67,7 +85,7 @@ class ViewHandler(webapp.RequestHandler):
             # TODO: should be totally deprecated
             'map_name': 'visitor',
         
-            'location_opt': m.locations,
+            'location_opt': m.locations_menu,
         }
         path = os.path.join(os.path.dirname(__file__), m.main_tmpl)
         self.response.out.write(template.render(path, template_values))

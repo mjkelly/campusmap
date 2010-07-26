@@ -40,8 +40,8 @@ class ViewHandler(webapp.RequestHandler):
 
         logging.info("Search for src=%r, dst=%r", src, dst)
 
-        src_loc = {'name': ''}
-        dst_loc = {'name': ''}
+        src_loc = None
+        dst_loc = None
         if src:
             if int(src) in m.locations['ByID']:
                 src_loc = m.locations['ByID'][int(src)]
@@ -72,8 +72,8 @@ class ViewHandler(webapp.RequestHandler):
             'txt_dst': dst,
 
             # TODO: need to calculate these
-            'txt_src_official' : src_loc['name'],
-            'txt_dst_official' : dst_loc['name'],
+            'txt_src_official' : '',
+            'txt_dst_official' : '',
 
             # TODO: make these persist properly across pageloads
             'xoff' : m.default_xoff,
@@ -87,6 +87,20 @@ class ViewHandler(webapp.RequestHandler):
         
             'location_opt': m.locations_menu,
         }
+
+        if src_loc:
+            template_values['src_found'] = '1'
+            template_values['txt_src_official'] = src_loc['name']
+            template_values['src_name'] = src_loc['name']
+            template_values['src_x'] = src_loc['x']
+            template_values['src_y'] = src_loc['y']
+        if dst_loc:
+            template_values['dst_found'] = '1'
+            template_values['txt_dst_official'] = dst_loc['name']
+            template_values['dst_name'] = dst_loc['name']
+            template_values['dst_x'] = dst_loc['x']
+            template_values['dst_y'] = dst_loc['y']
+
         path = os.path.join(os.path.dirname(__file__), m.main_tmpl)
         self.response.out.write(template.render(path, template_values))
 

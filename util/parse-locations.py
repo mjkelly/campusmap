@@ -28,6 +28,12 @@ class Location(object):
             raise RuntimeError('Unknown attribute: %s' % name)
         self.__dict__[name] = value
 
+    def __str__(self):
+        return '<Location: %s %s>' % (self.id, self.name)
+
+    def __repr__(self):
+        return self.__str__()
+
 class Point(object):
     def __init__(self, x, y):
         self.x = int(x)
@@ -124,6 +130,25 @@ def main():
 
     print 'Loaded %d locations.' % len(locations)
     print 'Loaded %d paths.' % len(paths)   
+
+    # This datastructure is much like the one we use in the old map.cgi. It
+    # contains multipe references to Location objects (one possibly in each
+    # field).
+    loc_lookup = {'ByKeyword': {}, 'ByID': {}, 'ByCode': {}}
+    for l in locations:
+        if l.displayName:
+            loc_lookup['ByID'][int(l.id)] = l
+
+            if hasattr(l, 'code'):
+                loc_lookup['ByCode'][str(l.code)] = l
+
+            if hasattr(l, 'keywords'):
+                for keyword in l.keywords.split(' '):
+                    if keyword not in loc_lookup['ByKeyword']:
+                        loc_lookup['ByKeyword'][str(keyword)] = []
+                    loc_lookup['ByKeyword'][str(keyword)].append(l)
+
+    print loc_lookup
 
 if __name__ == '__main__':
     main()

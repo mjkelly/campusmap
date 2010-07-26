@@ -1,7 +1,8 @@
 #!/usr/bin/perl -T
 # vim: tabstop=4 shiftwidth=4
 # -----------------------------------------------------------------
-# offline-locations.pl -- Build location menu contents from location data file.
+# offline-locations.pl -- Export location info in a readable format. This is
+# questionable useful since we already have the XML file.
 #
 # Copyright 2005 Michael Kelly and David Lindquist
 # -----------------------------------------------------------------

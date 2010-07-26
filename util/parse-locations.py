@@ -6,6 +6,7 @@
 import os
 import optparse
 import xml.dom.minidom
+import pickle
 
 class Location(object):
     def __init__(self):
@@ -114,11 +115,14 @@ def parsePaths(file):
 def main():
     parser = optparse.OptionParser()
     default_data = 'data'
-    parser.add_option('--data', help='Path to data folder containing xml files.  [ default = %s ]' % default_data, default=default_data)
+    default_output = 'locations.pickle'
     default_locations = 'optimizedLocations.xml'
+
+    parser.add_option('--data', help='Path to data folder containing xml files.  [ default = %s ]' % default_data, default=default_data)
     parser.add_option('--locations', help='Name of xml file containing location data [ default = %s ]' % default_locations, default=default_locations)
     default_path = 'optimizedPath.xml'
     parser.add_option('--paths', help='Name of xml file containing path data [ default = %s ]' % default_path, default=default_path)
+    parser.add_option('--output', help='Pickle output file  [ default = %s ]' % default_output, default=default_output)
     (opts, args) = parser.parse_args()
 
     data_dir = opts.data
@@ -148,7 +152,9 @@ def main():
                         loc_lookup['ByKeyword'][str(keyword)] = []
                     loc_lookup['ByKeyword'][str(keyword)].append(l)
 
-    print loc_lookup
+    fh = open(opts.output, 'w')
+    pickle.dump(loc_lookup, fh)
+    fh.close()
 
 if __name__ == '__main__':
     main()

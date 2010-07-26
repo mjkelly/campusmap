@@ -48,6 +48,7 @@ my $total = (@keys*(@keys-1))/2;
 my $count = 0;
 
 print "keys = @keys\n\n";
+print "#keys = ", scalar(@keys), "\n";
 
 for my $id0 (@keys) {
     for my $id1 (@keys) {

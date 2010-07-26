@@ -12,9 +12,12 @@ INSTRUCTIONS
 
 To prepare static content:
 
-- run /cgi-bin/offline-locations.pl. This generates the static HTML for the
+- run /utils/offline-locations.pl. This generates the static HTML for the
   'locations' menu snippet.
-- run /cgi-bin/offline-paths.pl. This will take a LONG time (hours) and create
+- run /utils/offline-paths.pl. This will take a LONG time (hours) and create
   a lot of data (~1GB). This generates the path images for all pairs of
   locations at all zoom levels. This obviates the need to ever run an online
   shortest-path calculation online.
+- run /utils/parse-locations.py --data=data (the 'data' directory at the root).
+  This will generate locations.pickle, which we'll use for the python
+  interface.

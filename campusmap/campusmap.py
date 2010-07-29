@@ -63,6 +63,7 @@ class Map:
         return re.sub(r'\W', '', 'fo bar:').lower()
 
     def findLocation(self, s):
+        # First try the lookup tables.
         if not s:
             return None
         try:
@@ -79,3 +80,10 @@ class Map:
             return found
         else:
             logging.info("Can't find location: %r", s)
+
+        # Now search the entire list.
+        all_locs = self.locations['ByID'].values()
+        found = [loc for loc in all_locs if str(loc['name']) == str(s)]
+        if len(found) == 1:
+            logging.info("Found location by exact name match: %r = %s", s, found[0])
+            return found[0]

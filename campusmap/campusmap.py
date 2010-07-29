@@ -91,8 +91,8 @@ class Map:
     def loadPathInfo(self, src_id, dst_id):
         return {'x': 0,
                 'y': 0,
-                'w': 50,
-                'h': 50,
+                'w': 500,
+                'h': 500,
                 'dist': 100,
                 'src': src_id,
                 'dst': dst_id}

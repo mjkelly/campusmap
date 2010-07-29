@@ -16,8 +16,10 @@
 #
 
 from google.appengine.ext import webapp
+from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
+
 import logging
 import os
 import urllib
@@ -96,3 +98,16 @@ class Map:
                 'dist': 100,
                 'src': src_id,
                 'dst': dst_id}
+
+class PathInfo(db.Model):
+    x = db.IntegerProperty(required=True)
+    y = db.IntegerProperty(required=True)
+    w = db.IntegerProperty(required=True)
+    h = db.IntegerProperty(required=True)
+    dist = db.IntegerProperty(required=True)
+    id0 = db.IntegerProperty(required=True)
+    id1 = db.IntegerProperty(required=True)
+
+    def __str__(self):
+        return "<PathInfo %d %d: %dx%d@%d,%d (%d)>" % (self.id0, self.id1,
+                self.w, self.h, self.x, self.y, self.dist)

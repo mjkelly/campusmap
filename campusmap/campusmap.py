@@ -28,7 +28,7 @@ class Map:
     _locations_html = 'locations.html'
     _locations_dat = 'locations.pickle'
 
-    main_tmpl = 'js_tmpl.html'
+    main_tmpl = 'template.html'
 
     default_xoff  = 4608
     default_yoff  = 3172

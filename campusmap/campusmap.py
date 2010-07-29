@@ -91,13 +91,9 @@ class Map:
             return found[0]
 
     def loadPathInfo(self, src_id, dst_id):
-        return {'x': 0,
-                'y': 0,
-                'w': 500,
-                'h': 500,
-                'dist': 100,
-                'src': src_id,
-                'dst': dst_id}
+        id0 = min(src_id, dst_id)
+        id1 = max(src_id, dst_id)
+        return PathInfo.gql('WHERE id0 = :1 AND id1 = :2', id0, id1).get()
 
 class PathInfo(db.Model):
     x = db.IntegerProperty(required=True)

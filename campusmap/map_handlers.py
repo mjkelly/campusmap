@@ -90,13 +90,13 @@ class ViewHandler(webapp.RequestHandler):
         if src_loc and dst_loc:
             path_info = m.loadPathInfo(src_loc['id'], dst_loc['id'])
             template_values['path_found'] = True;
-            template_values['path_x'] = path_info['x']
-            template_values['path_y'] = path_info['y']
-            template_values['path_w'] = path_info['w']
-            template_values['path_h'] = path_info['h']
-            template_values['path_dist'] = path_info['dist']
-            template_values['path_src'] = path_info['src']
-            template_values['path_dst'] = path_info['dst']
+            template_values['path_x'] = path_info.x
+            template_values['path_y'] = path_info.y
+            template_values['path_w'] = path_info.w
+            template_values['path_h'] = path_info.h
+            template_values['path_dist'] = path_info.dist
+            template_values['path_src'] = src_loc['id']
+            template_values['path_dst'] = dst_loc['id']
 
         path = os.path.join(os.path.dirname(__file__), m.main_tmpl)
         self.response.out.write(template.render(path, template_values))

@@ -40,7 +40,7 @@ transformers:
     external_name: h
   - property: dist
     external_name: dist
-  - property: src
-    external_name: src
-  - property: dst
-    external_name: dst
+  - property: id0
+    external_name: id0
+  - property: id1
+    external_name: id1

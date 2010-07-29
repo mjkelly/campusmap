@@ -32,15 +32,22 @@ transformers:
   
   - property: x
     external_name: x
+    import_transform: int
   - property: y
     external_name: y
+    import_transform: int
   - property: w
     external_name: w
+    import_transform: int
   - property: h
     external_name: h
+    import_transform: int
   - property: dist
     external_name: dist
+    import_transform: int
   - property: id0
     external_name: id0
+    import_transform: int
   - property: id1
     external_name: id1
+    import_transform: int

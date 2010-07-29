@@ -21,6 +21,10 @@ To prepare static content:
 - run /utils/parse-locations.py --data=data (the 'data' directory at the root).
   This will generate locations.pickle, which we'll use for the python
   interface.
+- create the pathinfo csv file from the path-metadata/* files created by
+  offline-paths.py: /utils/offline-pathinfo2csv.pl $PATH_METADATA
+- plug the csv file into the actual appengine DB via the 'uploading the
+  pathinfo db' instructions below.
 
 
 Downloading the PathInfo DB as csv:

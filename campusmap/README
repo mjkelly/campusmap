@@ -24,5 +24,8 @@ To prepare static content:
 
 
 Downloading the PathInfo DB as csv:
-- $APP_ENGINE/appcfg.py download_data campusmap --filename=db.csv --url=http://localhost:8080/remote_api --config_file=campusmap/bulkloader.yaml  --kind=PathInfo --email=test@example.com
+- $APP_ENGINE/appcfg.py download_data campusmap --filename=db.csv --url=http://localhost:8080/remote_api --config_file=campusmap/bulkloader.yaml --kind=PathInfo --email=test@example.com
   (hit return at the password prompt)
+
+Uploading the PathInfo DB:
+- $APP_ENGINE/appcfg.py upload_data campusmap --url=http://localhost:8080/remote_api --config_file=campusmap/bulkloader.yaml --kind=PathInfo --email=test@example.com --filename=pathinfo.csv

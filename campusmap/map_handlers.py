@@ -38,36 +38,8 @@ class ViewHandler(webapp.RequestHandler):
         src = self.request.get("from")
         dst = self.request.get("to")
 
-        logging.info("Search for src=%r, dst=%r", src, dst)
-
-        src_loc = None
-        dst_loc = None
-        if src:
-            try:
-                if int(src) in m.locations['ByID']:
-                    src_loc = m.locations['ByID'][int(src)]
-                    logging.info("Found src_loc by ID = %s", src_loc)
-            except ValueError:
-                pass
-
-            if src in m.locations['ByCode']:
-                src_loc = m.locations['ByCode'][src]
-                logging.info("Found src_loc by code = %s", src_loc)
-            else:
-                logging.info("Can't find src=%r", src)
-        if dst:
-            try:
-                if int(dst) in m.locations['ByID']:
-                    dst_loc = m.locations['ByID'][int(dst)]
-                    logging.info("Found dst_loc = %s", dst_loc)
-            except ValueError:
-                pass
-
-            if dst in m.locations['ByCode']:
-                dst_loc = m.locations['ByCode'][dst]
-                logging.info("Found dst_loc by code = %s", dst_loc)
-            else:
-                logging.info("Can't find src=%r", dst)
+        src_loc = m.findLocation(src)
+        dst_loc = m.findLocation(dst)
 
         template_values = {
             'html_dir': m.html_base,

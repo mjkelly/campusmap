@@ -18,6 +18,7 @@
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
+import logging
 import os
 import urllib
 import re
@@ -60,3 +61,21 @@ class Map:
     def nameNormalize(self, s):
         """Normalize s: remove all non-alphanumeric and lowercase."""
         return re.sub(r'\W', '', 'fo bar:').lower()
+
+    def findLocation(self, s):
+        if not s:
+            return None
+        try:
+            if int(s) in self.locations['ByID']:
+                found = self.locations['ByID'][int(s)]
+                logging.info("Found location by ID: %r = %s", s, found)
+                return found
+        except ValueError:
+            pass
+
+        if s in self.locations['ByCode']:
+            found = self.locations['ByCode'][s]
+            logging.info("Found location by code: %r = %s", s, found)
+            return found
+        else:
+            logging.info("Can't find location: %r", s)

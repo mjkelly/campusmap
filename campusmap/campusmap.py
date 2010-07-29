@@ -87,3 +87,12 @@ class Map:
         if len(found) == 1:
             logging.info("Found location by exact name match: %r = %s", s, found[0])
             return found[0]
+
+    def loadPathInfo(self, src_id, dst_id):
+        return {'x': 0,
+                'y': 0,
+                'w': 50,
+                'h': 50,
+                'dist': 100,
+                'src': src_id,
+                'dst': dst_id}

@@ -33,16 +33,29 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
         upload_url = blobstore.create_upload_url('/upload')
         self.response.out.write('<html><body>')
         self.response.out.write('<form action="%s" method="POST" enctype="multipart/form-data">' % upload_url)
-        self.response.out.write("""Upload File: <input type="file" name="file"><br> <input type="submit" 
-            name="submit" value="Submit"> </form></body></html>""")
+        self.response.out.write("""Upload File: <input type="file" name="file"><br>
+<input type="submit" name="submit" value="Submit">
+x: <input type="text" name="x" value="">
+y: <input type="text" name="y" value="">
+zoom: <input type="text" name="zoom" value="">
+</form></body></html>""")
+
     def post(self):
+        x = self.request.get("x")
+        y = self.request.get("y")
+        zoom = self.request.get("zoom")
+        pathinfo = campusmap.PathInfo.fromSrcDst(x, y)
+
         upload_files = self.get_uploads('file')  # 'file' is file upload field in the form
         blob_info = upload_files[0]
+
+        pathinfo.blob_id = str(blob_info.key())
+        logging.info("uploader got associated %s, setting %s", pathinfo, pathinfo.blob_id)
+        pathinfo.put()
         self.redirect('/p/k/%s' % blob_info.key())
 
 class PathHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self, x, y, zoom):
-        logging.info("get path %s %s %s", x, y, zoom)
         pathinfo = campusmap.PathInfo.fromSrcDst(x, y)
         if pathinfo:
             if pathinfo.blob_id is not None:

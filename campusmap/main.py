@@ -22,6 +22,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+import campusmap
 import map_handlers
 
 import logging
@@ -37,16 +38,25 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
         upload_files = self.get_uploads('file')  # 'file' is file upload field in the form
         blob_info = upload_files[0]
-        self.redirect('/serve/%s' % blob_info.key())
+        self.redirect('/p/k/%s' % blob_info.key())
 
 class PathHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self, x, y, zoom):
-        logging.info("get path %d %d %d", x, y, zoom)
+        logging.info("get path %s %s %s", x, y, zoom)
+        pathinfo = campusmap.PathInfo.fromSrcDst(x, y)
+        if pathinfo:
+            if pathinfo.blob_id is not None:
+                self.send_blob(PathByKeyHandler.get_blob(pathinfo.blob_id))
+            else:
+                logging.error("no blob_id for pathinfo %s", pathinfo)
+                self.error(404)
+        else:
+            logging.error("pathinfo for %s %s %s not found", x, y, zoom)
+            self.error(404)
 
 class PathByKeyHandler(blobstore_handlers.BlobstoreDownloadHandler):
     @staticmethod
     def get_blob(key):
-        logging.info("get path ID=%s", key)
         key = str(urllib.unquote(key))
         return blobstore.BlobInfo.get(key)
 
@@ -72,8 +82,8 @@ def main():
     application = webapp.WSGIApplication([('/', MainHandler),
                                           ("/map/?", map_handlers.ViewHandler),
                                           ('/upload', UploadHandler),
-                                          ('/path-by-key/([^/]+)', PathByKeyHandler),
-                                          ('/path/(\d+)-(\d+)-(\d+)', PathHandler)],
+                                          ('/p/k/([^/]+)', PathByKeyHandler),
+                                          ('/p/(\d+)-(\d+)-(\d+)', PathHandler)],
                                          debug=True)
     util.run_wsgi_app(application)
 

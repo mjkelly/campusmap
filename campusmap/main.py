@@ -14,10 +14,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from google.appengine.ext import blobstore
 from google.appengine.ext import webapp
+from google.appengine.ext.webapp import blobstore_handlers
+from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
+from google.appengine.ext.webapp.util import run_wsgi_app
 
 import map_handlers
+
+import logging
+import urllib
+
+class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+    def get(self):
+        upload_url = blobstore.create_upload_url('/upload')
+        self.response.out.write('<html><body>')
+        self.response.out.write('<form action="%s" method="POST" enctype="multipart/form-data">' % upload_url)
+        self.response.out.write("""Upload File: <input type="file" name="file"><br> <input type="submit" 
+            name="submit" value="Submit"> </form></body></html>""")
+    def post(self):
+        upload_files = self.get_uploads('file')  # 'file' is file upload field in the form
+        blob_info = upload_files[0]
+        self.redirect('/serve/%s' % blob_info.key())
+
+class PathHandler(blobstore_handlers.BlobstoreDownloadHandler):
+    def get(self, x, y, zoom):
+        logging.info("get path %d %d %d", x, y, zoom)
+
+class PathByKeyHandler(blobstore_handlers.BlobstoreDownloadHandler):
+    @staticmethod
+    def get_blob(key):
+        logging.info("get path ID=%s", key)
+        key = str(urllib.unquote(key))
+        return blobstore.BlobInfo.get(key)
+
+    def get(self, key):
+        self.send_blob(PathByKeyHandler.get_blob(key))
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
@@ -36,7 +70,10 @@ class MainHandler(webapp.RequestHandler):
 
 def main():
     application = webapp.WSGIApplication([('/', MainHandler),
-                                          ("/map", map_handlers.ViewHandler)],
+                                          ("/map/?", map_handlers.ViewHandler),
+                                          ('/upload', UploadHandler),
+                                          ('/path-by-key/([^/]+)', PathByKeyHandler),
+                                          ('/path/(\d+)-(\d+)-(\d+)', PathHandler)],
                                          debug=True)
     util.run_wsgi_app(application)
 

@@ -106,6 +106,6 @@ class PathInfo(db.Model):
                 self.w, self.h, self.x, self.y, self.dist)
     @staticmethod
     def fromSrcDst(src_id, dst_id):
-        id0 = min(src_id, dst_id)
-        id1 = max(src_id, dst_id)
+        id0 = min(int(src_id), int(dst_id))
+        id1 = max(int(src_id), int(dst_id))
         return PathInfo.gql('WHERE id0 = :1 AND id1 = :2', id0, id1).get()

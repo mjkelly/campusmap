@@ -51,6 +51,6 @@ transformers:
   - property: id1
     external_name: id1
     import_transform: int
-  - property: blobid
-    external_name: blobid
+  - property: blob_id
+    external_name: blob_id
     import_transform: str

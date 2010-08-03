@@ -88,7 +88,7 @@ class ViewHandler(webapp.RequestHandler):
             template_values['dst_y'] = dst_loc['y']
 
         if src_loc and dst_loc:
-            path_info = m.loadPathInfo(src_loc['id'], dst_loc['id'])
+            path_info = campusmap.PathInfo.fromSrcDst(src_loc['id'], dst_loc['id'])
             template_values['path_found'] = True;
             template_values['path_x'] = path_info.x
             template_values['path_y'] = path_info.y

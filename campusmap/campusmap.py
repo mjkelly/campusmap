@@ -90,10 +90,6 @@ class Map:
             logging.info("Found location by exact name match: %r = %s", s, found[0])
             return found[0]
 
-    def loadPathInfo(self, src_id, dst_id):
-        id0 = min(src_id, dst_id)
-        id1 = max(src_id, dst_id)
-        return PathInfo.gql('WHERE id0 = :1 AND id1 = :2', id0, id1).get()
 
 class PathInfo(db.Model):
     x = db.IntegerProperty(required=True)
@@ -103,7 +99,13 @@ class PathInfo(db.Model):
     dist = db.IntegerProperty(required=True)
     id0 = db.IntegerProperty(required=True)
     id1 = db.IntegerProperty(required=True)
+    blob_id = db.StringProperty(required=False)
 
     def __str__(self):
         return "<PathInfo %d %d: %dx%d@%d,%d (%d)>" % (self.id0, self.id1,
                 self.w, self.h, self.x, self.y, self.dist)
+    @staticmethod
+    def fromSrcDst(src_id, dst_id):
+        id0 = min(src_id, dst_id)
+        id1 = max(src_id, dst_id)
+        return PathInfo.gql('WHERE id0 = :1 AND id1 = :2', id0, id1).get()

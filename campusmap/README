@@ -23,6 +23,9 @@ To prepare static content:
   interface.
 - create the pathinfo csv file from the path-metadata/* files created by
   offline-paths.py: /utils/offline-pathinfo2csv.pl $PATH_METADATA
+- create the corresponding pathimage csv file by running pathinfo2pathimage.sh.
+  It's a simple pipeline that may need manual modification of input/output
+  filenames.
 - plug the csv file into the actual appengine DB via the 'uploading the
   pathinfo db' instructions below.
 

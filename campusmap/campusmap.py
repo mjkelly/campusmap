@@ -114,3 +114,10 @@ class PathImage(db.Model):
     id1 = db.IntegerProperty(required=True)
     zoom = db.IntegerProperty(required=True) 
     image = db.BlobProperty()
+
+    @staticmethod
+    def fromPath(src_id, dst_id, zoom):
+        id0 = min(int(src_id), int(dst_id))
+        id1 = max(int(src_id), int(dst_id))
+        zoom = int(zoom)
+        return PathImage.gql('WHERE id0 = :1 AND id1 = :2 AND zoom = :3', id0, id1, zoom).get()

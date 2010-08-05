@@ -56,15 +56,12 @@ zoom: <input type="text" name="zoom" value="">
 
 class PathHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self, x, y, zoom):
-        pathinfo = campusmap.PathInfo.fromSrcDst(x, y)
-        if pathinfo:
-            if pathinfo.blob_id is not None:
-                self.send_blob(PathByKeyHandler.get_blob(pathinfo.blob_id))
-            else:
-                logging.error("no blob_id for pathinfo %s", pathinfo)
-                self.error(404)
+        pathimage = campusmap.PathImage.fromPath(x, y, zoom)
+        if pathimage:
+            self.response.headers['Content-Type'] = "image/png";
+            self.response.out.write(pathimage.image)
         else:
-            logging.error("pathinfo for %s %s %s not found", x, y, zoom)
+            logging.error("no pathimage for %s %s %s", x, y, zoom)
             self.error(404)
 
 class PathByKeyHandler(blobstore_handlers.BlobstoreDownloadHandler):

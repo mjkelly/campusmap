@@ -20,6 +20,7 @@ python_preamble:
 - import: google.appengine.ext.bulkload.bulkloader_wizard
 - import: google.appengine.api.datastore
 - import: google.appengine.api.users
+- import: importers
 
 transformers:
 - kind: PathInfo
@@ -51,6 +52,22 @@ transformers:
   - property: id1
     external_name: id1
     import_transform: int
-  - property: blob_id
-    external_name: blob_id
-    import_transform: str
+
+- kind: PathImage
+  connector: csv
+  post_import_function: importers.PathImageImporter
+
+  property_map:
+  - property: __key__
+    external_name: key
+    export_transform: transform.key_id_or_name_as_string
+  
+  - property: id0
+    external_name: id0
+    import_transform: int
+  - property: id1
+    external_name: id1
+    import_transform: int
+  - property: zoom
+    external_name: zoom
+    import_transform: int

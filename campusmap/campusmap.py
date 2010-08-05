@@ -99,7 +99,6 @@ class PathInfo(db.Model):
     dist = db.IntegerProperty(required=True)
     id0 = db.IntegerProperty(required=True)
     id1 = db.IntegerProperty(required=True)
-    blob_id = db.StringProperty(required=False)
 
     def __str__(self):
         return "<PathInfo %d %d: %dx%d@%d,%d (%d)>" % (self.id0, self.id1,

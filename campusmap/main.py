@@ -28,32 +28,6 @@ import map_handlers
 import logging
 import urllib
 
-class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
-    def get(self):
-        upload_url = blobstore.create_upload_url('/upload')
-        self.response.out.write('<html><body>')
-        self.response.out.write('<form action="%s" method="POST" enctype="multipart/form-data">' % upload_url)
-        self.response.out.write("""Upload File: <input type="file" name="file"><br>
-<input type="submit" name="submit" value="Submit">
-x: <input type="text" name="x" value="">
-y: <input type="text" name="y" value="">
-zoom: <input type="text" name="zoom" value="">
-</form></body></html>""")
-
-    def post(self):
-        x = self.request.get("x")
-        y = self.request.get("y")
-        zoom = self.request.get("zoom")
-        pathinfo = campusmap.PathInfo.fromSrcDst(x, y)
-
-        upload_files = self.get_uploads('file')  # 'file' is file upload field in the form
-        blob_info = upload_files[0]
-
-        pathinfo.blob_id = str(blob_info.key())
-        logging.info("uploader got associated %s, setting %s", pathinfo, pathinfo.blob_id)
-        pathinfo.put()
-        self.redirect('/p/k/%s' % blob_info.key())
-
 class PathHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self, x, y, zoom):
         pathimage = campusmap.PathImage.fromPath(x, y, zoom)
@@ -63,15 +37,6 @@ class PathHandler(blobstore_handlers.BlobstoreDownloadHandler):
         else:
             logging.error("no pathimage for %s %s %s", x, y, zoom)
             self.error(404)
-
-class PathByKeyHandler(blobstore_handlers.BlobstoreDownloadHandler):
-    @staticmethod
-    def get_blob(key):
-        key = str(urllib.unquote(key))
-        return blobstore.BlobInfo.get(key)
-
-    def get(self, key):
-        self.send_blob(PathByKeyHandler.get_blob(key))
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
@@ -91,8 +56,6 @@ class MainHandler(webapp.RequestHandler):
 def main():
     application = webapp.WSGIApplication([('/', MainHandler),
                                           ("/map/?", map_handlers.ViewHandler),
-                                          ('/upload', UploadHandler),
-                                          ('/p/k/([^/]+)', PathByKeyHandler),
                                           ('/p/(\d+)-(\d+)-(\d+)', PathHandler)],
                                          debug=True)
     util.run_wsgi_app(application)

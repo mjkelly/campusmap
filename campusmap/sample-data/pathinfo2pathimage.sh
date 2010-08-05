@@ -5,4 +5,8 @@
 # somewhere. This is just for the datastructure-munging.
 # -----------------------------------------------------------------
 
-tail -n +2 pathinfo.csv | perl -p -e 'chomp; $_ = "$_,0\n$_,1\n$_,2\n$_,3\n";' > pathimage.csv
+IN=pathinfo.csv
+OUT=pathimage.csv
+
+echo 'id0,id1,zoom' > "$OUT"
+tail -n +2 "$IN" | perl -p -e '@l = split(/,/); $_ = "$l[0],$l[1],0\n$l[0],$l[1],1\n$l[0],$l[1],2\n$l[0],$l[1],3\n";' >> "$OUT"

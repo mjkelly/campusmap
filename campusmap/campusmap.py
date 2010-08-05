@@ -109,3 +109,9 @@ class PathInfo(db.Model):
         id0 = min(int(src_id), int(dst_id))
         id1 = max(int(src_id), int(dst_id))
         return PathInfo.gql('WHERE id0 = :1 AND id1 = :2', id0, id1).get()
+
+class PathImage(db.Model):
+    id0 = db.IntegerProperty(required=True)
+    id1 = db.IntegerProperty(required=True)
+    zoom = db.IntegerProperty(required=True) 
+    image = db.BlobProperty()

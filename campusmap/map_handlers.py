@@ -47,7 +47,7 @@ class ViewHandler(webapp.RequestHandler):
             'img_dir': m.html_base + '/img',
             'js_dir': m.html_base + '/js',
             'grid_dir': m.html_base + '/tiles',
-            'paths_dir': m.html_base + '/paths',
+            'paths_dir': '/p',
 
             'self': '/map',
 

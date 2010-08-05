@@ -725,7 +725,7 @@ function Path(x, y, width, height, dist, src, dst){
 	this.images = new Array(scales.length);
 	for(var i = 0; i < scales.length; i++){
 		this.images[i] = new Image(Math.floor(width * scales[i]), Math.floor(height * scales[i]));
-		this.images[i].src = pathsDir + '/im-' + min + '-' + max + '-' + i + '.png';
+		this.images[i].src = pathsDir + '/' + min + '-' + max + '-' + i
 		//alert(this.images[i].src);
 	}
 

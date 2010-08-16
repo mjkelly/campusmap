@@ -91,7 +91,7 @@ class Map:
             logging.info("Found location by exact name match: %r = %s", s, found[0])
             return found[0]
 
-    def fuzzyMatch(self, s):
+    def fuzzyFind(self, s):
         """Try to find a matching location, or list of locations, by name or alias.
         
         Args:

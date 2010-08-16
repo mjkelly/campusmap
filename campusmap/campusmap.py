@@ -94,10 +94,10 @@ class Map:
         # According to the python docs, a ratio >0.6 is a "good match", so if
         # the top match is above 0.6, we return just the top match.
         if found and found[0][0] > 0.6:
-            logging.info('Top location by fuzzy match: %r = %r', found[0][0], s, found[0])
-            return found[0][1]
+            logging.info('Top location by fuzzy match: %r = %r', s, found[0])
+            return [found[0][1]]
         else:
-            logging.info('Top %d locations by fuzzy match for: %r = %r', len(matches), s, found)
+            logging.info('Top %d locations by fuzzy match for: %r = %r', len(found), s, found)
             return [r[1] for r in found]
 
         logging.info("Found nothing for: %r", s)

@@ -20,11 +20,12 @@ from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 
+import difflib
 import logging
 import os
-import urllib
-import re
 import pickle
+import re
+import urllib
 
 class Map:
     _locations_html = 'locations.html'
@@ -90,6 +91,31 @@ class Map:
             logging.info("Found location by exact name match: %r = %s", s, found[0])
             return found[0]
 
+    def fuzzyMatch(self, s):
+        """Try to find a matching location, or list of locations, by name or alias.
+        
+        Args:
+            s (str): the search string
+        
+        Returns:
+            (list) a list of (score, location) tuples.
+        """
+        ratio_cutoff = 0.4
+        nonalnum = lambda x: not x.isalnum()
+        matches = []
+
+        for loc in locations['ByID'].values():
+            if hasattr(loc, 'aliases'):
+                aliases = loc['aliases']
+            else:
+                aliases = []
+            for s in [loc['name']] + aliases:
+                ratio = difflib.SequenceMatcher(nonalnum, search, s).ratio()
+                if ratio >= ratio_cutoff:
+                    matches.append((ratio, loc))
+        matches.sort(lambda x, y: cmp(y[0], x[0]))
+
+        return matches
 
 class PathInfo(db.Model):
     x = db.IntegerProperty(required=True)

@@ -68,43 +68,56 @@ class Map:
     def findLocation(self, s):
         # First try the lookup tables.
         if not s:
-            return None
+            return []
         try:
             if int(s) in self.locations['ByID']:
                 found = self.locations['ByID'][int(s)]
                 logging.info("Found location by ID: %r = %s", s, found)
-                return found
+                return [found]
         except ValueError:
             pass
 
         if s in self.locations['ByCode']:
             found = self.locations['ByCode'][s]
             logging.info("Found location by code: %r = %s", s, found)
-            return found
-        else:
-            logging.info("Can't find location: %r", s)
+            return [found]
 
         # Now search the entire list.
         all_locs = self.locations['ByID'].values()
         found = [loc for loc in all_locs if str(loc['name']) == str(s)]
         if len(found) == 1:
             logging.info("Found location by exact name match: %r = %s", s, found[0])
-            return found[0]
+            return [found[0]]
 
-    def fuzzyFind(self, s):
+        # Last, fall back to fuzzy matching.
+        found = self._fuzzyFind(s)
+        # According to the python docs, a ratio >0.6 is a "good match", so if
+        # the top match is above 0.6, we return just the top match.
+        if found and found[0][0] > 0.6:
+            logging.info('Top location by fuzzy match: %r = %r', found[0][0], s, found[0])
+            return found[0][1]
+        else:
+            logging.info('Top %d locations by fuzzy match for: %r = %r', len(matches), s, found)
+            return [r[1] for r in found]
+
+        logging.info("Found nothing for: %r", s)
+        return []
+
+    def _fuzzyFind(self, search):
         """Try to find a matching location, or list of locations, by name or alias.
         
         Args:
-            s (str): the search string
+            search (str): the search string
         
         Returns:
             (list) a list of (score, location) tuples.
         """
         ratio_cutoff = 0.4
+        number_cutoff = 5
+
         nonalnum = lambda x: not x.isalnum()
         matches = []
-
-        for loc in locations['ByID'].values():
+        for loc in self.locations['ByID'].values():
             if hasattr(loc, 'aliases'):
                 aliases = loc['aliases']
             else:
@@ -114,8 +127,7 @@ class Map:
                 if ratio >= ratio_cutoff:
                     matches.append((ratio, loc))
         matches.sort(lambda x, y: cmp(y[0], x[0]))
-
-        return matches
+        return matches[:number_cutoff]
 
 class PathInfo(db.Model):
     x = db.IntegerProperty(required=True)
@@ -129,6 +141,7 @@ class PathInfo(db.Model):
     def __str__(self):
         return "<PathInfo %d %d: %dx%d@%d,%d (%d)>" % (self.id0, self.id1,
                 self.w, self.h, self.x, self.y, self.dist)
+
     @staticmethod
     def fromSrcDst(src_id, dst_id):
         id0 = min(int(src_id), int(dst_id))

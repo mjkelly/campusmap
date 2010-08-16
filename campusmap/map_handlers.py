@@ -104,6 +104,11 @@ class ViewHandler(webapp.RequestHandler):
                 template_values['path_dist'] = path_info.dist
                 template_values['path_src'] = src_loc[0]['id']
                 template_values['path_dst'] = dst_loc[0]['id']
+
+                # Display values
+                template_values['distance'] = "%.02f" % (float(path_info.dist)/m.pixels_per_mile)
+                # TODO: figure out display method, and how to deal with mpm parameter
+                #template_values['time'] = formatTime(path_info.dist/m.pixels_per_mile/)
             else:
                 logging.error("Couldn't get PathInfo for IDs: %s %s", src_loc[0]['id'], dst_loc[0]['id'])
                 template_values['txt_error'] = "Internal error: couldn't retrieve path between locations!"

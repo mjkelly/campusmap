@@ -33,8 +33,11 @@ class Map:
 
     main_tmpl = 'template.html'
 
+    # in base map pixels
     default_xoff  = 4608
     default_yoff  = 3172
+    # how many pixels (on the base map) equal one mile
+    pixels_per_mile = 3894
 
     # default zoom level
     default_scale = 3
@@ -63,7 +66,7 @@ class Map:
         
     def nameNormalize(self, s):
         """Normalize s: remove all non-alphanumeric and lowercase."""
-        return re.sub(r'\W', '', 'fo bar:').lower()
+        return re.sub(r'\W', '', s).lower()
 
     def findLocation(self, s):
         # First try the lookup tables.

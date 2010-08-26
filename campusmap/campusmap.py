@@ -92,11 +92,18 @@ class Map:
             logging.info("Found location by exact name match: %r = %s", s, found[0])
             return [found[0]]
 
+        if self.isKeyword(s):
+            keyword = s.lower()[len('keyword:'):].strip()
+            if self.locations['ByKeyword'].has_key(keyword):
+                return self.locations['ByKeyword'][keyword]
+            else:
+                return []
+
         # Last, fall back to fuzzy matching.
         found = self._fuzzyFind(s)
-        # According to the python docs, a ratio >0.6 is a "good match", so if
-        # the top match is above 0.6, we return just the top match.
-        if found and found[0][0] > 0.6:
+        # According to the python docs, a ratio >0.6 is a "good match".
+        # But, in practice, a higher value seems necessary.
+        if found and found[0][0] > 0.8:
             logging.info('Top location by fuzzy match: %r = %r', s, found[0])
             return [found[0][1]]
         else:

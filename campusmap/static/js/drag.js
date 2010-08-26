@@ -178,6 +178,8 @@ function dragInit(){
 	}
 	document.getElementById("zoomSelect").innerHTML = zoomHTML;
 
+    // Override default image dragging behavior
+    document.ondragstart = function () { return false; };
 }
 
 /******************************************************************

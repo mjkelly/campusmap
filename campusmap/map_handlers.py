@@ -18,10 +18,12 @@
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
-import os
-import urllib
+
+import cgi
 import logging
 import math
+import os
+import urllib
 
 import campusmap
 
@@ -39,8 +41,8 @@ class ViewHandler(webapp.RequestHandler):
         src = self.request.get("from")
         dst = self.request.get("to")
 
-        src_loc = m.findLocation(src)
-        dst_loc = m.findLocation(dst)
+        src_locs = m.findLocation(src)
+        dst_locs = m.findLocation(dst)
 
         template_values = {
             'html_dir': m.html_base,
@@ -75,28 +77,72 @@ class ViewHandler(webapp.RequestHandler):
             'location_opt': m.locations_menu,
         }
 
-        if len(src_loc) == 1:
+        if len(src_locs) == 0:
+            if m.isKeyword(src):
+                template_values['src_help'] = '<b>%s is not valid.</b>' % cgi.escape(src)
+            else:
+                template_values['src_help'] = '<b>Start, "%s" could not be found.</b>' % cgi.escape(src)
+        elif len(src_locs) == 1:
             template_values['src_found'] = '1'
-            template_values['txt_src'] = src_loc[0]['name']
-            template_values['txt_src_official'] = src_loc[0]['name']
-            template_values['src_name'] = src_loc[0]['name']
-            template_values['src_x'] = src_loc[0]['x']
-            template_values['src_y'] = src_loc[0]['y']
-        elif len(src_loc) > 1:
-            template_values['src_help'] = '<p>Multiple src locs found!</p>'
+            template_values['txt_src'] = src_locs[0]['name']
+            template_values['txt_src_official'] = src_locs[0]['name']
+            template_values['src_name'] = src_locs[0]['name']
+            template_values['src_x'] = src_locs[0]['x']
+            template_values['src_y'] = src_locs[0]['y']
+        elif len(src_locs) > 1:
+            help_html = 'Closest matches for <b>%s</b>: <ol>' % cgi.escape(src)
 
-        if len(dst_loc) == 1:
+            map_params = {}
+            for arg in self.request.arguments():
+                map_params[arg] = self.request.get(arg)
+
+            for loc in src_locs:
+                map_params['from'] = loc['name']
+                help_html += '<li><a href="/map?' + urllib.urlencode(map_params) + '">' 
+                help_html += loc['name'] 
+                help_html += '</a></li>'
+
+            help_html += '</ol>'
+            template_values['src_help'] = help_html
+
+        if len(dst_locs) == 0:
+            if m.isKeyword(dst):
+                template_values['dst_help'] = '<b>%s is not valid.</b>' % cgi.escape(dst)
+            else:
+                template_values['dst_help'] = '<b>Destination, "%s" could not be found.</b>' % cgi.escape(dst)
+        elif len(dst_locs) == 1:
             template_values['dst_found'] = '1'
-            template_values['txt_dst'] = dst_loc[0]['name']
-            template_values['txt_dst_official'] = dst_loc[0]['name']
-            template_values['dst_name'] = dst_loc[0]['name']
-            template_values['dst_x'] = dst_loc[0]['x']
-            template_values['dst_y'] = dst_loc[0]['y']
-        elif len(dst_loc) > 1:
-            template_values['dst_help'] = '<p>Multiple dst locs found!</p>'
+            template_values['txt_dst'] = dst_locs[0]['name']
+            template_values['txt_dst_official'] = dst_locs[0]['name']
+            template_values['dst_name'] = dst_locs[0]['name']
+            template_values['dst_x'] = dst_locs[0]['x']
+            template_values['dst_y'] = dst_locs[0]['y']
+        elif len(dst_locs) > 1:
+            help_html = 'Closest matches for <b>%s</b>: <ol>' % cgi.escape(dst)
 
-        if len(src_loc) == 1 and len(dst_loc) == 1:
-            path_info = campusmap.PathInfo.fromSrcDst(src_loc[0]['id'], dst_loc[0]['id'])
+            map_params = {}
+            for arg in self.request.arguments():
+                map_params[arg] = self.request.get(arg)
+
+            for loc in dst_locs:
+                map_params['to'] = loc['name']
+                distance = None
+                if len(src_locs) == 1:
+                    path_info = campusmap.PathInfo.fromSrcDst(src_locs[0]['id'], loc['id'])
+                    if path_info:
+                        distance = float(path_info.dist)/m.pixels_per_mile
+                help_html += '<li><a href="/map?' + urllib.urlencode(map_params) + '">'
+                help_html += loc['name']
+                help_html += '</a>' 
+                if distance:
+                    help_html += ' (%.02f mi)' % distance
+                help_html += '</li>'
+
+            help_html += '</ol>'
+            template_values['dst_help'] = help_html
+
+        if len(src_locs) == 1 and len(dst_locs) == 1:
+            path_info = campusmap.PathInfo.fromSrcDst(src_locs[0]['id'], dst_locs[0]['id'])
             if path_info:
                 logging.info("Got PathInfo: %s", path_info)
                 template_values['path_found'] = True;
@@ -104,8 +150,8 @@ class ViewHandler(webapp.RequestHandler):
                 template_values['path_y'] = path_info.y
                 template_values['path_w'] = path_info.w
                 template_values['path_h'] = path_info.h
-                template_values['path_src'] = src_loc[0]['id']
-                template_values['path_dst'] = dst_loc[0]['id']
+                template_values['path_src'] = src_locs[0]['id']
+                template_values['path_dst'] = dst_locs[0]['id']
 
                 distance = float(path_info.dist)/m.pixels_per_mile
 
@@ -124,7 +170,7 @@ class ViewHandler(webapp.RequestHandler):
                 seconds = round((time - minutes)*60)
                 template_values['time'] = "%d:%02d" % (minutes, seconds)
             else:
-                logging.error("Couldn't get PathInfo for IDs: %s %s", src_loc[0]['id'], dst_loc[0]['id'])
+                logging.error("Couldn't get PathInfo for IDs: %s %s", src_locs[0]['id'], dst_locs[0]['id'])
                 template_values['txt_error'] = "Internal error: couldn't retrieve path between locations!"
 
         path = os.path.join(os.path.dirname(__file__), m.main_tmpl)

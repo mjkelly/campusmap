@@ -21,6 +21,7 @@ from google.appengine.ext.webapp import util
 import os
 import urllib
 import logging
+import math
 
 import campusmap
 
@@ -76,6 +77,7 @@ class ViewHandler(webapp.RequestHandler):
 
         if len(src_loc) == 1:
             template_values['src_found'] = '1'
+            template_values['txt_src'] = src_loc[0]['name']
             template_values['txt_src_official'] = src_loc[0]['name']
             template_values['src_name'] = src_loc[0]['name']
             template_values['src_x'] = src_loc[0]['x']
@@ -85,6 +87,7 @@ class ViewHandler(webapp.RequestHandler):
 
         if len(dst_loc) == 1:
             template_values['dst_found'] = '1'
+            template_values['txt_dst'] = dst_loc[0]['name']
             template_values['txt_dst_official'] = dst_loc[0]['name']
             template_values['dst_name'] = dst_loc[0]['name']
             template_values['dst_x'] = dst_loc[0]['x']
@@ -101,14 +104,25 @@ class ViewHandler(webapp.RequestHandler):
                 template_values['path_y'] = path_info.y
                 template_values['path_w'] = path_info.w
                 template_values['path_h'] = path_info.h
-                template_values['path_dist'] = path_info.dist
                 template_values['path_src'] = src_loc[0]['id']
                 template_values['path_dst'] = dst_loc[0]['id']
 
+                distance = float(path_info.dist)/m.pixels_per_mile
+
                 # Display values
-                template_values['distance'] = "%.02f" % (float(path_info.dist)/m.pixels_per_mile)
-                # TODO: figure out display method, and how to deal with mpm parameter
-                #template_values['time'] = formatTime(path_info.dist/m.pixels_per_mile/)
+                template_values['distance'] = "%.02f" % distance
+                template_values['path_dist'] = distance
+
+                try:
+                    mpm = int(self.request.get("mpm"))
+                except ValueError:
+                    mpm = m.default_mpm
+                template_values['mpm'] = mpm
+
+                time = distance * mpm
+                minutes = math.floor(time)
+                seconds = round((time - minutes)*60)
+                template_values['time'] = "%d:%02d" % (minutes, seconds)
             else:
                 logging.error("Couldn't get PathInfo for IDs: %s %s", src_loc[0]['id'], dst_loc[0]['id'])
                 template_values['txt_error'] = "Internal error: couldn't retrieve path between locations!"

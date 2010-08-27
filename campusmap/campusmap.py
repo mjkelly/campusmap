@@ -80,7 +80,7 @@ class Map:
         except ValueError:
             pass
 
-        if s in self.locations['ByCode']:
+        if s.lower() in self.locations['ByCode']:
             found = self.locations['ByCode'][s]
             logging.info("Found location by code: %r = %s", s, found)
             return [found]

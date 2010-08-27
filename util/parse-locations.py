@@ -157,7 +157,7 @@ def main():
             loc_lookup['ByID'][l['id']] = l
 
             if 'code' in l:
-                loc_lookup['ByCode'][l['code']] = l
+                loc_lookup['ByCode'][l['code'].lower()] = l
 
             if 'keywords' in l:
                 for keyword in l['keywords'].split(' '):

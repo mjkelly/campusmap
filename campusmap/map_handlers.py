@@ -77,7 +77,7 @@ class ViewHandler(webapp.RequestHandler):
             'location_opt': m.locations_menu,
         }
 
-        if len(src_locs) == 0:
+        if len(src_locs) == 0 and src.strip():
             if m.isKeyword(src):
                 template_values['src_help'] = '<b>%s is not valid.</b>' % cgi.escape(src)
             else:
@@ -105,7 +105,7 @@ class ViewHandler(webapp.RequestHandler):
             help_html += '</ol>'
             template_values['src_help'] = help_html
 
-        if len(dst_locs) == 0:
+        if len(dst_locs) == 0 and dst.strip():
             if m.isKeyword(dst):
                 template_values['dst_help'] = '<b>%s is not valid.</b>' % cgi.escape(dst)
             else:

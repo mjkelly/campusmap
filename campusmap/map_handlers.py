@@ -60,16 +60,12 @@ class ViewHandler(webapp.RequestHandler):
             'txt_src': src,
             'txt_dst': dst,
 
-            # TODO: need to calculate these
-            'txt_src_official' : '',
-            'txt_dst_official' : '',
-
             # TODO: make these persist properly across pageloads
             'xoff' : m.default_xoff,
             'yoff' : m.default_yoff,
 
-            'width': 500,
-            'height': 375,
+            'width': m.viewport_w,
+            'height': m.viewport_h,
             'scale': m.default_scale,
             # TODO: should be totally deprecated
             'map_name': 'visitor',
@@ -152,6 +148,7 @@ class ViewHandler(webapp.RequestHandler):
                 template_values['path_h'] = path_info.h
                 template_values['path_src'] = src_locs[0]['id']
                 template_values['path_dst'] = dst_locs[0]['id']
+                template_values['scale'] = m.pickScale(path_info)
 
                 distance = float(path_info.dist)/m.pixels_per_mile
 
@@ -172,6 +169,8 @@ class ViewHandler(webapp.RequestHandler):
             else:
                 logging.error("Couldn't get PathInfo for IDs: %s %s", src_locs[0]['id'], dst_locs[0]['id'])
                 template_values['txt_error'] = "Internal error: couldn't retrieve path between locations!"
+                template_values['scale'] = m.default_scale
+
 
         path = os.path.join(os.path.dirname(__file__), m.main_tmpl)
         self.response.out.write(template.render(path, template_values))

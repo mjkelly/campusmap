@@ -21,7 +21,6 @@ def PathImageImporter(input_dict, instance, bulkload_state_copy):
     fh = file(image_path)
     image = fh.read()
     fh.close()
-    #return input_dict
     return campusmap.PathImage(id0=int(input_dict['id0']),
                                id1=int(input_dict['id1']),
                                zoom=int(input_dict['zoom']),

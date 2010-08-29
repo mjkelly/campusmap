@@ -57,12 +57,16 @@ class ViewHandler(webapp.RequestHandler):
             'size': self.request.get("size") or m.default_size,
             'mpm': self.request.get("mpm") or m.default_mpm,
 
+            'src_found': False,
+            'dst_found': False,
+            'path_found': False,
+
             'txt_src': src,
             'txt_dst': dst,
 
-            # TODO: make these persist properly across pageloads
-            'xoff' : m.default_xoff,
-            'yoff' : m.default_yoff,
+            # These get overridden if we find a path.
+            'xoff': m.default_xoff,
+            'yoff': m.default_yoff,
 
             'width': m.viewport_w,
             'height': m.viewport_h,
@@ -73,18 +77,24 @@ class ViewHandler(webapp.RequestHandler):
             'location_opt': m.locations_menu,
         }
 
+        # Number of locations displayed. Could be 0 (default), 1 (just one
+        # location, or a disambiguation page for one of the searched
+        # locations), or 2 (full path).
+        location_count = 0
+
         if len(src_locs) == 0 and src.strip():
             if m.isKeyword(src):
                 template_values['src_help'] = '<b>%s is not valid.</b>' % cgi.escape(src)
             else:
                 template_values['src_help'] = '<b>Start, "%s" could not be found.</b>' % cgi.escape(src)
         elif len(src_locs) == 1:
-            template_values['src_found'] = '1'
+            template_values['src_found'] = True
             template_values['txt_src'] = src_locs[0]['name']
             template_values['txt_src_official'] = src_locs[0]['name']
             template_values['src_name'] = src_locs[0]['name']
             template_values['src_x'] = src_locs[0]['x']
             template_values['src_y'] = src_locs[0]['y']
+            location_count += 1
         elif len(src_locs) > 1:
             help_html = 'Closest matches for <b>%s</b>: <ol>' % cgi.escape(src)
 
@@ -107,12 +117,13 @@ class ViewHandler(webapp.RequestHandler):
             else:
                 template_values['dst_help'] = '<b>Destination, "%s" could not be found.</b>' % cgi.escape(dst)
         elif len(dst_locs) == 1:
-            template_values['dst_found'] = '1'
+            template_values['dst_found'] = True
             template_values['txt_dst'] = dst_locs[0]['name']
             template_values['txt_dst_official'] = dst_locs[0]['name']
             template_values['dst_name'] = dst_locs[0]['name']
             template_values['dst_x'] = dst_locs[0]['x']
             template_values['dst_y'] = dst_locs[0]['y']
+            location_count += 1
         elif len(dst_locs) > 1:
             help_html = 'Closest matches for <b>%s</b>: <ol>' % cgi.escape(dst)
 
@@ -137,11 +148,13 @@ class ViewHandler(webapp.RequestHandler):
             help_html += '</ol>'
             template_values['dst_help'] = help_html
 
-        if len(src_locs) == 1 and len(dst_locs) == 1:
+        logging.info('locaton_count = %s', location_count)
+        path_info = None
+        if location_count == 2:
             path_info = campusmap.PathInfo.fromSrcDst(src_locs[0]['id'], dst_locs[0]['id'])
             if path_info:
                 logging.info("Got PathInfo: %s", path_info)
-                template_values['path_found'] = True;
+                template_values['path_found'] = True
                 template_values['path_x'] = path_info.x
                 template_values['path_y'] = path_info.y
                 template_values['path_w'] = path_info.w
@@ -149,6 +162,7 @@ class ViewHandler(webapp.RequestHandler):
                 template_values['path_src'] = src_locs[0]['id']
                 template_values['path_dst'] = dst_locs[0]['id']
                 template_values['scale'] = m.pickScale(path_info)
+                template_values['xoff'], template_values['yoff'] = m.pickOffsets(None, None, path_info)
 
                 distance = float(path_info.dist)/m.pixels_per_mile
 
@@ -170,6 +184,14 @@ class ViewHandler(webapp.RequestHandler):
                 logging.error("Couldn't get PathInfo for IDs: %s %s", src_locs[0]['id'], dst_locs[0]['id'])
                 template_values['txt_error'] = "Internal error: couldn't retrieve path between locations!"
                 template_values['scale'] = m.default_scale
+        elif location_count == 1:
+                template_values['scale'] = m.default_single_loc_scale
+
+                if template_values['src_found']:
+                    template_values['xoff'], template_values['yoff'] = m.pickOffsets(src_locs[0], None, None)
+                elif template_values['dst_found']:
+                    template_values['xoff'], template_values['yoff'] = m.pickOffsets(None, dst_locs[0], None)
+            
 
 
         path = os.path.join(os.path.dirname(__file__), m.main_tmpl)

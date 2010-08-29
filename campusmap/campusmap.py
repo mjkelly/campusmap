@@ -39,16 +39,19 @@ class Map:
     # how many pixels (on the base map) equal one mile
     pixels_per_mile = 3894
 
-    # default zoom level
-    default_scale = 3
-    # default viewport size (index into old defaults; not currently used)
-    default_size = 1
-    # default walk sped (minutes per mile)
-    default_mpm = 20
-
     # Size multipliers by zoom level, compared to the scale used by locations
     # and PathInfo objects.
     scales = [0.5, 0.25, 0.125, 0.0625]
+
+    # default zoom level
+    default_scale = 3
+    # default zoom level if we're only showing one location
+    default_single_loc_scale = 1
+    # default viewport size (index into old defaults; not currently used)
+    # TODO: remove this entirely
+    default_size = 1
+    # default walk sped (minutes per mile)
+    default_mpm = 20
 
     # Size (in actual on-screen pixels) of the viewport.
     viewport_w = 500
@@ -147,68 +150,6 @@ class Map:
         matches.sort(lambda x, y: cmp(y[0], x[0]))
         return matches[:number_cutoff]
 
-# sub pickZoom{
-#         my($fromLoc, $toLoc, $xoff, $yoff, $width, $height, $rect, $scales) = @_;
-#         my $scale;
-#
-#         # if x/y offsets aren't set, use the center of the bounding rectangle
-#         if( !$xoff && !$yoff ){
-#                 $xoff = int(($rect->{'xmin'} + $rect->{'xmax'}) / 2);
-#                 $yoff = int(($rect->{'ymin'} + $rect->{'ymax'}) / 2);
-#         }
-#
-#         my $w = $rect->{'xmax'} - $rect->{'xmin'};
-#         my $h = $rect->{'ymax'} - $rect->{'ymin'};
-#
-#         # find the first level that encompasses the entire rectangle
-#         for my $i (0..$#{$scales}){
-#                 if($w < $width/$scales->[$i] && $h < $height/$scales->[$i]){
-#                         # we know it's big enough. now, make sure
-#                         # nothing's too close to the edges
-#
-#                         # x pixels on the actual output image
-#                         # correspond to x/$scales->[$i] pixels on the
-#                         # base image (to counteract the scale
-#                         # multiplier).
-#
-#                         # if any of the locations are too close to any edge,
-#                         # reject this zoom level and move to the next one
-#                         if(abs($xoff - $fromLoc->{'x'}) > $width/(2*$scales->[$i]) - 5){
-#                                 next;
-#                         }
-#                         if(abs($xoff - $toLoc->{'x'}) > $width/(2*$scales->[$i]) - 5){
-#                                 next;
-#                         }
-#
-#                         if(abs($yoff - $fromLoc->{'y'}) > $height/(2*$scales->[$i]) - 5){
-#                                 next;
-#                         }
-#                         if(abs($yoff - $toLoc->{'y'}) > $height/(2*$scales->[$i]) - 5){
-#                                 next;
-#                         }
-#
-#                         # if location names would ordinarily go off the
-#                         # edge of the screen, drawLocation draws them
-#                         # to the left instead
-#
-#                         # if we made it this far, this is a good scale!
-#                         $scale = $i;
-#                         last;
-#                 }
-#         }
-#
-#         # if $scale is still a bogus value, we couldn't find ANY zoom level
-#         # to accomodate the two locations! fall back to centering on the destination,
-#         # and zooming in a bit
-#         if(!defined($scale)){
-#                 $scale = $MapGlobals::SINGLE_LOC_SCALE;
-#                 $xoff = $toLoc->{'x'};
-#                 $yoff = $toLoc->{'y'};
-#         }
-#
-#         return ($scale, $xoff, $yoff);
-# }
-
     def pickScale(self, path_info):
         """Picks zoom level based on a PathInfo object.
 
@@ -218,22 +159,45 @@ class Map:
         Returns:
             (int) a good zoom level
         """
+        if path_info is None:
+            return self.default_scale
+
         logging.info("x = %s, y = %s, w = %s, h = %s", path_info.x, path_info.y, path_info.w, path_info.h)
-        return self.default_scale
+        # Zoom outwards, checking if each rect will fit in the viewport
+        for i in xrange(len(self.scales)):
+            logging.info("checking zoom level %s", i)
+            if (path_info.w*self.scales[i] > self.viewport_w - 5
+                    or path_info.h*self.scales[i] > self.viewport_h - 5):
+                continue
+            else:
+                return i
+        # Return the largest scale if we failed to find a suitable one.
+        return len(self.scales) - 1
 
-    def pickOffsets(self, src, dst):
-        """Picks x and y offsets based on source and destination locations.
 
-        Either or both arguments may be None to indicate none has been chosen.
+    def pickOffsets(self, src, dst, path_info):
+        """Picks x and y offsets for the viewport.
+
+        Any of the arguments can be None. PathInfo is preferred.
 
         Args:
-            src: (?)
-            dst: (?)
+            src: (location hash)
+            dst: (location hash)
+            path_info: (PathInfo)
 
         Returns:
             (tuple(int, int)) good x and y offsets
         """
-        return (self.default_xoff, self.default_yoff)
+        if path_info is not None:
+            return (path_info.x + path_info.w/2, path_info.y + path_info.h/2)
+        # We have only one location
+        elif src is not None:
+            return (src['x'], src['y'])
+        elif dst is not None:
+            return (dst['x'], dst['y'])
+        else:
+            return (self.default_xoff, self.default_yoff)
+
 
 class PathInfo(db.Model):
     x = db.IntegerProperty(required=True)

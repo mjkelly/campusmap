@@ -16,6 +16,7 @@
 #
 
 from google.appengine.ext import blobstore
+from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext.webapp import template
@@ -47,10 +48,32 @@ class MainHandler(webapp.RequestHandler):
         self.redirect(url, permanent=True)
 
 
+# Delete all PathInfo entries. This is should be needed only for a one-off run
+# after I fucked up the bulkupload.
+class DeleteAllPathInfoHandler(webapp.RequestHandler):
+    def get(self):
+        self.response.out.write("<form method='post' action='/UQssdoB2lz'>delete? <input type='text' name='x'><input type='submit'></form>")
+
+    def post(self):
+        if self.request.get('x') == 'yes':
+            q = db.GqlQuery('SELECT __key__ FROM PathInfo')
+            results = q.fetch(10)
+            while results:
+                r = db.delete(results)
+                results = q.fetch(10)
+            self.response.out.write('DELETED: %s' % r)
+        else:
+            self.response.out.write("CANCELLED")
+
+
 def main():
     application = webapp.WSGIApplication([('/', MainHandler),
                                           ("/map/?", map_handlers.ViewHandler),
                                           ('/p/(\d+)-(\d+)-(\d+)', PathHandler),
+
+                                          # DO NOT ENABLE IN PRODUCTION
+                                          #('/UQssdoB2lz', DeleteAllPathInfoHandler),
+
                                           # forward legacy links
                                           ('/map\.cgi', MainHandler)],
                                          debug=True)

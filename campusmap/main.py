@@ -38,25 +38,21 @@ class PathHandler(blobstore_handlers.BlobstoreDownloadHandler):
             logging.error("no pathimage for %s %s %s", x, y, zoom)
             self.error(404)
 
+
 class MainHandler(webapp.RequestHandler):
     def get(self):
-        response = """
-<html>
-<head>
-    <title>CampusMap</title>
-</head>
-<body>
-<h1>CampusMap</h1>
-<p>Foo.</p>
-</body>
-</html>
-"""
-        self.response.out.write(response)
+        url = '/map'
+        if self.request.query_string:
+            url += '?' + self.request.query_string
+        self.redirect(url, permanent=True)
+
 
 def main():
     application = webapp.WSGIApplication([('/', MainHandler),
                                           ("/map/?", map_handlers.ViewHandler),
-                                          ('/p/(\d+)-(\d+)-(\d+)', PathHandler)],
+                                          ('/p/(\d+)-(\d+)-(\d+)', PathHandler),
+                                          # forward legacy links
+                                          ('/map\.cgi', MainHandler)],
                                          debug=True)
     util.run_wsgi_app(application)
 

@@ -153,34 +153,45 @@ class ViewHandler(webapp.RequestHandler):
         if location_count == 2:
             path_info = campusmap.PathInfo.fromSrcDst(src_locs[0]['id'], dst_locs[0]['id'])
             if path_info:
-                logging.info("Got PathInfo: %s", path_info)
-                template_values['path_found'] = True
-                template_values['path_x'] = path_info.x
-                template_values['path_y'] = path_info.y
-                template_values['path_w'] = path_info.w
-                template_values['path_h'] = path_info.h
-                template_values['path_src'] = src_locs[0]['id']
-                template_values['path_dst'] = dst_locs[0]['id']
-                template_values['scale'] = m.pickScale(path_info)
-                template_values['xoff'], template_values['yoff'] = m.pickOffsets(None, None, path_info)
+                if path_info.dist > 0:
+                    logging.info("Got PathInfo: %s", path_info)
+                    template_values['path_found'] = True
+                    template_values['path_x'] = path_info.x
+                    template_values['path_y'] = path_info.y
+                    template_values['path_w'] = path_info.w
+                    template_values['path_h'] = path_info.h
+                    template_values['path_src'] = src_locs[0]['id']
+                    template_values['path_dst'] = dst_locs[0]['id']
+                    template_values['scale'] = m.pickScale(path_info)
+                    template_values['xoff'], template_values['yoff'] = m.pickOffsets(None, None, path_info)
 
-                distance = float(path_info.dist)/m.pixels_per_mile
+                    distance = float(path_info.dist)/m.pixels_per_mile
 
-                # Display values
-                template_values['distance'] = "%.02f" % distance
-                template_values['path_dist'] = distance
+                    # Display values
+                    template_values['distance'] = "%.02f" % distance
+                    template_values['path_dist'] = distance
 
-                try:
-                    mpm = int(self.request.get("mpm"))
-                except ValueError:
-                    mpm = m.default_mpm
-                template_values['mpm'] = mpm
+                    try:
+                        mpm = int(self.request.get("mpm"))
+                    except ValueError:
+                        mpm = m.default_mpm
+                    template_values['mpm'] = mpm
 
-                time = distance * mpm
-                minutes = math.floor(time)
-                seconds = round((time - minutes)*60)
-                template_values['time'] = "%d:%02d" % (minutes, seconds)
+                    time = distance * mpm
+                    minutes = math.floor(time)
+                    seconds = round((time - minutes)*60)
+                    template_values['time'] = "%d:%02d" % (minutes, seconds)
+                else:
+                    # This happens when one endpoint isn't properly connected.
+                    # It's an indication that our underlying path data is
+                    # dodgy, but not an error to us.
+                    logging.warning("IDs: %s %s aren't connected.",
+                            src_locs[0]['id'], dst_locs[0]['id'])
+                    template_values['path_found'] = False
+                    template_values['txt_error'] = (
+                            'No known path between these locations.')
             else:
+                # This is a genuine error -- we should have PathInfos between all locations.
                 logging.error("Couldn't get PathInfo for IDs: %s %s", src_locs[0]['id'], dst_locs[0]['id'])
                 template_values['txt_error'] = "Internal error: couldn't retrieve path between locations!"
                 template_values['scale'] = m.default_scale

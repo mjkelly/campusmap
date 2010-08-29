@@ -54,8 +54,8 @@ class Map:
     default_mpm = 20
 
     # Size (in actual on-screen pixels) of the viewport.
-    viewport_w = 500
-    viewport_h = 375
+    viewport_w = 600
+    viewport_h = 475
 
     html_base = '/static'
 
@@ -162,10 +162,8 @@ class Map:
         if path_info is None:
             return self.default_scale
 
-        logging.info("x = %s, y = %s, w = %s, h = %s", path_info.x, path_info.y, path_info.w, path_info.h)
         # Zoom outwards, checking if each rect will fit in the viewport
         for i in xrange(len(self.scales)):
-            logging.info("checking zoom level %s", i)
             if (path_info.w*self.scales[i] > self.viewport_w - 5
                     or path_info.h*self.scales[i] > self.viewport_h - 5):
                 continue

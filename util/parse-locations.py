@@ -11,6 +11,7 @@ import os
 import optparse
 import xml.dom.minidom
 import pickle
+import pprint
 
 class Location(object):
     valid_attributes = ['id', 
@@ -20,6 +21,14 @@ class Location(object):
         'passThrough', 
         'intersect', 
         'displayName', 
+        'aliases',
+        'keywords',
+        'code']
+
+    translate_attributes = ['id', 
+        'x', 
+        'y', 
+        'name', 
         'aliases',
         'keywords',
         'code']
@@ -41,7 +50,8 @@ class Location(object):
 
     def to_dict(self):
         d = {} 
-        for attr in self.valid_attributes:
+        for attr in self.translate_attributes:
+        #for attr in self.valid_attributes:
             if hasattr(self, attr):
                 d[attr] = getattr(self, attr)
         return d
@@ -144,7 +154,9 @@ def main():
     locations = parseLocations(locations_file)
     paths     = parsePaths(paths_file)
 
-    print 'Loaded %d locations.' % len(locations)
+    visible_locs = [l for l in locations if l.displayName]
+
+    print 'Loaded %d locations (%d visible).' % (len(locations), len(visible_locs))
     print 'Loaded %d paths.' % len(paths)   
 
     # This datastructure is much like the one we use in the old map.cgi. It
@@ -155,9 +167,13 @@ def main():
     # for easier pickling and unpickling.
     loc_dicts = [l.to_dict() for l in locations]
 
+    print "Pretty-print location list:"
+    pp = pprint.PrettyPrinter()
+    pp.pprint(loc_dicts)
+
     print "Building lookup data structure..."
     for l in loc_dicts:
-        if l['displayName']:
+        if (('displayName' in l) and l['displayName']) or 'displayName' not in l:
             loc_lookup['ByID'][l['id']] = l
 
             if 'code' in l:

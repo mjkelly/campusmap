@@ -92,7 +92,7 @@ class Map:
             pass
 
         if s.lower() in self.locations['ByCode']:
-            found = self.locations['ByCode'][s]
+            found = self.locations['ByCode'][s.lower()]
             logging.info("Found location by code: %r = %s", s, found)
             return [found]
 

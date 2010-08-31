@@ -50,8 +50,8 @@ class Location(object):
 
     def to_dict(self):
         d = {} 
-        for attr in self.translate_attributes:
-        #for attr in self.valid_attributes:
+        #for attr in self.translate_attributes:
+        for attr in self.valid_attributes:
             if hasattr(self, attr):
                 d[attr] = getattr(self, attr)
         return d
@@ -167,9 +167,13 @@ def main():
     # for easier pickling and unpickling.
     loc_dicts = [l.to_dict() for l in locations]
 
-    print "Pretty-print location list:"
-    pp = pprint.PrettyPrinter()
-    pp.pprint(loc_dicts)
+    #print "Pretty-print location list:"
+    #pp = pprint.PrettyPrinter()
+    #pp.pprint(loc_dicts)
+
+    for l in loc_dicts:
+        if l['displayName']:
+            print "%s %s" % (l['id'], l['name'])
 
     print "Building lookup data structure..."
     for l in loc_dicts:

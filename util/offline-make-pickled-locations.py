@@ -150,9 +150,11 @@ def main():
 
     print "%d locations" % len(loc_dicts)
     loc_dicts = [make_dict(loc) for loc in loc_dicts]
-    pp = pprint.PrettyPrinter()
-    pp.pprint(loc_dicts)
+    #pp = pprint.PrettyPrinter()
+    #pp.pprint(loc_dicts)
     #print loc_dicts
+    for l in loc_dicts:
+        print "%s %s" % (l['id'], l['name'])
 
     loc_lookup = {'ByKeyword': {}, 'ByID': {}, 'ByCode': {}}
     print "Building lookup data structure..."

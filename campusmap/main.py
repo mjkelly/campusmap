@@ -53,7 +53,8 @@ def main():
                                           ("/map/?", map_handlers.ViewHandler),
                                           ('/p/(\d+)-(\d+)-(\d+)', PathHandler),
                                           # forward legacy links
-                                          ('/map\.cgi', MainHandler)],
+                                          ('/map\.cgi', MainHandler),
+                                          ('/.*', MainHandler)],
                                          debug=True)
     util.run_wsgi_app(application)
 

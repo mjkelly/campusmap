@@ -3,6 +3,10 @@
 # parse.py -- Parse location and path xml data files
 # -----------------------------------------------------------------
 
+# XXX BEWARE XXX
+# This reads the XML versions of the locations file. There may be skew between
+# this data and the binary-format data!
+
 import os
 import optparse
 import xml.dom.minidom

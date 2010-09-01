@@ -215,6 +215,10 @@ class PathInfo(db.Model):
     def fromSrcDst(src_id, dst_id):
         id0 = min(int(src_id), int(dst_id))
         id1 = max(int(src_id), int(dst_id))
+        if id0 == id1:
+            logging.error("Attempt to retrieve PathInfo from and to id %s",
+                    id0)
+            return None
         return PathInfo.gql('WHERE id0 = :1 AND id1 = :2', id0, id1).get()
 
 class PathImage(db.Model):

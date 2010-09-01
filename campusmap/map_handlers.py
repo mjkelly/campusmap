@@ -117,13 +117,19 @@ class ViewHandler(webapp.RequestHandler):
             else:
                 template_values['dst_help'] = '<b>Destination, "%s" could not be found.</b>' % cgi.escape(dst)
         elif len(dst_locs) == 1:
-            template_values['dst_found'] = True
-            template_values['txt_dst'] = dst_locs[0]['name']
-            template_values['txt_dst_official'] = dst_locs[0]['name']
-            template_values['dst_name'] = dst_locs[0]['name']
-            template_values['dst_x'] = dst_locs[0]['x']
-            template_values['dst_y'] = dst_locs[0]['y']
-            location_count += 1
+            # Check for src == dst
+            if len(src_locs) == 1 and src_locs[0]['id'] == dst_locs[0]['id']:
+                template_values['dst_found'] = False
+                template_values['txt_error'] = ("Source and destination are the"
+                        " same! That's easy.")
+            else:
+                template_values['dst_found'] = True
+                template_values['txt_dst'] = dst_locs[0]['name']
+                template_values['txt_dst_official'] = dst_locs[0]['name']
+                template_values['dst_name'] = dst_locs[0]['name']
+                template_values['dst_x'] = dst_locs[0]['x']
+                template_values['dst_y'] = dst_locs[0]['y']
+                location_count += 1
         elif len(dst_locs) > 1:
             help_html = 'Closest matches for <b>%s</b>: <ol>' % cgi.escape(dst)
 

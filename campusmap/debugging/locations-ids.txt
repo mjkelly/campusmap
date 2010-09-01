@@ -1,0 +1,439 @@
+100 Campus Services Complex - Building D
+101 Campus Services Complex - Building H
+103 University Center, 311
+104 Campus Services Complex - Trailer 4
+105 Isaacs Hall Trailer 1
+106 Isaacs Hall Trailer 2
+107 Canyon Vista
+108 Canyonview Aquatic and Climbing Wall Facility
+109 Canyonview Rec/Athletics Administration (Construction)
+10 University Center, 310
+110 Career Services Center
+111 Cedar
+112 Center Hall
+113 Central Mesa Housing - 23 Bldgs
+114 Central Utilities Plant
+115 Challenger Hall
+116 University Center, 104
+117 University Center, 105
+118 University Center, 106
+119 University Center, 107
+11 Mesa Housing, 3803
+120 University Center 108
+121 University Center, 109
+122 University Center 110
+123 University Center, 111
+124 University Center 112
+125 Che Cafe
+126 Club Med
+127 Cognitive Science Building
+128 Crafts Center/Grove Gallery
+129 University Center, 965
+12 Mesa Housing, 3811
+130 Cross-Cultural Center
+131 Deep Sea Drilling East
+132 Deep Sea Drilling West
+133 Dance Studio Facility
+134 Date
+135 Discovery Hall
+136 Engineering Building Unit I
+137 Engineering Building Unit II
+138 Early Childhood Education Center A
+139 Early Childhood Education Center B
+13 Mesa Housing, 3819
+140 Early Childhood Education Center C
+141 Early Childhood Education Center D
+142 Environmental Management Facility
+143 University Center, 517
+144 University Center, 517A
+145 University Center, 518
+146 University Center, 519
+147 University Center, 520
+148 Sixth College, 789
+149 Sixth- Bldg 797
+14 Mesa Housing, 3827
+150 Eckart Building
+151 Economics Building
+152 Sixth- Bldg 792
+153 Evergreen
+154 Experimental Aquarium
+155 Faculty Apartments at Mesa Housing
+156 Ida and Cecil Green Faculty Club
+157 Fir
+158 Mandell Weiss Forum
+159 Frankfurter Hall
+15 Mesa Housing, 3835
+160 Galathea Hall
+161 Center for Library and Instructional Computing Services
+162 Geisel Library
+163 School of Medicine Building 3
+164 Guava
+165 Main Gymnasium
+166 Humanities and Social Sciences
+167 Harlan Hall
+168 High Bay Physics Laboratory
+169 Hubbs Hall
+16 Mesa Housing, 3843
+170 Hydraulics Laboratory
+171 IGPP - Munk Lab
+172 IGPP 1000
+173 IGPP 2000
+174 IGPP 3000
+175 IGPP 4000
+176 School of Medicine Building 2
+177 School of Medicine Building 1
+178 Institute of the Americas Building
+179 Copley International Conference Center
+17 Mesa Housing, 3851
+180 Gildred Latin American Studies Building
+181 Robinson Building 1 - Administration
+182 Robinson Building 2 - Auditorium
+183 Robinson Building 3 - Library
+184 Digital Image Processing Lab
+185 International Center
+186 Isaacs Hall
+187 Sixth- Bldg 793
+188 Lifeguard Tower
+189 Literature Building
+18 Mesa Housing, 3859
+190 Marine Sciences Development Shop
+191 Medical Teaching Facility
+192 Mandell Weiss Theatre
+193 Mandeville Center
+194 Marshall College Dean's Residence
+195 Marshall Apartments I - 7 Bldgs
+196 Marshall College Administration Building
+198 Marshall College Residence Hall Center
+199 Marshall Apartments II - 6 Bldgs
+19 Mesa Housing, 3867
+1 University Center, 201
+200 Matthews Apartments Building B
+201 Mayer Hall
+202 William J. McGill Hall
+203 Media Center
+204 Meteor Hall
+205 Sixth- Bldg 794
+206 Marshall College, 101
+207 Muir College Apartments
+208 Stewart Commons
+209 Eucalyptus Point
+20 Mesa Housing, 3875
+210 Natatorium
+211 New Scripps
+212 Nierenberg Hall
+213 Sixth- Bldg 795
+214 Information Center - North Point Entrance
+215 ODP Core Building
+216 Isaacs Hall Trailer 3
+217 ORD Trailer 3
+218 Sixth- Bldg 796
+219 Old Director's House
+21 Mesa Housing, 3883
+220 Old Scripps/Director's Office
+221 Pacific Hall
+222 Sixth College Apartments (all units)
+223 Perlman Ambulatory Care Unit
+224 Peterson Hall
+225 Scripps Pier
+226 Plaza Cafe
+227 Powell Structural Systems Lab Expansion
+228 Powell Structural Systems Laboratory
+229 Powell Structural Components Laboratory
+22 Mesa Housing, 3891
+231 Price Center
+233 Recreational and Intramural Athletic Complex
+234 A. Ratner Childrens Eye Center
+235 Recreation Gymnasium
+236 Revelle College Provost Office
+237 Ritter Hall
+238 T. Wayland Vaughan Hall
+239 Information Center - Gilman Entrance
+23 Mesa Housing, 3899
+240 San Diego Supercomputer Center
+241 San Diego Supercomputer Office Addition
+242 Science and Engineering Research Facility
+243 Seaweed Canyon Quonset Storage
+244 Seaweed Canyon Warehouse
+245 School of Medicine Building 4
+246 Social Sciences Building
+247 Scholander Hall
+248 Sequoyah Hall
+249 Shiley Eye Center
+24 Mesa Housing, 3903
+250 Solis Hall
+251 Mesa Housing South (all units)
+252 Spanos Athletic Training Facility
+253 Stein Clinical Research Building
+254 Stewart Hall
+255 Student Center A - Groundworks
+256 Student Center A
+257 Porter's Pub
+258 Student Center A - Student Resources
+259 Student Center B
+25 Mesa Housing, 3911
+260 Student Health and Wellness Center
+261 Sumner Auditorium
+262 Sverdrup Hall
+263 University Center, 515
+264 T-25, SIO
+265 Martin Johnson House
+266 SIO Administrative Computing
+267 SIO Offices South - T-30
+268 SIO Offices North - T-31
+269 Diving Locker
+26 Mesa Housing, 3919
+270 SIO Storehouse
+271 Benthic Lab and Support Shop
+272 Storage and Staging Facility - Seaweed Canyon
+273 Equipment Facility - Seaweed Canyon
+274 Storage Facility - Seaweed Canyon
+275 Surfside
+276 Torrey Pines Center North
+277 Torrey Pines Center South
+278 Tenaya Hall
+279 Mandell Weiss Theatre Shop
+27 Mesa Housing, 3927
+280 Thornton Hospital
+281 Tioga Hall
+282 Extended Studies and Public Programs - Building A
+283 Extended Studies and Public Programs - Building B
+284 Extended Studies and Public Programs - Building C
+285 Extended Studies and Public Programs - Building D
+286 Extended Studies and Public Programs - Building E
+287 University Extension - Building F
+288 University Extension - Building G Replacement
+289 University Extension - Building H
+28 Mesa Housing, 3935
+290 University Extension - Building J
+291 University Extension - Building K
+292 University Extension - Building M
+293 University Extension - Building N
+294 University Extension - Building O - East
+295 University Extension - Building O - West
+296 Urey Hall
+297 Urey Hall Office Addition
+298 Veterans Administration Hospital
+299 Visual Arts Facility - Building 1
+29 Mesa Housing, 3943
+2 University Center, 202
+300 Visual Arts Facility - Building 2
+301 Visual Arts Facility - Building 3
+302 Visual Arts Facility - Building 4
+303 Visual Arts Facility - Building 5
+304 Visual Arts Facility - Building 6
+306 Warren Apartments - 4 units
+307 York Hall
+308 Keck Oceanographic and Atmospheric Research - 3
+309 Keck Oceanographic and Atmospheric Research - 1
+30 Mesa Housing, 3951
+310 Keck Oceanographic and Atmospheric Research - 2
+311 Sixth College Dean Residence
+312 Nierenberg Annex
+313 Sixth College 701
+314 Preuss School - Building A
+315 Preuss School - Building B
+316 Preuss School - Building C
+317 Preuss School - Building D
+318 Preuss School - Building E
+319 Preuss School - Building F
+31 Mesa Housing, 3959
+320 Marshall College, 102
+321 Marshall College, 103
+322 Marshall College, 103A
+323 Gilman Parking Structure
+324 Electric Shop
+325 Cal-(IT)2 Module
+326 Guava Extension
+327 Farris Student Lounge
+328 NMR Spectroscopy
+329 Thornton Module 2
+32 Mesa Housing, 3967
+330 Thornton Module 1
+331 Thornton Module 3
+332 W. M. Keck Building
+333 CSC Service Building
+334 Campus Services Complex - Shops
+335 Holly
+336 Pangea Parking Structure
+337 Ivy
+338 Jacaranda
+339 UCSD Extension Complex - Building X
+33 Mesa Housing, 3975
+340 University Extension - Building Y
+341 University Extension - Building Z
+342 LGBT Resource Center
+343 University Center, 967
+344 University Center, 968
+345 University Center 969
+346 Powell-Focht Bioengineering Hall
+347 Natural Sciences Building
+348 Leichtag Biomedical Building
+349 Kalmia
+34 Mesa Housing, 3983
+350 Laurel
+351 Magnolia
+352 Mesa Verde Hall North
+353 Mesa Verde Hall South
+354 Geneva Hall East
+355 Geneva Hall West
+356 ERC Laundry East
+357 Kathmandu House East
+358 Kathmandu House West
+359 Cuzco House East
+35 Mesa Housing, 3991
+360 Cuzco House West
+361 Asante House East
+362 Asante House West
+363 Asante House Meeting Rooms
+364 Great Hall
+365 ERC Administration North
+366 ERC Administration South
+367 Cafe Ventanas
+368 Africa Hall
+369 Asia Hall
+36 Mesa Housing, 3999
+370 Europe Hall
+371 Latin America Hall
+372 North America Hall
+373 ERC Laundry South
+374 Earth Hall
+375 Middle East Hall
+376 Oceania Hall
+377 Hamilton Glaucoma and Jacobs Retina Center
+378 Pepper Canyon Hall
+379 Computer Science and Engineering Building
+37 University Center, 400
+380 Interstate 5
+383 Matthews Apartments Building A
+384 Matthews Apartments Building C
+385 Matthews Apartments Building D
+386 Matthews Apartments Building E
+387 Foodworx
+388 Mandler Hall
+38 University Center, 401
+392 Marshall Dean's Residence
+393 Oceanview Terrace
+396 Earl's Place
+397 Music Department
+398 Cal-(IT)2
+39 Mesa Housing, 4043
+3 University Center, 214
+403 Potiker Theatre
+405 Ledden Hall
+406 To La Jolla Shores Beach
+409 School of Pharmacy & Pharmaceutical Sciences
+40 Mesa Housing, 4051
+410 Grove Cafe
+411 Student Radio Station, KSDT
+412 UCSD Bike Shop
+413 Student Center Conference Room
+414 Food Co-op
+415 AS Soft Reserves
+416 AS Lecture Notes
+417 Mandeville Auditorium
+41 Mesa Housing, 4059
+420 Galbraith Hall
+422 LJ Shores Bridge East
+423 Southwest Fisheries
+427 University Center, 501
+428 University Center, 501A
+429 Splash
+42 Mesa Housing, 4067
+430 Snackropolis
+431 Sierra Summit
+432 El Mercado
+433 Parking, North Point
+434 Parking Lot P355
+435 Parking Lot P351
+436 Parking Lot P357
+437 Parking Lot P356
+438 Parking Lot P208
+439 Parking Lot P207
+43 Mesa Housing, 4075
+440 Parking Lot P206
+442 Parking Lot P201
+443 Parking Lot P104
+444 Parking Lot P103
+445 Parking Lot P104 North
+446 Parking Lot P604
+447 Parking Lot P608
+448 Parking, Osler Lane
+449 Parking Lot P602
+44 Mesa Housing, 4083
+450 Parking Lot P406
+451 Parking Lot P503
+452 Parking Lot P502
+453 Parking, Equality Lane
+454 Parking Lot P504
+455 Parking Lot P665
+456 Parking Lot P507
+457 Parking Lot P701
+458 Parking Lot P702
+459 Parking Lot P703
+45 University Center (Construction), 409
+460 Parking Lot P704
+461 Parking Lot P705
+462 Parking Lot P750
+465 Parking, Myers Drive
+466 Parking Lot P102
+467 Marshall Residence Halls
+468 Warren Lecture Hall
+46 Mesa Housing, 4091
+47 Mesa Housing, 4099
+48 University Center (Construction), 413
+4 University Center, 215
+50 University Center, 501B
+51 University Center, 502
+52 University Center, 503
+53 University Center, 504
+54 University Center, 516
+55 Outback Adventures
+56 Coast Apartments, 9310
+57 Coast Apartments, 9321
+58 Coast Apartments, 9331
+59 Coast Apartments, 9334
+5 University Ctr, 301
+60 Coast Apartments, 9344
+61 Coast Apartments, 9350
+62 Coast Apartments, 9355
+63 Coast Apartments, 9366
+64 Coast Apartments, 9369
+65 Coast Apartments, 9383
+66 Coast Apartments, 9388
+67 Coast Apartments, 9393
+68 Applied Physics and Mathematics
+69 Sixth- Bldg. 791
+6 University Center, 301A
+70 Argo Hall
+71 Ash
+72 Sixth- Bldg 790
+73 Atlantis Hall
+74 Biology Field Station - Froghouse 1
+75 Biology Field Station - Greenhouse 1
+76 Biology Field Station - Greenhouse 2
+77 Biology Field Station - Greenhouse 3
+78 Biology Field Station - Laboratory
+79 Biology Field Station - Shadehouse 2
+7 University Center, 302
+80 Biology Field Station - Storage
+81 Basic Science Building
+82 Bates Hall
+83 Beagle Hall
+84 Beech
+85 Biology Building
+86 Birch Aquarium at Scripps
+87 Blake Hall
+88 Bonner Hall
+89 Brown Hall
+8 Cancer Research Facility
+90 Center for Coastal Studies
+91 Center for Molecular Genetics
+92 Cellular and Molecular Medicine East
+93 George Palade Laboratories for Cellular and Molecular Medicine
+94 Center for Magnetic Recording Research
+95 Chemistry Research Building
+96 Clinical Research Facility
+97 Campus Services Complex - Building A
+98 Campus Services Complex - Building B
+99 Campus Services Complex - Building C
+9 University Center, 309

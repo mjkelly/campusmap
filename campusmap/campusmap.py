@@ -216,7 +216,7 @@ class PathInfo(db.Model):
         id0 = min(int(src_id), int(dst_id))
         id1 = max(int(src_id), int(dst_id))
         if id0 == id1:
-            logging.error("Attempt to retrieve PathInfo from and to id %s",
+            logging.warning("Attempt to retrieve PathInfo from and to id %s",
                     id0)
             return None
         return PathInfo.gql('WHERE id0 = :1 AND id1 = :2', id0, id1).get()
@@ -237,9 +237,10 @@ class PathImage(db.Model):
         memcache_key = 'p-%d-%d-%d' % (id0, id1, zoom)
         p = memcache.get(memcache_key)
         if p is not None:
+            logging.debug('Memcache hit for %s', memcache_key)
             return p
         else:
             p = PathImage.gql('WHERE id0 = :1 AND id1 = :2 AND zoom = :3', id0, id1, zoom).get()
             if not memcache.add(memcache_key, p):
-                logging.error('Memcache put failed for key: %s', memcache_key)
+                logging.warning('Memcache put failed for key: %s', memcache_key)
             return p

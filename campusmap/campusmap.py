@@ -81,11 +81,22 @@ class Map:
         return re.sub(r'\W', '', s).lower()
 
     def findLocation(self, s):
+        """Return a list of locations matching query.
+
+        Args:
+            s: (unicode) query string
+
+        Returns:
+            (list) list of matching locations; empty if none match
+        """
         if not s:
             return []
 
-        # Convert search term to ASCII, because all our names and keywords are pure ASCII.
-        s = s.decode('ascii', 'replace')
+        # Force all queries into unicode. String matches with strings should
+        # still work.
+        s = unicode(s)
+
+        logging.info("findLocation: %r", s)
 
         # First try the lookup tables.
         if s.lower() in self.locations['ByCode']:
@@ -95,7 +106,7 @@ class Map:
 
         # Now search the entire list.
         all_locs = self.locations['ByID'].values()
-        found = [loc for loc in all_locs if str(loc['name']) == str(s)]
+        found = [loc for loc in all_locs if loc['name'] == s]
         if len(found) == 1:
             logging.info("Found location by exact name match: %r = %s", s, found[0])
             return [found[0]]
@@ -123,6 +134,9 @@ class Map:
 
     def _fuzzyFind(self, search):
         """Try to find a matching location, or list of locations, by name or alias.
+
+        Exact match is not required -- this method uses difflib to find and
+        rank close matches.
         
         Args:
             search (str): the search string

@@ -55,7 +55,7 @@ def main():
                                           # forward legacy links
                                           ('/map\.cgi', MainHandler),
                                           ('/.*', MainHandler)],
-                                         debug=True)
+                                         debug=False)
     util.run_wsgi_app(application)
 
 

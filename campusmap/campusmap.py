@@ -136,10 +136,10 @@ class Map:
         """Try to find a matching location, or list of locations, by name or alias.
 
         Exact match is not required -- this method uses difflib to find and
-        rank close matches.
+        rank close matches. Matches are performed case-insensitively.
         
         Args:
-            search (str): the search string
+            search (unicode): the search string
         
         Returns:
             (list) a list of (score, location) tuples.
@@ -147,14 +147,16 @@ class Map:
         ratio_cutoff = 0.4
         number_cutoff = 5
 
+        search = search.lower()
+
         nonalnum = lambda x: not x.isalnum()
         matches = []
         for loc in self.locations['ByID'].values():
+            names = [loc['name']]
             if hasattr(loc, 'aliases'):
-                aliases = loc['aliases']
-            else:
-                aliases = []
-            for s in [loc['name']] + aliases:
+                names.append(loc['aliases'])
+            names = [x.lower() for x in names]
+            for s in names:
                 ratio = difflib.SequenceMatcher(nonalnum, search, s).ratio()
                 if ratio >= ratio_cutoff:
                     matches.append((ratio, loc))

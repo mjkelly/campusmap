@@ -12,5 +12,10 @@ handlers:
 - url: /static
   static_dir: static
 
+- url: /_debug
+  script: debug.py
+  login: admin
+
 - url: /.*
   script: main.py
+

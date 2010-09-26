@@ -88,14 +88,6 @@ class Map:
         s = s.decode('ascii', 'replace')
 
         # First try the lookup tables.
-        try:
-            if int(s) in self.locations['ByID']:
-                found = self.locations['ByID'][int(s)]
-                logging.info("Found location by ID: %r = %s", s, found)
-                return [found]
-        except ValueError:
-            pass
-
         if s.lower() in self.locations['ByCode']:
             found = self.locations['ByCode'][s.lower()]
             logging.info("Found location by code: %r = %s", s, found)

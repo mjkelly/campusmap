@@ -81,9 +81,13 @@ class Map:
         return re.sub(r'\W', '', s).lower()
 
     def findLocation(self, s):
-        # First try the lookup tables.
         if not s:
             return []
+
+        # Convert search term to ASCII, because all our names and keywords are pure ASCII.
+        s = s.decode('ascii', 'replace')
+
+        # First try the lookup tables.
         try:
             if int(s) in self.locations['ByID']:
                 found = self.locations['ByID'][int(s)]

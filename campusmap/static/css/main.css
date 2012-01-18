@@ -17,6 +17,22 @@ img {
 	font-size: 12px;
 }
 
+/* special announcements, such as they are */
+#banner{
+  color: white;
+	margin: 10px auto;
+  background: darkred;
+  text-align: center;
+  width: 900px;
+  padding: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+#banner a:link, #banner a:visited, #banner a:hover, #banner a:active{ 
+  color: white;
+}
+
 #container{
 	width: 900px;
 	margin: 0 auto;

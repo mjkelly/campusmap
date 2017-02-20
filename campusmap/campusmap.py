@@ -16,17 +16,13 @@
 #
 
 from google.appengine.api import memcache
-from google.appengine.ext import webapp
 from google.appengine.ext import db
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp import util
 
 import difflib
 import logging
-import os
 import pickle
 import re
-import urllib
+
 
 class Map:
     _locations_html = 'locations.html'

@@ -15,18 +15,11 @@
 # limitations under the License.
 #
 
-from google.appengine.ext import db
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp import util
-from google.appengine.ext.webapp.util import run_wsgi_app
-
-import campusmap
-import map_handlers
-
-import logging
-import urllib
 import os
+
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import util
+
 
 class DebugHandler(webapp.RequestHandler):
     def get(self):

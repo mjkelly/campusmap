@@ -15,19 +15,14 @@
 # limitations under the License.
 #
 
-from google.appengine.ext import blobstore
-from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import blobstore_handlers
-from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
-from google.appengine.ext.webapp.util import run_wsgi_app
 
 import campusmap
 import map_handlers
 
 import logging
-import urllib
 
 class PathHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self, x, y, zoom):

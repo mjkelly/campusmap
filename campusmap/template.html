@@ -135,7 +135,7 @@
 					<a href="javascript:centerOnLocation('src')"><img src="{{ img_dir }}/center-on-this-location-2-sm.png" /></a>
 				</p>
             {% else %}
-				<p>{{ src_help }}</p>
+				<p>{{ src_help|safe }}</p>
             {% endif %}
             {% if dst_found %}
 				<p>
@@ -143,7 +143,7 @@
 					<a href="javascript:centerOnLocation('dst')"><img src="{{ img_dir }}/center-on-this-location-2-sm.png" /></a>
 				</p>
             {% else %}
-				<p>{{ dst_help }}</p>
+				<p>{{ dst_help|safe }}</p>
             {% endif %}
 
             {% if path_found %}

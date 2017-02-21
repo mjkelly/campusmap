@@ -80,7 +80,7 @@
 					<select tabindex="3" id="from_selector" name="from_selector" class="operaDoesNotInheritProperly">
 						<option value="">(None)</option>
 						<option value="" disabled="disabled">----------------</option>
-						{{ location_opt }}
+						{{ location_opt|safe }}
 					</select>
 				</div>
 				<div id="headerLeftBottomRight">
@@ -103,7 +103,7 @@
 					<option value="keyword: parking_a">A Permit</option>
 					<option value="keyword: visitorparking">Free/Metered</option>
 					<option value="" disabled="disabled">----------------</option>
-					{{ location_opt }}
+					{{ location_opt|safe }}
 				</select>
 
 				</form>
